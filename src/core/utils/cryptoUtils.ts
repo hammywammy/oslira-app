@@ -80,7 +80,10 @@ export function randomString(length: number, charset?: string): string {
   
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += chars[randomValues[i] % chars.length];
+    const value = randomValues[i];
+    if (value !== undefined) {
+      result += chars[value % chars.length];
+    }
   }
   
   return result;
@@ -99,7 +102,10 @@ export function randomInt(min: number, max: number): number {
   let result: number;
   do {
     crypto.getRandomValues(randomBytes);
-    result = randomBytes.reduce((acc, byte, i) => acc + byte * 256 ** i, 0);
+    result = randomBytes.reduce((acc, byte, i) => {
+      const value = byte ?? 0; // Handle undefined
+      return acc + value * 256 ** i;
+    }, 0);
   } while (result > maxValid);
   
   return min + (result % range);
@@ -251,11 +257,13 @@ export function generateMemorablePassword(wordCount = 4): string {
   let password = '';
   for (let i = 0; i < wordCount; i++) {
     const word = words[randomInt(0, words.length - 1)];
-    const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
-    password += capitalized;
-    
-    if (i < wordCount - 1) {
-      password += randomInt(0, 9).toString();
+    if (word) { // Handle undefined
+      const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
+      password += capitalized;
+      
+      if (i < wordCount - 1) {
+        password += randomInt(0, 9).toString();
+      }
     }
   }
   
