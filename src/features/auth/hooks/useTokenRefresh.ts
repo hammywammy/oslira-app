@@ -60,7 +60,8 @@ export function useTokenRefresh(): UseTokenRefreshReturn {
       if (session?.expires_at) {
         return new Date(session.expires_at * 1000);
       }
-    });
+      return null;
+    }).catch(() => null);
 
     return null;
   };
