@@ -17,6 +17,7 @@ export interface EnvConfig {
   supabaseAnonKey: string;
   stripePublishableKey: string;
   frontendUrl: string;
+  logLevel: 'debug' | 'info' | 'warn' | 'error'; // ADD THIS LINE
 }
 
 function detectEnvironment(): Environment {
@@ -125,17 +126,18 @@ async function fetchFromBackend(environment: Environment, workerUrl: string): Pr
         throw new Error(`Invalid config response: ${result.error || 'missing data'}`);
       }
 
-      const config: EnvConfig = {
-        environment: result.data.environment || environment,
-        isDevelopment: environment === 'development',
-        isStaging: environment === 'staging',
-        isProduction: environment === 'production',
-        apiUrl: workerUrl,
-        supabaseUrl: result.data.supabaseUrl || '',
-        supabaseAnonKey: result.data.supabaseAnonKey || '',
-        stripePublishableKey: result.data.stripePublishableKey || '',
-        frontendUrl: result.data.frontendUrl || window.location.origin,
-      };
+const config: EnvConfig = {
+  environment: result.data.environment || environment,
+  isDevelopment: environment === 'development',
+  isStaging: environment === 'staging',
+  isProduction: environment === 'production',
+  apiUrl: workerUrl,
+  supabaseUrl: result.data.supabaseUrl || '',
+  supabaseAnonKey: result.data.supabaseAnonKey || '',
+  stripePublishableKey: result.data.stripePublishableKey || '',
+  frontendUrl: result.data.frontendUrl || window.location.origin,
+  logLevel: environment === 'development' ? 'debug' : 'info', // ADD THIS LINE
+};
 
       saveToCache(config);
 
