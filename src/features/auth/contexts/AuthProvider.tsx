@@ -256,7 +256,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const business = businesses.find((b) => b.id === businessId);
     if (business) {
       setSelectedBusiness(business);
-      localStorage.setItem('oslira-selected-business', businessId);
+      localStorage.setItem('oslira-selected-business', business.id);
       logger.info('Business selected', { businessId, name: business.name });
     }
   }, [businesses]);
