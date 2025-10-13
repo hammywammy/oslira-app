@@ -47,12 +47,12 @@ export function randomId(length = 8): string {
   const randomValues = new Uint8Array(length);
   crypto.getRandomValues(randomValues);
   
-for (let i = 0; i < length; i++) {
-  const value = randomValues[i];
-  if (value !== undefined) {
-    result += chars[value % chars.length] ?? ''; // Nullish coalescing
+  for (let i = 0; i < length; i++) {
+    const value = randomValues[i];
+    if (value !== undefined) {
+      result += chars.charAt(value % chars.length);
+    }
   }
-}
   
   return result;
 }
@@ -85,7 +85,7 @@ export function randomString(length: number, charset?: string): string {
   for (let i = 0; i < length; i++) {
     const value = randomValues[i];
     if (value !== undefined) {
-      result += chars[value % chars.length] || '';
+      result += chars.charAt(value % chars.length);
     }
   }
   
@@ -168,7 +168,10 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      binary += String.fromCharCode(byte);
+    }
   }
   return btoa(binary);
 }
@@ -227,22 +230,16 @@ export function generatePassword(length = 16): string {
   
   const all = lowercase + uppercase + numbers + symbols;
   
-// Ensure at least one of each type
+  // Ensure at least one of each type
   let password = '';
-  const lowerIndex = randomInt(0, lowercase.length - 1);
-  const upperIndex = randomInt(0, uppercase.length - 1);
-  const numberIndex = randomInt(0, numbers.length - 1);
-  const symbolIndex = randomInt(0, symbols.length - 1);
-  
-  password += lowercase[lowerIndex] ?? 'a';
-  password += uppercase[upperIndex] ?? 'A';
-  password += numbers[numberIndex] ?? '0';
-  password += symbols[symbolIndex] ?? '!';
+  password += lowercase.charAt(randomInt(0, lowercase.length - 1));
+  password += uppercase.charAt(randomInt(0, uppercase.length - 1));
+  password += numbers.charAt(randomInt(0, numbers.length - 1));
+  password += symbols.charAt(randomInt(0, symbols.length - 1));
   
   // Fill rest with random characters
   for (let i = password.length; i < length; i++) {
-    const randomIndex = randomInt(0, all.length - 1);
-    password += all[randomIndex] ?? 'x';
+    password += all.charAt(randomInt(0, all.length - 1));
   }
   
   // Shuffle password
@@ -266,7 +263,7 @@ export function generateMemorablePassword(wordCount = 4): string {
   let password = '';
   for (let i = 0; i < wordCount; i++) {
     const word = words[randomInt(0, words.length - 1)];
-    if (word) { // Handle undefined
+    if (word) {
       const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
       password += capitalized;
       
@@ -298,7 +295,7 @@ export function generateCode(length = 6): string {
   let code = '';
   
   for (let i = 0; i < length; i++) {
-    code += digits[randomInt(0, digits.length - 1)];
+    code += digits.charAt(randomInt(0, digits.length - 1));
   }
   
   return code;
