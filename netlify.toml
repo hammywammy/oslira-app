@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  
+[build.environment]
+  NODE_VERSION = "22.20.0"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Disable neon extension if not needed
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    # Optional: configure if using Next.js features
+
+# If you DO need Neon (Postgres), configure it properly:
+# [[context.production.plugins]]
+#   package = "@neondatabase/netlify-integration"
