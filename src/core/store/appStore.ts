@@ -10,7 +10,7 @@
  */
 
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 import type { User, Session } from '@supabase/supabase-js';
 
 // =============================================================================
