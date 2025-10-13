@@ -319,7 +319,7 @@ export function getSubdomain(): string | null {
   const parts = hostname.split('.');
   
   if (parts.length <= 2) return null;
-  return parts[0];
+  return parts[0] ?? null; // Handle undefined case
 }
 
 export default { initializeConfig, getConfig, validateConfig, ENV };
