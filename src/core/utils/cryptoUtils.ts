@@ -48,14 +48,11 @@ export function randomId(length = 8): string {
   crypto.getRandomValues(randomValues);
   
 for (let i = 0; i < length; i++) {
-    const value = randomValues[i];
-    if (value !== undefined) {
-      const char = chars[value % chars.length];
-      if (char !== undefined) {
-        result += char;
-      }
-    }
+  const value = randomValues[i];
+  if (value !== undefined) {
+    result += chars[value % chars.length] ?? ''; // Nullish coalescing
   }
+}
   
   return result;
 }
