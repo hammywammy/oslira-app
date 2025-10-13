@@ -322,4 +322,33 @@ export function getSubdomain(): string | null {
   return parts[0] ?? null; // Handle undefined case
 }
 
+/**
+ * Validate required config fields
+ */
+export function validateConfig(): void {
+  const config = getConfig();
+  const errors: string[] = [];
+
+  if (!config.supabaseUrl) {
+    errors.push('supabaseUrl is required');
+  }
+
+  if (!config.supabaseAnonKey) {
+    errors.push('supabaseAnonKey is required');
+  }
+
+  if (errors.length > 0) {
+    const errorMessage = `Configuration errors:\n${errors.join('\n')}`;
+    logger.error('Config validation failed', new Error(errorMessage));
+    throw new Error(errorMessage);
+  }
+
+  logger.info('Config validation passed');
+}
+
+/**
+ * Alias for validateConfig (for backward compatibility)
+ */
+export const validateEnv = validateConfig;
+
 export default { initializeConfig, getConfig, validateConfig, ENV };
