@@ -20,14 +20,10 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime in v5)
       refetchOnWindowFocus: false,
       retry: 1,
-      onError: (error: Error) => {
-        logger.error('Query error', error);
-      },
+      // Note: onError is deprecated in v5, use global error boundary
     },
     mutations: {
-      onError: (error: Error) => {
-        logger.error('Mutation error', error);
-      },
+      // Note: onError is deprecated in v5, use mutation callbacks or global error boundary
     },
   },
 });
