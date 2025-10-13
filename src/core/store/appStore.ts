@@ -5,7 +5,6 @@
  * Features:
  * - Centralized state management
  * - Type-safe state updates
- * - Persistence support
  * - DevTools integration
  */
 
@@ -149,194 +148,183 @@ const initialState = {
 
 export const useAppStore = create<AppState>()(
   devtools(
-    persist(
-      (set) => ({
-        ...initialState,
+    (set) => ({
+      ...initialState,
 
-        // Auth Actions
-        setAuth: (user, session) =>
-          set({
-            auth: {
-              user,
-              session,
-              isAuthenticated: !!user,
-            },
-          }),
-
-        clearAuth: () =>
-          set({
-            auth: {
-              user: null,
-              session: null,
-              isAuthenticated: false,
-            },
-          }),
-
-        // Business Actions
-        setBusinesses: (businesses) =>
-          set((state) => ({
-            business: {
-              ...state.business,
-              all: businesses,
-            },
-          })),
-
-        selectBusiness: (business) =>
-          set((state) => ({
-            business: {
-              ...state.business,
-              selected: business,
-            },
-          })),
-
-        addBusiness: (business) =>
-          set((state) => ({
-            business: {
-              ...state.business,
-              all: [...state.business.all, business],
-            },
-          })),
-
-        updateBusiness: (id, updates) =>
-          set((state) => ({
-            business: {
-              ...state.business,
-              all: state.business.all.map((b) =>
-                b.id === id ? { ...b, ...updates } : b
-              ),
-            },
-          })),
-
-        // Lead Actions
-        setLeads: (leads) =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              all: leads,
-            },
-          })),
-
-        addLead: (lead) =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              all: [...state.leads.all, lead],
-            },
-          })),
-
-        updateLead: (id, updates) =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              all: state.leads.all.map((l) =>
-                l.id === id ? { ...l, ...updates } : l
-              ),
-            },
-          })),
-
-        removeLead: (id) =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              all: state.leads.all.filter((l) => l.id !== id),
-            },
-          })),
-
-        setFilteredLeads: (leads) =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              filtered: leads,
-            },
-          })),
-
-        setSelectedLeads: (ids) =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              selected: ids,
-            },
-          })),
-
-        clearSelectedLeads: () =>
-          set((state) => ({
-            leads: {
-              ...state.leads,
-              selected: [],
-            },
-          })),
-
-        // UI Actions
-        toggleSidebar: () =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              sidebarOpen: !state.ui.sidebarOpen,
-            },
-          })),
-
-        setSidebarOpen: (open) =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              sidebarOpen: open,
-            },
-          })),
-
-        toggleSidebarCollapse: () =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              sidebarCollapsed: !state.ui.sidebarCollapsed,
-            },
-          })),
-
-        setActiveModal: (modal) =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              activeModal: modal,
-            },
-          })),
-
-        setLoading: (loading) =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              loading,
-            },
-          })),
-
-        setFilters: (filters) =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              filters,
-            },
-          })),
-
-        clearFilters: () =>
-          set((state) => ({
-            ui: {
-              ...state.ui,
-              filters: {},
-            },
-          })),
-
-        // Subscription Actions
-        setSubscription: (subscription) =>
-          set({ subscription }),
-      }),
-      {
-        name: 'oslira-app-store',
-        partialize: (state) => ({
-          business: state.business,
-          ui: {
-            sidebarCollapsed: state.ui.sidebarCollapsed,
+      // Auth Actions
+      setAuth: (user: User | null, session: Session | null) =>
+        set({
+          auth: {
+            user,
+            session,
+            isAuthenticated: !!user,
           },
         }),
-      }
-    ),
+
+      clearAuth: () =>
+        set({
+          auth: {
+            user: null,
+            session: null,
+            isAuthenticated: false,
+          },
+        }),
+
+      // Business Actions
+      setBusinesses: (businesses: Business[]) =>
+        set((state: AppState) => ({
+          business: {
+            ...state.business,
+            all: businesses,
+          },
+        })),
+
+      selectBusiness: (business: Business | null) =>
+        set((state: AppState) => ({
+          business: {
+            ...state.business,
+            selected: business,
+          },
+        })),
+
+      addBusiness: (business: Business) =>
+        set((state: AppState) => ({
+          business: {
+            ...state.business,
+            all: [...state.business.all, business],
+          },
+        })),
+
+      updateBusiness: (id: string, updates: Partial<Business>) =>
+        set((state: AppState) => ({
+          business: {
+            ...state.business,
+            all: state.business.all.map((b: Business) =>
+              b.id === id ? { ...b, ...updates } : b
+            ),
+          },
+        })),
+
+      // Lead Actions
+      setLeads: (leads: Lead[]) =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            all: leads,
+          },
+        })),
+
+      addLead: (lead: Lead) =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            all: [...state.leads.all, lead],
+          },
+        })),
+
+      updateLead: (id: string, updates: Partial<Lead>) =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            all: state.leads.all.map((l: Lead) =>
+              l.id === id ? { ...l, ...updates } : l
+            ),
+          },
+        })),
+
+      removeLead: (id: string) =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            all: state.leads.all.filter((l: Lead) => l.id !== id),
+          },
+        })),
+
+      setFilteredLeads: (leads: Lead[]) =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            filtered: leads,
+          },
+        })),
+
+      setSelectedLeads: (ids: string[]) =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            selected: ids,
+          },
+        })),
+
+      clearSelectedLeads: () =>
+        set((state: AppState) => ({
+          leads: {
+            ...state.leads,
+            selected: [],
+          },
+        })),
+
+      // UI Actions
+      toggleSidebar: () =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            sidebarOpen: !state.ui.sidebarOpen,
+          },
+        })),
+
+      setSidebarOpen: (open: boolean) =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            sidebarOpen: open,
+          },
+        })),
+
+      toggleSidebarCollapse: () =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            sidebarCollapsed: !state.ui.sidebarCollapsed,
+          },
+        })),
+
+      setActiveModal: (modal: string | null) =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            activeModal: modal,
+          },
+        })),
+
+      setLoading: (loading: boolean) =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            loading,
+          },
+        })),
+
+      setFilters: (filters: Record<string, unknown>) =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            filters,
+          },
+        })),
+
+      clearFilters: () =>
+        set((state: AppState) => ({
+          ui: {
+            ...state.ui,
+            filters: {},
+          },
+        })),
+
+      // Subscription Actions
+      setSubscription: (subscription: UserSubscription | null) =>
+        set({ subscription }),
+    }),
     {
       name: 'OsliraAppStore',
     }
