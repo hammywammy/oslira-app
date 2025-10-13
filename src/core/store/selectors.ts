@@ -34,7 +34,7 @@ export const useHasBusinesses = () =>
   useAppStore((state: AppState) => state.business.all.length > 0);
 
 export const useBusinessById = (businessId: string) =>
-  useAppStore((state: AppState) => state.business.all.find((b) => b.id === businessId));
+  useAppStore((state: AppState) => state.business.all.find((b: Business) => b.id === businessId));
 
 // =============================================================================
 // LEADS SELECTORS
