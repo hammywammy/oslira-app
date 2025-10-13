@@ -82,7 +82,7 @@ export function randomString(length: number, charset?: string): string {
   for (let i = 0; i < length; i++) {
     const value = randomValues[i];
     if (value !== undefined) {
-      result += chars[value % chars.length];
+      result += chars[value % chars.length] || '';
     }
   }
   
