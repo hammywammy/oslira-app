@@ -179,7 +179,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // BUSINESS LOADING (from AuthManager._loadBusinesses())
   // ===========================================================================
 
-  const loadBusinesses = useCallback(async (userId: string) => {
+const loadBusinesses = useCallback(async (userId: string) => {
     try {
       logger.info('Loading user businesses...');
 
@@ -192,8 +192,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // Auto-select first business if none selected
         if (response.data.length > 0 && !selectedBusiness) {
-          setSelectedBusiness(response.data[0]);
-          localStorage.setItem('oslira-selected-business', response.data[0].id);
+          const firstBusiness = response.data[0];
+          if (firstBusiness) {
+            setSelectedBusiness(firstBusiness);
+            localStorage.setItem('oslira-selected-business', firstBusiness.id);
+          }
         }
 
         logger.info('Businesses loaded', { count: response.data.length });
