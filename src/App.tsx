@@ -7,7 +7,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
-import { logger } from '@/core/utils/logger';
 
 // =============================================================================
 // QUERY CLIENT SETUP
