@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   
@@ -35,6 +35,8 @@ export default defineConfig({
     },
   },
 
-  // Environment variable prefix
-  envPrefix: 'VITE_',
+  // Vite 6 improvements
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
 });
