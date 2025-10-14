@@ -70,8 +70,19 @@ export function HowItWorksSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-32 px-6 bg-slate-50">
-      <div className="max-w-7xl mx-auto">
+    <section ref={ref} className="relative py-32 px-6 bg-gradient-to-b from-white via-purple-50/30 to-white overflow-hidden">
+      {/* Animated gradient orb */}
+      <motion.div
+        animate={{
+          x: [0, 100, 0],
+          y: [0, -100, 0],
+          scale: [1, 1.3, 1],
+        }}
+        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 right-0 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl"
+      />
+
+      <div className="relative max-w-7xl mx-auto">
         
         {/* Section Header */}
         <motion.div
