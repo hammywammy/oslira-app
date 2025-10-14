@@ -4,14 +4,25 @@
   
 [build.environment]
   NODE_VERSION = "22.20.0"
-  NPM_FLAGS = "--legacy-peer-deps"
 
-# Disable neon extension if not needed
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    # Optional: configure if using Next.js features
+# Redirects for SPA routing (React Router)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
-# If you DO need Neon (Postgres), configure it properly:
-# [[context.production.plugins]]
-#   package = "@neondatabase/netlify-integration"
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# Cache static assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
