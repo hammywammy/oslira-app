@@ -97,17 +97,7 @@ export function BenefitsSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="relative py-32 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white overflow-hidden">
-      {/* Animated background gradient */}
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          rotate: [0, 90, 0],
-        }}
-        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-200/30 via-purple-200/30 to-pink-200/30 rounded-full blur-3xl"
-      />
-
+    <section ref={ref} className="relative py-32 px-6 bg-white">
       <div className="relative max-w-7xl mx-auto">
         
         {/* Section Header */}
@@ -152,8 +142,8 @@ export function BenefitsSection() {
                 <motion.div 
                   whileHover={{ rotate: [0, -10, 10, -10, 0] }}
                   transition={{ duration: 0.5 }}
-                  className="w-14 h-14 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-xl flex items-center justify-center mb-6 
-                  shadow-lg shadow-blue-500/30 group-hover:shadow-xl group-hover:shadow-blue-500/40 transition-shadow duration-500"
+                  className={`w-14 h-14 bg-gradient-to-br ${benefit.gradient} rounded-xl flex items-center justify-center mb-6 
+                  shadow-lg shadow-${benefit.iconColor.split('-')[1]}-500/30 group-hover:shadow-xl group-hover:shadow-${benefit.iconColor.split('-')[1]}-500/40 transition-shadow duration-500`}
                 >
                   <Icon icon={benefit.icon} className="text-3xl text-white" />
                 </motion.div>
@@ -170,7 +160,7 @@ export function BenefitsSection() {
 
                 {/* Subtle hover indicator */}
                 <motion.div 
-                  className="mt-6 h-1 bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 rounded-full origin-left"
+                  className={`mt-6 h-1 bg-gradient-to-r ${benefit.gradient} rounded-full origin-left`}
                   initial={{ scaleX: 0 }}
                   whileHover={{ scaleX: 1 }}
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
