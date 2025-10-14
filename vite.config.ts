@@ -1,11 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  
+  plugins: [
+    react(),
+    tailwindcss(), // ✅ Add Tailwind v4 plugin
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -15,12 +17,10 @@ export default defineConfig({
       '@/types': path.resolve(__dirname, './src/types'),
     },
   },
-
   server: {
     port: 3000,
     open: true,
   },
-
   build: {
     sourcemap: true,
     rollupOptions: {
@@ -34,8 +34,6 @@ export default defineConfig({
       },
     },
   },
-
-  // Vite 6 improvements
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
   },
