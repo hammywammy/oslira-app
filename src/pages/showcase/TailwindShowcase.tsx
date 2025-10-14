@@ -1685,23 +1685,23 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
           title: 'Can I customize the styling?',
           content: 'Absolutely! All components use Tailwind CSS classes, making it easy to customize colors, spacing, and other styles to match your brand.'
         },
-      ].map((item, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: index * 0.1 }}
-          className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden"
-        >
-          <motion.button
-            onClick={() => toggleAccordion(index)}
+].map((item, _index) => (
+  <motion.div
+    key={_index}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay: _index * 0.1 }}
+    className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden"
+  >
+    <motion.button
+      onClick={() => toggleAccordion(_index)}
             className="w-full px-6 py-4 flex items-center justify-between text-left font-bold hover:bg-white/5"
             whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
           >
             <span className="text-lg">{item.title}</span>
             <motion.div
-              animate={{ rotate: accordionOpen.includes(index) ? 180 : 0 }}
+              animate={{ rotate: accordionOpen.includes(_index) ? 180 : 0 }}
               transition={{ duration: 0.3 }}
             >
               <Icon icon="mdi:chevron-down" className="text-2xl" />
@@ -1709,7 +1709,7 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
           </motion.button>
           
           <AnimatePresence>
-            {accordionOpen.includes(index) && (
+            {accordionOpen.includes(_index) && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
@@ -2770,18 +2770,18 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
           <Icon icon="mdi:chevron-left" className="text-2xl" />
         </motion.button>
 
-        <div className="flex gap-2">
-          {[0, 1, 2].map((index) => (
-            <motion.button
-              key={index}
-              onClick={() => setCurrentPage(index)}
-              className={`h-2 rounded-full ${
-                currentPage === index ? 'w-8 bg-red-600' : 'w-2 bg-white/20'
-              }`}
-              whileHover={{ scale: 1.2 }}
-            />
-          ))}
-        </div>
+<div className="flex gap-2">
+  {[0, 1, 2].map((dotIndex) => (
+    <motion.button
+      key={dotIndex}
+      onClick={() => setCurrentPage(dotIndex)}
+      className={`h-2 rounded-full ${
+        currentPage === dotIndex ? 'w-8 bg-red-600' : 'w-2 bg-white/20'
+      }`}
+      whileHover={{ scale: 1.2 }}
+    />
+  ))}
+</div>
 
         <motion.button
           onClick={() => setCurrentPage(Math.min(2, currentPage + 1))}
