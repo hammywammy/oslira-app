@@ -15,17 +15,20 @@ const steps = [
   {
     number: '01',
     title: 'Paste Instagram Link',
-    description: 'Drop any Instagram profile URL into Oslira. Our AI instantly analyzes their content, engagement patterns, and business indicators.'
+    description: 'Drop any Instagram profile URL into Oslira. Our AI instantly analyzes their content, engagement patterns, and business indicators.',
+    gradient: 'from-blue-500 to-cyan-600'
   },
   {
     number: '02',
     title: 'Get Smart Recommendations',
-    description: 'Oslira scores the lead, highlights key insights, and suggests similar high-potential prospects. See exactly who needs your services most.'
+    description: 'Oslira scores the lead, highlights key insights, and suggests similar high-potential prospects. See exactly who needs your services most.',
+    gradient: 'from-purple-500 to-pink-600'
   },
   {
     number: '03',
     title: 'Send Personalized Outreach',
-    description: 'Use AI-generated message templates tailored to each lead. Copy, customize, and send - all in under 2 minutes per prospect.'
+    description: 'Use AI-generated message templates tailored to each lead. Copy, customize, and send - all in under 2 minutes per prospect.',
+    gradient: 'from-green-500 to-emerald-600'
   }
 ];
 
@@ -92,7 +95,10 @@ export function HowItWorksSection() {
           className="text-center mb-20"
         >
           <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-            How Oslira Works
+            How{' '}
+            <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
+              Oslira Works
+            </span>
           </h2>
           <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto font-light">
             Three simple steps to transform your prospecting process
@@ -133,9 +139,12 @@ export function HowItWorksSection() {
               >
                 <div className="flex flex-col items-center text-center">
                   {/* Step Number */}
-                  <div className="relative z-10 w-20 h-20 mb-8 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/20">
+                  <motion.div 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className="relative z-10 w-20 h-20 mb-8 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30"
+                  >
                     <span className="text-2xl font-bold text-white">{step.number}</span>
-                  </div>
+                  </motion.div>
 
                   {/* Content */}
                   <div className="space-y-4">
