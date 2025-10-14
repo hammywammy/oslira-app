@@ -2196,8 +2196,8 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
       >
         <h3 className="text-2xl font-bold mb-6">With Status</h3>
         <div className="flex items-center gap-6">
-          {['green', 'red', 'yellow'].map((color, index) => (
-            <div key={color} className="relative">
+         {['green', 'red', 'yellow'].map((color) => (
+  <div key={color} className="relative">
               <motion.div
                 className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl"
                 whileHover={{ scale: 1.1 }}
@@ -2526,9 +2526,9 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
           color: 'from-purple-600 to-pink-600',
           popular: false,
         },
-      ].map((plan, index) => (
-        <motion.div
-          key={plan.name}
+     ].map((plan) => (
+  <motion.div
+    key={plan.name}
           variants={itemVariants}
           className={`relative bg-white/5 backdrop-blur-sm rounded-3xl p-8 border ${
             plan.popular ? 'border-red-500 scale-105' : 'border-white/10'
