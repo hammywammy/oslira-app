@@ -12,7 +12,7 @@ interface ShowcaseItem {
 const SHOWCASES: ShowcaseItem[] = [
   { name: 'TailwindShowcase', path: '/showcase/tailwind', title: 'Tailwind' },
   { name: 'FramerShowcase', path: '/showcase/framer', title: 'Framer' },
-  { name: 'ComponentLab', path: '/showcase/component', title: 'Component Lab' },
+  { name: 'ComponentLab', path: '/showcase/components', title: 'Component Lab' },
   { name: 'DarkModeShowcase', path: '/showcase/darkmode', title: 'Dark Mode' },
 ];
 
