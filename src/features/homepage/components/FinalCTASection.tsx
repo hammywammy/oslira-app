@@ -44,7 +44,7 @@ export function FinalCTASection() {
   };
 
   return (
-    <section ref={ref} className="py-32 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white">
+    <section ref={ref} className="py-32 px-6 bg-slate-50">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial="hidden"
@@ -68,7 +68,7 @@ export function FinalCTASection() {
               <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">
                 Ready to 10x Your Prospecting?
               </h2>
-              <p className="text-xl lg:text-2xl text-slate-300 max-w-3xl mx-auto font-light">
+              <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto font-light">
                 Join 1,200+ copywriters who are landing more clients with less effort. 
                 Start with 25 free credits — no card required.
               </p>
@@ -77,31 +77,39 @@ export function FinalCTASection() {
             <motion.div variants={fadeIn}>
               <motion.button
                 onClick={handleGetStarted}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05, boxShadow: "0 25px 50px -12px rgba(255, 255, 255, 0.5)" }}
                 whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-xl 
-                hover:bg-slate-50 transition-all duration-300 shadow-2xl shadow-slate-900/20
-                hover:shadow-slate-900/30"
+                className="inline-flex items-center gap-3 px-10 py-5 bg-white text-blue-600 font-bold text-lg rounded-xl 
+                hover:bg-blue-50 transition-all duration-300 shadow-2xl shadow-white/20"
               >
                 <span>Get Started Free</span>
-                <Icon icon="mdi:arrow-right" className="text-2xl" />
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <Icon icon="mdi:arrow-right" className="text-2xl" />
+                </motion.div>
               </motion.button>
             </motion.div>
 
             {/* Features List */}
             <motion.div 
               variants={fadeIn}
-              className="flex flex-wrap justify-center gap-6 pt-6 text-slate-300"
+              className="flex flex-wrap justify-center gap-6 pt-6 text-white/90"
             >
               {[
                 { icon: 'mdi:check-circle', text: '25 free profile analyses' },
                 { icon: 'mdi:check-circle', text: 'No credit card needed' },
                 { icon: 'mdi:check-circle', text: 'Cancel anytime' }
               ].map((feature, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Icon icon={feature.icon} className="text-xl text-green-400" />
+                <motion.div 
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  className="flex items-center gap-2"
+                >
+                  <Icon icon={feature.icon} className="text-xl text-green-300" />
                   <span className="text-sm font-medium">{feature.text}</span>
-                </div>
+                </motion.div>
               ))}
             </motion.div>
           </div>
