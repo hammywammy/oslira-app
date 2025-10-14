@@ -1,16 +1,12 @@
 /**
  * @file Marketing Footer
- * @description Shared footer for all marketing pages (HomePage, Pricing, About, etc.)
+ * @description Shared footer for all marketing pages
  * Path: src/shared/components/MarketingFooter.tsx
  */
 
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function MarketingFooter() {
   const currentYear = new Date().getFullYear();
@@ -23,7 +19,11 @@ export function MarketingFooter() {
           
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <Logo size="lg" className="mb-4" />
+            {/* Logo + Text (like header) */}
+            <div className="flex items-center gap-3 mb-6">
+              <Logo size="lg" />
+              <span className="text-2xl font-bold text-white">Oslira</span>
+            </div>
             
             <p className="text-slate-400 mb-6 leading-relaxed">
               Turn hours of Instagram prospecting into minutes with AI-powered lead analysis and personalized outreach.
@@ -44,8 +44,7 @@ export function MarketingFooter() {
                   className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 hover:text-white"
                   whileHover={{ 
                     scale: 1.1, 
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: 'rgba(59, 130, 246, 0.5)'
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)'
                   }}
                   whileTap={{ scale: 0.9 }}
                 >
