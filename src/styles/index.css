@@ -1,0 +1,131 @@
+/* Tailwind CSS v4 - New Import Syntax */
+@import "tailwindcss";
+
+/* ============================================
+   CUSTOM THEME (Tailwind v4 @theme syntax)
+   ============================================ */
+
+@theme {
+  /* Brand Colors */
+  --color-brand-blue: #2563eb;
+  --color-brand-purple: #7c3aed;
+  
+  /* Gradients */
+  --color-gradient-brand: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  
+  /* Shadows */
+  --shadow-brand: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+  --shadow-brand-lg: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+  
+  /* Font Family */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ============================================
+   CUSTOM UTILITIES
+   ============================================ */
+
+@utility gradient-brand {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+}
+
+@utility shadow-brand {
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+}
+
+@utility shadow-brand-lg {
+  box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+/* ============================================
+   CUSTOM ANIMATIONS
+   ============================================ */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@utility animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@utility animate-slideDown {
+  animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@utility animate-slideUp {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@utility animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-white text-gray-900 font-sans antialiased;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+}
