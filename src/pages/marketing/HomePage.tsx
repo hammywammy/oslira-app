@@ -14,53 +14,27 @@ import { TestimonialsSection } from '@/features/homepage/components/Testimonials
 import { FinalCTASection } from '@/features/homepage/components/FinalCTASection';
 
 export function HomePage() {
-  useEffect(() => {
-    // Set page metadata
-    document.title = 'Oslira - Turn Hours of Instagram Prospecting into Minutes';
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        'content',
-        'Paste an Instagram link and Oslira grades the profile, gives you a clear debrief, crafts personalized outreach, and suggests your next leads. Get 25 free credits — no card required.'
-      );
-    }
-
-    // Smooth scroll for anchor links
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.target as HTMLAnchorElement;
-      
-      if (target.tagName === 'A' && target.hash) {
-        const href = target.getAttribute('href');
-        
-        if (href?.startsWith('#')) {
-          e.preventDefault();
-          const element = document.querySelector(href);
-          
-          if (element) {
-            element.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
-          }
-        }
-      }
-    };
-
-    document.addEventListener('click', handleAnchorClick);
-
-    return () => {
-      document.removeEventListener('click', handleAnchorClick);
-    };
-  }, []);
-
   return (
     <MarketingLayout>
+      {/* ✅ TEST BLOCK - Remove after verification */}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="bg-white p-8 rounded-2xl shadow-2xl border-4 border-blue-500">
+          <h1 className="text-4xl font-bold gradient-brand bg-clip-text text-transparent mb-4">
+            Tailwind v4 is Working! ✅
+          </h1>
+          <p className="text-gray-600 mb-4">
+            If you see this styled correctly, Tailwind is active.
+          </p>
+          <button className="gradient-brand text-white px-6 py-3 rounded-lg shadow-brand hover:shadow-brand-lg transition-all animate-float">
+            Test Button
+          </button>
+        </div>
+      </div>
+      
+      {/* Your actual homepage content below */}
       <HeroSection />
       <BenefitsSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <FinalCTASection />
+      {/* ... etc */}
     </MarketingLayout>
   );
 }
