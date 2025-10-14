@@ -10,7 +10,6 @@ import { HowItWorksSection } from '@/features/homepage/components/HowItWorksSect
 import { TestimonialsSection } from '@/features/homepage/components/TestimonialsSection';
 import { FinalCTASection } from '@/features/homepage/components/FinalCTASection';
 import { SocialProofNotifications } from '@/features/homepage/components/SocialProofNotifications';
-import { MarketingLayout } from '@/shared/components/layouts/MarketingLayout';
 
 // =============================================================================
 // COMPONENT
@@ -18,25 +17,36 @@ import { MarketingLayout } from '@/shared/components/layouts/MarketingLayout';
 
 export function HomePage() {
   return (
-    <MarketingLayout>
+    <div className="min-h-screen bg-white">
+      {/* Skip to main content (accessibility) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg"
+      >
+        Skip to main content
+      </a>
+
       {/* Social Proof Notifications (Fixed Position) */}
       <SocialProofNotifications />
 
-      {/* Hero Section */}
-      <HeroSection />
+      {/* Main Content */}
+      <main id="main-content">
+        {/* Hero Section */}
+        <HeroSection />
 
-      {/* Benefits Section */}
-      <BenefitsSection />
+        {/* Benefits Section */}
+        <BenefitsSection />
 
-      {/* How It Works */}
-      <HowItWorksSection />
+        {/* How It Works */}
+        <HowItWorksSection />
 
-      {/* Testimonials */}
-      <TestimonialsSection />
+        {/* Testimonials */}
+        <TestimonialsSection />
 
-      {/* Final CTA */}
-      <FinalCTASection />
-    </MarketingLayout>
+        {/* Final CTA */}
+        <FinalCTASection />
+      </main>
+    </div>
   );
 }
 
