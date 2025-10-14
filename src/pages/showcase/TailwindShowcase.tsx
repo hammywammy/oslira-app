@@ -1685,17 +1685,17 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
           title: 'Can I customize the styling?',
           content: 'Absolutely! All components use Tailwind CSS classes, making it easy to customize colors, spacing, and other styles to match your brand.'
         },
-].map((item, _index) => (
-  <motion.div
-    key={_index}
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: _index * 0.1 }}
-    className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden"
-  >
-    <motion.button
-      onClick={() => toggleAccordion(_index)}
+      ].map((item, _index) => (
+        <motion.div
+          key={_index}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: _index * 0.1 }}
+          className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden"
+        >
+          <motion.button
+            onClick={() => toggleAccordion(_index)}
             className="w-full px-6 py-4 flex items-center justify-between text-left font-bold hover:bg-white/5"
             whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
           >
@@ -2771,17 +2771,17 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
         </motion.button>
 
 <div className="flex gap-2">
-  {[0, 1, 2].map((dotIndex) => (
-    <motion.button
-      key={dotIndex}
-      onClick={() => setCurrentPage(dotIndex)}
-      className={`h-2 rounded-full ${
-        currentPage === dotIndex ? 'w-8 bg-red-600' : 'w-2 bg-white/20'
-      }`}
-      whileHover={{ scale: 1.2 }}
-    />
-  ))}
-</div>
+          {[0, 1, 2].map((dotIndex) => (
+            <motion.button
+              key={dotIndex}
+              onClick={() => setCurrentPage(dotIndex)}
+              className={`h-2 rounded-full ${
+                currentPage === dotIndex ? 'w-8 bg-red-600' : 'w-2 bg-white/20'
+              }`}
+              whileHover={{ scale: 1.2 }}
+            />
+          ))}
+        </div>
 
         <motion.button
           onClick={() => setCurrentPage(Math.min(2, currentPage + 1))}
