@@ -9,15 +9,14 @@ import App from './App.tsx';
 import { initializeConfig, validateConfig } from '@/core/config/env';
 import { logger } from '@/core/utils/logger';
 
-// =============================================================================
-// STARTUP SEQUENCE
-// =============================================================================
+// ✅ NEW - importing Tailwind v4
+import '@/styles/index.css';
 
 async function startApp() {
   try {
     logger.info('🚀 Starting Oslira V2...');
 
-    // STEP 1: Fetch config from backend (which reads AWS Secrets Manager)
+    // STEP 1: Fetch config from backend
     logger.info('📡 Fetching config from backend...');
     await initializeConfig();
     
@@ -40,9 +39,7 @@ async function startApp() {
     logger.info('✅ Application started successfully');
     
   } catch (error) {
-    // Config fetch failed - show user-friendly error
     logger.error('❌ Application startup failed', error as Error);
-    
     showErrorScreen(error as Error);
   }
 }
