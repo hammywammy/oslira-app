@@ -2274,16 +2274,16 @@ export default function FerrariRechartsShowcase() {
                   />
                   <Scatter name="Leads" data={generateScatterData()} fill="#ec4899">
                     {generateScatterData().map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          entry.score >= 80
-                            ? '#10b981'
-                            : entry.score >= 60
-                            ? '#3b82f6'
-                            : '#f59e0b'
-                        }
-                      />
+<Cell
+  key={`cell-${index}`}
+  fill={
+    (entry.score ?? 0) >= 80
+      ? '#10b981'
+      : (entry.score ?? 0) >= 60
+      ? '#3b82f6'
+      : '#f59e0b'
+  }
+/>
                     ))}
                   </Scatter>
                 </ScatterChart>
@@ -2569,10 +2569,8 @@ export default function FerrariRechartsShowcase() {
                   endAngle={0}
                 >
 <RadialBar
-  minPointSize={15}  // Changed from minAngle
   label={{ position: 'insideStart', fill: '#fff' }}
   background
-  clockWise
   dataKey="value"
 />
                   <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" />
@@ -3227,17 +3225,17 @@ export default function FerrariRechartsShowcase() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
                   <XAxis dataKey="name" stroke="#9ca3af" />
                   <YAxis stroke="#9ca3af" />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="bg-gradient-to-br from-red-600 to-orange-600 p-4 rounded-xl border-2 border-red-400 shadow-2xl">
-                            <p className="text-white font-bold text-lg mb-2">
-                              {payload[0].payload.name}
-                            </p>
-                            <p className="text-red-100 text-sm">
-                              Revenue: <span className="font-bold">${payload[0].value?.toLocaleString()}</span>
-                            </p>
+<Tooltip
+  content={({ active, payload }) => {
+    if (active && payload && payload.length && payload[0]?.payload && payload[0]?.value) {
+      return (
+        <div className="bg-gradient-to-br from-red-600 to-orange-600 p-4 rounded-xl border-2 border-red-400 shadow-2xl">
+          <p className="text-white font-bold text-lg mb-2">
+            {payload[0].payload.name}
+          </p>
+          <p className="text-red-100 text-sm">
+            Revenue: <span className="font-bold">${payload[0].value.toLocaleString()}</span>
+          </p>
                             <div className="mt-2 pt-2 border-t border-red-400/30">
                               <p className="text-xs text-red-200">
                                 🔥 Performance Metric
@@ -3279,16 +3277,16 @@ export default function FerrariRechartsShowcase() {
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar 
-                    dataKey="value" 
-                    radius={[0, 8, 8, 0]}
-                    animationDuration={2000}
-                    animationEasing="ease-out"
-                  >
-                    {generateHorizontalBar().map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill="#8b5cf6" />
-                    ))}
-                  </Bar>
+<Bar 
+  dataKey="value" 
+  radius={[0, 8, 8, 0]}
+  animationDuration={2000}
+  animationEasing="ease-out"
+>
+  {generateHorizontalBar().map((_, index) => (
+    <Cell key={`cell-${index}`} fill="#8b5cf6" />
+  ))}
+</Bar>
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
