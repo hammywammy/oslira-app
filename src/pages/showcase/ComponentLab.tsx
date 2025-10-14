@@ -5,7 +5,7 @@
  */
 
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 
 export function ComponentLab() {
   // ============================================================================
