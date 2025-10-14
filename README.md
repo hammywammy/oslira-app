@@ -1,0 +1,2 @@
+Oslira is a react + vite + tailwind + (framer + iconify + recharts) project. only use where necessary.
+for design aspect think “Always optimize for elegant professionalism over flashy gimmicks. Think concert hall, not arcade; calm ocean, not storm; first-class cabin, not theme park. Animations should be smooth, subtle, and purposeful — dopamine should come from clarity and flow, not gamification.”
