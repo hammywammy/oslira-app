@@ -40,6 +40,11 @@ export const router = createBrowserRouter([
   path: '/showcase/components',
   element: <ComponentLab />,
 },
+    {
+    path: '/showcase/darkmode',  // ← ADD THIS ROUTE
+    element: <DarkModeShowcase />,
+  },
+
 
   // ============================================================
   // AUTH ROUTES (Public)
