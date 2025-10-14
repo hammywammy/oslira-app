@@ -4,8 +4,8 @@
  */
 
 import { ReactNode } from 'react';
-import { MarketingHeader } from './MarketingHeader';
-import { MarketingFooter } from './MarketingFooter';
+import { MarketingHeader } from '@/features/homepage/components/MarketingHeader';
+import { MarketingFooter } from '@/features/homepage/components/MarketingFooter';
 
 interface MarketingLayoutProps {
   children: ReactNode;
