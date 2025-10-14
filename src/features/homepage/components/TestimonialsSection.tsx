@@ -67,17 +67,7 @@ export function TestimonialsSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="relative py-32 px-6 bg-gradient-to-b from-white via-pink-50/20 to-white overflow-hidden">
-      {/* Animated background */}
-      <motion.div
-        animate={{
-          scale: [1, 1.1, 1],
-          rotate: [0, -45, 0],
-        }}
-        transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-r from-pink-200/20 via-purple-200/20 to-blue-200/20 rounded-full blur-3xl"
-      />
-
+    <section ref={ref} className="relative py-32 px-6 bg-white">
       <div className="relative max-w-7xl mx-auto">
         
         {/* Section Header */}
@@ -118,9 +108,14 @@ export function TestimonialsSection() {
                 
                 {/* Quote */}
                 <div className="mb-6">
-                  <svg className="w-10 h-10 text-blue-300 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                  <motion.svg 
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className={`w-10 h-10 mb-4 bg-gradient-to-br ${testimonial.gradient} bg-clip-text text-transparent`}
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                  </svg>
+                  </motion.svg>
                   <p className="text-lg text-slate-700 leading-relaxed">
                     {testimonial.quote}
                   </p>
@@ -130,7 +125,14 @@ export function TestimonialsSection() {
                 <div className="flex items-center gap-4 pt-6 border-t border-blue-100">
                   <motion.div 
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-12 h-12 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30"
+                    className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} rounded-full flex items-center justify-center text-white font-bold shadow-lg`}
+                    style={{ 
+                      boxShadow: `0 10px 30px -12px ${
+                        testimonial.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.5)' :
+                        testimonial.gradient.includes('purple') ? 'rgba(168, 85, 247, 0.5)' :
+                        'rgba(34, 197, 94, 0.5)'
+                      }`
+                    }}
                   >
                     {testimonial.initials}
                   </motion.div>
