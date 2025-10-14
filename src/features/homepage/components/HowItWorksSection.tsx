@@ -73,18 +73,7 @@ export function HowItWorksSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="relative py-32 px-6 bg-gradient-to-b from-white via-purple-50/30 to-white overflow-hidden">
-      {/* Animated gradient orb */}
-      <motion.div
-        animate={{
-          x: [0, 100, 0],
-          y: [0, -100, 0],
-          scale: [1, 1.3, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-0 right-0 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl"
-      />
-
+    <section ref={ref} className="relative py-32 px-6 bg-slate-50">
       <div className="relative max-w-7xl mx-auto">
         
         {/* Section Header */}
@@ -141,7 +130,14 @@ export function HowItWorksSection() {
                   {/* Step Number */}
                   <motion.div 
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="relative z-10 w-20 h-20 mb-8 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/30"
+                    className={`relative z-10 w-20 h-20 mb-8 bg-gradient-to-br ${step.gradient} rounded-2xl flex items-center justify-center shadow-xl`}
+                    style={{ 
+                      boxShadow: `0 10px 40px -12px ${
+                        step.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.5)' :
+                        step.gradient.includes('purple') ? 'rgba(168, 85, 247, 0.5)' :
+                        'rgba(34, 197, 94, 0.5)'
+                      }`
+                    }}
                   >
                     <span className="text-2xl font-bold text-white">{step.number}</span>
                   </motion.div>
