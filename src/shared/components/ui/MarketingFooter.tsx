@@ -1,4 +1,4 @@
-/**
+`/**
  * @file Marketing Footer
  * @description Shared footer for all marketing pages (HomePage, Pricing, About, etc.)
  * Path: src/shared/components/MarketingFooter.tsx
@@ -6,6 +6,7 @@
 
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import { Logo } from '@/shared/components/ui/Logo';
 
 // =============================================================================
 // COMPONENT
@@ -26,9 +27,7 @@ export function MarketingFooter() {
               whileHover={{ scale: 1.05 }}
               className="inline-flex items-center gap-3 mb-4"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <span className="text-white font-bold text-xl">O</span>
-              </div>
+<Logo size="lg" className="mb-4" />
               <h3 className="text-2xl font-black text-white">
                 Oslira
               </h3>
