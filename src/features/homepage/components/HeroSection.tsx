@@ -113,29 +113,27 @@ export function HeroSection() {
   return (
     <motion.section 
       style={{ opacity: heroOpacity, y: heroY }}
-      className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 bg-gradient-to-br from-blue-50 via-white to-purple-50"
+      className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-700 overflow-hidden"
     >
-      {/* Animated gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Animated mesh gradient overlay */}
+      <div className="absolute inset-0">
         <motion.div
           animate={{
-            x: [0, 100, 0],
-            y: [0, -50, 0],
-            scale: [1, 1.1, 1],
+            backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
           }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            x: [0, -100, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.2, 1],
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%)',
+            backgroundSize: '200% 200%'
           }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"
         />
       </div>
+
+      {/* Subtle noise texture for depth */}
+      <div className="absolute inset-0 opacity-[0.015]" style={{
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")',
+      }} />
 
       <div className="relative max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -149,14 +147,14 @@ export function HeroSection() {
           >
             {/* Headline */}
             <motion.div variants={fadeIn} className="space-y-6">
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 leading-[1.1] tracking-tight">
+              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] tracking-tight">
                 Turn Hours of Instagram{' '}
                 <span className="relative inline-block">
-                  <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+                  <span className="text-white/95">
                     Prospecting into Minutes
                   </span>
                   <motion.div
-                    className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500 rounded-full"
+                    className="absolute -bottom-2 left-0 right-0 h-1 bg-white/40 rounded-full"
                     initial={{ scaleX: 0, opacity: 0 }}
                     animate={{ scaleX: 1, opacity: 1 }}
                     transition={{ duration: 1.2, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -164,19 +162,19 @@ export function HeroSection() {
                 </span>
               </h1>
               
-              <p className="text-xl lg:text-2xl text-slate-600 leading-relaxed font-light">
+              <p className="text-xl lg:text-2xl text-white/90 leading-relaxed font-light">
                 Paste an Instagram link and Oslira grades the profile, gives you a clear debrief, 
                 crafts personalized outreach, and suggests your next leads.
               </p>
 
-              <p className="text-lg text-slate-500 font-medium">
+              <p className="text-lg text-white/80 font-medium">
                 Get 25 free credits — no card required.
               </p>
             </motion.div>
 
             {/* Demo Input */}
             <motion.div variants={fadeIn} className="space-y-4">
-              <p className="text-sm font-semibold text-slate-700 tracking-wide uppercase">
+              <p className="text-sm font-semibold text-white/90 tracking-wide uppercase">
                 Try the AI Analysis
               </p>
               
@@ -192,9 +190,9 @@ export function HeroSection() {
                     onChange={(e) => setUsername(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="@instagram_handle"
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 
-                    focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-300
-                    hover:border-slate-300"
+                    className="w-full pl-12 pr-4 py-4 bg-white/95 backdrop-blur-sm border-2 border-white/20 rounded-xl text-slate-900 placeholder-slate-400 
+                    focus:border-white focus:ring-4 focus:ring-white/20 outline-none transition-all duration-300
+                    hover:bg-white"
                     disabled={isAnalyzing}
                   />
                 </div>
@@ -202,12 +200,12 @@ export function HeroSection() {
                 <motion.button
                   onClick={handleAnalysis}
                   disabled={isAnalyzing || !username.trim()}
-                  whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -12px rgba(59, 130, 246, 0.4)" }}
+                  whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -12px rgba(0, 0, 0, 0.3)" }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 text-white font-semibold rounded-xl 
+                  className="px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl 
                   disabled:opacity-40 disabled:cursor-not-allowed 
-                  transition-all duration-300 flex items-center gap-2 shadow-lg shadow-blue-500/30
-                  hover:shadow-2xl hover:shadow-blue-500/40"
+                  transition-all duration-300 flex items-center gap-2 shadow-xl shadow-black/10
+                  hover:shadow-2xl hover:bg-blue-50"
                 >
                   {isAnalyzing ? (
                     <>
@@ -308,7 +306,7 @@ export function HeroSection() {
             {/* Stats */}
             <motion.div 
               variants={fadeIn} 
-              className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-200"
+              className="grid grid-cols-3 gap-6 pt-6 border-t border-white/20"
             >
               {[
                 { number: '1,200+', label: 'Copywriters' },
@@ -316,8 +314,8 @@ export function HeroSection() {
                 { number: '5 hrs', label: 'Saved/Week' }
               ].map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-3xl font-bold text-slate-900 mb-1">{stat.number}</div>
-                  <div className="text-sm text-slate-500 font-medium">{stat.label}</div>
+                  <div className="text-3xl font-bold text-white mb-1">{stat.number}</div>
+                  <div className="text-sm text-white/70 font-medium">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -340,21 +338,21 @@ export function HeroSection() {
               }}
               className="relative"
             >
-              <div className="bg-white rounded-2xl shadow-2xl shadow-blue-500/20 overflow-hidden border border-blue-100">
+              <div className="bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden border border-white/20">
                 {/* Browser Chrome */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-4 py-3 flex items-center gap-3 border-b border-blue-100">
+                <div className="bg-slate-100 px-4 py-3 flex items-center gap-3 border-b border-slate-200">
                   <div className="flex gap-2">
                     <div className="w-3 h-3 bg-red-400 rounded-full"></div>
                     <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                   </div>
-                  <div className="flex-1 px-3 py-1.5 bg-white rounded-md text-xs text-blue-600 font-medium text-center border border-blue-200">
+                  <div className="flex-1 px-3 py-1.5 bg-white rounded-md text-xs text-slate-600 font-medium text-center border border-slate-200">
                     app.oslira.com/dashboard
                   </div>
                 </div>
                 
                 {/* Dashboard Preview */}
-                <div className="p-8 space-y-5 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50">
+                <div className="p-8 space-y-5 bg-slate-50">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       AI Lead Analysis
