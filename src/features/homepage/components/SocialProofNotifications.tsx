@@ -83,9 +83,12 @@ export function SocialProofNotifications() {
             className="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl shadow-xl shadow-slate-900/10 p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+              <motion.div 
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-10 h-10 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0 shadow-lg shadow-blue-500/30"
+              >
                 {notification.name.charAt(0)}
-              </div>
+              </motion.div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-slate-800">
                   <span className="font-semibold">{notification.name}</span> from {notification.location} {notification.action}
