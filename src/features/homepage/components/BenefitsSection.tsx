@@ -85,8 +85,18 @@ export function BenefitsSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-32 px-6 bg-white">
-      <div className="max-w-7xl mx-auto">
+    <section ref={ref} className="relative py-32 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white overflow-hidden">
+      {/* Animated background gradient */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          rotate: [0, 90, 0],
+        }}
+        transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-200/30 via-purple-200/30 to-pink-200/30 rounded-full blur-3xl"
+      />
+
+      <div className="relative max-w-7xl mx-auto">
         
         {/* Section Header */}
         <motion.div
