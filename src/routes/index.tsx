@@ -14,6 +14,7 @@ import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { lazy } from 'react';
 const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'));
 const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
+const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
 
 export const router = createBrowserRouter([
   // ============================================================
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
     path: '/showcase/framer',
     element: <FramerShowcase />,
   },
+  {
+  path: '/showcase/components',
+  element: <ComponentLab />,
+},
 
   // ============================================================
   // AUTH ROUTES (Public)
