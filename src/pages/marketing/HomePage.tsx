@@ -1,334 +1,360 @@
 /**
- * @file Home Page - Tailwind v4 Showcase
- * @description Complete demonstration of Tailwind CSS v4 capabilities
+ * @file Home Page - Tailwind v4 EXTREME Showcase
+ * @description Pushing Tailwind CSS v4 to its absolute limits
  * 
  * Path: src/pages/marketing/HomePage.tsx
  */
 
+import { useState, useRef, useEffect } from 'react';
+
 export function HomePage() {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const spotlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (spotlightRef.current) {
+        const rect = spotlightRef.current.getBoundingClientRect();
+        setMousePosition({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+    };
+
+    const current = spotlightRef.current;
+    if (current) {
+      current.addEventListener('mousemove', handleMouseMove);
+      return () => current.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
+    <div className="min-h-screen bg-black">
       
-      {/* Hero Section with Animated Gradient */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated Mesh Gradient Background */}
-        <div className="absolute inset-0 bg-linear-135 from-violet-600/20 via-fuchsia-600/20 to-orange-600/20 bg-[length:_400%_400%] animate-[background-move_15s_ease_infinite]" />
-        
-        {/* Glassmorphism Card */}
-        <div className="relative z-10 max-w-4xl mx-auto p-8">
-          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-12 shadow-2xl">
-            <h1 className="text-7xl font-black mb-6 bg-linear-to-r from-cyan-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent animate-[background-move_8s_ease_infinite] bg-[length:_200%_200%]">
-              Tailwind CSS v4
-            </h1>
-            <p className="text-2xl text-gray-300 mb-8">
-              A comprehensive showcase of cutting-edge features and capabilities
-            </p>
-            <div className="flex gap-4">
-              <div className="px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-full text-white font-semibold shadow-lg hover:shadow-violet-500/50 transition-all duration-300 hover:scale-105">
-                Explore Features
-              </div>
-            </div>
-          </div>
+      {/* SECTION 1: NEON CYBERPUNK HERO */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+        {/* Animated Mesh Background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/20 rounded-full blur-[120px] animate-pulse [animation-delay:_1s]" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-violet-500/20 rounded-full blur-[120px] animate-pulse [animation-delay:_2s]" />
         </div>
 
-        {/* Floating 3D Elements */}
-        <div className="absolute top-20 right-20 perspective-distant">
-          <div className="w-32 h-32 bg-gradient-to-br from-violet-500/30 to-fuchsia-500/30 rounded-2xl backdrop-blur-sm border border-white/10 transform-3d rotate-x-12 rotate-y-12 animate-[spin_20s_linear_infinite]" />
+        {/* Main Content */}
+        <div className="relative z-10 text-center px-8 max-w-6xl">
+          <h1 className="text-8xl font-black mb-8 text-white text-shadow-lg text-shadow-cyan-500/50 animate-[glow_3s_ease-in-out_infinite]">
+            TAILWIND v4
+          </h1>
+          <p className="text-2xl text-cyan-400 mb-12 text-shadow-sm text-shadow-cyan-500/30">
+            The most powerful CSS framework unleashed
+          </p>
+
+          {/* Neon Button with Spinning Border */}
+          <div className="inline-block relative group">
+            <div className="absolute inset-0 bg-conic from-cyan-500 via-fuchsia-500 to-cyan-500 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 animate-spin [animation-duration:_3s]" />
+            <button className="relative px-12 py-6 bg-black text-white text-xl font-bold rounded-2xl border-2 border-cyan-500 shadow-[0_0_2px_#fff,inset_0_0_2px_#fff,0_0_10px_#0ff,0_0_40px_#0ff,0_0_80px_#0ff] hover:shadow-[0_0_2px_#fff,inset_0_0_2px_#fff,0_0_20px_#0ff,0_0_80px_#0ff,0_0_160px_#0ff] transition-all duration-300">
+              EXPLORE THE FUTURE
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Typography Showcase */}
-      <section className="py-24 px-8 border-y border-white/10">
+      {/* SECTION 2: TEXT SHADOWS & MASKS */}
+      <section className="py-32 px-8 bg-gradient-to-b from-black via-slate-950 to-black">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="backdrop-blur-lg bg-white/5 p-8 rounded-2xl border border-white/10">
-              <h2 className="text-5xl font-black mb-4 bg-linear-to-br from-cyan-400 to-blue-600 bg-clip-text text-transparent">
-                Typography
-              </h2>
-              <p className="text-lg text-gray-400 mb-4">
-                Dynamic text styles with gradient effects
-              </p>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500">Small Text • 14px</p>
-                <p className="text-base text-gray-400">Base Text • 16px</p>
-                <p className="text-lg text-gray-300">Large Text • 18px</p>
-                <p className="text-xl font-semibold text-gray-200">XL Text • 20px</p>
-                <p className="text-2xl font-bold bg-linear-to-r from-orange-400 to-pink-600 bg-clip-text text-transparent">
-                  Gradient Text
-                </p>
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-violet-500/50">
+            Text Shadow & Masking
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* Embossed Text */}
+            <div className="backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/0 p-12 rounded-3xl border border-white/10">
+              <h3 className="text-5xl font-black text-gray-900 text-shadow-2xs text-shadow-white/70 mb-4">
+                EMBOSSED EFFECT
+              </h3>
+              <p className="text-gray-400 text-lg">Dark text with light shadow creates depth</p>
+            </div>
+
+            {/* Glowing Neon Text */}
+            <div className="backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/0 p-12 rounded-3xl border border-white/10">
+              <h3 className="text-5xl font-black text-cyan-400 text-shadow-lg text-shadow-cyan-500/70 mb-4">
+                NEON GLOW
+              </h3>
+              <p className="text-gray-400 text-lg">Cyberpunk-style glowing text</p>
+            </div>
+
+            {/* Gradient Mask on Image */}
+            <div className="relative h-64 rounded-3xl overflow-hidden">
+              <div className="absolute inset-0 bg-linear-to-r from-violet-600 to-fuchsia-600" />
+              <div className="absolute inset-0 mask-radial mask-radial-from-70% flex items-center justify-center">
+                <p className="text-4xl font-black text-white">MASKED FADE</p>
               </div>
             </div>
 
-            <div className="backdrop-blur-lg bg-white/5 p-8 rounded-2xl border border-white/10">
-              <h2 className="text-5xl font-black mb-4 bg-linear-to-br from-green-400 to-emerald-600 bg-clip-text text-transparent">
-                Colors
-              </h2>
-              <p className="text-lg text-gray-400 mb-4">
-                Wide-gamut OKLCH color space
-              </p>
-              <div className="grid grid-cols-5 gap-2">
-                <div className="h-16 rounded-lg bg-red-500" />
-                <div className="h-16 rounded-lg bg-orange-500" />
-                <div className="h-16 rounded-lg bg-yellow-500" />
-                <div className="h-16 rounded-lg bg-green-500" />
-                <div className="h-16 rounded-lg bg-blue-500" />
-                <div className="h-16 rounded-lg bg-indigo-500" />
-                <div className="h-16 rounded-lg bg-violet-500" />
-                <div className="h-16 rounded-lg bg-purple-500" />
-                <div className="h-16 rounded-lg bg-fuchsia-500" />
-                <div className="h-16 rounded-lg bg-pink-500" />
+            {/* Conic Gradient Mask Progress */}
+            <div className="backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/0 p-12 rounded-3xl border border-white/10">
+              <div className="grid grid-cols-1 grid-rows-1 w-24 h-24 mb-4">
+                <div className="col-start-1 row-start-1 border-8 border-white/10 rounded-full" />
+                <div className="col-start-1 row-start-1 border-8 border-emerald-500 rounded-full mask-conic mask-conic-from-75% mask-conic-to-75%" />
               </div>
-            </div>
-
-            <div className="backdrop-blur-lg bg-white/5 p-8 rounded-2xl border border-white/10">
-              <h2 className="text-5xl font-black mb-4 bg-linear-to-br from-pink-400 to-rose-600 bg-clip-text text-transparent">
-                Gradients
-              </h2>
-              <p className="text-lg text-gray-400 mb-4">
-                Linear, radial & conic variations
-              </p>
-              <div className="space-y-3">
-                <div className="h-12 rounded-lg bg-linear-to-r from-violet-600 via-purple-600 to-fuchsia-600" />
-                <div className="h-12 rounded-lg bg-linear-135 from-cyan-500 via-blue-500 to-indigo-600" />
-                <div className="h-12 rounded-lg bg-radial from-orange-400 to-rose-600" />
-                <div className="h-12 rounded-lg bg-conic from-green-400 via-cyan-400 to-blue-500" />
-              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Progress: 75%</h3>
+              <p className="text-gray-400">Conic gradient mask for loading states</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Glassmorphism Gallery */}
-      <section className="py-24 px-8 relative">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-linear-to-br from-indigo-900/20 via-purple-900/20 to-pink-900/20" />
-        
-        <div className="relative max-w-7xl mx-auto">
-          <h2 className="text-6xl font-black text-center mb-16 bg-linear-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
-            Glassmorphism Effects
+      {/* SECTION 3: MOUSE-TRACKING SPOTLIGHT CARDS */}
+      <section 
+        ref={spotlightRef}
+        className="py-32 px-8 bg-black relative"
+      >
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-fuchsia-500/50">
+            Interactive Spotlight Effect
           </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { blur: 'sm', opacity: '10', name: 'Subtle Glass' },
-              { blur: 'md', opacity: '15', name: 'Medium Glass' },
-              { blur: 'lg', opacity: '20', name: 'Heavy Glass' },
-              { blur: 'xl', opacity: '25', name: 'Extra Glass' },
-              { blur: '2xl', opacity: '30', name: 'Ultra Glass' },
-              { blur: '3xl', opacity: '35', name: 'Maximum Glass' },
-            ].map((item, idx) => (
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[1, 2, 3].map((num) => (
               <div
-                key={idx}
-                className={`backdrop-blur-${item.blur} bg-white/${item.opacity} border border-white/20 rounded-2xl p-8 hover:scale-105 transition-all duration-300 shadow-xl`}
+                key={num}
+                className="group relative p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/50 to-slate-900/20 overflow-hidden"
               >
-                <div className="text-2xl font-bold mb-2 text-white">{item.name}</div>
-                <div className="text-sm text-gray-300">backdrop-blur-{item.blur}</div>
-                <div className="mt-4 h-24 bg-linear-to-br from-violet-500/30 to-fuchsia-500/30 rounded-lg" />
+                {/* Spotlight effect layer */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99, 102, 241, 0.1), transparent 40%)`,
+                  }}
+                />
+                
+                {/* Content */}
+                <div className="relative z-10">
+                  <div className="text-6xl mb-4">{['⚡', '🔥', '✨'][num - 1]}</div>
+                  <h3 className="text-3xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                    Feature {num}
+                  </h3>
+                  <p className="text-gray-400 text-lg">
+                    Move your mouse over this card to see the spotlight effect in action
+                  </p>
+                </div>
+
+                {/* Border glow on hover */}
+                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[inset_0_0_20px_rgba(99,102,241,0.3)]" />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 3D Transforms Showcase */}
-      <section className="py-24 px-8">
+      {/* SECTION 4: MORPHING BLOB BACKGROUNDS */}
+      <section className="py-32 px-8 bg-gradient-to-b from-black via-indigo-950/20 to-black relative overflow-hidden">
+        {/* Animated Morphing Blobs */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-radial from-violet-500/40 to-transparent blur-3xl animate-[float_8s_ease-in-out_infinite]" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-radial from-fuchsia-500/40 to-transparent blur-3xl animate-[float_10s_ease-in-out_infinite] [animation-delay:_1s]" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-radial from-cyan-500/40 to-transparent blur-3xl animate-[float_12s_ease-in-out_infinite] [animation-delay:_2s]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-violet-500/50">
+            Morphing Blob Atmospheres
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="backdrop-blur-2xl bg-white/5 p-12 rounded-3xl border border-white/10 hover:border-violet-500/50 transition-all duration-500">
+              <h3 className="text-4xl font-bold text-white mb-4">Organic Motion</h3>
+              <p className="text-gray-300 text-lg">Floating blob animations create depth and atmosphere</p>
+            </div>
+
+            <div className="backdrop-blur-2xl bg-white/5 p-12 rounded-3xl border border-white/10 hover:border-fuchsia-500/50 transition-all duration-500">
+              <h3 className="text-4xl font-bold text-white mb-4">Layered Depth</h3>
+              <p className="text-gray-300 text-lg">Multiple animated layers with different timing</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: 3D TRANSFORM SHOWCASE */}
+      <section className="py-32 px-8 bg-black">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-6xl font-black text-center mb-16 bg-linear-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-cyan-500/50">
             3D Transforms & Perspective
           </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="perspective-normal flex items-center justify-center h-64">
-              <div className="w-32 h-32 bg-linear-to-br from-violet-500 to-purple-600 rounded-2xl shadow-2xl transform-3d rotate-x-12 rotate-y-12 hover:rotate-x-24 hover:rotate-y-24 transition-all duration-500 flex items-center justify-center text-white font-bold">
-                Rotate X/Y
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Rotating Cube */}
+            <div className="perspective-dramatic h-64 flex items-center justify-center">
+              <div className="relative w-32 h-32 transform-3d animate-[spin3d_10s_linear_infinite] [transform-style:preserve-3d]">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl [backface-visibility:hidden] flex items-center justify-center text-white font-bold text-xl">
+                  FRONT
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl [backface-visibility:hidden] [transform:rotateY(180deg)] flex items-center justify-center text-white font-bold text-xl">
+                  BACK
+                </div>
               </div>
             </div>
 
-            <div className="perspective-normal flex items-center justify-center h-64">
-              <div className="w-32 h-32 bg-linear-to-br from-cyan-500 to-blue-600 rounded-2xl shadow-2xl transform-3d translate-z-12 hover:translate-z-24 transition-all duration-500 flex items-center justify-center text-white font-bold">
-                Translate Z
+            {/* Tilting Card */}
+            <div className="perspective-normal h-64 flex items-center justify-center">
+              <div className="w-40 h-56 bg-gradient-to-br from-fuchsia-500 to-pink-600 rounded-xl shadow-2xl transform-3d rotate-y-12 hover:rotate-y-24 hover:rotate-x-12 transition-all duration-500 flex items-center justify-center text-white font-bold">
+                HOVER ME
               </div>
             </div>
 
-            <div className="perspective-dramatic flex items-center justify-center h-64">
-              <div className="w-32 h-32 bg-linear-to-br from-orange-500 to-red-600 rounded-2xl shadow-2xl transform-3d rotate-y-30 hover:rotate-y-60 transition-all duration-500 flex items-center justify-center text-white font-bold">
-                Dramatic
+            {/* Floating with Z-axis */}
+            <div className="perspective-normal h-64 flex items-center justify-center">
+              <div className="w-40 h-40 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-2xl transform-3d translate-z-12 animate-[float_4s_ease-in-out_infinite] flex items-center justify-center text-white font-bold">
+                FLOATING
               </div>
             </div>
 
-            <div className="perspective-distant flex items-center justify-center h-64">
-              <div className="w-32 h-32 bg-linear-to-br from-green-500 to-emerald-600 rounded-2xl shadow-2xl transform-3d rotate-x-20 rotate-y-20 rotate-z-20 hover:rotate-x-40 hover:rotate-y-40 hover:rotate-z-40 transition-all duration-500 flex items-center justify-center text-white font-bold text-center text-sm">
-                All Axes
+            {/* Multi-axis Rotation */}
+            <div className="perspective-distant h-64 flex items-center justify-center">
+              <div className="w-40 h-40 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-2xl transform-3d rotate-x-20 rotate-y-20 hover:rotate-x-45 hover:rotate-y-45 hover:scale-110 transition-all duration-500 flex items-center justify-center text-white font-bold text-center p-4">
+                ALL AXES
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Container Queries Demo */}
-      <section className="py-24 px-8">
+      {/* SECTION 6: GRADIENT BORDER ANIMATIONS */}
+      <section className="py-32 px-8 bg-gradient-to-b from-black via-purple-950/20 to-black">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-6xl font-black text-center mb-16 bg-linear-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            Container Queries
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-purple-500/50">
+            Animated Gradient Borders
           </h2>
-          
-          <div className="@container backdrop-blur-lg bg-white/5 p-8 rounded-2xl border border-white/10">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Spinning Gradient Border */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-conic from-cyan-500 via-blue-500 to-purple-500 rounded-2xl blur-sm animate-spin [animation-duration:_4s]" />
+              <div className="relative bg-black p-8 rounded-2xl border border-white/10 group-hover:border-white/20 transition-colors">
+                <h3 className="text-2xl font-bold text-white mb-2">Spinning Gradient</h3>
+                <p className="text-gray-400">Conic gradient with spin animation</p>
+              </div>
+            </div>
+
+            {/* Pulsing Gradient Border */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-linear-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-2xl blur-sm animate-pulse" />
+              <div className="relative bg-black p-8 rounded-2xl border border-white/10 group-hover:border-white/20 transition-colors">
+                <h3 className="text-2xl font-bold text-white mb-2">Pulsing Gradient</h3>
+                <p className="text-gray-400">Linear gradient with pulse effect</p>
+              </div>
+            </div>
+
+            {/* Moving Gradient Border */}
+            <div className="relative group overflow-hidden rounded-2xl">
+              <div className="absolute inset-0 bg-linear-135 from-orange-500 via-red-500 to-pink-500 bg-[length:_400%_400%] animate-[background-move_6s_ease_infinite]" />
+              <div className="relative bg-black m-[2px] p-8 rounded-2xl">
+                <h3 className="text-2xl font-bold text-white mb-2">Moving Gradient</h3>
+                <p className="text-gray-400">Background position animation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 7: DROP SHADOWS WITH COLOR */}
+      <section className="py-32 px-8 bg-black">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-green-500/50">
+            Colored Drop Shadows
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="inline-block p-8 bg-black rounded-2xl drop-shadow-[0_0_30px_rgba(6,182,212,0.6)] hover:drop-shadow-[0_0_50px_rgba(6,182,212,0.8)] transition-all">
+                <div className="text-6xl">💎</div>
+              </div>
+              <p className="text-white mt-4 font-bold">Cyan Glow</p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-block p-8 bg-black rounded-2xl drop-shadow-[0_0_30px_rgba(236,72,153,0.6)] hover:drop-shadow-[0_0_50px_rgba(236,72,153,0.8)] transition-all">
+                <div className="text-6xl">🔥</div>
+              </div>
+              <p className="text-white mt-4 font-bold">Pink Glow</p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-block p-8 bg-black rounded-2xl drop-shadow-[0_0_30px_rgba(168,85,247,0.6)] hover:drop-shadow-[0_0_50px_rgba(168,85,247,0.8)] transition-all">
+                <div className="text-6xl">⚡</div>
+              </div>
+              <p className="text-white mt-4 font-bold">Purple Glow</p>
+            </div>
+
+            <div className="text-center">
+              <div className="inline-block p-8 bg-black rounded-2xl drop-shadow-[0_0_30px_rgba(34,197,94,0.6)] hover:drop-shadow-[0_0_50px_rgba(34,197,94,0.8)] transition-all">
+                <div className="text-6xl">✨</div>
+              </div>
+              <p className="text-white mt-4 font-bold">Green Glow</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 8: CONTAINER QUERIES DEMO */}
+      <section className="py-32 px-8 bg-gradient-to-b from-black via-slate-950 to-black">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-6xl font-black text-center mb-20 text-white text-shadow-lg text-shadow-blue-500/50">
+            Container Queries (Resize Me!)
+          </h2>
+
+          <div className="@container backdrop-blur-xl bg-white/5 p-8 rounded-3xl border border-white/10">
             <div className="grid grid-cols-1 @sm:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4 gap-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div
-                  key={num}
-                  className="backdrop-blur-md bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-xl p-6 border border-white/10 hover:scale-105 transition-all"
+                  key={i}
+                  className="backdrop-blur-md bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 rounded-xl p-6 border border-white/10 hover:scale-105 hover:border-white/30 transition-all"
                 >
-                  <div className="text-4xl font-bold text-white mb-2">{num}</div>
-                  <div className="text-sm text-gray-400">Responsive card</div>
+                  <div className="text-4xl font-bold text-white mb-2">{i + 1}</div>
+                  <div className="text-sm text-gray-400">Container aware</div>
                 </div>
               ))}
             </div>
-            <p className="text-center text-gray-400 mt-8">
-              Resize this container to see responsive behavior based on container size, not viewport
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Grid Subgrid Example */}
-      <section className="py-24 px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-6xl font-black text-center mb-16 bg-linear-to-r from-orange-400 via-red-400 to-pink-400 bg-clip-text text-transparent">
-            Advanced Grid & Subgrid
-          </h2>
-          
-          <div className="grid grid-cols-4 gap-4 backdrop-blur-lg bg-white/5 p-8 rounded-2xl border border-white/10">
-            <div className="col-span-4 h-24 bg-linear-to-r from-violet-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">
-              Header (Span 4)
-            </div>
-            
-            <div className="col-span-1 h-32 bg-linear-to-br from-cyan-600 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold">
-              Sidebar
-            </div>
-            
-            <div className="col-span-3 grid grid-cols-subgrid gap-4">
-              <div className="h-32 bg-linear-to-br from-orange-600 to-red-600 rounded-xl flex items-center justify-center text-white font-bold">
-                Sub 1
-              </div>
-              <div className="h-32 bg-linear-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center text-white font-bold">
-                Sub 2
-              </div>
-              <div className="h-32 bg-linear-to-br from-pink-600 to-rose-600 rounded-xl flex items-center justify-center text-white font-bold">
-                Sub 3
-              </div>
-            </div>
-
-            <div className="col-span-2 h-24 bg-linear-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold">
-              Footer Left
-            </div>
-            <div className="col-span-2 h-24 bg-linear-to-r from-fuchsia-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold">
-              Footer Right
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Animated Border Gradient */}
-      <section className="py-24 px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-6xl font-black mb-8 bg-linear-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-            Animated Gradients
-          </h2>
-          
-          <div className="inline-block rounded-full bg-linear-to-r from-violet-500 via-fuchsia-500 to-pink-500 p-1 bg-[length:_400%_400%] animate-[background-move_6s_ease_infinite]">
-            <div className="rounded-full bg-slate-950 px-12 py-6">
-              <span className="text-2xl font-bold text-white">
-                Animated Border Gradient
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="backdrop-blur-xl bg-linear-to-br from-blue-500/10 to-cyan-500/10 p-8 rounded-2xl border border-blue-500/30 animate-pulse">
-              <div className="text-4xl mb-2">⚡</div>
-              <div className="text-xl font-bold text-white mb-2">Lightning Fast</div>
-              <div className="text-gray-400">5x faster builds</div>
-            </div>
-
-            <div className="backdrop-blur-xl bg-linear-to-br from-violet-500/10 to-purple-500/10 p-8 rounded-2xl border border-violet-500/30 animate-pulse [animation-delay:_0.2s]">
-              <div className="text-4xl mb-2">🎨</div>
-              <div className="text-xl font-bold text-white mb-2">Modern CSS</div>
-              <div className="text-gray-400">Latest features</div>
-            </div>
-
-            <div className="backdrop-blur-xl bg-linear-to-br from-green-500/10 to-emerald-500/10 p-8 rounded-2xl border border-green-500/30 animate-pulse [animation-delay:_0.4s]">
-              <div className="text-4xl mb-2">🚀</div>
-              <div className="text-xl font-bold text-white mb-2">Zero Config</div>
-              <div className="text-gray-400">Just one import</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Complex Shadow & Effects */}
-      <section className="py-24 px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-6xl font-black text-center mb-16 bg-linear-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Shadows & Complex Effects
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="backdrop-blur-lg bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl shadow-violet-500/20 hover:shadow-violet-500/40 transition-all duration-300 hover:-translate-y-2">
-              <div className="text-5xl mb-4">🌟</div>
-              <h3 className="text-2xl font-bold text-white mb-2">Color Shadows</h3>
-              <p className="text-gray-400">Vibrant glowing effects with colored shadows</p>
-            </div>
-
-            <div className="backdrop-blur-lg bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all duration-300 hover:-translate-y-2">
-              <div className="text-5xl mb-4">💎</div>
-              <h3 className="text-2xl font-bold text-white mb-2">Multi-Layer</h3>
-              <p className="text-gray-400">Complex shadow compositions for depth</p>
-            </div>
-
-            <div className="backdrop-blur-lg bg-white/5 p-8 rounded-3xl border border-white/10 shadow-2xl shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 transition-all duration-300 hover:-translate-y-2">
-              <div className="text-5xl mb-4">✨</div>
-              <h3 className="text-2xl font-bold text-white mb-2">Inner Glow</h3>
-              <p className="text-gray-400">Sophisticated inner shadow effects</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-16 px-8 border-t border-white/10">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="text-4xl font-black mb-4 bg-linear-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-            Tailwind CSS v4 Showcase
-          </div>
-          <p className="text-gray-400 mb-8">
-            Demonstrating the full power of modern CSS features
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <span className="px-4 py-2 backdrop-blur-lg bg-white/5 rounded-full text-sm text-gray-300 border border-white/10">
-              3D Transforms
-            </span>
-            <span className="px-4 py-2 backdrop-blur-lg bg-white/5 rounded-full text-sm text-gray-300 border border-white/10">
-              Container Queries
-            </span>
-            <span className="px-4 py-2 backdrop-blur-lg bg-white/5 rounded-full text-sm text-gray-300 border border-white/10">
-              Glassmorphism
-            </span>
-            <span className="px-4 py-2 backdrop-blur-lg bg-white/5 rounded-full text-sm text-gray-300 border border-white/10">
-              OKLCH Colors
-            </span>
-            <span className="px-4 py-2 backdrop-blur-lg bg-white/5 rounded-full text-sm text-gray-300 border border-white/10">
-              CSS Variables
-            </span>
-            <span className="px-4 py-2 backdrop-blur-lg bg-white/5 rounded-full text-sm text-gray-300 border border-white/10">
-              Grid Subgrid
-            </span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Custom Keyframe Animations */}
+      {/* Custom Keyframes */}
       <style>{`
+        @keyframes glow {
+          0%, 100% {
+            text-shadow: 0 0 20px rgba(6, 182, 212, 0.5),
+                         0 0 40px rgba(6, 182, 212, 0.3);
+          }
+          50% {
+            text-shadow: 0 0 30px rgba(6, 182, 212, 0.8),
+                         0 0 60px rgba(6, 182, 212, 0.5),
+                         0 0 80px rgba(6, 182, 212, 0.3);
+          }
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+          }
+          33% {
+            transform: translateY(-20px) translateX(10px);
+          }
+          66% {
+            transform: translateY(10px) translateX(-10px);
+          }
+        }
+
+        @keyframes spin3d {
+          0% {
+            transform: rotateX(0) rotateY(0);
+          }
+          100% {
+            transform: rotateX(360deg) rotateY(360deg);
+          }
+        }
+
         @keyframes background-move {
           0%, 100% {
             background-position: 0% 50%;
