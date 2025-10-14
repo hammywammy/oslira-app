@@ -14,6 +14,7 @@ const SHOWCASES: ShowcaseItem[] = [
   { name: 'FramerShowcase', path: '/showcase/framer', title: 'Framer' },
   { name: 'ComponentLab', path: '/showcase/components', title: 'Component Lab' },
   { name: 'DarkModeShowcase', path: '/showcase/darkmode', title: 'Dark Mode' },
+  { name: 'ChartsShowcase', path: '/showcase/charts', title: 'Charts' },
 ];
 
 export function ShowcaseNav() {
