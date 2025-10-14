@@ -12,9 +12,7 @@ import {
   useMotionValue,
   useDragControls,
   useVelocity,
-  useMotionValueEvent,
   useInView,
-  useAnimate,
   useTime,
   useReducedMotion,
   LayoutGroup,
@@ -30,36 +28,23 @@ export function FramerShowcase() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [items, setItems] = useState(['Item 1', 'Item 2', 'Item 3', 'Item 4']);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
-  const [count, setCount] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [accordionOpen, setAccordionOpen] = useState<number | null>(null);
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [isFlipped, setIsFlipped] = useState(false);
   const [gridLayout, setGridLayout] = useState<'grid' | 'list'>('grid');
-  const [sliderValue, setSliderValue] = useState(50);
-  const [counter, setCounter] = useState(0);
-  const [stackedCards, setStackedCards] = useState([1, 2, 3, 4, 5]);
   
   // ============================================================================
   // REFS
   // ============================================================================
   const scrollRef = useRef<HTMLDivElement>(null);
   const constraintsRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const parallaxRef = useRef<HTMLDivElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
   
   // ============================================================================
   // SCROLL HOOKS
   // ============================================================================
   const { scrollYProgress } = useScroll();
-  const { scrollYProgress: sectionProgress } = useScroll({
-    target: scrollRef,
-    offset: ["start end", "end start"]
-  });
   
   // ============================================================================
   // MOTION VALUES
@@ -67,7 +52,6 @@ export function FramerShowcase() {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const dragX = useMotionValue(0);
-  const dragY = useMotionValue(0);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
@@ -90,7 +74,6 @@ export function FramerShowcase() {
   // VELOCITY
   // ============================================================================
   const xVelocity = useVelocity(x);
-  const yVelocity = useVelocity(y);
   
   // ============================================================================
   // DRAG CONTROLS
@@ -111,15 +94,15 @@ export function FramerShowcase() {
   // ============================================================================
   // CURSOR TRACKING
   // ============================================================================
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [mouseX, mouseY]);
+useEffect(() => {
+  const handleMouseMove = (e: MouseEvent) => {
+    // Remove setCursorPos line
+    mouseX.set(e.clientX);
+    mouseY.set(e.clientY);
+  };
+  window.addEventListener('mousemove', handleMouseMove);
+  return () => window.removeEventListener('mousemove', handleMouseMove);
+}, [mouseX, mouseY]);
   
   // ============================================================================
   // VARIANTS
@@ -138,21 +121,6 @@ export function FramerShowcase() {
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
-  };
-  
-  const cardVariants: Variants = {
-    initial: { scale: 0, rotate: -180 },
-    animate: { 
-      scale: 1, 
-      rotate: 0,
-      transition: { type: 'spring', stiffness: 260, damping: 20 }
-    },
-    hover: { 
-      scale: 1.05, 
-      boxShadow: '0 20px 60px rgba(139, 92, 246, 0.4)',
-      transition: { duration: 0.3 }
-    },
-    tap: { scale: 0.95 }
   };
 
   return (
@@ -656,7 +624,7 @@ export function FramerShowcase() {
             <motion.div
               className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 cursor-pointer"
               whileTap={{ scale: 0.9 }}
-              onTap={(event, info) => {
+              onTap={(_event, info) => {
                 if (info.point.x) console.log('Double tap');
               }}
             >
@@ -1879,7 +1847,7 @@ export function FramerShowcase() {
                 drag="x"
                 dragConstraints={{ left: -200, right: 200 }}
                 style={{ x: dragX }}
-                onDrag={(event, info) => {
+                onDrag={(_event, info) => {
                   console.log('Dragging:', info.point.x);
                 }}
                 className="w-32 h-32 bg-gradient-to-br from-green-600 to-emerald-600 rounded-3xl cursor-grab active:cursor-grabbing mx-auto"
