@@ -42,9 +42,11 @@ export function SocialProofNotifications() {
     
     const showNotification = () => {
       const data = notificationData[currentIndex];
+      if (!data) return; // Type guard
+      
       const notification: Notification = {
-        id: `${Date.now()}-${currentIndex}`,
-        ...data
+        ...data,
+        id: `${Date.now()}-${currentIndex}`
       };
       
       setNotifications(prev => [...prev, notification]);
