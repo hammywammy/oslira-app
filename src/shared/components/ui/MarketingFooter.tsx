@@ -1,4 +1,4 @@
-`/**
+/**
  * @file Marketing Footer
  * @description Shared footer for all marketing pages (HomePage, Pricing, About, etc.)
  * Path: src/shared/components/MarketingFooter.tsx
@@ -23,15 +23,7 @@ export function MarketingFooter() {
           
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="inline-flex items-center gap-3 mb-4"
-            >
-<Logo size="lg" className="mb-4" />
-              <h3 className="text-2xl font-black text-white">
-                Oslira
-              </h3>
-            </motion.div>
+            <Logo size="lg" className="mb-4" />
             
             <p className="text-slate-400 mb-6 leading-relaxed">
               Turn hours of Instagram prospecting into minutes with AI-powered lead analysis and personalized outreach.
