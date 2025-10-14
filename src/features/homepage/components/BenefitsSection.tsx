@@ -1,84 +1,155 @@
 /**
  * @file Benefits Section
- * @description Complete benefits grid with icons
+ * @description Why copywriters choose Oslira - Elegant Professional Design
+ * Path: src/features/homepage/components/BenefitsSection.tsx
  */
+
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { Icon } from '@iconify/react';
+
+// =============================================================================
+// DATA
+// =============================================================================
 
 const benefits = [
   {
-    icon: '⚡',
+    icon: 'mdi:lightning-bolt-outline',
     title: '10x Faster Prospecting',
-    description: 'Analyze 50+ Instagram profiles in the time it used to take for 5. Oslira instantly evaluates engagement, content quality, and business fit.',
+    description: 'Analyze 50+ Instagram profiles in the time it used to take for 5. Oslira instantly evaluates engagement, content quality, and business fit.'
   },
   {
-    icon: '🎯',
+    icon: 'mdi:target-variant',
     title: 'Smart Lead Scoring',
-    description: "AI grades each profile and highlights decision-makers who actually need your services. No more guessing who's a good fit.",
+    description: 'AI grades each profile and highlights decision-makers who actually need your services. No more guessing who\'s a good fit.'
   },
   {
-    icon: '✍️',
+    icon: 'mdi:message-text-outline',
     title: 'Personalized Outreach',
-    description: 'Get tailored message templates for each lead. Oslira crafts opening lines based on their recent posts and business needs.',
+    description: 'Get tailored message templates for each lead. Oslira crafts opening lines based on their recent posts and business needs.'
   },
   {
-    icon: '🔄',
+    icon: 'mdi:reload',
     title: 'Automated Follow-Ups',
-    description: 'Never lose a warm lead again. Oslira tracks your outreach and reminds you when to follow up for maximum conversion.',
+    description: 'Never lose a warm lead again. Oslira tracks your outreach and reminds you when to follow up for maximum conversion.'
   },
   {
-    icon: '📊',
+    icon: 'mdi:chart-line-variant',
     title: 'Track What Works',
-    description: 'See which profiles convert best and refine your targeting. Built-in analytics show you exactly where to focus your efforts.',
+    description: 'See which profiles convert best and refine your targeting. Built-in analytics show you exactly where to focus your efforts.'
   },
   {
-    icon: '🚀',
+    icon: 'mdi:rocket-launch-outline',
     title: 'Scale Without Burnout',
-    description: 'Handle 3x more clients without sacrificing quality. Oslira handles the tedious research so you can focus on high-value work.',
-  },
+    description: 'Handle 3x more clients without sacrificing quality. Oslira handles the tedious research so you can focus on high-value work.'
+  }
 ];
 
+// =============================================================================
+// ANIMATION VARIANTS
+// =============================================================================
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08
+    }
+  }
+};
+
+const cardHover = {
+  rest: { y: 0 },
+  hover: { 
+    y: -8,
+    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
 export function BenefitsSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <section ref={ref} className="py-32 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
+        
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={fadeIn}
+          className="text-center mb-20"
+        >
+          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-6 leading-tight">
             Why Copywriters Choose Oslira
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto font-light">
             Stop wasting time on manual research. Let AI do the heavy lifting.
           </p>
-        </div>
+        </motion.div>
 
         {/* Benefits Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={stagger}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
           {benefits.map((benefit, index) => (
-            <div
+            <motion.div
               key={index}
-              className="group bg-white rounded-2xl p-8 border border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              variants={fadeIn}
+              initial="rest"
+              whileHover="hover"
+              className="group"
             >
-              {/* Icon */}
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center text-4xl mb-6 group-hover:scale-110 transition-transform">
-                {benefit.icon}
-              </div>
+              <motion.div
+                variants={cardHover}
+                className="h-full p-8 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 
+                hover:shadow-xl hover:shadow-slate-900/5 transition-all duration-500"
+              >
+                {/* Icon */}
+                <div className="w-14 h-14 bg-slate-900 rounded-xl flex items-center justify-center mb-6 
+                group-hover:scale-110 transition-transform duration-500">
+                  <Icon icon={benefit.icon} className="text-3xl text-white" />
+                </div>
 
-              {/* Title */}
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                {benefit.title}
-              </h3>
+                {/* Title */}
+                <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">
+                  {benefit.title}
+                </h3>
 
-              {/* Description */}
-              <p className="text-gray-600 leading-relaxed">
-                {benefit.description}
-              </p>
+                {/* Description */}
+                <p className="text-slate-600 leading-relaxed">
+                  {benefit.description}
+                </p>
 
-              {/* Hover indicator */}
-              <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full" />
-              </div>
-            </div>
+                {/* Subtle hover indicator */}
+                <motion.div 
+                  className="mt-6 h-1 bg-slate-900 rounded-full origin-left"
+                  initial={{ scaleX: 0 }}
+                  whileHover={{ scaleX: 1 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </motion.div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
