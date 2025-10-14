@@ -1,8 +1,6 @@
 /**
  * @file Home Page
- * @description Complete homepage composition
- * 
- * Replaces: index.html + HomeApp.js + HomeHandlers.js
+ * @description Complete homepage with all sections
  * 
  * Path: src/pages/marketing/HomePage.tsx
  */
@@ -14,24 +12,12 @@ import { BenefitsSection } from '@/features/homepage/components/BenefitsSection'
 import { HowItWorksSection } from '@/features/homepage/components/HowItWorksSection';
 import { TestimonialsSection } from '@/features/homepage/components/TestimonialsSection';
 import { FinalCTASection } from '@/features/homepage/components/FinalCTASection';
-import { logger } from '@/core/utils/logger';
-
-// Import BEM CSS
-import '@/styles/marketing/homepage.css';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function HomePage() {
-  // Initialize page
   useEffect(() => {
-    logger.info('Homepage loaded');
-
-    // Set page title
+    // Set page metadata
     document.title = 'Oslira - Turn Hours of Instagram Prospecting into Minutes';
-
-    // Set meta description
+    
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
@@ -69,7 +55,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <MarketingLayout showUrgencyBanner showMobileCTA>
+    <MarketingLayout>
       <HeroSection />
       <BenefitsSection />
       <HowItWorksSection />
