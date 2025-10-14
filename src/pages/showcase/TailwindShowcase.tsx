@@ -9,37 +9,34 @@ import { useState, useRef } from 'react';
 import { Icon } from '@iconify/react';
 
 export function ComponentLab() {
-  // ============================================================================
-  // STATE MANAGEMENT
-  // ============================================================================
-  const [activePricing, setActivePricing] = useState<'monthly' | 'yearly'>('monthly');
-  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showDrawer, setShowDrawer] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#ef4444');
-  const [sliderValue, setSliderValue] = useState(50);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>(['React', 'TypeScript']);
-  const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [formStep, setFormStep] = useState(1);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const [dragActive, setDragActive] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [tableSort, setTableSort] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showToast, setShowToast] = useState(false);
-  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
-  const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
+// ============================================================================
+// STATE MANAGEMENT
+// ============================================================================
+const [activePricing, setActivePricing] = useState<'monthly' | 'yearly'>('monthly');
+const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+const [menuOpen, setMenuOpen] = useState(false);
+const [activeTab, setActiveTab] = useState(0);
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+const [showSuccess, setShowSuccess] = useState(false);
+const [showModal, setShowModal] = useState(false);
+const [showDrawer, setShowDrawer] = useState(false);
+const [selectedColor, setSelectedColor] = useState('#ef4444');
+const [sliderValue, setSliderValue] = useState(50);
+const [searchQuery, setSearchQuery] = useState('');
+const [selectedTags, setSelectedTags] = useState<string[]>(['React', 'TypeScript']);
+const [loading, setLoading] = useState(false);
+const [rememberMe, setRememberMe] = useState(false);
+const [formStep, setFormStep] = useState(1);
+const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+const [dragActive, setDragActive] = useState(false);
+const [rating, setRating] = useState(0);
+const [hoveredRating, setHoveredRating] = useState(0);
+const [selectedRows, setSelectedRows] = useState<number[]>([]);
+const [currentPage, setCurrentPage] = useState(1);
+const [showToast, setShowToast] = useState(false);
+const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
+const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -2120,12 +2117,12 @@ export function ComponentLab() {
       >
         <h3 className="text-2xl font-bold mb-6">Status with Pulse</h3>
         <div className="space-y-4">
-          {[
-            { status: 'Online', color: 'green' },
-            { status: 'Busy', color: 'red' },
-            { status: 'Away', color: 'yellow' },
-            { status: 'Offline', color: 'gray' },
-          ].map((item) => (
+{[
+  { status: 'Online', color: 'green' },
+  { status: 'Busy', color: 'red' },
+  { status: 'Away', color: 'yellow' },
+  { status: 'Offline', color: 'gray' },
+].map((item) => (
             <div key={item.status} className="flex items-center gap-3">
               <div className="relative">
                 <div className={`w-3 h-3 bg-${item.color}-500 rounded-full`} />
@@ -2855,7 +2852,7 @@ export function ComponentLab() {
           whileHover={{ y: -10, borderColor: 'rgba(239, 68, 68, 0.3)' }}
         >
           <div className="flex gap-1 mb-4">
-            {[...Array(testimonial.rating)].map((_, i) => (
+            {Array.from({ length: testimonial.rating }).map((_, i) => (
               <Icon key={i} icon="mdi:star" className="text-2xl text-yellow-500" />
             ))}
           </div>
