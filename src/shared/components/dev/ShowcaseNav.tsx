@@ -2,48 +2,32 @@ import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Auto-discover showcase routes
-const showcaseModules = import.meta.glob('/src/pages/showcase/*.tsx');
-
 interface ShowcaseItem {
   name: string;
   path: string;
   title: string;
 }
 
+// Manually define showcases (auto-discovery requires Vite types)
+const SHOWCASES: ShowcaseItem[] = [
+  { name: 'TailwindShowcase', path: '/showcase/tailwindshowcase', title: 'Tailwind' },
+  { name: 'FramerShowcase', path: '/showcase/framershowcase', title: 'Framer' },
+  { name: 'ComponentLab', path: '/showcase/componentlab', title: 'Component Lab' },
+  { name: 'DarkModeShowcase', path: '/showcase/darkmodeshowcase', title: 'Dark Mode' },
+];
+
 export function ShowcaseNav() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showcases, setShowcases] = useState<ShowcaseItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
-    // Extract showcase info from file paths
-    const items: ShowcaseItem[] = Object.keys(showcaseModules)
-      .filter(path => !path.includes('index.tsx')) // Skip index file
-      .map(path => {
-        const fileName = path.split('/').pop()?.replace('.tsx', '') || '';
-        const routePath = `/showcase/${fileName.toLowerCase()}`;
-        const title = fileName
-          .replace(/([A-Z])/g, ' $1') // Add space before capitals
-          .replace(/Showcase$/, '') // Remove "Showcase" suffix
-          .trim();
-        
-        return {
-          name: fileName,
-          path: routePath,
-          title: title || fileName,
-        };
-      })
-      .sort((a, b) => a.title.localeCompare(b.title));
-
-    setShowcases(items);
+    setCurrentPath(window.location.pathname);
   }, []);
 
-  const filteredShowcases = showcases.filter(item =>
+  const filteredShowcases = SHOWCASES.filter(item =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const currentPath = window.location.pathname;
 
   return (
     <>
@@ -184,8 +168,8 @@ export function ShowcaseNav() {
             {/* Footer */}
             <div className="p-4 border-t border-white/10">
               <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>Auto-discovered from /showcase/</span>
-                <span className="font-mono">{showcases.length} files</span>
+                <span>Showcase navigation</span>
+                <span className="font-mono">{SHOWCASES.length} pages</span>
               </div>
             </div>
           </motion.div>
