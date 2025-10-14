@@ -64,8 +64,18 @@ export function TestimonialsSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-32 px-6 bg-white">
-      <div className="max-w-7xl mx-auto">
+    <section ref={ref} className="relative py-32 px-6 bg-gradient-to-b from-white via-pink-50/20 to-white overflow-hidden">
+      {/* Animated background */}
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          rotate: [0, -45, 0],
+        }}
+        transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-r from-pink-200/20 via-purple-200/20 to-blue-200/20 rounded-full blur-3xl"
+      />
+
+      <div className="relative max-w-7xl mx-auto">
         
         {/* Section Header */}
         <motion.div
