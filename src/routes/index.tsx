@@ -15,6 +15,7 @@ import { lazy } from 'react';
 const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'));
 const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
 const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
+const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
 
 export const router = createBrowserRouter([
   // ============================================================
