@@ -8,22 +8,30 @@ interface ShowcaseItem {
   title: string;
 }
 
-// Manually define showcases (auto-discovery requires Vite types)
+// Manually define showcases
 const SHOWCASES: ShowcaseItem[] = [
-  { name: 'TailwindShowcase', path: '/showcase/tailwindshowcase', title: 'Tailwind' },
-  { name: 'FramerShowcase', path: '/showcase/framershowcase', title: 'Framer' },
-  { name: 'ComponentLab', path: '/showcase/componentlab', title: 'Component Lab' },
-  { name: 'DarkModeShowcase', path: '/showcase/darkmodeshowcase', title: 'Dark Mode' },
+  { name: 'TailwindShowcase', path: '/showcase/tailwind', title: 'Tailwind' },
+  { name: 'FramerShowcase', path: '/showcase/framer', title: 'Framer' },
+  { name: 'ComponentLab', path: '/showcase/component', title: 'Component Lab' },
+  { name: 'DarkModeShowcase', path: '/showcase/darkmode', title: 'Dark Mode' },
 ];
 
 export function ShowcaseNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPath, setCurrentPath] = useState('');
+  const [isShowcasePage, setIsShowcasePage] = useState(false);
 
   useEffect(() => {
-    setCurrentPath(window.location.pathname);
+    const path = window.location.pathname;
+    setCurrentPath(path);
+    setIsShowcasePage(path.startsWith('/showcase'));
   }, []);
+
+  // Don't render anything if not on a showcase page
+  if (!isShowcasePage) {
+    return null;
+  }
 
   const filteredShowcases = SHOWCASES.filter(item =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
