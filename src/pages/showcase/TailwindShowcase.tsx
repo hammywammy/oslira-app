@@ -36,7 +36,6 @@ const [selectedRows, setSelectedRows] = useState<number[]>([]);
 const [currentPage, setCurrentPage] = useState(1);
 const [showToast, setShowToast] = useState(false);
 const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
-const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -617,8 +616,6 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
               initial="rest"
               whileHover="hover"
               animate="rest"
-              onHoverStart={() => setHoveredCard(1)}
-              onHoverEnd={() => setHoveredCard(null)}
             >
               <motion.div 
                 className="h-48 bg-gradient-to-br from-red-600 to-orange-600 relative overflow-hidden"
@@ -2853,9 +2850,9 @@ const [accordionOpen, setAccordionOpen] = useState<number[]>([]);
           whileHover={{ y: -10, borderColor: 'rgba(239, 68, 68, 0.3)' }}
         >
 <div className="flex gap-1 mb-4">
-  {Array.from({ length: testimonial.rating }, (_, i) => (
-    <Icon key={i} icon="mdi:star" className="text-2xl text-yellow-500" />
-  ))}
+{Array.from({ length: testimonial.rating }).map((_, i) => (
+  <Icon key={i} icon="mdi:star" className="text-2xl text-yellow-500" />
+))}
 </div>
 
           <p className="text-lg mb-6 italic text-gray-300">"{testimonial.text}"</p>
