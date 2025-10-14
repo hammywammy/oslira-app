@@ -1,92 +1,163 @@
 /**
  * @file How It Works Section
- * @description Complete 3-step process explanation
+ * @description Three-step process - Elegant Professional Design
+ * Path: src/features/homepage/components/HowItWorksSection.tsx
  */
+
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+
+// =============================================================================
+// DATA
+// =============================================================================
 
 const steps = [
   {
-    number: 1,
+    number: '01',
     title: 'Paste Instagram Link',
-    description: 'Drop any Instagram profile URL into Oslira. Our AI instantly analyzes their content, engagement patterns, and business indicators.',
-    color: 'from-blue-500 to-blue-600',
+    description: 'Drop any Instagram profile URL into Oslira. Our AI instantly analyzes their content, engagement patterns, and business indicators.'
   },
   {
-    number: 2,
+    number: '02',
     title: 'Get Smart Recommendations',
-    description: 'Oslira scores the lead, highlights key insights, and suggests similar high-potential prospects. See exactly who needs your services most.',
-    color: 'from-purple-500 to-purple-600',
+    description: 'Oslira scores the lead, highlights key insights, and suggests similar high-potential prospects. See exactly who needs your services most.'
   },
   {
-    number: 3,
+    number: '03',
     title: 'Send Personalized Outreach',
-    description: 'Use AI-generated message templates tailored to each lead. Copy, customize, and send - all in under 2 minutes per prospect.',
-    color: 'from-pink-500 to-pink-600',
-  },
+    description: 'Use AI-generated message templates tailored to each lead. Copy, customize, and send - all in under 2 minutes per prospect.'
+  }
 ];
 
+// =============================================================================
+// ANIMATION VARIANTS
+// =============================================================================
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+};
+
+const lineAnimation = {
+  hidden: { pathLength: 0, opacity: 0 },
+  visible: { 
+    pathLength: 1, 
+    opacity: 1,
+    transition: { duration: 1.5, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
 export function HowItWorksSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section ref={ref} className="py-32 px-6 bg-slate-50">
       <div className="max-w-7xl mx-auto">
+        
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={fadeIn}
+          className="text-center mb-20"
+        >
+          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-6 leading-tight">
             How Oslira Works
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto font-light">
             Three simple steps to transform your prospecting process
           </p>
-        </div>
+        </motion.div>
 
-        {/* Steps Grid */}
-        <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-          {steps.map((step, index) => (
-            <div key={step.number} className="relative">
-              {/* Connector Line (desktop only) */}
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-blue-200 to-purple-200 -z-10 transform -translate-x-1/2" />
-              )}
+        {/* Steps */}
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={stagger}
+          className="relative"
+        >
+          {/* Connection Line (Desktop) */}
+          <div className="hidden lg:block absolute top-24 left-0 right-0 h-px">
+            <svg className="w-full h-2" viewBox="0 0 100 2" preserveAspectRatio="none">
+              <motion.line
+                x1="0"
+                y1="1"
+                x2="100"
+                y2="1"
+                stroke="#cbd5e1"
+                strokeWidth="2"
+                strokeDasharray="4 4"
+                variants={lineAnimation}
+                initial="hidden"
+                animate={isInView ? "visible" : "hidden"}
+              />
+            </svg>
+          </div>
 
-              {/* Step Card */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 relative">
-                {/* Step Number Badge */}
-                <div className={`absolute -top-6 left-8 w-12 h-12 bg-gradient-to-br ${step.color} rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg`}>
-                  {step.number}
+          <div className="grid lg:grid-cols-3 gap-12 lg:gap-8">
+            {steps.map((step, index) => (
+              <motion.div
+                key={index}
+                variants={fadeIn}
+                className="relative"
+              >
+                <div className="flex flex-col items-center text-center">
+                  {/* Step Number */}
+                  <div className="relative z-10 w-20 h-20 mb-8 bg-slate-900 rounded-2xl flex items-center justify-center shadow-lg shadow-slate-900/20">
+                    <span className="text-2xl font-bold text-white">{step.number}</span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="space-y-4">
+                    <h3 className="text-2xl font-bold text-slate-900">
+                      {step.title}
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Content */}
-                <div className="mt-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                    {step.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-
-                {/* Visual Indicator */}
-                <div className="mt-6 flex items-center gap-2">
-                  <div className={`w-8 h-1 bg-gradient-to-r ${step.color} rounded-full`} />
-                  <div className="w-4 h-1 bg-gray-200 rounded-full" />
-                  <div className="w-2 h-1 bg-gray-200 rounded-full" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA Below Steps */}
-        <div className="mt-16 text-center">
-          <button
-            onClick={() => window.location.href = '/auth/signup'}
-            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-bold rounded-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all"
-          >
-            Start Your Free Trial →
-          </button>
-          <p className="mt-4 text-sm text-gray-600">
-            25 free credits • No credit card required
-          </p>
-        </div>
+                {/* Mobile Connection Arrow */}
+                {index < steps.length - 1 && (
+                  <div className="lg:hidden flex justify-center my-8">
+                    <svg width="24" height="40" viewBox="0 0 24 40" fill="none">
+                      <motion.path
+                        d="M12 0L12 35M12 35L6 29M12 35L18 29"
+                        stroke="#cbd5e1"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={isInView ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3 + (index * 0.2), ease: [0.22, 1, 0.36, 1] }}
+                      />
+                    </svg>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );
