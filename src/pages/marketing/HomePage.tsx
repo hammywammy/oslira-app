@@ -56,19 +56,6 @@ export function HomePage() {
       <MarketingFooter />
     </div>
   );
-}<BenefitsSection />
-
-        {/* How It Works */}
-        <HowItWorksSection />
-
-        {/* Testimonials */}
-        <TestimonialsSection />
-
-        {/* Final CTA */}
-        <FinalCTASection />
-      </main>
-    </div>
-  );
 }
 
 export default HomePage;
