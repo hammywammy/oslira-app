@@ -1,9 +1,13 @@
+/**
+ * @file Dark Mode Showcase
+ * @description Complete dark/light mode demo with smooth transitions
+ */
+
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Bell, Search, User, Settings, Mail, Heart, Star, TrendingUp, Zap, Shield } from 'lucide-react';
+import { Icon } from '@iconify/react';
 
 export default function DarkModeShowcase() {
   const [theme, setTheme] = useState('dark');
-  const [notificationCount, setNotificationCount] = useState(3);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -14,17 +18,17 @@ export default function DarkModeShowcase() {
   };
 
   const stats = [
-    { icon: TrendingUp, label: 'Revenue', value: '$127.5K', change: '+12.5%' },
-    { icon: User, label: 'Active Users', value: '2,847', change: '+8.2%' },
-    { icon: Zap, label: 'Conversions', value: '94.3%', change: '+2.1%' },
-    { icon: Shield, label: 'Security Score', value: '98/100', change: '+5' },
+    { icon: 'mdi:trending-up', label: 'Revenue', value: '$127.5K', change: '+12.5%' },
+    { icon: 'mdi:account', label: 'Active Users', value: '2,847', change: '+8.2%' },
+    { icon: 'mdi:lightning-bolt', label: 'Conversions', value: '94.3%', change: '+2.1%' },
+    { icon: 'mdi:shield-check', label: 'Security Score', value: '98/100', change: '+5' },
   ];
 
   const activities = [
-    { icon: Mail, text: 'New message from Sarah Chen', time: '2m ago', type: 'message' },
-    { icon: Heart, text: 'John liked your post', time: '15m ago', type: 'like' },
-    { icon: Star, text: 'You earned a new achievement', time: '1h ago', type: 'achievement' },
-    { icon: Bell, text: 'System update completed', time: '3h ago', type: 'system' },
+    { icon: 'mdi:email', text: 'New message from Sarah Chen', time: '2m ago' },
+    { icon: 'mdi:heart', text: 'John liked your post', time: '15m ago' },
+    { icon: 'mdi:star', text: 'You earned a new achievement', time: '1h ago' },
+    { icon: 'mdi:bell', text: 'System update completed', time: '3h ago' },
   ];
 
   return (
@@ -52,7 +56,7 @@ export default function DarkModeShowcase() {
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className={`text-3xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent`}>
+            <div className="text-3xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
               OSLIRA
             </div>
             <nav className="hidden md:flex gap-1">
@@ -78,7 +82,7 @@ export default function DarkModeShowcase() {
                 ? 'bg-gray-800 border border-gray-700'
                 : 'bg-gray-100 border border-gray-200'
             }`}>
-              <Search size={18} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />
+              <Icon icon="mdi:magnify" className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} />
               <input
                 type="text"
                 placeholder="Search..."
@@ -94,10 +98,8 @@ export default function DarkModeShowcase() {
                 ? 'hover:bg-gray-800 text-gray-300'
                 : 'hover:bg-gray-100 text-gray-600'
             }`}>
-              <Bell size={20} />
-              {notificationCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              )}
+              <Icon icon="mdi:bell" className="text-xl" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             </button>
 
             {/* Theme Toggle */}
@@ -110,15 +112,15 @@ export default function DarkModeShowcase() {
               }`}
             >
               <div className="relative w-6 h-6">
-                <Sun 
-                  size={24} 
-                  className={`absolute inset-0 transition-all duration-500 ${
+                <Icon 
+                  icon="mdi:white-balance-sunny"
+                  className={`absolute inset-0 transition-all duration-500 text-2xl ${
                     theme === 'light' ? 'rotate-0 opacity-100' : 'rotate-90 opacity-0'
                   }`}
                 />
-                <Moon 
-                  size={24} 
-                  className={`absolute inset-0 transition-all duration-500 ${
+                <Icon 
+                  icon="mdi:moon-waning-crescent"
+                  className={`absolute inset-0 transition-all duration-500 text-2xl ${
                     theme === 'dark' ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'
                   }`}
                 />
@@ -131,7 +133,7 @@ export default function DarkModeShowcase() {
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600'
                 : 'bg-gradient-to-r from-blue-500 to-purple-500'
             }`}>
-              <User size={20} className="text-white" />
+              <Icon icon="mdi:account" className="text-xl text-white" />
             </button>
           </div>
         </div>
@@ -174,7 +176,7 @@ export default function DarkModeShowcase() {
                 <div className={`p-3 rounded-xl ${
                   theme === 'dark' ? 'bg-blue-600/20' : 'bg-blue-100'
                 }`}>
-                  <stat.icon size={24} className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+                  <Icon icon={stat.icon} className={`text-2xl ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
                 <span className="text-sm font-semibold text-green-500">{stat.change}</span>
               </div>
@@ -218,7 +220,7 @@ export default function DarkModeShowcase() {
                   <div className={`p-2 rounded-lg ${
                     theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
                   }`}>
-                    <activity.icon size={20} className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'} />
+                    <Icon icon={activity.icon} className={`text-xl ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
                   </div>
                   <div className="flex-1">
                     <p className={`font-medium mb-1 transition-colors duration-500 ${
@@ -250,10 +252,10 @@ export default function DarkModeShowcase() {
             </h2>
             <div className="space-y-3">
               {[
-                { icon: Mail, label: 'Send Message', color: 'blue' },
-                { icon: Settings, label: 'Settings', color: 'purple' },
-                { icon: Star, label: 'Favorites', color: 'yellow' },
-                { icon: Bell, label: 'Notifications', color: 'red' },
+                { icon: 'mdi:email', label: 'Send Message', color: 'blue' },
+                { icon: 'mdi:cog', label: 'Settings', color: 'purple' },
+                { icon: 'mdi:star', label: 'Favorites', color: 'yellow' },
+                { icon: 'mdi:bell', label: 'Notifications', color: 'red' },
               ].map((action, index) => (
                 <button
                   key={index}
@@ -264,7 +266,7 @@ export default function DarkModeShowcase() {
                   }`}
                 >
                   <div className={`p-2 rounded-lg bg-${action.color}-500/20`}>
-                    <action.icon size={20} className={`text-${action.color}-500`} />
+                    <Icon icon={action.icon} className={`text-xl text-${action.color}-500`} />
                   </div>
                   <span>{action.label}</span>
                 </button>
