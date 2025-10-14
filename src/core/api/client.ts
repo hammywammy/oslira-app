@@ -10,11 +10,12 @@
  * - Error handling with categorization
  * - Auth token injection
  * - Statistics tracking
+ * - LAZY INITIALIZATION (config must load first)
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import axiosRetry, { IAxiosRetryConfig } from 'axios-retry';
-import { ENV } from '@/core/config/env';
+import { getConfig } from '@/core/config/env';
 import { API, HTTP_STATUS, ERROR_CODES } from '@/core/config/constants';
 import { logger } from '@/core/utils/logger';
 
@@ -50,7 +51,7 @@ interface RequestStats {
 // =============================================================================
 
 class HttpClient {
-  private client: AxiosInstance;
+  private client: AxiosInstance | null = null;
   private stats: RequestStats = {
     total: 0,
     successful: 0,
@@ -60,11 +61,47 @@ class HttpClient {
   };
   private activeRequests = new Map<string, Promise<AxiosResponse>>();
   private tokenProvider?: () => Promise<string | null>;
+  private isInitialized = false;
 
-  constructor() {
+  // ===========================================================================
+  // LAZY INITIALIZATION
+  // ===========================================================================
+
+  /**
+   * Get or create axios client (lazy initialization)
+   */
+  private getClient(): AxiosInstance {
+    if (this.client) {
+      return this.client;
+    }
+
+    if (!this.isInitialized) {
+      this.initialize();
+    }
+
+    if (!this.client) {
+      throw new Error('HttpClient failed to initialize');
+    }
+
+    return this.client;
+  }
+
+  /**
+   * Initialize HTTP client (called on first use)
+   */
+  private initialize(): void {
+    if (this.isInitialized) {
+      return;
+    }
+
+    logger.info('Initializing HTTP client...');
+
     this.client = this.createClient();
     this.setupInterceptors();
     this.setupRetryLogic();
+    this.isInitialized = true;
+
+    logger.info('HTTP client initialized successfully');
   }
 
   // ===========================================================================
@@ -75,8 +112,10 @@ class HttpClient {
    * Create axios instance with default config
    */
   private createClient(): AxiosInstance {
+    const config = getConfig();
+
     return axios.create({
-      baseURL: ENV.apiUrl,
+      baseURL: config.apiUrl,
       timeout: API.TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
@@ -91,8 +130,10 @@ class HttpClient {
    * Setup request/response interceptors (from HttpClient.js)
    */
   private setupInterceptors(): void {
+    const client = this.getClient();
+
     // Request interceptor
-    this.client.interceptors.request.use(
+    client.interceptors.request.use(
       async (config) => {
         this.stats.total++;
 
@@ -120,7 +161,7 @@ class HttpClient {
     );
 
     // Response interceptor
-    this.client.interceptors.response.use(
+    client.interceptors.response.use(
       (response) => {
         this.stats.successful++;
 
@@ -164,6 +205,8 @@ class HttpClient {
    * Setup retry logic with exponential backoff (from HttpClient.js)
    */
   private setupRetryLogic(): void {
+    const client = this.getClient();
+
     const retryConfig: IAxiosRetryConfig = {
       retries: API.RETRY_ATTEMPTS,
       retryDelay: (retryCount) => {
@@ -215,7 +258,7 @@ class HttpClient {
       },
     };
 
-    axiosRetry(this.client, retryConfig);
+    axiosRetry(client, retryConfig);
   }
 
   // ===========================================================================
@@ -242,6 +285,7 @@ class HttpClient {
     url: string,
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
+    const client = this.getClient();
     const cacheKey = options.cacheKey || `${method}:${url}`;
 
     // Request deduplication: return existing in-flight request
@@ -253,7 +297,7 @@ class HttpClient {
     }
 
     // Create new request
-    const requestPromise = this.client.request<ApiResponse<T>>({
+    const requestPromise = client.request<ApiResponse<T>>({
       method,
       url,
       ...options,
