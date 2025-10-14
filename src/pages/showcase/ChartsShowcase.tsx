@@ -1,8 +1,8 @@
 // ============================================================================
 // REACT & FRAMER MOTION IMPORTS
 // ============================================================================
-import { motion, useInView, AnimationControls, useAnimation } from 'framer-motion';
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { motion, useInView } from 'framer-motion'; // Remove AnimationControls, useAnimation
+import { useState, useRef, useEffect } from 'react';
 
 // ============================================================================
 // ICONIFY (for icons throughout)
@@ -24,7 +24,6 @@ import {
   ComposedChart,
   FunnelChart,
   Treemap,
-  Sankey,
   
   // Chart elements
   Line,
@@ -39,7 +38,6 @@ import {
   // Cartesian components
   XAxis,
   YAxis,
-  ZAxis,
   CartesianGrid,
   
   // Polar components
@@ -55,7 +53,6 @@ import {
   // Reference components
   ReferenceLine,
   ReferenceArea,
-  ReferenceDot,
   
   // Layout & containers
   ResponsiveContainer,
@@ -64,12 +61,7 @@ import {
   Cell,
   Sector,
   LabelList,
-  Label,
   
-  // Types
-  TooltipProps,
-  LegendProps,
-  CategoricalChartProps,
 } from 'recharts';
 
 // ============================================================================
@@ -140,6 +132,7 @@ interface ScatterData {
   z?: number;
   name?: string;
   category?: string;
+  score?: number;
 }
 
 interface RadarData {
@@ -677,19 +670,6 @@ const generateRadarData = (): RadarData[] => {
   ];
 };
 
-/**
- * Generate polar grid data (performance dimensions)
- * Used for: Polar Grid Chart
- */
-const generatePolarData = () => {
-  const angles = [0, 45, 90, 135, 180, 225, 270, 315];
-  return angles.map((angle) => ({
-    angle,
-    value: Math.round(40 + Math.random() * 60),
-    radius: Math.round(30 + Math.random() * 70),
-  }));
-};
-
 // ============================================================================
 // DATA GENERATORS - SECTION 4: SPECIALIZED CHARTS
 // ============================================================================
@@ -709,32 +689,6 @@ const generateTreemapData = (): TreemapData[] => {
   ];
 };
 
-/**
- * Generate Sankey data (lead flow)
- * Used for: Sankey Diagram
- */
-const generateSankeyData = (): SankeyData => {
-  return {
-    nodes: [
-      { name: 'Instagram' },
-      { name: 'LinkedIn' },
-      { name: 'Email' },
-      { name: 'Qualified' },
-      { name: 'Demo' },
-      { name: 'Lost' },
-      { name: 'Closed' },
-    ],
-    links: [
-      { source: 0, target: 3, value: 120 },
-      { source: 1, target: 3, value: 80 },
-      { source: 2, target: 3, value: 60 },
-      { source: 3, target: 4, value: 180 },
-      { source: 3, target: 5, value: 80 },
-      { source: 4, target: 6, value: 120 },
-      { source: 4, target: 5, value: 60 },
-    ],
-  };
-};
 
 /**
  * Generate funnel data (conversion pipeline)
@@ -884,128 +838,6 @@ const generateLiveData = (length: number): LiveDataPoint[] => {
   }));
 };
 
-/**
- * Generate rich tooltip data (lead profiles)
- * Used for: Custom Tooltip (Rich)
- */
-const generateLeadProfiles = (): LeadData[] => {
-  const names = [
-    '@fitnessguru_pro',
-    '@lifestyle_maven', 
-    '@tech_wizard',
-    '@foodie_paradise',
-    '@travel_seeker',
-  ];
-  
-  return names.map((name, i) => ({
-    id: `lead-${i}`,
-    name,
-    score: Math.round(70 + Math.random() * 30),
-    engagement: Math.round(50 + Math.random() * 50),
-    followers: Math.round(10000 + Math.random() * 90000),
-    conversationRate: Number((2 + Math.random() * 8).toFixed(1)),
-    revenue: Math.round(5000 + Math.random() * 15000),
-    category: ['Fitness', 'Lifestyle', 'Tech', 'Food', 'Travel'][i],
-  }));
-};
-
-/**
- * Generate animation demo data
- * Used for: Controlled Animation
- */
-const generateAnimationData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map((month) => ({
-    month,
-    value: Math.round(10000 + Math.random() * 20000),
-  }));
-};
-
-/**
- * Generate mouse tracking data
- * Used for: Mouse Tracking Line
- */
-const generateTrackingData = () => {
-  const days = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
-  return days.map((day) => ({
-    day,
-    revenue: Math.round(5000 + Math.random() * 10000),
-    leads: Math.round(20 + Math.random() * 80),
-    conversion: Number((1 + Math.random() * 5).toFixed(1)),
-  }));
-};
-
-// ============================================================================
-// DATA GENERATORS - SECTION 6: STYLING & THEMING
-// ============================================================================
-
-/**
- * Generate gradient showcase data
- * Used for: Gradient Fill examples
- */
-const generateGradientData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
-  return months.map((month, i) => ({
-    month,
-    value1: Math.round(15000 + Math.random() * 10000 + (i * 1000)),
-    value2: Math.round(12000 + Math.random() * 8000 + (i * 800)),
-    value3: Math.round(10000 + Math.random() * 6000 + (i * 600)),
-  }));
-};
-
-/**
- * Generate color-based value data (gradient stroke)
- * Used for: Gradient Stroke Chart
- */
-const generateColorValueData = () => {
-  const days = Array.from({ length: 20 }, (_, i) => `Day ${i + 1}`);
-  return days.map(() => ({
-    day: '',
-    value: Math.round(30 + Math.random() * 70),
-  }));
-};
-
-/**
- * Generate theme showcase data
- * Used for: Dark Mode Chart
- */
-const generateThemeData = () => {
-  const categories = ['Cat A', 'Cat B', 'Cat C', 'Cat D', 'Cat E'];
-  return categories.map((cat) => ({
-    name: cat,
-    light: Math.round(50 + Math.random() * 50),
-    dark: Math.round(40 + Math.random() * 60),
-  }));
-};
-
-// ============================================================================
-// DATA GENERATORS - SECTION 7: ANNOTATIONS & REFERENCES
-// ============================================================================
-
-/**
- * Generate data with reference zones
- * Used for: Reference Area Charts
- */
-const generateReferenceData = () => {
-  const days = Array.from({ length: 14 }, (_, i) => `Day ${i + 1}`);
-  return days.map(() => ({
-    day: '',
-    performance: Math.round(40 + Math.random() * 60),
-  }));
-};
-
-/**
- * Generate event timeline data
- * Used for: Reference Line (Vertical)
- */
-const generateEventData = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map((month, i) => ({
-    month,
-    sales: Math.round(10000 + Math.random() * 15000),
-    hasEvent: i === 2 || i === 4, // Events in Mar and May
-  }));
-};
 
 // ============================================================================
 // DATA GENERATORS - SECTION 8: OSLIRA USE CASES
@@ -1087,61 +919,6 @@ const generateMonthlyPerformance = () => {
     revenue: Math.round(8000 + Math.random() * 12000 + (i * 2000)),
     avgScore: Math.round(65 + Math.random() * 25),
   }));
-};
-
-/**
- * Generate response rate by cohort (Oslira)
- * Used for: Response Rate Trend Multi-Line
- */
-const generateResponseRates = () => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  return months.map((month) => ({
-    month,
-    excellent: Number((60 + Math.random() * 30).toFixed(1)),
-    good: Number((40 + Math.random() * 25).toFixed(1)),
-    fair: Number((20 + Math.random() * 20).toFixed(1)),
-  }));
-};
-
-/**
- * Generate time to conversion scatter (Oslira)
- * Used for: Time to Conversion Scatter
- */
-const generateTimeToConversion = (): ScatterData[] => {
-  return Array.from({ length: 40 }, () => ({
-    x: Math.round(1 + Math.random() * 60), // Days to convert
-    y: Math.round(500 + Math.random() * 9500), // Deal size
-    z: Math.round(50 + Math.random() * 50), // Lead score
-  }));
-};
-
-/**
- * Generate activity heatmap (Oslira user behavior)
- * Used for: Activity Heatmap
- */
-const generateActivityHeatmap = (): HeatmapCell[] => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const hours = ['9am', '12pm', '3pm', '6pm', '9pm'];
-  const data: HeatmapCell[] = [];
-  
-  days.forEach((day, dayIndex) => {
-    hours.forEach((hour, hourIndex) => {
-      // Higher activity on weekdays during business hours
-      const isWeekday = dayIndex < 5;
-      const isBusinessHour = hourIndex < 3;
-      const baseActivity = isWeekday && isBusinessHour ? 60 : 20;
-      
-      data.push({
-        day: dayIndex,
-        hour: hourIndex,
-        value: Math.round(baseActivity + Math.random() * 40),
-        dayLabel: day,
-        hourLabel: hour,
-      });
-    });
-  });
-  
-  return data;
 };
 
 /**
@@ -1399,7 +1176,8 @@ const minimalTooltipStyle = {
 /**
  * Render active pie shape (hover effect)
  */
-const renderActiveShape = (props: ActiveShapeProps) => {
+const renderActiveShape = (props: unknown) => {
+  const typedProps = props as ActiveShapeProps;
   const {
     cx,
     cy,
@@ -1412,7 +1190,7 @@ const renderActiveShape = (props: ActiveShapeProps) => {
     payload,
     percent,
     value,
-  } = props;
+  } = typedProps;
 
   const RADIAN = Math.PI / 180;
   const sin = Math.sin(-RADIAN * midAngle);
@@ -2790,13 +2568,13 @@ export default function FerrariRechartsShowcase() {
                   startAngle={180}
                   endAngle={0}
                 >
-                  <RadialBar
-                    minAngle={15}
-                    label={{ position: 'insideStart', fill: '#fff' }}
-                    background
-                    clockWise
-                    dataKey="value"
-                  />
+<RadialBar
+  minPointSize={15}  // Changed from minAngle
+  label={{ position: 'insideStart', fill: '#fff' }}
+  background
+  clockWise
+  dataKey="value"
+/>
                   <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" />
                   <Tooltip />
                 </RadialBarChart>
@@ -3320,10 +3098,10 @@ export default function FerrariRechartsShowcase() {
               </div>
 
               <div className="mb-4 flex gap-4">
-                {Object.keys(showLegend).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setShowLegend({ ...showLegend, [key]: !showLegend[key] })}
+               {Object.keys(showLegend).map((key) => (
+  <button
+    key={key}
+    onClick={() => setShowLegend({ ...showLegend, [key]: !showLegend[key as keyof typeof showLegend] })}
                     className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                       showLegend[key as keyof typeof showLegend]
                         ? 'bg-green-500 text-white'
@@ -3420,12 +3198,12 @@ export default function FerrariRechartsShowcase() {
                     }}
                   />
                   <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                    {generateDrillDownData().map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={['#3b82f6', '#10b981', '#f59e0b', '#ec4899'][index % 4]}
-                      />
-                    ))}
+{generateDrillDownData().map((_, index) => (
+  <Cell
+    key={`cell-${index}`}
+    fill={['#3b82f6', '#10b981', '#f59e0b', '#ec4899'][index % 4]}
+  />
+))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
