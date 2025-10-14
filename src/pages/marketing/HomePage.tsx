@@ -25,8 +25,13 @@ export function HomePage() {
     const current = spotlightRef.current;
     if (current) {
       current.addEventListener('mousemove', handleMouseMove);
-      return () => current.removeEventListener('mousemove', handleMouseMove);
     }
+    
+    return () => {
+      if (current) {
+        current.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
   }, []);
 
   return (
