@@ -4,6 +4,8 @@
  * Path: src/pages/marketing/HomePage.tsx
  */
 
+import { MarketingHeader } from '@/features/homepage/components/MarketingHeader';
+import { MarketingFooter } from '@/shared/components/ui/MarketingFooter';
 import { HeroSection } from '@/features/homepage/components/HeroSection';
 import { BenefitsSection } from '@/features/homepage/components/BenefitsSection';
 import { HowItWorksSection } from '@/features/homepage/components/HowItWorksSection';
@@ -26,6 +28,9 @@ export function HomePage() {
         Skip to main content
       </a>
 
+      {/* Header (Fixed) */}
+      <MarketingHeader />
+
       {/* Social Proof Notifications (Fixed Position) */}
       <SocialProofNotifications />
 
@@ -36,6 +41,22 @@ export function HomePage() {
 
         {/* Benefits Section */}
         <BenefitsSection />
+
+        {/* How It Works */}
+        <HowItWorksSection />
+
+        {/* Testimonials */}
+        <TestimonialsSection />
+
+        {/* Final CTA */}
+        <FinalCTASection />
+      </main>
+
+      {/* Footer */}
+      <MarketingFooter />
+    </div>
+  );
+}<BenefitsSection />
 
         {/* How It Works */}
         <HowItWorksSection />
