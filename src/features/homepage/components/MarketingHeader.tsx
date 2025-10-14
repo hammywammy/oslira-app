@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import { Logo } from '@/shared/components/ui/Logo';
 
 // =============================================================================
 // COMPONENT
@@ -41,9 +42,9 @@ export function MarketingHeader() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <span className="text-white font-bold text-xl">O</span>
-              </div>
+<a href="/" className="flex items-center gap-2">
+  <Logo size="md" />
+</a>
               <span className="text-xl font-bold text-slate-900">Oslira</span>
             </motion.a>
 
