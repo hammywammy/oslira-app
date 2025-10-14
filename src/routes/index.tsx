@@ -16,6 +16,7 @@ const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'))
 const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
 const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
 const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
+const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase')); 
 
 export const router = createBrowserRouter([
   // ============================================================
@@ -37,14 +38,18 @@ export const router = createBrowserRouter([
     path: '/showcase/framer',
     element: <FramerShowcase />,
   },
-  {
+{
   path: '/showcase/components',
   element: <ComponentLab />,
 },
-    {
-    path: '/showcase/darkmode',  // ← ADD THIS ROUTE
-    element: <DarkModeShowcase />,
-  },
+{
+  path: '/showcase/darkmode',  // ← ADD THIS ROUTE
+  element: <DarkModeShowcase />,
+},
+{
+  path: '/showcase/charts',
+  element: <ChartsShowcase />,
+},
 
 
   // ============================================================
