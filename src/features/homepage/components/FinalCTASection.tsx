@@ -44,21 +44,23 @@ export function FinalCTASection() {
   };
 
   return (
-    <section ref={ref} className="py-32 px-6 bg-slate-50">
+    <section ref={ref} className="py-32 px-6 bg-gradient-to-b from-white via-blue-50/30 to-white">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={scaleIn}
-          className="relative overflow-hidden bg-slate-900 rounded-3xl p-12 lg:p-16 text-center"
+          className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-3xl p-12 lg:p-16 text-center shadow-2xl shadow-blue-500/30"
         >
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-              backgroundSize: '32px 32px'
-            }} />
-          </div>
+          {/* Animated gradient overlay */}
+          <motion.div
+            animate={{
+              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+            }}
+            transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+            style={{ backgroundSize: '200% 100%' }}
+          />
 
           {/* Content */}
           <div className="relative z-10 space-y-8">
