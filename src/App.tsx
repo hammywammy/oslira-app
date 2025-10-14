@@ -9,6 +9,7 @@ import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
+import { ShowcaseNav } from '@/shared/components/dev/ShowcaseNav'; 
 import { router } from '@/routes';
 
 // =============================================================================
