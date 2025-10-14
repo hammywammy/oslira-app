@@ -1,103 +1,129 @@
 /**
  * @file Testimonials Section
- * @description Complete customer testimonials
+ * @description Social proof testimonials - Elegant Professional Design
+ * Path: src/features/homepage/components/TestimonialsSection.tsx
  */
+
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+
+// =============================================================================
+// DATA
+// =============================================================================
 
 const testimonials = [
   {
-    name: 'Marcus Johnson',
+    quote: "Oslira cut my prospecting time from 10 hours to under 2 hours per week. I'm landing 3x more clients with half the effort.",
+    author: 'Marcus Johnson',
     role: 'Freelance Copywriter',
-    avatar: 'MJ',
-    rating: 5,
-    text: "Oslira cut my prospecting time from 10 hours to under 2 hours per week. I'm landing 3x more clients with half the effort.",
-    color: 'from-blue-500 to-blue-600',
+    initials: 'MJ'
   },
   {
-    name: 'Sarah Park',
+    quote: "The AI-generated outreach templates are shockingly good. My response rate jumped from 12% to 43% in the first month.",
+    author: 'Sarah Park',
     role: 'B2B Copy Specialist',
-    avatar: 'SP',
-    rating: 5,
-    text: 'The AI-generated outreach templates are shockingly good. My response rate jumped from 12% to 43% in the first month.',
-    color: 'from-purple-500 to-purple-600',
+    initials: 'SP'
   },
   {
-    name: 'Kevin Lee',
+    quote: "Finally, a tool that actually understands my niche. Oslira finds perfect-fit leads I would've missed manually.",
+    author: 'Kevin Lee',
     role: 'SaaS Copywriter',
-    avatar: 'KL',
-    rating: 5,
-    text: "Finally, a tool that actually understands my niche. Oslira finds perfect-fit leads I would've missed manually.",
-    color: 'from-pink-500 to-pink-600',
-  },
+    initials: 'KL'
+  }
 ];
 
+// =============================================================================
+// ANIMATION VARIANTS
+// =============================================================================
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+  }
+};
+
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
 export function TestimonialsSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <section ref={ref} className="py-32 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
+        
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={fadeIn}
+          className="text-center mb-20"
+        >
+          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-6 leading-tight">
             Success Stories
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto font-light">
             Real results from copywriters using Oslira
           </p>
-        </div>
+        </motion.div>
 
         {/* Testimonials Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <motion.div
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={stagger}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
           {testimonials.map((testimonial, index) => (
-            <div
+            <motion.div
               key={index}
-              className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
+              variants={fadeIn}
+              whileHover={{ y: -8 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="group"
             >
-              {/* Stars */}
-              <div className="flex gap-1 mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+              <div className="h-full p-8 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 
+              hover:shadow-xl hover:shadow-slate-900/5 transition-all duration-500">
+                
+                {/* Quote */}
+                <div className="mb-6">
+                  <svg className="w-10 h-10 text-slate-300 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                   </svg>
-                ))}
-              </div>
-
-              {/* Quote */}
-              <p className="text-gray-700 text-lg leading-relaxed mb-6 italic">
-                "{testimonial.text}"
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-lg shadow-md`}>
-                  {testimonial.avatar}
+                  <p className="text-lg text-slate-700 leading-relaxed">
+                    {testimonial.quote}
+                  </p>
                 </div>
-                <div>
-                  <div className="font-bold text-gray-900">{testimonial.name}</div>
-                  <div className="text-sm text-gray-600">{testimonial.role}</div>
+
+                {/* Author */}
+                <div className="flex items-center gap-4 pt-6 border-t border-slate-100">
+                  <div className="w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold">
+                    {testimonial.initials}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900">{testimonial.author}</div>
+                    <div className="text-sm text-slate-500">{testimonial.role}</div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
-
-        {/* Social Proof Stats */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900 mb-2">1,200+</div>
-            <div className="text-gray-600">Active Users</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900 mb-2">50K+</div>
-            <div className="text-gray-600">Leads Analyzed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900 mb-2">43%</div>
-            <div className="text-gray-600">Avg Response Rate</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900 mb-2">5 hrs</div>
-            <div className="text-gray-600">Saved Per Week</div>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
