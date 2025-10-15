@@ -51,6 +51,7 @@ interface AuthContextValue extends AuthState {
 // =============================================================================
 // CONTEXT
 // =============================================================================
+console.log('🔵 AuthProvider.tsx: FILE LOADED');
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -63,12 +64,19 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  console.log('🟢 AuthProvider: COMPONENT RENDERING');
+  
   // Core auth state
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  console.log('🟡 AuthProvider: Initial state set', { 
+    isLoading, 
+    isAuthenticated 
+  });
 
   // Business state
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -170,78 +178,79 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // INITIALIZATION (RACE-CONDITION FREE)
   // ===========================================================================
 
-  useEffect(() => {
+    useEffect(() => {
+    console.log('🟣 AuthProvider: useEffect STARTED');
     let mounted = true;
 
     async function initializeAuth() {
+      console.log('🔴 AuthProvider: initializeAuth() CALLED');
+      
       try {
-        logger.info('Initializing auth system...');
-
-        // Get initial session
+        console.log('⚪ AuthProvider: Fetching session...');
+        
         const { data: { session: initialSession }, error: sessionError } = 
           await supabase.auth.getSession();
 
+        console.log('🟠 AuthProvider: Session fetched', { 
+          hasSession: !!initialSession,
+          hasError: !!sessionError,
+          mounted 
+        });
+
         if (sessionError) {
-          logger.error('Session error during init', sessionError);
-          // Don't throw - just continue without session
+          console.error('❌ AuthProvider: Session error', sessionError);
         }
 
-        // ✅ Check mounted BEFORE any state updates
-        if (!mounted) return;
+        if (!mounted) {
+          console.log('⚫ AuthProvider: Component unmounted, stopping');
+          return;
+        }
 
         if (initialSession && !sessionError) {
-          logger.info('Initial session found', { userId: initialSession.user.id });
+          console.log('✅ AuthProvider: User authenticated', initialSession.user.id);
           
-          // Update auth state
           setSession(initialSession);
           setUser(initialSession.user);
           setIsAuthenticated(true);
 
-          // ✅ Load businesses/subscription (non-blocking, never throws)
+          console.log('🔵 AuthProvider: Loading businesses & subscription...');
           await Promise.allSettled([
             loadBusinesses(initialSession.user.id),
             loadSubscription(initialSession.user.id),
           ]);
+          console.log('🟢 AuthProvider: Businesses & subscription loaded');
         } else {
-          logger.info('No initial session found');
-          // Explicitly set unauthenticated state
+          console.log('⚠️ AuthProvider: No session, user not authenticated');
           setSession(null);
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (err) {
-        // ✅ Catch ANY error and continue
-        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
-        logger.error('Auth initialization failed (non-fatal)', err instanceof Error ? err : new Error(errorMessage), { 
-          component: 'AuthProvider' 
-        });
+        console.error('💥 AuthProvider: CRITICAL ERROR in initializeAuth', err);
         
-        // ✅ Set error but don't prevent rendering
         if (mounted) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
           setError(errorMessage);
-          // Ensure we're in a clean unauthenticated state
           setSession(null);
           setUser(null);
           setIsAuthenticated(false);
         }
       } finally {
-        // ✅✅ CRITICAL: ALWAYS set loading to false - this MUST execute
+        console.log('🎯 AuthProvider: Setting isLoading = false');
         if (mounted) {
           setIsLoading(false);
-          logger.info('Auth initialization complete (isLoading = false)');
+          console.log('✨ AuthProvider: Initialization COMPLETE');
         }
       }
     }
 
-    // Start initialization
     initializeAuth();
 
-    // ===========================================================================
-    // AUTH STATE LISTENER
-    // ===========================================================================
-
+    // Auth state listener setup
+    console.log('👂 AuthProvider: Setting up auth state listener');
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
+        console.log('🔔 AuthProvider: Auth state changed', { event, hasSession: !!newSession });
         if (!mounted) return;
 
         logger.debug('Auth state changed', { event, hasSession: !!newSession });
@@ -279,15 +288,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return currentSession?.access_token ?? null;
     });
 
-    // ===========================================================================
-    // CLEANUP
-    // ===========================================================================
-
+    // Cleanup
     return () => {
+      console.log('🧹 AuthProvider: Cleanup - unmounting');
       mounted = false;
       authSubscription.unsubscribe();
     };
-  }, [loadBusinesses, loadSubscription]); // ✅ Include callbacks in deps
+  }, [loadBusinesses, loadSubscription]);
+
+  console.log('🎨 AuthProvider: About to render children', { 
+    isLoading, 
+    isAuthenticated,
+    hasUser: !!user 
+  });
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
   // ===========================================================================
   // SAFETY: Timeout fallback (prevents infinite loading)
