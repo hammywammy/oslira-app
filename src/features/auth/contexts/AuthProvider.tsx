@@ -8,7 +8,7 @@ import { supabase } from '@/core/lib/supabase';
 import { httpClient } from '@/core/api/client';
 import { logger } from '@/core/utils/logger';
 import { AuthState, UserSubscription } from '../types/auth.types';
-import { getConfig } from '@/core/config/env';
+
 
 // =============================================================================
 // TYPES
