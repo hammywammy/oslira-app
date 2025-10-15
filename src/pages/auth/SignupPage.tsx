@@ -11,6 +11,7 @@ import { Icon } from '@iconify/react';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { logger } from '@/core/utils/logger';
+import { Logo } from '@/shared/components/ui/Logo';
 
 // =============================================================================
 // ANIMATION VARIANTS
@@ -67,20 +68,14 @@ export function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 flex items-center justify-center px-4">
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-        className="w-full max-w-md"
-      >
+<motion.div
+  animate="visible"
+  variants={staggerContainer}
+>
         {/* Logo & Header */}
         <motion.div variants={fadeIn} className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img 
-              src="/assets/images/oslira-logo.png" 
-              alt="Oslira" 
-              className="w-12 h-12"
-            />
+<Logo size="lg" />
             <span className="text-2xl font-bold text-slate-900">Oslira</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
