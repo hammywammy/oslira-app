@@ -36,7 +36,7 @@ export function GoogleOAuthButton({
       setError(null);
       
       logger.info('User initiated Google sign-in');
-      await signInWithOAuth('google');
+      await signInWithOAuth(); // ← REMOVED 'google' argument
       
       // Note: Supabase will redirect to Google, so code below won't execute
       
