@@ -33,70 +33,76 @@ export function OAuthCallbackPage() {
   useEffect(() => {
     let mounted = true;
 
-    async function processCallback() {
-      try {
-        logger.info('Processing OAuth callback...');
+// In OAuthCallbackPage.tsx, add these console.logs to the processCallback function:
 
-        // ===================================================================
-        // STEP 1: Check for OAuth errors in URL
-        // ===================================================================
-        const error = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
+async function processCallback() {
+  console.log('🔵 OAuthCallback: processCallback STARTED');
+  
+  try {
+    logger.info('Processing OAuth callback...');
 
-        if (error) {
-          const errorMsg = `OAuth error: ${error}${errorDescription ? ` - ${errorDescription}` : ''}`;
-          
-          // ← FIX: Create proper Error object
-          logger.error('OAuth error in URL', new Error(errorMsg));
+    // Check for errors
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+    
+    console.log('🟡 OAuthCallback: URL params', { error, errorDescription });
 
-          // Handle "access_denied" (user cancelled) - redirect to login
-          if (error === 'access_denied') {
-            setStatusMessage('Redirecting back to login...');
-            setTimeout(() => {
-              if (mounted) navigate('/auth/login', { replace: true });
-            }, 1500);
-            return;
-          }
+    if (error) {
+      console.log('❌ OAuthCallback: Error in URL');
+      const errorMsg = `OAuth error: ${error}${errorDescription ? ` - ${errorDescription}` : ''}`;
+      logger.error('OAuth error in URL', new Error(errorMsg));
 
-          // Other errors
-          throw new Error(getErrorMessage(error, errorDescription));
-        }
-
-        // ===================================================================
-        // STEP 2: Let AuthProvider handle the callback
-        // Returns redirect path: '/onboarding' | '/dashboard' | '/auth/login'
-        // ===================================================================
-        setStatusMessage('Verifying your credentials...');
-        
-        const redirectPath = await handleOAuthCallback();
-
-        if (!mounted) return;
-
-        // ===================================================================
-        // STEP 3: Handle redirect
-        // ===================================================================
-        if (!redirectPath || redirectPath === '/auth/login') {
-          throw new Error('Authentication failed. No valid session.');
-        }
-
-logger.info('Authentication successful', { redirectPath });        
-        setState('success');
-        setStatusMessage('Success! Redirecting...');
-
-        // Brief delay for UX, then redirect
+      if (error === 'access_denied') {
+        setStatusMessage('Redirecting back to login...');
         setTimeout(() => {
-          if (mounted) navigate(redirectPath, { replace: true });
-        }, 1000);
-
-      } catch (err) {
-        logger.error('Callback processing failed', err as Error, { component: 'OAuthCallbackPage' });
-        
-        if (!mounted) return;
-
-        setState('error');
-        setErrorMessage(err instanceof Error ? err.message : 'Authentication failed');
+          if (mounted) navigate('/auth/login', { replace: true });
+        }, 1500);
+        return;
       }
+
+      throw new Error(getErrorMessage(error, errorDescription));
     }
+
+    // Call handleOAuthCallback
+    console.log('🟢 OAuthCallback: Calling handleOAuthCallback...');
+    setStatusMessage('Verifying your credentials...');
+    
+    const redirectPath = await handleOAuthCallback();
+    
+    console.log('🟣 OAuthCallback: handleOAuthCallback returned', { redirectPath, mounted });
+
+    if (!mounted) {
+      console.log('⚫ OAuthCallback: Component unmounted, stopping');
+      return;
+    }
+
+    // Check redirect path
+    if (!redirectPath || redirectPath === '/auth/login') {
+      console.log('❌ OAuthCallback: Invalid redirect path');
+      throw new Error('Authentication failed. No valid session.');
+    }
+
+    console.log('✅ OAuthCallback: Success! Setting state and redirecting');
+    logger.info('Authentication successful', { redirectPath });        
+    setState('success');
+    setStatusMessage('Success! Redirecting...');
+
+    // Brief delay for UX, then redirect
+    setTimeout(() => {
+      console.log('🚀 OAuthCallback: Navigating to', redirectPath);
+      if (mounted) navigate(redirectPath, { replace: true });
+    }, 1000);
+
+  } catch (err) {
+    console.error('💥 OAuthCallback: Error in processCallback', err);
+    logger.error('Callback processing failed', err as Error, { component: 'OAuthCallbackPage' });
+    
+    if (!mounted) return;
+
+    setState('error');
+    setErrorMessage(err instanceof Error ? err.message : 'Authentication failed');
+  }
+}
 
     processCallback();
 
