@@ -1,6 +1,7 @@
+// src/main.tsx
 /**
  * @file Application Entry Point
- * @description Main entry point - fetches config from AWS via backend before starting React
+ * @description Fetches config from backend, then starts React
  */
 
 import React from 'react';
@@ -8,13 +9,15 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import { initializeConfig, validateConfig } from '@/core/config/env';
 import { logger } from '@/core/utils/logger';
-
-// ✅ NEW - importing Tailwind v4
 import '@/styles/index.css';
+
+// =============================================================================
+// START APP FUNCTION
+// =============================================================================
 
 async function startApp() {
   try {
-    logger.info('🚀 Starting Oslira V2...');
+    logger.info('🚀 Starting Oslira...');
 
     // STEP 1: Fetch config from backend
     logger.info('📡 Fetching config from backend...');
@@ -24,11 +27,17 @@ async function startApp() {
     logger.info('✅ Validating config...');
     validateConfig();
     
-    logger.info('✅ Config loaded successfully from AWS');
+    logger.info('✅ Config loaded successfully');
     
     // STEP 3: Render React app
     logger.info('⚛️ Rendering React app...');
-    const root = ReactDOM.createRoot(document.getElementById('root')!);
+    const rootElement = document.getElementById('root');
+    
+    if (!rootElement) {
+      throw new Error('Root element not found');
+    }
+    
+    const root = ReactDOM.createRoot(rootElement);
     
     root.render(
       <React.StrictMode>
@@ -39,8 +48,8 @@ async function startApp() {
     logger.info('✅ Application started successfully');
     
   } catch (error) {
-    logger.error('❌ Application startup failed', error as Error);
-    showErrorScreen(error as Error);
+    logger.error('❌ Application startup failed', error instanceof Error ? error : new Error(String(error)));
+    showErrorScreen(error instanceof Error ? error : new Error(String(error)));
   }
 }
 
@@ -49,7 +58,14 @@ async function startApp() {
 // =============================================================================
 
 function showErrorScreen(error: Error) {
-  document.body.innerHTML = `
+  const rootElement = document.getElementById('root');
+  
+  if (!rootElement) {
+    document.body.innerHTML = '<div style="padding: 2rem; text-align: center;">Fatal Error: Root element not found</div>';
+    return;
+  }
+  
+  rootElement.innerHTML = `
     <div style="
       display: flex;
       align-items: center;
@@ -67,7 +83,6 @@ function showErrorScreen(error: Error) {
         border-radius: 1rem;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       ">
-        <!-- Error Icon -->
         <div style="
           width: 64px;
           height: 64px;
@@ -82,7 +97,6 @@ function showErrorScreen(error: Error) {
           ⚠️
         </div>
         
-        <!-- Error Title -->
         <h1 style="
           color: #111827;
           font-size: 1.5rem;
@@ -93,7 +107,6 @@ function showErrorScreen(error: Error) {
           Configuration Error
         </h1>
         
-        <!-- Error Message -->
         <p style="
           color: #6b7280;
           font-size: 1rem;
@@ -101,94 +114,51 @@ function showErrorScreen(error: Error) {
           margin: 0 0 1.5rem 0;
           line-height: 1.5;
         ">
-          Unable to load application configuration. Please check your backend connection.
+          Unable to load application configuration.
         </p>
         
-        <!-- Error Details (Collapsible) -->
-        <details style="
+        <div style="
+          background: #f3f4f6;
+          padding: 1rem;
+          border-radius: 0.5rem;
           margin-bottom: 1.5rem;
         ">
-          <summary style="
-            color: #9ca3af;
+          <p style="
+            font-family: 'Courier New', monospace;
             font-size: 0.875rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            transition: background 0.2s;
+            color: #ef4444;
+            margin: 0;
+            word-break: break-word;
           ">
-            Show technical details
-          </summary>
-          <pre style="
-            margin-top: 0.75rem;
-            padding: 1rem;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            overflow-x: auto;
-            color: #374151;
-            line-height: 1.5;
-          ">${error.message || 'Unknown error'}</pre>
-        </details>
+            ${error.message}
+          </p>
+        </div>
         
-        <!-- Action Buttons -->
-        <div style="
-          display: flex;
-          gap: 0.75rem;
-        ">
-          <button
+        <div style="text-align: center;">
+          <button 
             onclick="window.location.reload()"
             style="
-              flex: 1;
-              padding: 0.75rem 1.5rem;
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
               color: white;
               border: none;
+              padding: 0.75rem 2rem;
               border-radius: 0.5rem;
-              font-size: 1rem;
               font-weight: 600;
               cursor: pointer;
-              transition: transform 0.2s, box-shadow 0.2s;
+              font-size: 1rem;
             "
-            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 20px rgba(102, 126, 234, 0.4)'"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
           >
-            Try Again
+            Retry
           </button>
-          
-          <a
-            href="mailto:support@oslira.com"
-            style="
-              flex: 1;
-              padding: 0.75rem 1.5rem;
-              background: #f3f4f6;
-              color: #374151;
-              border: none;
-              border-radius: 0.5rem;
-              font-size: 1rem;
-              font-weight: 600;
-              text-decoration: none;
-              text-align: center;
-              cursor: pointer;
-              transition: background 0.2s;
-            "
-            onmouseover="this.style.background='#e5e7eb'"
-            onmouseout="this.style.background='#f3f4f6'"
-          >
-            Contact Support
-          </a>
         </div>
         
-        <!-- Help Text -->
         <p style="
           margin-top: 1.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid #e5e7eb;
-          color: #9ca3af;
-          font-size: 0.875rem;
           text-align: center;
+          font-size: 0.875rem;
+          color: #9ca3af;
         ">
-          If this problem persists, please contact our support team.
+          If this persists, please contact support.
         </p>
       </div>
     </div>
