@@ -6,8 +6,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Icon } from '@iconify/react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { logger } from '@/core/utils/logger';
 
 // =============================================================================
@@ -15,11 +14,7 @@ import { logger } from '@/core/utils/logger';
 // =============================================================================
 
 interface GoogleOAuthButtonProps {
-  /** Button text */
   label?: string;
-  /** Show loading state */
-  isLoading?: boolean;
-  /** Additional CSS classes */
   className?: string;
 }
 
@@ -43,8 +38,7 @@ export function GoogleOAuthButton({
       logger.info('User initiated Google sign-in');
       await signInWithOAuth('google');
       
-      // Note: If we reach here, OAuth redirect failed
-      // Supabase should redirect automatically, so this shouldn't execute
+      // Note: Supabase will redirect to Google, so code below won't execute
       
     } catch (err) {
       logger.error('Google sign-in failed', err as Error);
@@ -99,9 +93,8 @@ export function GoogleOAuthButton({
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          >
-            <Icon icon="mdi:loading" className="text-2xl text-gray-600" />
-          </motion.div>
+            className="w-5 h-5 border-3 border-gray-900 border-t-transparent rounded-full"
+          />
         )}
 
         {/* Button Text */}
