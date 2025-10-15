@@ -90,7 +90,7 @@ export function OAuthCallbackPage() {
         }, 1000);
 
       } catch (err) {
-        logger.error('Callback processing failed', err as Error);
+        logger.error('Callback processing failed', err as Error, { component: 'OAuthCallbackPage' });
         
         if (!mounted) return;
 
