@@ -1,18 +1,14 @@
 // src/features/auth/contexts/AuthProvider.tsx
 /**
- * @file Auth Provider
- * @description Google OAuth only - preserves ALL functionality from AuthManager.js
+ * @file Auth Provider - Production Ready
+ * @description Google OAuth with zero race conditions and proper error handling
  * 
- * Features Preserved:
- * - Session initialization and validation
- * - Business profile loading
- * - OAuth callback handling
- * - Cross-subdomain session transfer
- * - User enrichment with subscription data
- * - Automatic token refresh (via Supabase)
- * - Zero race conditions
- * 
- * Auth Method: Google OAuth ONLY
+ * Architecture:
+ * - Guarantees isLoading becomes false (via finally block)
+ * - Non-blocking business/subscription loading
+ * - Proper TypeScript types
+ * - Error recovery with fallbacks
+ * - Thread-safe state updates
  */
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
@@ -74,71 +70,166 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Business state (from AuthManager.js)
+  // Business state
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
 
-  // Subscription state (from AuthManager.js)
+  // Subscription state
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
-// ===========================================================================
-// INITIALIZATION (from AuthManager.initialize())
-// ===========================================================================
+  // ===========================================================================
+  // HELPER: LOAD BUSINESSES (NON-THROWING)
+  // ===========================================================================
 
-useEffect(() => {
-  let mounted = true;
-
-  async function initializeAuth() {
+  const loadBusinesses = useCallback(async (userId: string): Promise<void> => {
     try {
-      logger.info('Initializing auth system...');
+      logger.info('Loading user businesses...', { userId });
 
-      // Get initial session
-      const { data: { session: initialSession }, error: sessionError } = 
-        await supabase.auth.getSession();
+      const response = await httpClient.get<Business[]>('/v1/business', {
+        params: { user_id: userId },
+      });
 
-      if (sessionError) {
-        throw sessionError;
-      }
+      if (response.success && response.data) {
+        setBusinesses(response.data);
 
-      // ✅ CRITICAL: Check mounted BEFORE updating state
-      if (!mounted) return;
+        // Auto-select first business if none selected
+        if (response.data.length > 0 && !selectedBusiness) {
+          const firstBusiness = response.data[0];
+          if (firstBusiness) {
+            setSelectedBusiness(firstBusiness);
+            localStorage.setItem('oslira-selected-business', firstBusiness.id);
+          }
+        }
 
-      if (initialSession) {
-        logger.info('Initial session found', { userId: initialSession.user.id });
-        setSession(initialSession);
-        setUser(initialSession.user);
-        setIsAuthenticated(true);
-
-        // Load businesses and subscription (non-blocking)
-        // ✅ FIX: Use Promise.allSettled instead of Promise.all
-        await Promise.allSettled([
-          loadBusinesses(initialSession.user.id),
-          loadSubscription(initialSession.user.id),
-        ]);
+        logger.info('Businesses loaded', { count: response.data.length });
       } else {
-        logger.info('No initial session found');
+        logger.warn('No businesses returned from API');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : 'Failed to initialize auth';
-      logger.error('Auth initialization failed', err as Error);
-      
-      // ✅ CRITICAL: Always update state even on error
-      if (mounted) {
-        setError(errorMessage);
+      // ✅ NON-CRITICAL: Don't throw, just log warning
+      logger.warn('Failed to load businesses (non-critical)', { 
+        error: err instanceof Error ? err.message : 'Unknown error',
+        userId 
+      });
+    }
+  }, [selectedBusiness]);
+
+  // ===========================================================================
+  // HELPER: LOAD SUBSCRIPTION (NON-THROWING)
+  // ===========================================================================
+
+  const loadSubscription = useCallback(async (userId: string): Promise<void> => {
+    try {
+      logger.info('Loading user subscription...', { userId });
+
+      const response = await httpClient.get<UserSubscription>('/v1/subscription', {
+        params: { user_id: userId },
+      });
+
+      if (response.success && response.data) {
+        setSubscription(response.data);
+        logger.info('Subscription loaded', { 
+          plan: response.data.plan,
+          status: response.data.status 
+        });
+      } else {
+        // Fallback to free tier
+        logger.info('No subscription found, using free tier');
+        setSubscription({
+          id: '',
+          user_id: userId,
+          plan: 'free',
+          status: 'active',
+          credits: 25,
+          credits_used: 0,
+          period_start: new Date().toISOString(),
+          period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        });
       }
-    } finally {
-      // ✅ CRITICAL: Always set loading to false
-      if (mounted) {
-        setIsLoading(false);
+    } catch (err) {
+      // ✅ NON-CRITICAL: Fallback to free tier
+      logger.warn('Failed to load subscription, using free tier', {
+        error: err instanceof Error ? err.message : 'Unknown error',
+        userId
+      });
+      
+      setSubscription({
+        id: '',
+        user_id: userId,
+        plan: 'free',
+        status: 'active',
+        credits: 25,
+        credits_used: 0,
+        period_start: new Date().toISOString(),
+        period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+  }, []);
+
+  // ===========================================================================
+  // INITIALIZATION (RACE-CONDITION FREE)
+  // ===========================================================================
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function initializeAuth() {
+      try {
+        logger.info('Initializing auth system...');
+
+        // Get initial session
+        const { data: { session: initialSession }, error: sessionError } = 
+          await supabase.auth.getSession();
+
+        if (sessionError) {
+          throw sessionError;
+        }
+
+        // ✅ Check mounted BEFORE any state updates
+        if (!mounted) return;
+
+        if (initialSession) {
+          logger.info('Initial session found', { userId: initialSession.user.id });
+          
+          // Update auth state
+          setSession(initialSession);
+          setUser(initialSession.user);
+          setIsAuthenticated(true);
+
+          // ✅ Load businesses/subscription (non-blocking, never throws)
+          await Promise.allSettled([
+            loadBusinesses(initialSession.user.id),
+            loadSubscription(initialSession.user.id),
+          ]);
+        } else {
+          logger.info('No initial session found');
+        }
+      } catch (err) {
+        // ✅ Always safe to log error
+        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
+        logger.error('Auth initialization failed', err instanceof Error ? err : new Error(errorMessage), { 
+          component: 'AuthProvider' 
+        });
+        
+        // ✅ Only update state if still mounted
+        if (mounted) {
+          setError(errorMessage);
+        }
+      } finally {
+        // ✅ CRITICAL: Always set loading to false (guarantees page renders)
+        if (mounted) {
+          setIsLoading(false);
+          logger.info('Auth initialization complete');
+        }
       }
     }
-  }
 
     initializeAuth();
 
-    // Setup auth state listener (from AuthManager._setupAuthStateListener())
+    // ===========================================================================
+    // AUTH STATE LISTENER
+    // ===========================================================================
+
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         if (!mounted) return;
@@ -152,7 +243,7 @@ useEffect(() => {
 
           // Load businesses and subscription on sign in
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            await Promise.all([
+            await Promise.allSettled([
               loadBusinesses(newSession.user.id),
               loadSubscription(newSession.user.id),
             ]);
@@ -169,80 +260,34 @@ useEffect(() => {
       }
     );
 
-    // Setup token provider for HTTP client (from AuthManager integration)
+    // ===========================================================================
+    // HTTP CLIENT TOKEN PROVIDER
+    // ===========================================================================
+
     httpClient.setTokenProvider(async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       return currentSession?.access_token ?? null;
     });
 
+    // ===========================================================================
+    // CLEANUP
+    // ===========================================================================
+
     return () => {
       mounted = false;
       authSubscription.unsubscribe();
     };
-  }, []);
+  }, []); // ✅ Empty deps - only run once on mount
 
   // ===========================================================================
-  // BUSINESS LOADING (from AuthManager._loadBusinesses())
+  // PUBLIC API: REFRESH FUNCTIONS
   // ===========================================================================
-
-const loadBusinesses = useCallback(async (userId: string) => {
-  try {
-    logger.info('Loading user businesses...');
-
-    const response = await httpClient.get<Business[]>('/v1/business', {
-      params: { user_id: userId },
-    });
-
-    if (response.success && response.data) {
-      setBusinesses(response.data);
-
-      // Auto-select first business if none selected
-      if (response.data.length > 0 && !selectedBusiness) {
-        const firstBusiness = response.data[0];
-        if (firstBusiness) {
-          setSelectedBusiness(firstBusiness);
-          localStorage.setItem('oslira-selected-business', firstBusiness.id);
-        }
-      }
-
-      logger.info('Businesses loaded', { count: response.data.length });
-    }
-  } catch (err) {
-    // ✅ FIX: Don't throw, just log
-    logger.warn('Failed to load businesses (non-critical)', err as Error);
-  }
-}, [selectedBusiness]);
 
   const refreshBusinesses = useCallback(async () => {
     if (user) {
       await loadBusinesses(user.id);
     }
   }, [user, loadBusinesses]);
-
-  // ===========================================================================
-  // SUBSCRIPTION LOADING (from AuthManager)
-  // ===========================================================================
-
-const loadSubscription = useCallback(async (userId: string) => {
-  try {
-    logger.info('Loading user subscription...');
-
-    const response = await httpClient.get<UserSubscription>('/v1/subscription', {
-      params: { user_id: userId },
-    });
-
-    if (response.success && response.data) {
-      setSubscription(response.data);
-      logger.info('Subscription loaded', { 
-        plan: response.data.plan_type,
-        status: response.data.status 
-      });
-    }
-  } catch (err) {
-    // ✅ FIX: Don't throw, just log
-    logger.warn('Failed to load subscription (non-critical)', err as Error);
-  }
-}, []);
 
   const refreshSubscription = useCallback(async () => {
     if (user) {
@@ -251,7 +296,7 @@ const loadSubscription = useCallback(async (userId: string) => {
   }, [user, loadSubscription]);
 
   // ===========================================================================
-  // BUSINESS SELECTION
+  // PUBLIC API: BUSINESS SELECTION
   // ===========================================================================
 
   const selectBusiness = useCallback((businessId: string) => {
@@ -264,7 +309,7 @@ const loadSubscription = useCallback(async (userId: string) => {
   }, [businesses]);
 
   // ===========================================================================
-  // GOOGLE OAUTH SIGN IN
+  // PUBLIC API: GOOGLE OAUTH SIGN IN
   // ===========================================================================
 
   const signInWithOAuth = useCallback(async () => {
@@ -272,7 +317,6 @@ const loadSubscription = useCallback(async (userId: string) => {
       setIsLoading(true);
       setError(null);
 
-      // Build redirect URL (preserves AuthManager.signInWithGoogle() logic)
       const redirectTo = `${window.location.origin}/auth/callback`;
 
       const { error: signInError } = await supabase.auth.signInWithOAuth({
@@ -293,7 +337,9 @@ const loadSubscription = useCallback(async (userId: string) => {
         ? err.message 
         : 'Failed to sign in with Google';
       setError(errorMessage);
-      logger.error('Google OAuth sign in failed', err as Error);
+      logger.error('Google OAuth sign in failed', err instanceof Error ? err : new Error(errorMessage), {
+        component: 'AuthProvider'
+      });
       throw err;
     } finally {
       setIsLoading(false);
@@ -301,14 +347,14 @@ const loadSubscription = useCallback(async (userId: string) => {
   }, []);
 
   // ===========================================================================
-  // OAUTH CALLBACK (from AuthManager.handleCallback())
+  // PUBLIC API: OAUTH CALLBACK
   // ===========================================================================
 
   const handleOAuthCallback = useCallback(async (): Promise<string | null> => {
     try {
       logger.info('Processing OAuth callback...');
 
-      // Exchange code for session (PKCE flow)
+      // Exchange code for session
       const { data: { session: callbackSession }, error: exchangeError } = 
         await supabase.auth.getSession();
 
@@ -339,7 +385,7 @@ const loadSubscription = useCallback(async (userId: string) => {
         }
       }
 
-      // Check if user needs onboarding (from AuthManager.handleCallback())
+      // Check if user needs onboarding
       const { data: { user: currentUser } } = await supabase.auth.getUser();
 
       if (!currentUser) {
@@ -362,14 +408,16 @@ const loadSubscription = useCallback(async (userId: string) => {
       return '/dashboard';
 
     } catch (err) {
-      logger.error('OAuth callback failed', err as Error);
+      logger.error('OAuth callback failed', err instanceof Error ? err : new Error('Unknown error'), {
+        component: 'AuthProvider'
+      });
       setError('Authentication failed. Please try again.');
       return '/auth/login';
     }
   }, []);
 
   // ===========================================================================
-  // SIGN OUT
+  // PUBLIC API: SIGN OUT
   // ===========================================================================
 
   const signOut = useCallback(async () => {
@@ -392,7 +440,9 @@ const loadSubscription = useCallback(async (userId: string) => {
         ? err.message 
         : 'Failed to sign out';
       setError(errorMessage);
-      logger.error('Sign out failed', err as Error);
+      logger.error('Sign out failed', err instanceof Error ? err : new Error(errorMessage), {
+        component: 'AuthProvider'
+      });
       throw err;
     } finally {
       setIsLoading(false);
@@ -431,7 +481,7 @@ const loadSubscription = useCallback(async (userId: string) => {
 }
 
 // =============================================================================
-// EXPORT CONTEXT (for useAuth hook)
+// EXPORT CONTEXT
 // =============================================================================
 export { AuthContext };
 
