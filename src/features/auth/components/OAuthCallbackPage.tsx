@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { logger } from '@/core/utils/logger';
 
 // =============================================================================
@@ -44,7 +44,8 @@ export function OAuthCallbackPage() {
         const errorDescription = searchParams.get('error_description');
 
         if (error) {
-          logger.error('[OAuthCallback] OAuth error in URL', { error, errorDescription });
+          const errorMsg = `OAuth error: ${error}${errorDescription ? ` - ${errorDescription}` : ''}`;
+          logger.error('[OAuthCallback] OAuth error in URL', new Error(errorMsg));
 
           // Handle "access_denied" (user cancelled) - redirect to login
           if (error === 'access_denied') {
