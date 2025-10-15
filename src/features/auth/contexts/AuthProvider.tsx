@@ -23,7 +23,6 @@ interface Business {
 interface AuthContextValue extends AuthState {
   signInWithOAuth: () => Promise<void>;
   signOut: () => Promise<void>;
-  handleOAuthCallback: () => Promise<string | null>;
   businesses: Business[];
   selectedBusiness: Business | null;
   selectBusiness: (businessId: string) => void;
@@ -205,7 +204,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     console.log('👂 AuthProvider: Setting up auth state listener');
 const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-  (event, newSession) => {  // ← NO ASYNC
+  (event, newSession) => {  // ← NO async
     console.log('🔔 AuthProvider: Auth state changed', { event, hasSession: !!newSession });
     if (!mounted) return;
 
@@ -214,7 +213,7 @@ const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateCh
       setUser(newSession.user);
       setIsAuthenticated(true);
       
-      // Defer async operations using setTimeout (Supabase best practice)
+      // Defer async operations to prevent deadlock
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setTimeout(() => {
           if (mounted) {
@@ -222,7 +221,7 @@ const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateCh
               loadBusinesses(newSession.user.id),
               loadSubscription(newSession.user.id),
             ]).catch((err) => {
-              logger.error('Failed to load user data after auth change', err);
+              console.error('Failed to load user data:', err);
             });
           }
         }, 0);
@@ -371,7 +370,6 @@ const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateCh
     error,
     signInWithOAuth,
     signOut,
-    handleOAuthCallback,
     businesses,
     selectedBusiness,
     selectBusiness,
