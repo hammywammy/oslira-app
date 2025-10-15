@@ -8,6 +8,7 @@ import { supabase } from '@/core/lib/supabase';
 import { httpClient } from '@/core/api/client';
 import { logger } from '@/core/utils/logger';
 import { AuthState, UserSubscription } from '../types/auth.types';
+import { getConfig } from '@/core/config/env';
 
 // =============================================================================
 // TYPES
@@ -292,55 +293,6 @@ const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateCh
       setIsLoading(false);
     }
   }, []);
-
- const handleOAuthCallback = useCallback(async (): Promise<string | null> => {
-  try {
-    // Add 10s timeout to prevent infinite hang
-    const timeoutPromise = new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error('Callback timeout - please try again')), 10000)
-    );
-
-    const callbackPromise = (async () => {
-      const { data: { session: callbackSession }, error: exchangeError } = 
-        await supabase.auth.getSession();
-      
-      if (exchangeError) throw exchangeError;
-      
-      if (!callbackSession) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        
-        if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          if (!data.session) throw new Error('No session returned after code exchange');
-        } else {
-          throw new Error('No session and no OAuth code found');
-        }
-      }
-      
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) throw new Error('No user found after OAuth callback');
-      
-      // Query profile with timeout protection
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('onboarding_completed')
-        .eq('user_id', currentUser.id)
-        .single();
-      
-      if (!profile?.onboarding_completed) return '/onboarding';
-      return '/dashboard';
-    })();
-
-    return await Promise.race([callbackPromise, timeoutPromise]);
-
-  } catch (err) {
-    logger.error('OAuth callback failed', err instanceof Error ? err : new Error('Unknown error'));
-    setError('Authentication failed. Please try again.');
-    return '/auth/login';
-  }
-}, []);
 
   const signOut = useCallback(async () => {
     try {
