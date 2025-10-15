@@ -182,13 +182,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           await supabase.auth.getSession();
 
         if (sessionError) {
-          throw sessionError;
+          logger.error('Session error during init', sessionError);
+          // Don't throw - just continue without session
         }
 
         // ✅ Check mounted BEFORE any state updates
         if (!mounted) return;
 
-        if (initialSession) {
+        if (initialSession && !sessionError) {
           logger.info('Initial session found', { userId: initialSession.user.id });
           
           // Update auth state
@@ -203,27 +204,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
           ]);
         } else {
           logger.info('No initial session found');
+          // Explicitly set unauthenticated state
+          setSession(null);
+          setUser(null);
+          setIsAuthenticated(false);
         }
       } catch (err) {
-        // ✅ Always safe to log error
+        // ✅ Catch ANY error and continue
         const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
-        logger.error('Auth initialization failed', err instanceof Error ? err : new Error(errorMessage), { 
+        logger.error('Auth initialization failed (non-fatal)', err instanceof Error ? err : new Error(errorMessage), { 
           component: 'AuthProvider' 
         });
         
-        // ✅ Only update state if still mounted
+        // ✅ Set error but don't prevent rendering
         if (mounted) {
           setError(errorMessage);
+          // Ensure we're in a clean unauthenticated state
+          setSession(null);
+          setUser(null);
+          setIsAuthenticated(false);
         }
       } finally {
-        // ✅ CRITICAL: Always set loading to false (guarantees page renders)
+        // ✅✅ CRITICAL: ALWAYS set loading to false - this MUST execute
         if (mounted) {
           setIsLoading(false);
-          logger.info('Auth initialization complete');
+          logger.info('Auth initialization complete (isLoading = false)');
         }
       }
     }
 
+    // Start initialization
     initializeAuth();
 
     // ===========================================================================
@@ -277,7 +287,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
       mounted = false;
       authSubscription.unsubscribe();
     };
-  }, []); // ✅ Empty deps - only run once on mount
+  }, [loadBusinesses, loadSubscription]); // ✅ Include callbacks in deps
+
+  // ===========================================================================
+  // SAFETY: Timeout fallback (prevents infinite loading)
+  // ===========================================================================
+  
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        logger.warn('Auth initialization timeout - forcing isLoading = false');
+        setIsLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
 
   // ===========================================================================
   // PUBLIC API: REFRESH FUNCTIONS
