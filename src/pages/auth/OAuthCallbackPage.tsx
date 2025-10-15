@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { createClient } from '@supabase/supabase-js';
+import { getConfig } from '@/core/config/env';
 
 // =============================================================================
 // TYPES
@@ -63,10 +64,13 @@ export function OAuthCallbackPage() {
           throw new Error('No authorization code received');
         }
 
+        // Get config (your app uses getConfig(), not import.meta.env)
+        const config = getConfig();
+
         // Create a fresh Supabase client (independent of app state)
         const supabase = createClient(
-          import.meta.env.VITE_SUPABASE_URL!,
-          import.meta.env.VITE_SUPABASE_ANON_KEY!,
+          config.supabaseUrl,
+          config.supabaseAnonKey,
           {
             auth: {
               persistSession: true,
