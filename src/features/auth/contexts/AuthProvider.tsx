@@ -81,51 +81,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Subscription state (from AuthManager.js)
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
-  // ===========================================================================
-  // INITIALIZATION (from AuthManager.initialize())
-  // ===========================================================================
+// ===========================================================================
+// INITIALIZATION (from AuthManager.initialize())
+// ===========================================================================
 
-  useEffect(() => {
-    let mounted = true;
+useEffect(() => {
+  let mounted = true;
 
-    async function initializeAuth() {
-      try {
-        logger.info('Initializing auth system...');
+  async function initializeAuth() {
+    try {
+      logger.info('Initializing auth system...');
 
-        // Get initial session
-        const { data: { session: initialSession }, error: sessionError } = 
-          await supabase.auth.getSession();
+      // Get initial session
+      const { data: { session: initialSession }, error: sessionError } = 
+        await supabase.auth.getSession();
 
-        if (sessionError) {
-          throw sessionError;
-        }
+      if (sessionError) {
+        throw sessionError;
+      }
 
-        if (!mounted) return;
+      // ✅ CRITICAL: Check mounted BEFORE updating state
+      if (!mounted) return;
 
-        if (initialSession) {
-          logger.info('Initial session found', { userId: initialSession.user.id });
-          setSession(initialSession);
-          setUser(initialSession.user);
-          setIsAuthenticated(true);
+      if (initialSession) {
+        logger.info('Initial session found', { userId: initialSession.user.id });
+        setSession(initialSession);
+        setUser(initialSession.user);
+        setIsAuthenticated(true);
 
-          // Load businesses and subscription (from AuthManager._loadBusinesses())
-          await Promise.all([
-            loadBusinesses(initialSession.user.id),
-            loadSubscription(initialSession.user.id),
-          ]);
-        } else {
-          logger.info('No initial session found');
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
-        logger.error('Auth initialization failed', err as Error);
+        // Load businesses and subscription (non-blocking)
+        // ✅ FIX: Use Promise.allSettled instead of Promise.all
+        await Promise.allSettled([
+          loadBusinesses(initialSession.user.id),
+          loadSubscription(initialSession.user.id),
+        ]);
+      } else {
+        logger.info('No initial session found');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'Failed to initialize auth';
+      logger.error('Auth initialization failed', err as Error);
+      
+      // ✅ CRITICAL: Always update state even on error
+      if (mounted) {
         setError(errorMessage);
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+      }
+    } finally {
+      // ✅ CRITICAL: Always set loading to false
+      if (mounted) {
+        setIsLoading(false);
       }
     }
+  }
 
     initializeAuth();
 
@@ -176,32 +185,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // BUSINESS LOADING (from AuthManager._loadBusinesses())
   // ===========================================================================
 
-  const loadBusinesses = useCallback(async (userId: string) => {
-    try {
-      logger.info('Loading user businesses...');
+const loadBusinesses = useCallback(async (userId: string) => {
+  try {
+    logger.info('Loading user businesses...');
 
-      const response = await httpClient.get<Business[]>('/v1/business', {
-        params: { user_id: userId },
-      });
+    const response = await httpClient.get<Business[]>('/v1/business', {
+      params: { user_id: userId },
+    });
 
-      if (response.success && response.data) {
-        setBusinesses(response.data);
+    if (response.success && response.data) {
+      setBusinesses(response.data);
 
-        // Auto-select first business if none selected
-        if (response.data.length > 0 && !selectedBusiness) {
-          const firstBusiness = response.data[0];
-          if (firstBusiness) {
-            setSelectedBusiness(firstBusiness);
-            localStorage.setItem('oslira-selected-business', firstBusiness.id);
-          }
+      // Auto-select first business if none selected
+      if (response.data.length > 0 && !selectedBusiness) {
+        const firstBusiness = response.data[0];
+        if (firstBusiness) {
+          setSelectedBusiness(firstBusiness);
+          localStorage.setItem('oslira-selected-business', firstBusiness.id);
         }
-
-        logger.info('Businesses loaded', { count: response.data.length });
       }
-    } catch (err) {
-      logger.error('Failed to load businesses', err as Error);
+
+      logger.info('Businesses loaded', { count: response.data.length });
     }
-  }, [selectedBusiness]);
+  } catch (err) {
+    // ✅ FIX: Don't throw, just log
+    logger.warn('Failed to load businesses (non-critical)', err as Error);
+  }
+}, [selectedBusiness]);
 
   const refreshBusinesses = useCallback(async () => {
     if (user) {
@@ -213,34 +223,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // SUBSCRIPTION LOADING (from AuthManager)
   // ===========================================================================
 
-  const loadSubscription = useCallback(async (userId: string) => {
-    try {
-      logger.info('Loading user subscription...');
+const loadSubscription = useCallback(async (userId: string) => {
+  try {
+    logger.info('Loading user subscription...');
 
-      const response = await httpClient.get<UserSubscription>('/v1/subscription', {
-        params: { user_id: userId },
-      });
+    const response = await httpClient.get<UserSubscription>('/v1/subscription', {
+      params: { user_id: userId },
+    });
 
-      if (response.success && response.data) {
-        setSubscription(response.data);
-        logger.info('Subscription loaded', { plan: response.data.plan });
-      }
-    } catch (err) {
-      logger.error('Failed to load subscription', err as Error);
-      
-      // Fallback to free plan with 25 credits
-      setSubscription({
-        id: '',
-        user_id: userId,
-        plan: 'free',
-        status: 'active',
-        credits: 25,
-        credits_used: 0,
-        period_start: new Date().toISOString(),
-        period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    if (response.success && response.data) {
+      setSubscription(response.data);
+      logger.info('Subscription loaded', { 
+        plan: response.data.plan_type,
+        status: response.data.status 
       });
     }
-  }, []);
+  } catch (err) {
+    // ✅ FIX: Don't throw, just log
+    logger.warn('Failed to load subscription (non-critical)', err as Error);
+  }
+}, []);
 
   const refreshSubscription = useCallback(async () => {
     if (user) {
