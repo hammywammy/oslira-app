@@ -51,18 +51,19 @@ export function LoginPage() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Don't render if loading or already authenticated
-  if (isLoading || isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
-        />
-      </div>
-    );
-  }
+// TEMPORARY FIX: Show page even while loading
+// TODO: Fix AuthProvider initialization race condition
+if (isAuthenticated) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
+      />
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 flex items-center justify-center px-4">
