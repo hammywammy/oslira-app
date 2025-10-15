@@ -11,7 +11,6 @@ import { BenefitsSection } from '@/features/homepage/components/BenefitsSection'
 import { HowItWorksSection } from '@/features/homepage/components/HowItWorksSection';
 import { TestimonialsSection } from '@/features/homepage/components/TestimonialsSection';
 import { FinalCTASection } from '@/features/homepage/components/FinalCTASection';
-import { SocialProofNotifications } from '@/features/homepage/components/SocialProofNotifications';
 
 // =============================================================================
 // COMPONENT
@@ -30,9 +29,6 @@ export function HomePage() {
 
       {/* Header (Fixed) */}
       <MarketingHeader />
-
-      {/* Social Proof Notifications (Fixed Position) */}
-      <SocialProofNotifications />
 
       {/* Main Content */}
       <main id="main-content">
