@@ -35,7 +35,7 @@ export function OAuthCallbackPage() {
 
     async function processCallback() {
       try {
-        logger.info('[OAuthCallback] Processing OAuth callback...');
+        logger.info('Processing OAuth callback...');
 
         // ===================================================================
         // STEP 1: Check for OAuth errors in URL
@@ -45,7 +45,9 @@ export function OAuthCallbackPage() {
 
         if (error) {
           const errorMsg = `OAuth error: ${error}${errorDescription ? ` - ${errorDescription}` : ''}`;
-          logger.error('[OAuthCallback] OAuth error in URL', new Error(errorMsg));
+          
+          // ← FIX: Create proper Error object
+          logger.error('OAuth error in URL', new Error(errorMsg));
 
           // Handle "access_denied" (user cancelled) - redirect to login
           if (error === 'access_denied') {
@@ -62,7 +64,7 @@ export function OAuthCallbackPage() {
 
         // ===================================================================
         // STEP 2: Let AuthProvider handle the callback
-        // Returns redirect path: '/onboarding' | '/dashboard' | '/auth'
+        // Returns redirect path: '/onboarding' | '/dashboard' | '/auth/login'
         // ===================================================================
         setStatusMessage('Verifying your credentials...');
         
@@ -73,11 +75,11 @@ export function OAuthCallbackPage() {
         // ===================================================================
         // STEP 3: Handle redirect
         // ===================================================================
-        if (!redirectPath || redirectPath === '/auth') {
+        if (!redirectPath || redirectPath === '/auth/login') {
           throw new Error('Authentication failed. No valid session.');
         }
 
-        logger.info('[OAuthCallback] Authentication successful, redirecting to:', redirectPath);
+        logger.info('Authentication successful, redirecting to:', redirectPath);
         
         setState('success');
         setStatusMessage('Success! Redirecting...');
@@ -88,7 +90,7 @@ export function OAuthCallbackPage() {
         }, 1000);
 
       } catch (err) {
-        logger.error('[OAuthCallback] Callback processing failed', err as Error);
+        logger.error('Callback processing failed', err as Error);
         
         if (!mounted) return;
 
