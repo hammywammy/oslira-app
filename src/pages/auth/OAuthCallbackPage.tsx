@@ -1,15 +1,17 @@
 // src/pages/auth/OAuthCallbackPage.tsx
 /**
- * @file OAuth Callback Page
- * @description Processes OAuth callback from Supabase, then redirects
+ * @file OAuth Callback Page - STANDALONE AUTH HANDLER
+ * @description Completes OAuth flow BEFORE app initialization
+ * 
+ * CRITICAL: This page handles auth exchange independently of AuthProvider
+ * to prevent race conditions. It completes the auth flow, then triggers
+ * a full app reload so AuthProvider initializes with a valid session.
  */
 
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { useAuth } from '@/features/auth/contexts/AuthProvider';
-import { logger } from '@/core/utils/logger';
+import { createClient } from '@supabase/supabase-js';
 
 // =============================================================================
 // TYPES
@@ -22,10 +24,6 @@ type CallbackState = 'processing' | 'success' | 'error';
 // =============================================================================
 
 export function OAuthCallbackPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { handleOAuthCallback } = useAuth();
-  
   const [state, setState] = useState<CallbackState>('processing');
   const [statusMessage, setStatusMessage] = useState('Processing authentication...');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -33,103 +31,126 @@ export function OAuthCallbackPage() {
   useEffect(() => {
     let mounted = true;
 
-// In OAuthCallbackPage.tsx, add these console.logs to the processCallback function:
+    async function processCallback() {
+      console.log('🔵 OAuthCallback: STANDALONE HANDLER STARTED');
+      
+      try {
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const error = params.get('error');
+        const errorDescription = params.get('error_description');
 
-async function processCallback() {
-  console.log('🔵 OAuthCallback: processCallback STARTED');
-  
-  try {
-    logger.info('Processing OAuth callback...');
+        console.log('🟡 OAuthCallback: URL params', { hasCode: !!code, error, errorDescription });
 
-    // Check for errors
-    const error = searchParams.get('error');
-    const errorDescription = searchParams.get('error_description');
-    
-    console.log('🟡 OAuthCallback: URL params', { error, errorDescription });
+        // Check for OAuth errors
+        if (error) {
+          console.log('❌ OAuthCallback: Error in URL');
+          
+          if (error === 'access_denied') {
+            setStatusMessage('Sign-in cancelled. Redirecting...');
+            setTimeout(() => {
+              if (mounted) window.location.href = '/auth/login';
+            }, 1500);
+            return;
+          }
 
-    if (error) {
-      console.log('❌ OAuthCallback: Error in URL');
-      const errorMsg = `OAuth error: ${error}${errorDescription ? ` - ${errorDescription}` : ''}`;
-      logger.error('OAuth error in URL', new Error(errorMsg));
+          throw new Error(errorDescription || `OAuth error: ${error}`);
+        }
 
-      if (error === 'access_denied') {
-        setStatusMessage('Redirecting back to login...');
+        // Verify we have a code
+        if (!code) {
+          throw new Error('No authorization code received');
+        }
+
+        // Create a fresh Supabase client (independent of app state)
+        const supabase = createClient(
+          import.meta.env.VITE_SUPABASE_URL!,
+          import.meta.env.VITE_SUPABASE_ANON_KEY!,
+          {
+            auth: {
+              persistSession: true,
+              storageKey: 'oslira-auth', // Same key as your app
+              autoRefreshToken: true,
+              detectSessionInUrl: true,
+              flowType: 'pkce',
+            },
+          }
+        );
+
+        console.log('🟢 OAuthCallback: Exchanging code for session...');
+        setStatusMessage('Verifying your credentials...');
+
+        // Exchange the code for a session
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (exchangeError) {
+          console.error('❌ OAuthCallback: Exchange failed', exchangeError);
+          throw exchangeError;
+        }
+
+        if (!data.session) {
+          throw new Error('No session returned after code exchange');
+        }
+
+        console.log('✅ OAuthCallback: Session established!', {
+          userId: data.session.user.id,
+          expiresAt: data.session.expires_at,
+        });
+
+        if (!mounted) return;
+
+        // Check if user needs onboarding
+        console.log('🔍 OAuthCallback: Checking onboarding status...');
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('onboarding_completed')
+          .eq('user_id', data.session.user.id)
+          .single();
+
+        const needsOnboarding = !profile?.onboarding_completed;
+        const redirectPath = needsOnboarding ? '/onboarding' : '/dashboard';
+
+        console.log('🎯 OAuthCallback: Redirect determined', { 
+          needsOnboarding, 
+          redirectPath 
+        });
+
+        setState('success');
+        setStatusMessage('Success! Redirecting...');
+
+        // CRITICAL: Use window.location.href instead of navigate()
+        // This forces a full page reload, ensuring AuthProvider initializes
+        // with the newly established session from localStorage
         setTimeout(() => {
-          if (mounted) navigate('/auth/login', { replace: true });
-        }, 1500);
-        return;
+          if (mounted) {
+            console.log('🚀 OAuthCallback: Redirecting to', redirectPath);
+            window.location.href = redirectPath;
+          }
+        }, 1000);
+
+      } catch (err) {
+        console.error('💥 OAuthCallback: Error in processCallback', err);
+        
+        if (!mounted) return;
+
+        setState('error');
+        setErrorMessage(err instanceof Error ? err.message : 'Authentication failed');
       }
-
-      throw new Error(getErrorMessage(error, errorDescription));
     }
-
-    // Call handleOAuthCallback
-    console.log('🟢 OAuthCallback: Calling handleOAuthCallback...');
-    setStatusMessage('Verifying your credentials...');
-    
-    const redirectPath = await handleOAuthCallback();
-    
-    console.log('🟣 OAuthCallback: handleOAuthCallback returned', { redirectPath, mounted });
-
-    if (!mounted) {
-      console.log('⚫ OAuthCallback: Component unmounted, stopping');
-      return;
-    }
-
-    // Check redirect path
-    if (!redirectPath || redirectPath === '/auth/login') {
-      console.log('❌ OAuthCallback: Invalid redirect path');
-      throw new Error('Authentication failed. No valid session.');
-    }
-
-    console.log('✅ OAuthCallback: Success! Setting state and redirecting');
-    logger.info('Authentication successful', { redirectPath });        
-    setState('success');
-    setStatusMessage('Success! Redirecting...');
-
-    // Brief delay for UX, then redirect
-    setTimeout(() => {
-      console.log('🚀 OAuthCallback: Navigating to', redirectPath);
-      if (mounted) navigate(redirectPath, { replace: true });
-    }, 1000);
-
-  } catch (err) {
-    console.error('💥 OAuthCallback: Error in processCallback', err);
-    logger.error('Callback processing failed', err as Error, { component: 'OAuthCallbackPage' });
-    
-    if (!mounted) return;
-
-    setState('error');
-    setErrorMessage(err instanceof Error ? err.message : 'Authentication failed');
-  }
-}
 
     processCallback();
 
     return () => {
       mounted = false;
     };
-  }, [searchParams, handleOAuthCallback, navigate]);
-
-  // ===========================================================================
-  // ERROR MESSAGE HELPER
-  // ===========================================================================
-  function getErrorMessage(error: string, description: string | null): string {
-    const errorMessages: Record<string, string> = {
-      'access_denied': 'Sign-in was cancelled',
-      'invalid_request': 'Invalid authentication request',
-      'server_error': 'Server error occurred',
-      'temporarily_unavailable': 'Service temporarily unavailable'
-    };
-
-    return errorMessages[error] || description || 'Authentication failed';
-  }
+  }, []);
 
   // ===========================================================================
   // RETRY HANDLER
   // ===========================================================================
   const handleRetry = () => {
-    navigate('/auth/login', { replace: true });
+    window.location.href = '/auth/login';
   };
 
   // ===========================================================================
