@@ -1,6 +1,7 @@
+// src/features/auth/contexts/AuthProvider.tsx
 /**
  * @file Auth Provider
- * @description Migrated from AuthManager.js - preserves ALL functionality
+ * @description Google OAuth only - preserves ALL functionality from AuthManager.js
  * 
  * Features Preserved:
  * - Session initialization and validation
@@ -10,6 +11,8 @@
  * - User enrichment with subscription data
  * - Automatic token refresh (via Supabase)
  * - Zero race conditions
+ * 
+ * Auth Method: Google OAuth ONLY
  */
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
@@ -17,7 +20,7 @@ import { User, Session, AuthError as SupabaseAuthError } from '@supabase/supabas
 import { supabase } from '@/core/lib/supabase';
 import { httpClient } from '@/core/api/client';
 import { logger } from '@/core/utils/logger';
-import { AuthState, OAuthProvider, UserSubscription } from '../types/auth.types';
+import { AuthState, UserSubscription } from '../types/auth.types';
 
 // =============================================================================
 // TYPES
@@ -31,18 +34,12 @@ interface Business {
 }
 
 interface AuthContextValue extends AuthState {
-  // Sign in methods
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signInWithOAuth: (provider: OAuthProvider) => Promise<void>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>;
+  // Google OAuth only
+  signInWithOAuth: () => Promise<void>;
   signOut: () => Promise<void>;
   
   // OAuth callback
   handleOAuthCallback: () => Promise<string | null>;
-  
-  // Password management
-  resetPassword: (email: string) => Promise<void>;
-  updatePassword: (newPassword: string) => Promise<void>;
   
   // Business management
   businesses: Business[];
@@ -179,7 +176,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // BUSINESS LOADING (from AuthManager._loadBusinesses())
   // ===========================================================================
 
-const loadBusinesses = useCallback(async (userId: string) => {
+  const loadBusinesses = useCallback(async (userId: string) => {
     try {
       logger.info('Loading user businesses...');
 
@@ -231,7 +228,7 @@ const loadBusinesses = useCallback(async (userId: string) => {
     } catch (err) {
       logger.error('Failed to load subscription', err as Error);
       
-      // Fallback to free plan
+      // Fallback to free plan with 25 credits
       setSubscription({
         id: '',
         user_id: userId,
@@ -265,37 +262,10 @@ const loadBusinesses = useCallback(async (userId: string) => {
   }, [businesses]);
 
   // ===========================================================================
-  // SIGN IN METHODS
+  // GOOGLE OAUTH SIGN IN
   // ===========================================================================
 
-  const signInWithEmail = useCallback(async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        throw signInError;
-      }
-
-      logger.info('Email sign in successful', { userId: data.user?.id });
-    } catch (err) {
-      const errorMessage = err instanceof SupabaseAuthError 
-        ? err.message 
-        : 'Failed to sign in';
-      setError(errorMessage);
-      logger.error('Email sign in failed', err as Error);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const signInWithOAuth = useCallback(async (provider: OAuthProvider) => {
+  const signInWithOAuth = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -304,10 +274,10 @@ const loadBusinesses = useCallback(async (userId: string) => {
       const redirectTo = `${window.location.origin}/auth/callback`;
 
       const { error: signInError } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: 'google',
         options: {
           redirectTo,
-          scopes: provider === 'google' ? 'email profile' : undefined,
+          scopes: 'email profile',
         },
       });
 
@@ -315,13 +285,13 @@ const loadBusinesses = useCallback(async (userId: string) => {
         throw signInError;
       }
 
-      logger.info('OAuth sign in initiated', { provider });
+      logger.info('Google OAuth sign in initiated');
     } catch (err) {
       const errorMessage = err instanceof SupabaseAuthError 
         ? err.message 
-        : 'Failed to sign in with OAuth';
+        : 'Failed to sign in with Google';
       setError(errorMessage);
-      logger.error('OAuth sign in failed', err as Error);
+      logger.error('Google OAuth sign in failed', err as Error);
       throw err;
     } finally {
       setIsLoading(false);
@@ -392,47 +362,7 @@ const loadBusinesses = useCallback(async (userId: string) => {
     } catch (err) {
       logger.error('OAuth callback failed', err as Error);
       setError('Authentication failed. Please try again.');
-      return '/auth';
-    }
-  }, []);
-
-  // ===========================================================================
-  // SIGN UP
-  // ===========================================================================
-
-  const signUp = useCallback(async (
-    email: string, 
-    password: string, 
-    fullName?: string
-  ) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
-
-      if (signUpError) {
-        throw signUpError;
-      }
-
-      logger.info('Sign up successful', { userId: data.user?.id });
-    } catch (err) {
-      const errorMessage = err instanceof SupabaseAuthError 
-        ? err.message 
-        : 'Failed to sign up';
-      setError(errorMessage);
-      logger.error('Sign up failed', err as Error);
-      throw err;
-    } finally {
-      setIsLoading(false);
+      return '/auth/login';
     }
   }, []);
 
@@ -468,62 +398,6 @@ const loadBusinesses = useCallback(async (userId: string) => {
   }, []);
 
   // ===========================================================================
-  // PASSWORD MANAGEMENT
-  // ===========================================================================
-
-  const resetPassword = useCallback(async (email: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
-
-      if (resetError) {
-        throw resetError;
-      }
-
-      logger.info('Password reset email sent');
-    } catch (err) {
-      const errorMessage = err instanceof SupabaseAuthError 
-        ? err.message 
-        : 'Failed to send reset email';
-      setError(errorMessage);
-      logger.error('Password reset failed', err as Error);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const updatePassword = useCallback(async (newPassword: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      logger.info('Password updated successfully');
-    } catch (err) {
-      const errorMessage = err instanceof SupabaseAuthError 
-        ? err.message 
-        : 'Failed to update password';
-      setError(errorMessage);
-      logger.error('Password update failed', err as Error);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // ===========================================================================
   // CONTEXT VALUE
   // ===========================================================================
 
@@ -535,16 +409,12 @@ const loadBusinesses = useCallback(async (userId: string) => {
     isLoading,
     error,
 
-    // Methods
-    signInWithEmail,
+    // Google OAuth only
     signInWithOAuth,
-    signUp,
     signOut,
     handleOAuthCallback,
-    resetPassword,
-    updatePassword,
 
-    // Business
+    // Business management
     businesses,
     selectedBusiness,
     selectBusiness,
@@ -559,9 +429,13 @@ const loadBusinesses = useCallback(async (userId: string) => {
 }
 
 // =============================================================================
+// EXPORT CONTEXT (for useAuth hook)
+// =============================================================================
+export { AuthContext };
+
+// =============================================================================
 // HOOK
 // =============================================================================
-
 export function useAuth() {
   const context = useContext(AuthContext);
   
