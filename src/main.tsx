@@ -16,48 +16,6 @@ import '@/styles/index.css';
 console.log('📦 main.tsx: Imports loaded');
 
 // =============================================================================
-// START APP FUNCTION
-// =============================================================================
-
-async function startApp() {
-  try {
-    logger.info('🚀 Starting Oslira...');
-
-    // STEP 1: Fetch config from backend
-    logger.info('📡 Fetching config from backend...');
-    await initializeConfig();
-    
-    // STEP 2: Validate required config fields
-    logger.info('✅ Validating config...');
-    validateConfig();
-    
-    logger.info('✅ Config loaded successfully');
-    
-    // STEP 3: Render React app
-    logger.info('⚛️ Rendering React app...');
-    const rootElement = document.getElementById('root');
-    
-    if (!rootElement) {
-      throw new Error('Root element not found');
-    }
-    
-    const root = ReactDOM.createRoot(rootElement);
-    
-    root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-    
-    logger.info('✅ Application started successfully');
-    
-  } catch (error) {
-    logger.error('❌ Application startup failed', error instanceof Error ? error : new Error(String(error)));
-    showErrorScreen(error instanceof Error ? error : new Error(String(error)));
-  }
-}
-
-// =============================================================================
 // ERROR SCREEN
 // =============================================================================
 
@@ -172,11 +130,11 @@ function showErrorScreen(error: Error) {
 // =============================================================================
 // START THE APP (IIFE - ensures execution after bundling)
 // =============================================================================
-console.log('🎬 main.tsx: About to call startApp');
 
-// Then wrap your existing startApp() or IIFE with:
+console.log('🎬 main.tsx: About to start app');
+
 (async function() {
-  console.log('▶️ main.tsx: startApp EXECUTING');
+  console.log('▶️ main.tsx: App initialization EXECUTING');
   
   try {
     console.log('1️⃣ main.tsx: Initializing config...');
