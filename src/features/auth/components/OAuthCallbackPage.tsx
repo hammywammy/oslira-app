@@ -79,8 +79,7 @@ export function OAuthCallbackPage() {
           throw new Error('Authentication failed. No valid session.');
         }
 
-        logger.info('Authentication successful, redirecting to:', redirectPath);
-        
+logger.info('Authentication successful', { redirectPath });        
         setState('success');
         setStatusMessage('Success! Redirecting...');
 
