@@ -4,12 +4,16 @@
  * @description Fetches config from backend, then starts React
  */
 
+console.log('🚀 main.tsx: FILE EXECUTING');
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import { initializeConfig, validateConfig } from '@/core/config/env';
 import { logger } from '@/core/utils/logger';
 import '@/styles/index.css';
+
+console.log('📦 main.tsx: Imports loaded');
 
 // =============================================================================
 // START APP FUNCTION
@@ -168,7 +172,45 @@ function showErrorScreen(error: Error) {
 // =============================================================================
 // START THE APP (IIFE - ensures execution after bundling)
 // =============================================================================
+console.log('🎬 main.tsx: About to call startApp');
 
+// Then wrap your existing startApp() or IIFE with:
 (async function() {
-  await startApp();
+  console.log('▶️ main.tsx: startApp EXECUTING');
+  
+  try {
+    console.log('1️⃣ main.tsx: Initializing config...');
+    await initializeConfig();
+    console.log('2️⃣ main.tsx: Config initialized');
+    
+    console.log('3️⃣ main.tsx: Validating config...');
+    validateConfig();
+    console.log('4️⃣ main.tsx: Config validated');
+    
+    console.log('5️⃣ main.tsx: Getting root element...');
+    const rootElement = document.getElementById('root');
+    
+    if (!rootElement) {
+      console.error('❌ main.tsx: Root element not found!');
+      throw new Error('Root element not found');
+    }
+    
+    console.log('6️⃣ main.tsx: Root element found, creating React root...');
+    const root = ReactDOM.createRoot(rootElement);
+    
+    console.log('7️⃣ main.tsx: Rendering App component...');
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    
+    console.log('✅ main.tsx: App rendered successfully!');
+    
+  } catch (error) {
+    console.error('💥 main.tsx: FATAL ERROR', error);
+    showErrorScreen(error instanceof Error ? error : new Error(String(error)));
+  }
 })();
+
+console.log('🏁 main.tsx: Script execution complete');
