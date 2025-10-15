@@ -204,31 +204,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
 
     console.log('👂 AuthProvider: Setting up auth state listener');
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log('🔔 AuthProvider: Auth state changed', { event, hasSession: !!newSession });
-        if (!mounted) return;
+const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+  (event, newSession) => {  // ← NO ASYNC
+    console.log('🔔 AuthProvider: Auth state changed', { event, hasSession: !!newSession });
+    if (!mounted) return;
 
-        if (newSession) {
-          setSession(newSession);
-          setUser(newSession.user);
-          setIsAuthenticated(true);
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            await Promise.allSettled([
+    if (newSession) {
+      setSession(newSession);
+      setUser(newSession.user);
+      setIsAuthenticated(true);
+      
+      // Defer async operations using setTimeout (Supabase best practice)
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setTimeout(() => {
+          if (mounted) {
+            Promise.allSettled([
               loadBusinesses(newSession.user.id),
               loadSubscription(newSession.user.id),
-            ]);
+            ]).catch((err) => {
+              logger.error('Failed to load user data after auth change', err);
+            });
           }
-        } else {
-          setSession(null);
-          setUser(null);
-          setIsAuthenticated(false);
-          setBusinesses([]);
-          setSelectedBusiness(null);
-          setSubscription(null);
-        }
+        }, 0);
       }
-    );
+    } else {
+      setSession(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      setBusinesses([]);
+      setSelectedBusiness(null);
+      setSubscription(null);
+    }
+  }
+);
 
     httpClient.setTokenProvider(async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -286,14 +294,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const handleOAuthCallback = useCallback(async (): Promise<string | null> => {
-    try {
+ const handleOAuthCallback = useCallback(async (): Promise<string | null> => {
+  try {
+    // Add 10s timeout to prevent infinite hang
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Callback timeout - please try again')), 10000)
+    );
+
+    const callbackPromise = (async () => {
       const { data: { session: callbackSession }, error: exchangeError } = 
         await supabase.auth.getSession();
+      
       if (exchangeError) throw exchangeError;
+      
       if (!callbackSession) {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
+        
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
@@ -302,21 +319,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
           throw new Error('No session and no OAuth code found');
         }
       }
+      
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error('No user found after OAuth callback');
+      
+      // Query profile with timeout protection
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('onboarding_completed')
         .eq('user_id', currentUser.id)
         .single();
+      
       if (!profile?.onboarding_completed) return '/onboarding';
       return '/dashboard';
-    } catch (err) {
-      logger.error('OAuth callback failed', err instanceof Error ? err : new Error('Unknown error'));
-      setError('Authentication failed. Please try again.');
-      return '/auth/login';
-    }
-  }, []);
+    })();
+
+    return await Promise.race([callbackPromise, timeoutPromise]);
+
+  } catch (err) {
+    logger.error('OAuth callback failed', err instanceof Error ? err : new Error('Unknown error'));
+    setError('Authentication failed. Please try again.');
+    return '/auth/login';
+  }
+}, []);
 
   const signOut = useCallback(async () => {
     try {
