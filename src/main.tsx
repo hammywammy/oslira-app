@@ -166,7 +166,9 @@ function showErrorScreen(error: Error) {
 }
 
 // =============================================================================
-// START THE APP
+// START THE APP (IIFE - ensures execution after bundling)
 // =============================================================================
 
-startApp();
+(async function() {
+  await startApp();
+})();
