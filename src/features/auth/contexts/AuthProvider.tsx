@@ -1,15 +1,6 @@
 // src/features/auth/contexts/AuthProvider.tsx
-/**
- * @file Auth Provider - Production Ready
- * @description Google OAuth with zero race conditions and proper error handling
- * 
- * Architecture:
- * - Guarantees isLoading becomes false (via finally block)
- * - Non-blocking business/subscription loading
- * - Proper TypeScript types
- * - Error recovery with fallbacks
- * - Thread-safe state updates
- */
+
+console.log('🔵 AuthProvider.tsx: FILE LOADED');
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User, Session, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
@@ -30,20 +21,13 @@ interface Business {
 }
 
 interface AuthContextValue extends AuthState {
-  // Google OAuth only
   signInWithOAuth: () => Promise<void>;
   signOut: () => Promise<void>;
-  
-  // OAuth callback
   handleOAuthCallback: () => Promise<string | null>;
-  
-  // Business management
   businesses: Business[];
   selectedBusiness: Business | null;
   selectBusiness: (businessId: string) => void;
   refreshBusinesses: () => Promise<void>;
-  
-  // Subscription data
   subscription: UserSubscription | null;
   refreshSubscription: () => Promise<void>;
 }
@@ -51,7 +35,6 @@ interface AuthContextValue extends AuthState {
 // =============================================================================
 // CONTEXT
 // =============================================================================
-console.log('🔵 AuthProvider.tsx: FILE LOADED');
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -66,41 +49,29 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   console.log('🟢 AuthProvider: COMPONENT RENDERING');
   
-  // Core auth state
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  console.log('🟡 AuthProvider: Initial state set', { 
-    isLoading, 
-    isAuthenticated 
-  });
-
-  // Business state
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-
-  // Subscription state
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
 
+  console.log('🟡 AuthProvider: Initial state', { isLoading, isAuthenticated });
+
   // ===========================================================================
-  // HELPER: LOAD BUSINESSES (NON-THROWING)
+  // HELPER: LOAD BUSINESSES
   // ===========================================================================
 
   const loadBusinesses = useCallback(async (userId: string): Promise<void> => {
     try {
       logger.info('Loading user businesses...', { userId });
-
       const response = await httpClient.get<Business[]>('/v1/business', {
         params: { user_id: userId },
       });
-
       if (response.success && response.data) {
         setBusinesses(response.data);
-
-        // Auto-select first business if none selected
         if (response.data.length > 0 && !selectedBusiness) {
           const firstBusiness = response.data[0];
           if (firstBusiness) {
@@ -108,13 +79,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             localStorage.setItem('oslira-selected-business', firstBusiness.id);
           }
         }
-
         logger.info('Businesses loaded', { count: response.data.length });
       } else {
         logger.warn('No businesses returned from API');
       }
     } catch (err) {
-      // ✅ NON-CRITICAL: Don't throw, just log warning
       logger.warn('Failed to load businesses (non-critical)', { 
         error: err instanceof Error ? err.message : 'Unknown error',
         userId 
@@ -123,25 +92,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [selectedBusiness]);
 
   // ===========================================================================
-  // HELPER: LOAD SUBSCRIPTION (NON-THROWING)
+  // HELPER: LOAD SUBSCRIPTION
   // ===========================================================================
 
   const loadSubscription = useCallback(async (userId: string): Promise<void> => {
     try {
       logger.info('Loading user subscription...', { userId });
-
       const response = await httpClient.get<UserSubscription>('/v1/subscription', {
         params: { user_id: userId },
       });
-
       if (response.success && response.data) {
         setSubscription(response.data);
-        logger.info('Subscription loaded', { 
-          plan: response.data.plan,
-          status: response.data.status 
-        });
+        logger.info('Subscription loaded', { plan: response.data.plan, status: response.data.status });
       } else {
-        // Fallback to free tier
         logger.info('No subscription found, using free tier');
         setSubscription({
           id: '',
@@ -155,12 +118,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
       }
     } catch (err) {
-      // ✅ NON-CRITICAL: Fallback to free tier
       logger.warn('Failed to load subscription, using free tier', {
         error: err instanceof Error ? err.message : 'Unknown error',
         userId
       });
-      
       setSubscription({
         id: '',
         user_id: userId,
@@ -175,19 +136,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // ===========================================================================
-  // INITIALIZATION (RACE-CONDITION FREE)
+  // INITIALIZATION
   // ===========================================================================
 
-    useEffect(() => {
+  useEffect(() => {
     console.log('🟣 AuthProvider: useEffect STARTED');
     let mounted = true;
 
     async function initializeAuth() {
       console.log('🔴 AuthProvider: initializeAuth() CALLED');
-      
       try {
         console.log('⚪ AuthProvider: Fetching session...');
-        
         const { data: { session: initialSession }, error: sessionError } = 
           await supabase.auth.getSession();
 
@@ -208,7 +167,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (initialSession && !sessionError) {
           console.log('✅ AuthProvider: User authenticated', initialSession.user.id);
-          
           setSession(initialSession);
           setUser(initialSession.user);
           setIsAuthenticated(true);
@@ -227,7 +185,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (err) {
         console.error('💥 AuthProvider: CRITICAL ERROR in initializeAuth', err);
-        
         if (mounted) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
           setError(errorMessage);
@@ -246,21 +203,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     initializeAuth();
 
-    // Auth state listener setup
     console.log('👂 AuthProvider: Setting up auth state listener');
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log('🔔 AuthProvider: Auth state changed', { event, hasSession: !!newSession });
         if (!mounted) return;
 
-        logger.debug('Auth state changed', { event, hasSession: !!newSession });
-
         if (newSession) {
           setSession(newSession);
           setUser(newSession.user);
           setIsAuthenticated(true);
-
-          // Load businesses and subscription on sign in
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             await Promise.allSettled([
               loadBusinesses(newSession.user.id),
@@ -268,7 +220,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             ]);
           }
         } else {
-          // Clear state on sign out
           setSession(null);
           setUser(null);
           setIsAuthenticated(false);
@@ -279,16 +230,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     );
 
-    // ===========================================================================
-    // HTTP CLIENT TOKEN PROVIDER
-    // ===========================================================================
-
     httpClient.setTokenProvider(async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       return currentSession?.access_token ?? null;
     });
 
-    // Cleanup
     return () => {
       console.log('🧹 AuthProvider: Cleanup - unmounting');
       mounted = false;
@@ -296,49 +242,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [loadBusinesses, loadSubscription]);
 
-  console.log('🎨 AuthProvider: About to render children', { 
-    isLoading, 
-    isAuthenticated,
-    hasUser: !!user 
-  });
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
   // ===========================================================================
-  // SAFETY: Timeout fallback (prevents infinite loading)
-  // ===========================================================================
-  
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        logger.warn('Auth initialization timeout - forcing isLoading = false');
-        setIsLoading(false);
-      }
-    }, 10000); // 10 second timeout
-
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
-
-  // ===========================================================================
-  // PUBLIC API: REFRESH FUNCTIONS
+  // PUBLIC API
   // ===========================================================================
 
   const refreshBusinesses = useCallback(async () => {
-    if (user) {
-      await loadBusinesses(user.id);
-    }
+    if (user) await loadBusinesses(user.id);
   }, [user, loadBusinesses]);
 
   const refreshSubscription = useCallback(async () => {
-    if (user) {
-      await loadSubscription(user.id);
-    }
+    if (user) await loadSubscription(user.id);
   }, [user, loadSubscription]);
-
-  // ===========================================================================
-  // PUBLIC API: BUSINESS SELECTION
-  // ===========================================================================
 
   const selectBusiness = useCallback((businessId: string) => {
     const business = businesses.find((b) => b.id === businessId);
@@ -349,192 +263,113 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [businesses]);
 
-  // ===========================================================================
-  // PUBLIC API: GOOGLE OAUTH SIGN IN
-  // ===========================================================================
-
   const signInWithOAuth = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-
       const redirectTo = `${window.location.origin}/auth/callback`;
-
       const { error: signInError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo,
-          scopes: 'email profile',
-        },
+        options: { redirectTo, scopes: 'email profile' },
       });
-
-      if (signInError) {
-        throw signInError;
-      }
-
+      if (signInError) throw signInError;
       logger.info('Google OAuth sign in initiated');
     } catch (err) {
       const errorMessage = err instanceof SupabaseAuthError 
         ? err.message 
         : 'Failed to sign in with Google';
       setError(errorMessage);
-      logger.error('Google OAuth sign in failed', err instanceof Error ? err : new Error(errorMessage), {
-        component: 'AuthProvider'
-      });
+      logger.error('Google OAuth sign in failed', err instanceof Error ? err : new Error(errorMessage));
       throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // ===========================================================================
-  // PUBLIC API: OAUTH CALLBACK
-  // ===========================================================================
-
   const handleOAuthCallback = useCallback(async (): Promise<string | null> => {
     try {
-      logger.info('Processing OAuth callback...');
-
-      // Exchange code for session
       const { data: { session: callbackSession }, error: exchangeError } = 
         await supabase.auth.getSession();
-
-      if (exchangeError) {
-        throw exchangeError;
-      }
-
+      if (exchangeError) throw exchangeError;
       if (!callbackSession) {
-        // Check for OAuth code in URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
-
         if (code) {
-          logger.info('Found OAuth code, exchanging for session...');
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-          if (error) {
-            throw error;
-          }
-
-          if (!data.session) {
-            throw new Error('No session returned after code exchange');
-          }
-
-          logger.info('OAuth code exchanged successfully');
+          if (error) throw error;
+          if (!data.session) throw new Error('No session returned after code exchange');
         } else {
           throw new Error('No session and no OAuth code found');
         }
       }
-
-      // Check if user needs onboarding
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-      if (!currentUser) {
-        throw new Error('No user found after OAuth callback');
-      }
-
-      // Check if user has completed onboarding
+      if (!currentUser) throw new Error('No user found after OAuth callback');
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('onboarding_completed')
         .eq('user_id', currentUser.id)
         .single();
-
-      if (!profile?.onboarding_completed) {
-        logger.info('User needs onboarding');
-        return '/onboarding';
-      }
-
-      logger.info('OAuth callback processed successfully');
+      if (!profile?.onboarding_completed) return '/onboarding';
       return '/dashboard';
-
     } catch (err) {
-      logger.error('OAuth callback failed', err instanceof Error ? err : new Error('Unknown error'), {
-        component: 'AuthProvider'
-      });
+      logger.error('OAuth callback failed', err instanceof Error ? err : new Error('Unknown error'));
       setError('Authentication failed. Please try again.');
       return '/auth/login';
     }
   }, []);
 
-  // ===========================================================================
-  // PUBLIC API: SIGN OUT
-  // ===========================================================================
-
   const signOut = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-
       const { error: signOutError } = await supabase.auth.signOut();
-
-      if (signOutError) {
-        throw signOutError;
-      }
-
-      // Clear local storage
+      if (signOutError) throw signOutError;
       localStorage.removeItem('oslira-selected-business');
-
       logger.info('Sign out successful');
     } catch (err) {
       const errorMessage = err instanceof SupabaseAuthError 
         ? err.message 
         : 'Failed to sign out';
       setError(errorMessage);
-      logger.error('Sign out failed', err instanceof Error ? err : new Error(errorMessage), {
-        component: 'AuthProvider'
-      });
+      logger.error('Sign out failed', err instanceof Error ? err : new Error(errorMessage));
       throw err;
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // ===========================================================================
-  // CONTEXT VALUE
-  // ===========================================================================
-
   const value: AuthContextValue = {
-    // State
     user,
     session,
     isAuthenticated,
     isLoading,
     error,
-
-    // Google OAuth only
     signInWithOAuth,
     signOut,
     handleOAuthCallback,
-
-    // Business management
     businesses,
     selectedBusiness,
     selectBusiness,
     refreshBusinesses,
-
-    // Subscription
     subscription,
     refreshSubscription,
   };
+
+  console.log('🎨 AuthProvider: About to render children', { isLoading, isAuthenticated, hasUser: !!user });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // =============================================================================
-// EXPORT CONTEXT
+// EXPORTS
 // =============================================================================
+
 export { AuthContext };
 
-// =============================================================================
-// HOOK
-// =============================================================================
 export function useAuth() {
   const context = useContext(AuthContext);
-  
   if (!context) {
     throw new Error('useAuth must be used within AuthProvider');
   }
-  
   return context;
 }
