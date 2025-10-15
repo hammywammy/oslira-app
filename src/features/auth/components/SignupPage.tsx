@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { logger } from '@/core/utils/logger';
 
 // =============================================================================
