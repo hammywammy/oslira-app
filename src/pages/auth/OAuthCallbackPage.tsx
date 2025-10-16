@@ -53,7 +53,7 @@ export function OAuthCallbackPage() {
           const errorObj = new Error(errorDescription || `OAuth error: ${error}`);
           logger.error('OAuth error in URL', { 
             message: errorObj.message,
-            code: error,
+            errorCode: error,
             description: errorDescription 
           });
           
