@@ -21,7 +21,6 @@ import { logger } from '@/core/utils/logger';
 
 let supabaseInstance: SupabaseClient | null = null;
 let isInitializing = false;
-let initPromise: Promise<SupabaseClient> | null = null;
 
 /**
  * Get or create Supabase client - GUARANTEED SINGLETON
@@ -66,9 +65,8 @@ function getSupabaseClient(): SupabaseClient {
           // Use PKCE flow for OAuth
           flowType: 'pkce',
           
-          // Lock to prevent concurrent writes
+          // Use window.localStorage for storage
           storage: window.localStorage,
-          storageKey: AUTH.STORAGE_KEY,
         },
         
         global: {
@@ -185,7 +183,7 @@ export async function getSession() {
     
     return data.session;
   } catch (error) {
-    logger.error('Exception getting session', error);
+    logger.error('Exception getting session', error instanceof Error ? error : new Error(String(error)));
     return null;
   }
 }
@@ -205,7 +203,7 @@ export async function getUser() {
     
     return data.user;
   } catch (error) {
-    logger.error('Exception getting user', error);
+    logger.error('Exception getting user', error instanceof Error ? error : new Error(String(error)));
     return null;
   }
 }
@@ -236,7 +234,7 @@ export async function signOut(): Promise<void> {
     
     logger.info('User signed out successfully');
   } catch (error) {
-    logger.error('Exception during sign out', error);
+    logger.error('Exception during sign out', error instanceof Error ? error : new Error(String(error)));
     throw error;
   }
 }
