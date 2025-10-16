@@ -104,8 +104,8 @@ export function OAuthCallbackPage() {
 
         if (profileError) {
           logger.warn('Failed to fetch profile, assuming needs onboarding', {
-            message: profileError.message,
-            code: profileError.code,
+            errorMessage: profileError.message,
+            errorCode: profileError.code,
           });
         }
 
