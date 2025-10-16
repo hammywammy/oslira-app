@@ -51,8 +51,7 @@ export function OAuthCallbackPage() {
         // Check for OAuth errors
         if (error) {
           const errorObj = new Error(errorDescription || `OAuth error: ${error}`);
-          logger.error('OAuth error in URL', { 
-            message: errorObj.message,
+          logger.error('OAuth error in URL', errorObj, { 
             errorCode: error,
             description: errorDescription 
           });
