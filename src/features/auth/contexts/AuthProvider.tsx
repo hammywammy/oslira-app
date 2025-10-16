@@ -135,8 +135,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+
   // ===========================================================================
-  // INITIALIZATION
+  // INITIALIZATION - OPTIMIZED FOR OAUTH CALLBACK
   // ===========================================================================
 
   useEffect(() => {
@@ -145,38 +146,50 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     async function initializeAuth() {
       console.log('🔴 AuthProvider: initializeAuth() CALLED');
+      
       try {
         console.log('⚪ AuthProvider: Fetching session...');
+        
+        // CRITICAL: getSession() will pick up the session set by the callback
+        // because we're using the SAME Supabase singleton
         const { data: { session: initialSession }, error: sessionError } = 
           await supabase.auth.getSession();
 
         console.log('🟠 AuthProvider: Session fetched', { 
           hasSession: !!initialSession,
           hasError: !!sessionError,
-          mounted 
+          mounted,
+          userId: initialSession?.user?.id
         });
 
         if (sessionError) {
           console.error('❌ AuthProvider: Session error', sessionError);
+          // Don't throw - just log and continue with no session
         }
 
+        // Check if component unmounted during async operation
         if (!mounted) {
           console.log('⚫ AuthProvider: Component unmounted, stopping');
           return;
         }
 
+        // Update state based on session
         if (initialSession && !sessionError) {
           console.log('✅ AuthProvider: User authenticated', initialSession.user.id);
           setSession(initialSession);
           setUser(initialSession.user);
           setIsAuthenticated(true);
 
+          // Load user data in background (don't block)
           console.log('🔵 AuthProvider: Loading businesses & subscription...');
-          await Promise.allSettled([
+          Promise.allSettled([
             loadBusinesses(initialSession.user.id),
             loadSubscription(initialSession.user.id),
-          ]);
-          console.log('🟢 AuthProvider: Businesses & subscription loaded');
+          ]).then(() => {
+            console.log('🟢 AuthProvider: Businesses & subscription loaded');
+          }).catch((err) => {
+            console.warn('⚠️ AuthProvider: Failed to load user data', err);
+          });
         } else {
           console.log('⚠️ AuthProvider: No session, user not authenticated');
           setSession(null);
@@ -185,6 +198,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (err) {
         console.error('💥 AuthProvider: CRITICAL ERROR in initializeAuth', err);
+        
         if (mounted) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
           setError(errorMessage);
@@ -201,55 +215,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
 
+    // Start initialization
     initializeAuth();
 
+    // Setup auth state listener
     console.log('👂 AuthProvider: Setting up auth state listener');
-const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-  (event, newSession) => {  // ← NO async
-    console.log('🔔 AuthProvider: Auth state changed', { event, hasSession: !!newSession });
-    if (!mounted) return;
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        console.log('🔔 AuthProvider: Auth state changed', { 
+          event, 
+          hasSession: !!newSession,
+          userId: newSession?.user?.id
+        });
+        
+        if (!mounted) return;
 
-    if (newSession) {
-      setSession(newSession);
-      setUser(newSession.user);
-      setIsAuthenticated(true);
-      
-      // Defer async operations to prevent deadlock
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setTimeout(() => {
-          if (mounted) {
-            Promise.allSettled([
-              loadBusinesses(newSession.user.id),
-              loadSubscription(newSession.user.id),
-            ]).catch((err) => {
-              console.error('Failed to load user data:', err);
-            });
+        if (newSession) {
+          setSession(newSession);
+          setUser(newSession.user);
+          setIsAuthenticated(true);
+          
+          // Defer async operations to prevent blocking
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            setTimeout(() => {
+              if (mounted) {
+                Promise.allSettled([
+                  loadBusinesses(newSession.user.id),
+                  loadSubscription(newSession.user.id),
+                ]).catch((err) => {
+                  console.error('Failed to load user data:', err);
+                });
+              }
+            }, 0);
           }
-        }, 0);
+        } else {
+          // User signed out
+          setSession(null);
+          setUser(null);
+          setIsAuthenticated(false);
+          setBusinesses([]);
+          setSelectedBusiness(null);
+          setSubscription(null);
+        }
       }
-    } else {
-      setSession(null);
-      setUser(null);
-      setIsAuthenticated(false);
-      setBusinesses([]);
-      setSelectedBusiness(null);
-      setSubscription(null);
-    }
-  }
-);
+    );
 
+    // Setup token provider for API calls
     httpClient.setTokenProvider(async () => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       return currentSession?.access_token ?? null;
     });
 
+    // Cleanup
     return () => {
       console.log('🧹 AuthProvider: Cleanup - unmounting');
       mounted = false;
       authSubscription.unsubscribe();
     };
   }, [loadBusinesses, loadSubscription]);
-
   // ===========================================================================
   // PUBLIC API
   // ===========================================================================
