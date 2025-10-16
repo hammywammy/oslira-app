@@ -1,15 +1,17 @@
+// src/features/auth/hooks/useSession.ts
 /**
- * @file Session Validation Hook
- * @description Migrated from SessionValidator.js - preserves ALL functionality
+ * @file Session Management Hook
+ * @description React hook for session validation and management
  * 
- * Features Preserved:
- * - Periodic server-side session validation (every 10 minutes)
- * - Network failure tolerance
- * - Automatic sign-out on invalid sessions
- * - Validation statistics tracking
+ * Preserves functionality from SessionValidator.js:
+ * - Periodic session validation
+ * - Server-side validation
+ * - Automatic sign-out on invalid session
+ * - Validation statistics
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/core/lib/supabase';
 import { logger } from '@/core/utils/logger';
 import { AUTH } from '@/core/config/constants';
@@ -18,45 +20,44 @@ import { AUTH } from '@/core/config/constants';
 // TYPES
 // =============================================================================
 
-interface SessionValidationStats {
+interface SessionStats {
+  isValidating: boolean;
   validationCount: number;
   failureCount: number;
-  lastValidation: number | null;
-  isValidating: boolean;
+  lastValidation: number;
 }
 
 interface UseSessionReturn {
+  session: Session | null;
   isValid: boolean;
   isValidating: boolean;
-  stats: SessionValidationStats;
-  validateNow: () => Promise<boolean>;
+  stats: SessionStats;
+  validateSession: () => Promise<boolean>;
+  refreshSession: () => Promise<boolean>;
 }
 
 // =============================================================================
 // HOOK
 // =============================================================================
 
-/**
- * Session validation hook
- * Validates session with server every 10 minutes (from SessionValidator.js)
- */
 export function useSession(): UseSessionReturn {
-  const [isValid, setIsValid] = useState(true);
-  const [stats, setStats] = useState<SessionValidationStats>({
+  const [session, setSession] = useState<Session | null>(null);
+  const [isValid, setIsValid] = useState(false);
+  const [stats, setStats] = useState<SessionStats>({
+    isValidating: false,
     validationCount: 0,
     failureCount: 0,
-    lastValidation: null,
-    isValidating: false,
+    lastValidation: 0,
   });
 
-  const validationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const validationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
 
   // ===========================================================================
   // VALIDATION LOGIC (from SessionValidator.js)
   // ===========================================================================
 
-  const validateSession = async (): Promise<boolean> => {
+  const validateSession = useCallback(async (): Promise<boolean> => {
     if (!isMountedRef.current) return false;
 
     setStats((prev) => ({ ...prev, isValidating: true }));
@@ -103,11 +104,11 @@ export function useSession(): UseSessionReturn {
       return true;
 
     } catch (error) {
-      logger.error('Session validation error', error as Error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Session validation error', err);
 
       if (!isMountedRef.current) return false;
 
-      // Network error - don't sign out (from SessionValidator.js tolerance)
       setStats((prev) => ({
         ...prev,
         isValidating: false,
@@ -115,51 +116,105 @@ export function useSession(): UseSessionReturn {
         lastValidation: Date.now(),
       }));
 
-      // Keep session valid on network errors (tolerance)
-      return true;
+      setIsValid(false);
+      return false;
     }
-  };
+  }, []);
 
   // ===========================================================================
-  // PERIODIC VALIDATION (from SessionValidator.js)
+  // REFRESH SESSION
+  // ===========================================================================
+
+  const refreshSession = useCallback(async (): Promise<boolean> => {
+    if (!isMountedRef.current) return false;
+
+    try {
+      logger.debug('Refreshing session...');
+
+      const { data, error } = await supabase.auth.refreshSession();
+
+      if (!isMountedRef.current) return false;
+
+      if (error || !data.session) {
+        logger.warn('Session refresh failed', { error: error?.message });
+        return false;
+      }
+
+      logger.debug('Session refreshed successfully');
+      setSession(data.session);
+      setIsValid(true);
+      return true;
+
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Session refresh error', err);
+      return false;
+    }
+  }, []);
+
+  // ===========================================================================
+  // SETUP PERIODIC VALIDATION
   // ===========================================================================
 
   useEffect(() => {
-    isMountedRef.current = true;
+    // Get initial session
+    async function getInitialSession() {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (isMountedRef.current && currentSession) {
+        setSession(currentSession);
+        setIsValid(true);
+      }
+    }
 
-    // Run initial validation
-    validateSession();
+    getInitialSession();
 
-    // Setup periodic validation (every 10 minutes)
-    validationTimerRef.current = setInterval(() => {
-      validateSession();
-    }, AUTH.SESSION_VALIDATION_INTERVAL);
-
-    logger.info('Session validation started', {
-      interval: `${AUTH.SESSION_VALIDATION_INTERVAL / 1000}s`,
+    // Setup auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (isMountedRef.current) {
+        setSession(newSession);
+        setIsValid(!!newSession);
+      }
     });
 
-    // Cleanup
+    // Setup periodic validation (every 5 minutes)
+    validationTimerRef.current = setInterval(() => {
+      if (isMountedRef.current) {
+        validateSession();
+      }
+    }, AUTH.VALIDATION_INTERVAL);
+
+    logger.debug('Session validation enabled', {
+      interval: AUTH.VALIDATION_INTERVAL / 1000 / 60, // minutes
+    });
+
     return () => {
       isMountedRef.current = false;
+      subscription.unsubscribe();
       
       if (validationTimerRef.current) {
         clearInterval(validationTimerRef.current);
         validationTimerRef.current = null;
       }
-
-      logger.info('Session validation stopped');
     };
-  }, []);
+  }, [validateSession]);
 
   // ===========================================================================
   // RETURN
   // ===========================================================================
 
   return {
+    session,
     isValid,
     isValidating: stats.isValidating,
     stats,
-    validateNow: validateSession,
+    validateSession,
+    refreshSession,
   };
 }
+
+// =============================================================================
+// EXPORTS
+// =============================================================================
+
+export default useSession;
