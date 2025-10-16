@@ -8,12 +8,13 @@
  * 2. Uses singleton from @/core/lib/supabase
  * 3. Added explicit redirect after success
  * 4. Fixed async timing issues
+ * 5. TypeScript strict mode compliant
  */
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { supabase } from '@/core/lib/supabase'; // ← USE SINGLETON
+import { supabase } from '@/core/lib/supabase';
 import { logger } from '@/core/utils/logger';
 
 // =============================================================================
@@ -33,7 +34,7 @@ export function OAuthCallbackPage() {
 
   useEffect(() => {
     let mounted = true;
-    let redirectTimer: NodeJS.Timeout | null = null;
+    let redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
     async function processCallback() {
       logger.info('OAuth callback started');
@@ -49,7 +50,12 @@ export function OAuthCallbackPage() {
 
         // Check for OAuth errors
         if (error) {
-          logger.error('OAuth error in URL', { error, errorDescription });
+          const errorObj = new Error(errorDescription || `OAuth error: ${error}`);
+          logger.error('OAuth error in URL', { 
+            message: errorObj.message,
+            errorCode: error,
+            description: errorDescription 
+          });
           
           if (error === 'access_denied') {
             setStatusMessage('Sign-in cancelled. Redirecting...');
@@ -59,7 +65,7 @@ export function OAuthCallbackPage() {
             return;
           }
 
-          throw new Error(errorDescription || `OAuth error: ${error}`);
+          throw errorObj;
         }
 
         // Verify we have a code
@@ -95,10 +101,13 @@ export function OAuthCallbackPage() {
           .from('user_profiles')
           .select('onboarding_completed')
           .eq('user_id', data.session.user.id)
-          .maybeSingle(); // Use maybeSingle() to handle missing profile
+          .maybeSingle();
 
         if (profileError) {
-          logger.warn('Failed to fetch profile, assuming needs onboarding', profileError);
+          logger.warn('Failed to fetch profile, assuming needs onboarding', {
+            message: profileError.message,
+            code: profileError.code,
+          });
         }
 
         const needsOnboarding = !profile?.onboarding_completed;
@@ -124,12 +133,13 @@ export function OAuthCallbackPage() {
         }, 1000);
 
       } catch (err) {
-        logger.error('OAuth callback failed', err);
+        const error = err instanceof Error ? err : new Error(String(err));
+        logger.error('OAuth callback failed', error);
         
         if (!mounted) return;
 
         setState('error');
-        setErrorMessage(err instanceof Error ? err.message : 'Authentication failed');
+        setErrorMessage(error.message);
       }
     }
 
