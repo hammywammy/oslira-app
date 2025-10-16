@@ -1,3 +1,4 @@
+// src/core/api/client.ts
 /**
  * @file HTTP Client
  * @description Migrated from HttpClient.js - preserves ALL retry logic, interceptors
@@ -249,11 +250,11 @@ class HttpClient {
         // Don't retry client errors (4xx except 429)
         return false;
       },
-      onRetry: (retryCount, error) => {
-        logger.warn('Retrying failed request', {
+      onRetry: (retryCount, error, requestConfig) => {
+        logger.info('Retrying request', {
           attempt: retryCount,
-          url: error.config?.url,
-          status: error.response?.status,
+          url: requestConfig.url,
+          error: error.message,
         });
       },
     };
@@ -262,15 +263,15 @@ class HttpClient {
   }
 
   // ===========================================================================
-  // TOKEN PROVIDER (for auth injection)
+  // TOKEN MANAGEMENT
   // ===========================================================================
 
   /**
-   * Set token provider function
-   * Called by AuthProvider to inject tokens
+   * Set token provider function (called by AuthProvider)
    */
   setTokenProvider(provider: () => Promise<string | null>): void {
     this.tokenProvider = provider;
+    logger.debug('Token provider set');
   }
 
   // ===========================================================================
@@ -278,44 +279,39 @@ class HttpClient {
   // ===========================================================================
 
   /**
-   * Generic request method with deduplication
+   * Make HTTP request with retry logic
    */
-  private async request<T>(
+  async request<T>(
     method: string,
     url: string,
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
-    const client = this.getClient();
-    const cacheKey = options.cacheKey || `${method}:${url}`;
-
-    // Request deduplication: return existing in-flight request
-    if (!options.skipCache && this.activeRequests.has(cacheKey)) {
-      logger.debug('Using deduplicated request', { cacheKey });
-      const existingRequest = this.activeRequests.get(cacheKey)!;
-      const response = await existingRequest;
-      return response.data as ApiResponse<T>;
-    }
-
-    // Create new request
-    const requestPromise = client.request<ApiResponse<T>>({
-      method,
-      url,
-      ...options,
-    });
-
-    // Store in active requests for deduplication
-    if (!options.skipCache) {
-      this.activeRequests.set(cacheKey, requestPromise as Promise<AxiosResponse>);
-    }
-
     try {
-      const response = await requestPromise;
-      return response.data;
+      const client = this.getClient();
+
+      // Build request config
+      const config: AxiosRequestConfig = {
+        method,
+        url,
+        ...options,
+      };
+
+      // Execute request
+      const response: AxiosResponse<ApiResponse<T>> = await client.request(config);
+
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message,
+      };
     } catch (error) {
-      throw this.handleError(error);
-    } finally {
-      // Clean up active request
-      this.activeRequests.delete(cacheKey);
+      const handledError = this.handleError(error);
+      logger.error('Request failed', handledError);
+
+      return {
+        success: false,
+        error: handledError.message,
+      };
     }
   }
 
@@ -363,7 +359,7 @@ class HttpClient {
    */
   private handleError(error: unknown): Error {
     if (!axios.isAxiosError(error)) {
-      return error as Error;
+      return error instanceof Error ? error : new Error(String(error));
     }
 
     const axiosError = error as AxiosError<ApiResponse>;
