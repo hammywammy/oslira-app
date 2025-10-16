@@ -32,11 +32,24 @@ export const CACHE = {
 // =============================================================================
 
 export const AUTH = {
-  TOKEN_REFRESH_BEFORE_EXPIRY: 5 * 60 * 1000, // Refresh 5 min before expiry
-  TOKEN_CHECK_INTERVAL: 60 * 1000, // Check every 60 seconds
-  SESSION_VALIDATION_INTERVAL: 10 * 60 * 1000, // Validate every 10 minutes
-  MAX_REFRESH_RETRIES: 3,
-  STORAGE_KEY: 'oslira-auth',
+  // Storage keys
+  STORAGE_KEY: 'oslira-auth', // localStorage key for auth session
+  BUSINESS_STORAGE_KEY: 'oslira-selected-business',
+  
+  // Session configuration
+  SESSION_TIMEOUT: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+  TOKEN_REFRESH_THRESHOLD: 5 * 60 * 1000, // Refresh 5 minutes before expiry
+  
+  // OAuth configuration
+  OAUTH_REDIRECT_URL: '/auth/callback',
+  OAUTH_SCOPES: 'email profile',
+  
+  // Session validation (check every 5 minutes)
+  VALIDATION_INTERVAL: 5 * 60 * 1000,
+  
+  // Retry configuration
+  MAX_RETRY_ATTEMPTS: 3,
+  RETRY_DELAY: 1000, // Initial delay in ms
 } as const;
 
 // =============================================================================
