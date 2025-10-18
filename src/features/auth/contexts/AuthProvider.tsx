@@ -64,12 +64,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // HELPER: LOAD BUSINESSES
   // ===========================================================================
 
-  const loadBusinesses = useCallback(async (userId: string): Promise<void> => {
-    try {
-      logger.info('Loading user businesses...', { userId });
-      const response = await httpClient.get<Business[]>('/v1/business', {
-        params: { user_id: userId },
-      });
+const loadBusinesses = useCallback(async (userId: string): Promise<void> => {
+  try {
+    logger.info('Loading user businesses...', { userId });
+    const response = await httpClient.get<Business[]>('/business-profiles');  // ✅ NEW
       if (response.success && response.data) {
         setBusinesses(response.data);
         if (response.data.length > 0 && !selectedBusiness) {
@@ -95,12 +93,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // HELPER: LOAD SUBSCRIPTION
   // ===========================================================================
 
-  const loadSubscription = useCallback(async (userId: string): Promise<void> => {
-    try {
-      logger.info('Loading user subscription...', { userId });
-      const response = await httpClient.get<UserSubscription>('/v1/subscription', {
-        params: { user_id: userId },
-      });
+const loadSubscription = useCallback(async (userId: string): Promise<void> => {
+  try {
+    logger.info('Loading user subscription...', { userId });
+    const response = await httpClient.get<UserSubscription>('/user/subscription');  // ✅ NEW
       if (response.success && response.data) {
         setSubscription(response.data);
         logger.info('Subscription loaded', { plan: response.data.plan, status: response.data.status });
