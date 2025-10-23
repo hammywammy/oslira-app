@@ -69,20 +69,22 @@ export function useCompleteOnboarding() {
         payload
       );
 
-      return response.data;
+      return response; // ✅ Return the whole response object
     },
 
-    onSuccess: async (data) => {
-      // Update token in auth manager
-      if (data.access_token) {
+    onSuccess: async (response) => {
+      // ✅ Access token from response object
+      if (response.access_token) {
         const authManager = (await import('@/core/auth/auth-manager')).authManager;
         const currentTokens = authManager.getTokens();
         
         if (currentTokens) {
-          authManager.setTokens({
-            ...currentTokens,
-            accessToken: data.access_token,
-          });
+          // ✅ Use the correct signature: setTokens(accessToken, refreshToken, expiresAt)
+          authManager.setTokens(
+            response.access_token,
+            currentTokens.refreshToken,
+            currentTokens.expiresAt
+          );
         }
       }
 
