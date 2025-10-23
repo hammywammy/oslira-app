@@ -26,7 +26,8 @@ export function Step6Communication() {
     formState: { errors },
   } = useFormContext<FormData>();
 
-  const selectedChannels = watch('communication_channels') || [];
+  // ✅ PROPER TYPE HANDLING WITH FALLBACK
+  const selectedChannels = (watch('communication_channels') as string[] | undefined) || [];
 
   const channels = [
     { value: 'email', label: 'Email', icon: ICONS.mail },
@@ -89,8 +90,8 @@ export function Step6Communication() {
                   transition-all duration-200
                   ${
                     isSelected
-                      ? 'border-violet-500/50 bg-violet-500/5'
-                      : 'border-slate-700/50 hover:border-violet-500/30'
+                      ? 'bg-violet-500/20 border-violet-500 shadow-lg shadow-violet-500/20'
+                      : 'bg-slate-900/50 border-slate-700/50 hover:border-violet-500/50'
                   }
                 `}
               >
@@ -98,49 +99,29 @@ export function Step6Communication() {
                   type="checkbox"
                   value={channel.value}
                   {...register('communication_channels')}
-                  className="sr-only peer"
+                  className="sr-only"
                 />
-                
-                {/* Checkmark indicator */}
-                <div className={`
-                  absolute top-2 right-2 w-5 h-5 rounded-full border-2
-                  flex items-center justify-center
-                  transition-colors duration-200
-                  ${
-                    isSelected
-                      ? 'border-violet-500 bg-violet-500'
-                      : 'border-slate-600'
-                  }
-                `}>
-                  {isSelected && (
-                    <Icon icon={ICONS.check} className="w-3 h-3 text-white" />
-                  )}
-                </div>
-
-                {/* Icon */}
-                <Icon
-                  icon={channel.icon}
-                  className={`
-                    w-6 h-6 mb-2 transition-colors
-                    ${isSelected ? 'text-violet-400' : 'text-slate-400'}
-                  `}
-                />
-
-                {/* Label */}
-                <p className={`
-                  text-sm font-medium text-center transition-colors
-                  ${isSelected ? 'text-violet-300' : 'text-slate-200'}
-                `}>
-                  {channel.label}
-                </p>
+                <Icon icon={channel.icon} className="text-3xl text-white mb-2" />
+                <span className="text-sm font-medium text-white">{channel.label}</span>
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-2 right-2 w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center"
+                  >
+                    <Icon icon={ICONS.check} className="text-white text-xs" />
+                  </motion.div>
+                )}
               </label>
             );
           })}
         </div>
         {errors.communication_channels && (
-          <p className="text-xs text-red-400 flex items-center gap-1.5">
-            <Icon icon={ICONS.alertCircle} className="w-3.5 h-3.5" />
-            {errors.communication_channels.message}
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <Icon icon={ICONS.alertCircle} className="text-sm" />
+            {typeof errors.communication_channels.message === 'string' 
+              ? errors.communication_channels.message 
+              : 'Please select at least one channel'}
           </p>
         )}
       </motion.div>
@@ -150,43 +131,34 @@ export function Step6Communication() {
         <label className="block text-sm font-medium text-slate-200">
           Communication Tone <span className="text-violet-400">*</span>
         </label>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {tones.map((tone) => (
             <label
               key={tone.value}
-              className="relative flex items-start p-4 border border-slate-700/50 rounded-lg cursor-pointer hover:border-violet-500/50 transition-colors"
+              className="flex items-start gap-3 p-4 bg-slate-900/50 border border-slate-700/50 rounded-lg cursor-pointer hover:border-violet-500/50 transition-all duration-200"
             >
               <input
                 type="radio"
                 value={tone.value}
                 {...register('communication_tone')}
-                className="sr-only peer"
+                className="mt-1 w-4 h-4 text-violet-500 border-slate-600 focus:ring-violet-500 focus:ring-offset-slate-900"
               />
               <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-sm font-medium text-slate-200 peer-checked:text-violet-300">
-                    {tone.label}
-                  </p>
-                  <Icon
-                    icon={ICONS.messageSquare}
-                    className="w-4 h-4 text-slate-400 peer-checked:text-violet-400"
-                  />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-white">{tone.label}</span>
+                  <span className="text-xs text-slate-400">{tone.description}</span>
                 </div>
-                <p className="text-xs text-slate-500 mb-1">
-                  {tone.description}
-                </p>
-                <p className="text-xs text-slate-600 italic">
-                  Example: {tone.example}
-                </p>
+                <p className="text-sm text-slate-500 italic">{tone.example}</p>
               </div>
-              <div className="absolute inset-0 border-2 border-violet-500 rounded-lg opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
             </label>
           ))}
         </div>
         {errors.communication_tone && (
-          <p className="text-xs text-red-400 flex items-center gap-1.5">
-            <Icon icon={ICONS.alertCircle} className="w-3.5 h-3.5" />
-            {errors.communication_tone.message}
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <Icon icon={ICONS.alertCircle} className="text-sm" />
+            {typeof errors.communication_tone.message === 'string'
+              ? errors.communication_tone.message
+              : 'Please select a tone'}
           </p>
         )}
       </motion.div>
