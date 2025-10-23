@@ -7,11 +7,12 @@
  * Singleton pattern - initialized once on app load
  * 
  * Environments:
+ * - development: localhost → http://localhost:8787
  * - staging: staging-app.oslira.com → api-staging.oslira.com
  * - production: app.oslira.com → api.oslira.com
  */
 
-export type Environment = 'staging' | 'production';
+export type Environment = 'development' | 'staging' | 'production';
 
 export interface EnvironmentConfig {
   environment: Environment;
@@ -19,6 +20,7 @@ export interface EnvironmentConfig {
   appUrl: string;
   isStaging: boolean;
   isProduction: boolean;
+  isDevelopment: boolean;
 }
 
 class EnvironmentManager {
@@ -36,6 +38,18 @@ class EnvironmentManager {
   private detectEnvironment(): EnvironmentConfig {
     const hostname = window.location.hostname;
 
+    // Development environment (localhost)
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return {
+        environment: 'development',
+        apiUrl: 'http://localhost:8787',
+        appUrl: 'http://localhost:5173',
+        isStaging: false,
+        isProduction: false,
+        isDevelopment: true,
+      };
+    }
+
     // Staging environment
     if (hostname.includes('staging')) {
       return {
@@ -44,6 +58,7 @@ class EnvironmentManager {
         appUrl: 'https://staging-app.oslira.com',
         isStaging: true,
         isProduction: false,
+        isDevelopment: false,
       };
     }
 
@@ -54,6 +69,7 @@ class EnvironmentManager {
       appUrl: 'https://app.oslira.com',
       isStaging: false,
       isProduction: true,
+      isDevelopment: false,
     };
   }
 
