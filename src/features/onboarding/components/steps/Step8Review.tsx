@@ -23,6 +23,35 @@ interface Step8ReviewProps {
 }
 
 // =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+function formatChallenges(challenges?: string[]): string {
+  if (!challenges || challenges.length === 0) return 'None selected';
+  return challenges.map(c => c.replace(/-/g, ' ')).join(', ');
+}
+
+function formatChannels(channels?: string[]): string {
+  if (!channels || channels.length === 0) return 'None';
+  return channels.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ');
+}
+
+function formatCompanySizes(sizes?: string[]): string {
+  if (!sizes || sizes.length === 0) return 'All sizes';
+  return sizes.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+}
+
+function formatTone(tone?: string): string {
+  if (!tone) return 'Not specified';
+  return tone.charAt(0).toUpperCase() + tone.slice(1);
+}
+
+function formatEnum(value?: string): string {
+  if (!value) return 'Not specified';
+  return value.replace(/-/g, ' ');
+}
+
+// =============================================================================
 // COMPONENT
 // =============================================================================
 
@@ -52,7 +81,7 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       step: 3,
       title: 'Goals',
       items: [
-        { label: 'Objective', value: values.primary_objective?.replace(/-/g, ' ') },
+        { label: 'Objective', value: formatEnum(values.primary_objective) },
         { label: 'Monthly Target', value: `${values.monthly_lead_goal} leads` },
       ],
     },
@@ -62,9 +91,7 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       items: [
         { 
           label: 'Selected Challenges', 
-          value: values.challenges && values.challenges.length > 0
-            ? values.challenges.map((c: string) => c.replace(/-/g, ' ')).join(', ')
-            : 'None selected'
+          value: formatChallenges(values.challenges)
         },
       ],
     },
@@ -76,9 +103,7 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
         { label: 'Follower Range', value: `${values.icp_min_followers?.toLocaleString()} - ${values.icp_max_followers?.toLocaleString()}` },
         { 
           label: 'Company Sizes', 
-          value: values.target_company_sizes && values.target_company_sizes.length > 0
-            ? values.target_company_sizes.map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')
-            : 'All sizes'
+          value: formatCompanySizes(values.target_company_sizes)
         },
       ],
     },
@@ -88,19 +113,17 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       items: [
         { 
           label: 'Channels', 
-          value: values.communication_channels && values.communication_channels.length > 0
-            ? values.communication_channels.map((c: string) => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')
-            : 'None'
+          value: formatChannels(values.communication_channels)
         },
-        { label: 'Tone', value: values.communication_tone?.charAt(0).toUpperCase() + values.communication_tone?.slice(1) },
+        { label: 'Tone', value: formatTone(values.communication_tone) },
       ],
     },
     {
       step: 7,
       title: 'Team',
       items: [
-        { label: 'Size', value: values.team_size?.replace(/-/g, ' ') },
-        { label: 'Manager', value: values.campaign_manager?.replace(/-/g, ' ') },
+        { label: 'Size', value: formatEnum(values.team_size) },
+        { label: 'Manager', value: formatEnum(values.campaign_manager) },
       ],
     },
   ];
