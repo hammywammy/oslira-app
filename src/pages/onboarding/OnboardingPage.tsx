@@ -1,173 +1,190 @@
-// src/features/onboarding/constants/validationSchemas.ts
+// src/pages/onboarding/OnboardingPage.tsx
 
 /**
- * VALIDATION SCHEMAS
+ * ONBOARDING PAGE
  * 
- * Zod schemas for each onboarding step
- * Validates input before proceeding to next step
+ * Main orchestrator for 8-step onboarding flow
+ * Manages form state, validation, and API submission
  */
 
-import { z } from 'zod';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { OnboardingShell } from '@/features/onboarding/components/OnboardingShell';
+import { ProgressBar } from '@/features/onboarding/components/ProgressBar';
+import { StepContainer } from '@/features/onboarding/components/StepContainer';
+import { NavigationBar } from '@/features/onboarding/components/NavigationBar';
+import { LoadingState } from '@/features/onboarding/components/LoadingState';
+import { Step1Personal } from '@/features/onboarding/components/steps/Step1Personal';
+import { Step2Business } from '@/features/onboarding/components/steps/Step2Business';
+import { Step3Goals } from '@/features/onboarding/components/steps/Step3Goals';
+import { Step4Challenges } from '@/features/onboarding/components/steps/Step4Challenges';
+import { Step5Target } from '@/features/onboarding/components/steps/Step5Target';
+import { Step6Communication } from '@/features/onboarding/components/steps/Step6Communication';
+import { Step7Team } from '@/features/onboarding/components/steps/Step7Team';
+import { Step8Review } from '@/features/onboarding/components/steps/Step8Review';
+import { useOnboardingForm } from '@/features/onboarding/hooks/useOnboardingForm';
+import { useCompleteOnboarding } from '@/features/onboarding/hooks/useCompleteOnboarding';
+import {
+  fullFormSchema,
+  step1Schema,
+  step2Schema,
+  step3Schema,
+  step4Schema,
+  step5Schema,
+  step6Schema,
+  step7Schema,
+  type FormData,
+} from '@/features/onboarding/constants/validationSchemas';
+import { TOTAL_STEPS } from '@/features/onboarding/constants/steps';
 
 // =============================================================================
-// STEP 1: PERSONAL IDENTITY
+// STEP SCHEMAS MAP
 // =============================================================================
 
-export const step1Schema = z.object({
-  signature_name: z
-    .string()
-    .min(2, 'Name must be at least 2 characters')
-    .max(50, 'Name must be less than 50 characters')
-    .trim(),
-});
+const stepSchemas = {
+  1: step1Schema,
+  2: step2Schema,
+  3: step3Schema,
+  4: step4Schema,
+  5: step5Schema,
+  6: step6Schema,
+  7: step7Schema,
+  8: fullFormSchema, // Full validation before submit
+};
 
 // =============================================================================
-// STEP 2: BUSINESS BASICS
+// COMPONENT
 // =============================================================================
 
-export const step2Schema = z.object({
-  company_name: z
-    .string()
-    .min(2, 'Company name must be at least 2 characters')
-    .max(100, 'Company name must be less than 100 characters')
-    .trim(),
-  
-  business_summary: z
-    .string()
-    .min(50, 'Description must be at least 50 characters')
-    .max(500, 'Description must be less than 500 characters')
-    .trim(),
-  
-  industry: z.enum([
-    'Technology',
-    'Healthcare',
-    'Finance',
-    'Real Estate',
-    'Retail',
-    'Manufacturing',
-    'Consulting',
-    'Marketing',
-    'Education',
-    'Other',
-  ]),
-  
-  industry_other: z
-    .string()
-    .max(50, 'Industry must be less than 50 characters')
-    .trim()
-    .optional(),
-  
-  company_size: z.enum(['1-10', '11-50', '51+']),
-  
-  website: z
-    .string()
-    .url('Invalid website URL')
-    .optional()
-    .or(z.literal('')),
-});
+export function OnboardingPage() {
+  const { currentStep, direction, nextStep, prevStep, goToStep } = useOnboardingForm();
+  const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
 
-// =============================================================================
-// STEP 3: GOALS
-// =============================================================================
+  // React Hook Form setup
+  const methods = useForm<FormData>({
+    resolver: zodResolver(fullFormSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      challenges: [],
+      target_company_sizes: [],
+      communication_channels: [],
+    },
+  });
 
-export const step3Schema = z.object({
-  primary_objective: z.enum([
-    'lead-generation',
-    'sales-automation',
-    'market-research',
-    'customer-retention',
-  ]),
-  
-  monthly_lead_goal: z
-    .number()
-    .int()
-    .min(1, 'Lead goal must be at least 1')
-    .max(10000, 'Lead goal must be less than 10,000'),
-});
+  const { trigger, handleSubmit } = methods;
 
-// =============================================================================
-// STEP 4: CHALLENGES (OPTIONAL)
-// =============================================================================
+  // =============================================================================
+  // NAVIGATION HANDLERS
+  // =============================================================================
 
-export const step4Schema = z.object({
-  challenges: z
-    .array(z.enum([
-      'low-quality-leads',
-      'time-consuming',
-      'expensive-tools',
-      'lack-personalization',
-      'poor-data-quality',
-      'difficult-scaling',
-    ]))
-    .optional()
-    .default([]),
-});
+  const handleNext = async () => {
+    // Validate current step before proceeding
+    const schema = stepSchemas[currentStep as keyof typeof stepSchemas];
+    
+    // For step 5, just validate the base fields (no refine)
+    // The refine will run on final submission
+    const fields = Object.keys(schema.shape || (schema as any)._def?.schema?.shape || {});
+    
+    const isValid = await trigger(fields as any);
+    
+    if (!isValid) {
+      return; // Stay on current step if validation fails
+    }
 
-// =============================================================================
-// STEP 5: TARGET AUDIENCE
-// =============================================================================
+    if (currentStep === TOTAL_STEPS) {
+      // Submit form on last step
+      handleSubmit(onSubmit)();
+    } else {
+      nextStep();
+    }
+  };
 
-export const step5Schema = z.object({
-  target_description: z
-    .string()
-    .min(20, 'Description must be at least 20 characters')
-    .max(500, 'Description must be less than 500 characters')
-    .trim(),
-  
-  icp_min_followers: z
-    .number()
-    .int()
-    .min(0, 'Minimum must be 0 or greater'),
-  
-  icp_max_followers: z
-    .number()
-    .int()
-    .min(0, 'Maximum must be 0 or greater'),
-  
-  target_company_sizes: z
-    .array(z.enum(['startup', 'smb', 'enterprise']))
-    .optional()
-    .default([]),
-}).refine(
-  (data: { icp_max_followers: number; icp_min_followers: number }) => 
-    data.icp_max_followers >= data.icp_min_followers,
-  {
-    message: 'Maximum must be greater than or equal to minimum',
-    path: ['icp_max_followers'],
-  }
-);
+  const handleBack = () => {
+    prevStep();
+  };
 
-// =============================================================================
-// STEP 6: COMMUNICATION
-// =============================================================================
+  const handleEditStep = (step: number) => {
+    goToStep(step);
+  };
 
-export const step6Schema = z.object({
-  communication_channels: z
-    .array(z.enum(['email', 'instagram', 'sms']))
-    .min(1, 'Please select at least one channel'),
-  
-  communication_tone: z.enum(['professional', 'friendly', 'casual']),
-});
+  // =============================================================================
+  // FORM SUBMISSION
+  // =============================================================================
 
-// =============================================================================
-// STEP 7: TEAM
-// =============================================================================
+  const onSubmit = (data: FormData) => {
+    completeOnboarding(data);
+  };
 
-export const step7Schema = z.object({
-  team_size: z.enum(['just-me', 'small-team', 'large-team']),
-  campaign_manager: z.enum(['myself', 'sales-team', 'marketing-team', 'mixed-team']),
-});
+  // =============================================================================
+  // RENDER STEP CONTENT
+  // =============================================================================
 
-// =============================================================================
-// FULL FORM SCHEMA
-// =============================================================================
+  const renderStep = () => {
+    if (isPending) {
+      return <LoadingState />;
+    }
 
-export const fullFormSchema = step1Schema
-  .merge(step2Schema)
-  .merge(step3Schema)
-  .merge(step4Schema)
-  .merge(step5Schema)
-  .merge(step6Schema)
-  .merge(step7Schema);
+    switch (currentStep) {
+      case 1:
+        return <Step1Personal />;
+      case 2:
+        return <Step2Business />;
+      case 3:
+        return <Step3Goals />;
+      case 4:
+        return <Step4Challenges />;
+      case 5:
+        return <Step5Target />;
+      case 6:
+        return <Step6Communication />;
+      case 7:
+        return <Step7Team />;
+      case 8:
+        return <Step8Review onEditStep={handleEditStep} />;
+      default:
+        return null;
+    }
+  };
 
-export type FormData = z.infer<typeof fullFormSchema>;
+  // =============================================================================
+  // DETERMINE NAVIGATION STATE
+  // =============================================================================
+
+  const canGoBack = currentStep > 1 && !isPending;
+  const canGoNext = !isPending;
+  const isLastStep = currentStep === TOTAL_STEPS;
+
+  // =============================================================================
+  // RENDER
+  // =============================================================================
+
+  return (
+    <FormProvider {...methods}>
+      <div className="relative">
+        {/* Progress Bar */}
+        <ProgressBar currentStep={currentStep} />
+
+        {/* Main Content */}
+        <OnboardingShell>
+          <StepContainer step={currentStep} direction={direction}>
+            {renderStep()}
+          </StepContainer>
+        </OnboardingShell>
+
+        {/* Navigation Bar */}
+        <NavigationBar
+          currentStep={currentStep}
+          canGoBack={canGoBack}
+          canGoNext={canGoNext}
+          isLastStep={isLastStep}
+          onBack={handleBack}
+          onNext={handleNext}
+          isLoading={isPending}
+        />
+      </div>
+    </FormProvider>
+  );
+}
+
+// ✅ ALSO EXPORT AS DEFAULT
+export default OnboardingPage;
