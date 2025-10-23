@@ -1,43 +1,82 @@
-// src/core/config/environment.ts
+// src/core/auth/environment.ts
+
+/**
+ * ENVIRONMENT MANAGER
+ * 
+ * Detects environment from hostname (no API calls, instant)
+ * Singleton pattern - initialized once on app load
+ * 
+ * Environments:
+ * - staging: staging-app.oslira.com → api-staging.oslira.com
+ * - production: app.oslira.com → api.oslira.com
+ */
+
+export type Environment = 'staging' | 'production';
+
+export interface EnvironmentConfig {
+  environment: Environment;
+  apiUrl: string;
+  appUrl: string;
+  isStaging: boolean;
+  isProduction: boolean;
+}
 
 class EnvironmentManager {
   private static instance: EnvironmentManager;
-  
-  public readonly environment: 'development' | 'staging' | 'production';
-  public readonly apiUrl: string;
-  public readonly appUrl: string;
-  public readonly googleClientId: string;
-  
+  private config: EnvironmentConfig;
+
   private constructor() {
-    const hostname = window.location.hostname;
-    
-    // Detect environment from hostname (INSTANT, no API call)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      this.environment = 'development';
-      this.apiUrl = 'http://localhost:8787';
-      this.appUrl = 'http://localhost:5173';
-      this.googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID_DEV;
-    } 
-    else if (hostname.includes('staging')) {
-      this.environment = 'staging';
-      this.apiUrl = 'https://api-staging.oslira.com';
-      this.appUrl = 'https://staging-app.oslira.com';
-      this.googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID_STAGING;
-    } 
-    else {
-      this.environment = 'production';
-      this.apiUrl = 'https://api.oslira.com';
-      this.appUrl = 'https://app.oslira.com';
-      this.googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID_PROD;
-    }
+    this.config = this.detectEnvironment();
   }
-  
-  static getInstance(): EnvironmentManager {
-    if (!this.instance) {
-      this.instance = new EnvironmentManager();
+
+  /**
+   * Detect environment from window.location.hostname
+   * No API calls - instant detection
+   */
+  private detectEnvironment(): EnvironmentConfig {
+    const hostname = window.location.hostname;
+
+    // Staging environment
+    if (hostname.includes('staging')) {
+      return {
+        environment: 'staging',
+        apiUrl: 'https://api-staging.oslira.com',
+        appUrl: 'https://staging-app.oslira.com',
+        isStaging: true,
+        isProduction: false,
+      };
     }
-    return this.instance;
+
+    // Production environment (default)
+    return {
+      environment: 'production',
+      apiUrl: 'https://api.oslira.com',
+      appUrl: 'https://app.oslira.com',
+      isStaging: false,
+      isProduction: true,
+    };
+  }
+
+  /**
+   * Get singleton instance
+   */
+  static getInstance(): EnvironmentManager {
+    if (!EnvironmentManager.instance) {
+      EnvironmentManager.instance = new EnvironmentManager();
+    }
+    return EnvironmentManager.instance;
+  }
+
+  /**
+   * Get current environment config
+   */
+  getConfig(): EnvironmentConfig {
+    return this.config;
   }
 }
 
-export const env = EnvironmentManager.getInstance();
+// Export singleton instance
+export const environment = EnvironmentManager.getInstance();
+
+// Export config for convenience
+export const env = environment.getConfig();
