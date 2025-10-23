@@ -10,6 +10,7 @@ import { HomePage } from '@/pages/marketing/HomePage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
+import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 // =============================================================================
@@ -69,6 +70,18 @@ export const router = createBrowserRouter([
   {
     path: '/auth/callback',
     element: <OAuthCallbackPage />,
+  },
+
+  // ============================================================
+  // ONBOARDING ROUTE (Protected - no onboarding required)
+  // ============================================================
+  {
+    path: '/onboarding',
+    element: (
+      <ProtectedRoute requireOnboarding={false}>
+        <OnboardingPage />
+      </ProtectedRoute>
+    ),
   },
 
   // ============================================================
