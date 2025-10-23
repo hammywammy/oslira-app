@@ -15,6 +15,10 @@
  * <ProtectedRoute>
  *   <DashboardPage />
  * </ProtectedRoute>
+ * 
+ * <ProtectedRoute requireOnboarding={false}>
+ *   <OnboardingPage />
+ * </ProtectedRoute>
  */
 
 import { ReactNode } from 'react';
