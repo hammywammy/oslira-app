@@ -1,70 +1,60 @@
-// src/pages/auth/OAuthCallbackPage.tsx
-/**
- * @file OAuth Callback Page - FIXED
- * @description Completes OAuth flow using SINGLETON Supabase instance
- * 
- * CHANGES:
- * 1. Removed duplicate Supabase client creation
- * 2. Uses singleton from @/core/lib/supabase
- * 3. Added explicit redirect after success
- * 4. Fixed async timing issues
- * 5. TypeScript strict mode compliant
- */
+// pages/auth/OAuthCallbackPage.tsx
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { supabase } from '@/core/lib/supabase';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
+import { api } from '@/core/api/client';
 import { logger } from '@/core/utils/logger';
 
-// =============================================================================
-// TYPES
-// =============================================================================
+/**
+ * OAUTH CALLBACK PAGE
+ * 
+ * Handles Google OAuth callback
+ * 
+ * Flow:
+ * 1. Extract authorization code from URL
+ * 2. POST /api/auth/google/callback with code
+ * 3. Backend exchanges code with Google
+ * 4. Backend creates/updates user (atomic)
+ * 5. Backend returns tokens + user info
+ * 6. Frontend stores tokens in AuthContext
+ * 7. Redirect based on onboarding status
+ */
 
 type CallbackState = 'processing' | 'success' | 'error';
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function OAuthCallbackPage() {
   const [state, setState] = useState<CallbackState>('processing');
-  const [statusMessage, setStatusMessage] = useState('Processing authentication...');
+  const [message, setMessage] = useState('Completing sign-in...');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
-    let redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
-    async function processCallback() {
-      logger.info('OAuth callback started');
-      
+    const processCallback = async () => {
       try {
-        // Get URL parameters
+        // Extract code from URL
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
         const error = params.get('error');
         const errorDescription = params.get('error_description');
 
-        logger.debug('OAuth callback params', { hasCode: !!code, error });
-
-        // Check for OAuth errors
+        // Handle OAuth errors
         if (error) {
-          const errorObj = new Error(errorDescription || `OAuth error: ${error}`);
-          logger.error('OAuth error in URL', errorObj, { 
-            errorCode: error,
-            description: errorDescription 
-          });
+          logger.error('OAuth error in URL', new Error(error), { errorDescription });
           
           if (error === 'access_denied') {
-            setStatusMessage('Sign-in cancelled. Redirecting...');
-            redirectTimer = setTimeout(() => {
-              if (mounted) window.location.href = '/auth/login';
-            }, 1500);
+            setMessage('Sign-in cancelled');
+            setTimeout(() => navigate('/auth/login'), 2000);
             return;
           }
 
-          throw errorObj;
+          throw new Error(errorDescription || `OAuth error: ${error}`);
         }
 
         // Verify we have a code
@@ -72,100 +62,73 @@ export function OAuthCallbackPage() {
           throw new Error('No authorization code received');
         }
 
-        logger.info('Exchanging OAuth code for session');
-        setStatusMessage('Verifying your credentials...');
+        logger.info('Processing OAuth callback', { hasCode: true });
 
-        // Exchange the code for a session using SINGLETON client
-        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (exchangeError) {
-          logger.error('OAuth code exchange failed', exchangeError);
-          throw exchangeError;
-        }
-
-        if (!data.session) {
-          throw new Error('No session returned after code exchange');
-        }
-
-        logger.info('OAuth session established', {
-          userId: data.session.user.id,
-          expiresAt: data.session.expires_at,
-        });
-
-        if (!mounted) return;
-
-        // Check if user needs onboarding
-        logger.debug('Checking onboarding status');
-        const { data: profile, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('onboarding_completed')
-          .eq('user_id', data.session.user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          logger.warn('Failed to fetch profile, assuming needs onboarding', {
-            errorMessage: profileError.message,
-            errorCode: profileError.code,
-          });
-        }
-
-        const needsOnboarding = !profile?.onboarding_completed;
-        const redirectPath = needsOnboarding ? '/onboarding' : '/dashboard';
-
-        logger.info('OAuth callback complete', { 
-          needsOnboarding, 
-          redirectPath 
-        });
-
-        if (!mounted) return;
-
-        setState('success');
-        setStatusMessage('Success! Redirecting...');
-
-        // CRITICAL: Clear URL params and redirect
-        // This prevents the callback from re-running on page reload
-        redirectTimer = setTimeout(() => {
-          if (mounted) {
-            logger.info('Redirecting after OAuth success', { redirectPath });
-            window.location.href = redirectPath;
-          }
-        }, 1000);
-
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        logger.error('OAuth callback failed', error);
+        // Exchange code for tokens
+        setMessage('Verifying with Google...');
         
+        const response = await api.post('/api/auth/google/callback', { code });
+
+        if (!mounted) return;
+
+        const {
+          accessToken,
+          refreshToken,
+          expiresAt,
+          user,
+          account,
+          isNewUser
+        } = response.data;
+
+        logger.info('OAuth successful', { 
+          userId: user.id, 
+          isNewUser,
+          onboarding: user.onboarding_completed 
+        });
+
+        // Store auth in context
+        login(accessToken, refreshToken, expiresAt, user, account);
+
+        // Success state
+        setState('success');
+        setMessage(isNewUser ? 'Welcome to Oslira!' : 'Welcome back!');
+
+        // Redirect based on onboarding status
+        const redirectPath = user.onboarding_completed ? '/dashboard' : '/onboarding';
+        
+        setTimeout(() => {
+          if (mounted) {
+            logger.info('Redirecting after OAuth', { redirectPath });
+            navigate(redirectPath, { replace: true });
+          }
+        }, 1500);
+
+      } catch (error: any) {
+        logger.error('OAuth callback failed', error);
+
         if (!mounted) return;
 
         setState('error');
-        setErrorMessage(error.message);
+        setErrorMessage(error.message || 'Authentication failed');
       }
-    }
+    };
 
     processCallback();
 
     return () => {
       mounted = false;
-      if (redirectTimer) {
-        clearTimeout(redirectTimer);
-      }
     };
-  }, []); // Empty deps - only run once
+  }, [login, navigate]);
 
-  // ===========================================================================
-  // RETRY HANDLER
-  // ===========================================================================
-  const handleRetry = () => {
-    window.location.href = '/auth/login';
-  };
-
-  // ===========================================================================
+  // ===============================================================================
   // RENDER
-  // ===========================================================================
+  // ===============================================================================
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <AnimatePresence mode="wait">
+          
           {/* PROCESSING STATE */}
           {state === 'processing' && (
             <motion.div
@@ -181,7 +144,7 @@ export function OAuthCallbackPage() {
                 className="w-16 h-16 mx-auto mb-6 border-4 border-blue-600 border-t-transparent rounded-full"
               />
               <p className="text-lg font-semibold text-slate-900 mb-2">
-                {statusMessage}
+                {message}
               </p>
               <p className="text-sm text-slate-500">
                 Please wait a moment...
@@ -207,10 +170,10 @@ export function OAuthCallbackPage() {
                 <Icon icon="mdi:check" className="text-4xl text-green-600" />
               </motion.div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Authentication Successful!
+                {message}
               </h3>
               <p className="text-sm text-slate-500">
-                {statusMessage}
+                Redirecting you now...
               </p>
             </motion.div>
           )}
@@ -236,16 +199,17 @@ export function OAuthCallbackPage() {
                 Authentication Failed
               </h3>
               <p className="text-sm text-slate-600 mb-6">
-                {errorMessage || 'Something went wrong'}
+                {errorMessage}
               </p>
               <button
-                onClick={handleRetry}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                onClick={() => navigate('/auth/login')}
+                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Back to Login
+                Try Again
               </button>
             </motion.div>
           )}
+
         </AnimatePresence>
       </div>
     </div>
