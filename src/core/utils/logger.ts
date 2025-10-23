@@ -3,7 +3,7 @@
  * @description Migrated from Logger.js - preserves all logging logic
  */
 
-import { ENV } from '@/core/config/env';
+import { env } from '@/core/auth/environment';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -28,7 +28,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 
 const CURRENT_LOG_LEVEL = (() => {
   try {
-    return LOG_LEVELS[ENV.logLevel as LogLevel] ?? LOG_LEVELS.info;
+    return LOG_LEVELS[(env.isProduction ? 'warn' : 'debug') as LogLevel] ?? LOG_LEVELS.info;
   } catch {
     return LOG_LEVELS.info;
   }
@@ -75,7 +75,7 @@ class Logger {
     this.storeInHistory(entry);
 
     try {
-      if (ENV.isDevelopment) {
+      if (env.isDevelopment) {
         // eslint-disable-next-line no-console
         console.log(this.formatMessage('debug', message, context));
       }
@@ -97,7 +97,7 @@ class Logger {
     this.storeInHistory(entry);
 
     try {
-      if (ENV.isDevelopment || ENV.isStaging) {
+      if (env.isDevelopment || env.isStaging) {
         // eslint-disable-next-line no-console
         console.log(this.formatMessage('info', message, context));
       }
