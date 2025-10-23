@@ -10,6 +10,30 @@
 import { z } from 'zod';
 
 // =============================================================================
+// TYPE EXPORTS (for TypeScript usage)
+// =============================================================================
+
+export type Industry = 'Technology' | 'Healthcare' | 'Finance' | 'Real Estate' | 'Retail' | 
+  'Manufacturing' | 'Consulting' | 'Marketing' | 'Education' | 'Other';
+
+export type CompanySize = '1-10' | '11-50' | '51+';
+
+export type PrimaryObjective = 'lead-generation' | 'sales-automation' | 'market-research' | 'customer-retention';
+
+export type Challenge = 'low-quality-leads' | 'time-consuming' | 'expensive-tools' | 
+  'lack-personalization' | 'poor-data-quality' | 'difficult-scaling';
+
+export type TargetCompanySize = 'startup' | 'smb' | 'enterprise';
+
+export type CommunicationChannel = 'email' | 'instagram' | 'sms';
+
+export type BrandVoice = 'professional' | 'friendly' | 'casual';
+
+export type TeamSize = 'just-me' | 'small-team' | 'large-team';
+
+export type CampaignManager = 'myself' | 'sales-team' | 'marketing-team' | 'mixed-team';
+
+// =============================================================================
 // STEP 1: PERSONAL IDENTITY
 // =============================================================================
 
@@ -105,8 +129,6 @@ export const step4Schema = z.object({
 
 // =============================================================================
 // STEP 5: TARGET AUDIENCE
-// ✅ REMOVED .refine() to avoid ZodEffects type issues
-// Validation will happen in the form submission instead
 // =============================================================================
 
 export const step5Schema = z.object({
@@ -130,7 +152,13 @@ export const step5Schema = z.object({
     .array(z.enum(['startup', 'smb', 'enterprise']))
     .optional()
     .default([]),
-});
+}).refine(
+  (data) => data.icp_max_followers >= data.icp_min_followers,
+  {
+    message: 'Maximum followers must be greater than or equal to minimum',
+    path: ['icp_max_followers'],
+  }
+);
 
 // =============================================================================
 // STEP 6: COMMUNICATION
