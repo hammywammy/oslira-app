@@ -39,6 +39,12 @@ interface AccountData {
   credit_balance: number;
 }
 
+interface TokenData {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+}
+
 // =============================================================================
 // STORAGE KEYS
 // =============================================================================
@@ -135,6 +141,22 @@ class AuthManager {
     // Token expired - refresh it
     const refreshed = await this.refresh();
     return refreshed ? this.accessToken : null;
+  }
+
+  /**
+   * Get current tokens (for onboarding hook)
+   * ✅ ADDED METHOD
+   */
+  getTokens(): TokenData | null {
+    if (!this.accessToken || !this.refreshToken || !this.expiresAt) {
+      return null;
+    }
+
+    return {
+      accessToken: this.accessToken,
+      refreshToken: this.refreshToken,
+      expiresAt: this.expiresAt,
+    };
   }
 
   /**
