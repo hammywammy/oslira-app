@@ -1,15 +1,25 @@
+// src/features/auth/components/ProtectedRoute.tsx
+
 /**
- * @file Protected Route Component
- * @description Route protection with auth requirements
+ * PROTECTED ROUTE
  * 
- * Features:
- * - Redirect unauthenticated users to login
- * - Loading state handling
- * - Session validation integration
+ * Route guard that checks authentication and onboarding status
+ * 
+ * Logic:
+ * 1. If loading → show spinner
+ * 2. If not authenticated → redirect /auth/login
+ * 3. If authenticated but onboarding incomplete → redirect /onboarding
+ * 4. Else → render children
+ * 
+ * Usage:
+ * <ProtectedRoute>
+ *   <DashboardPage />
+ * </ProtectedRoute>
  */
 
 import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthProvider';
 
 // =============================================================================
@@ -18,39 +28,42 @@ import { useAuth } from '../contexts/AuthProvider';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireBusiness?: boolean;
+  requireOnboarding?: boolean; // If false, allow access even if onboarding incomplete
 }
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
-export function ProtectedRoute({ children, requireBusiness = false }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, businesses } = useAuth();
-  const location = useLocation();
+export function ProtectedRoute({
+  children,
+  requireOnboarding = true,
+}: ProtectedRouteProps) {
+  const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Show loading state while checking auth
+  // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
+  // Not authenticated → redirect to login
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
-  // Check business requirement
-  if (requireBusiness && businesses.length === 0) {
+  // Authenticated but onboarding incomplete → redirect to onboarding
+  if (requireOnboarding && !user?.onboarding_completed) {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Render protected content
+  // All checks passed → render children
   return <>{children}</>;
 }
