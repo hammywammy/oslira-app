@@ -5,7 +5,7 @@
  * Replaces: HomeHandlers.js backend logic
  */
 
-import { httpClient } from '@/core/api/client';
+import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 
 // =============================================================================
