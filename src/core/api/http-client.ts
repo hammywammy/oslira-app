@@ -42,26 +42,3 @@ class HttpClient {
 }
 
 export const httpClient = new HttpClient();
-```
-
----
-
-## 🎯 **YOUR SPECIFIC FLOW (Login → Dashboard/Onboarding)**
-```
-1. User clicks "Login with Google"
-   ├─ Redirect to Google OAuth
-   └─ Google redirects to /auth/callback?code=xxx
-
-2. /auth/callback page
-   ├─ Extract code from URL
-   ├─ POST /api/auth/google/callback { code }
-   ├─ Backend returns: { accessToken, refreshToken, expiresAt, user, account }
-   ├─ authManager.setTokens(...)
-   └─ Check user.onboarding_completed:
-       ├─ TRUE  → navigate('/dashboard')
-       └─ FALSE → navigate('/onboarding')
-
-3. Dashboard/Onboarding loads
-   ├─ <ProtectedRoute> checks authManager.isAuthenticated()
-   ├─ If onboarding incomplete → force /onboarding
-   └─ If complete → allow access
