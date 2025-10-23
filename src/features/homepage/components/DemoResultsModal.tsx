@@ -7,7 +7,7 @@
 
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
-import { ENV } from '@/core/config/env';
+import { env } from '@/core/auth/environment';
 import type { InstagramAnalysisResponse } from '../api/instagramApi';
 
 // =============================================================================
@@ -33,7 +33,7 @@ export function DemoResultsModal({ isOpen, onClose, data }: DemoResultsModalProp
 
   const handleGetStarted = () => {
     // Redirect to auth
-    window.location.href = `${ENV.frontendUrl}/auth/login`;
+    window.location.href = `${env.appUrl}/auth/login`;
   };
 
   return (
