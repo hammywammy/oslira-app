@@ -1,9 +1,10 @@
 // src/features/onboarding/constants/validationSchemas.ts
 
 /**
- * ZOD VALIDATION SCHEMAS
+ * VALIDATION SCHEMAS
  * 
- * Client-side validation matching backend expectations
+ * Zod schemas for each onboarding step
+ * Validates input before proceeding to next step
  */
 
 import { z } from 'zod';
@@ -17,7 +18,7 @@ export const step1Schema = z.object({
     .string()
     .min(2, 'Name must be at least 2 characters')
     .max(50, 'Name must be less than 50 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes'),
+    .trim(),
 });
 
 // =============================================================================
@@ -25,11 +26,18 @@ export const step1Schema = z.object({
 // =============================================================================
 
 export const step2Schema = z.object({
-  company_name: z.string().min(2, 'Company name must be at least 2 characters'),
+  company_name: z
+    .string()
+    .min(2, 'Company name must be at least 2 characters')
+    .max(100, 'Company name must be less than 100 characters')
+    .trim(),
+  
   business_summary: z
     .string()
-    .min(50, 'Please provide at least 50 characters')
-    .max(500, 'Please keep it under 500 characters'),
+    .min(50, 'Description must be at least 50 characters')
+    .max(500, 'Description must be less than 500 characters')
+    .trim(),
+  
   industry: z.enum([
     'Technology',
     'Healthcare',
@@ -42,9 +50,20 @@ export const step2Schema = z.object({
     'Education',
     'Other',
   ]),
-  industry_other: z.string().max(30).optional(),
+  
+  industry_other: z
+    .string()
+    .max(50, 'Industry must be less than 50 characters')
+    .trim()
+    .optional(),
+  
   company_size: z.enum(['1-10', '11-50', '51+']),
-  website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  
+  website: z
+    .string()
+    .url('Invalid website URL')
+    .optional()
+    .or(z.literal('')),
 });
 
 // =============================================================================
@@ -58,29 +77,28 @@ export const step3Schema = z.object({
     'market-research',
     'customer-retention',
   ]),
+  
   monthly_lead_goal: z
     .number()
     .int()
-    .min(1, 'Must be at least 1')
-    .max(10000, 'Must be less than 10,000'),
+    .min(1, 'Lead goal must be at least 1')
+    .max(10000, 'Lead goal must be less than 10,000'),
 });
 
 // =============================================================================
-// STEP 4: CHALLENGES
+// STEP 4: CHALLENGES (OPTIONAL)
 // =============================================================================
 
 export const step4Schema = z.object({
   challenges: z
-    .array(
-      z.enum([
-        'low-quality-leads',
-        'time-consuming',
-        'expensive-tools',
-        'lack-personalization',
-        'poor-data-quality',
-        'difficult-scaling',
-      ])
-    )
+    .array(z.enum([
+      'low-quality-leads',
+      'time-consuming',
+      'expensive-tools',
+      'lack-personalization',
+      'poor-data-quality',
+      'difficult-scaling',
+    ]))
     .optional()
     .default([]),
 });
@@ -92,18 +110,32 @@ export const step4Schema = z.object({
 export const step5Schema = z.object({
   target_description: z
     .string()
-    .min(20, 'Please provide at least 20 characters')
-    .max(500, 'Please keep it under 500 characters'),
-  icp_min_followers: z.number().int().min(0, 'Must be at least 0'),
-  icp_max_followers: z.number().int().min(0, 'Must be at least 0'),
+    .min(20, 'Description must be at least 20 characters')
+    .max(500, 'Description must be less than 500 characters')
+    .trim(),
+  
+  icp_min_followers: z
+    .number()
+    .int()
+    .min(0, 'Minimum must be 0 or greater'),
+  
+  icp_max_followers: z
+    .number()
+    .int()
+    .min(0, 'Maximum must be 0 or greater'),
+  
   target_company_sizes: z
     .array(z.enum(['startup', 'smb', 'enterprise']))
     .optional()
     .default([]),
-}).refine((data) => data.icp_max_followers >= data.icp_min_followers, {
-  message: 'Maximum must be greater than or equal to minimum',
-  path: ['icp_max_followers'],
-});
+}).refine(
+  (data: { icp_max_followers: number; icp_min_followers: number }) => 
+    data.icp_max_followers >= data.icp_min_followers,
+  {
+    message: 'Maximum must be greater than or equal to minimum',
+    path: ['icp_max_followers'],
+  }
+);
 
 // =============================================================================
 // STEP 6: COMMUNICATION
@@ -113,6 +145,7 @@ export const step6Schema = z.object({
   communication_channels: z
     .array(z.enum(['email', 'instagram', 'sms']))
     .min(1, 'Please select at least one channel'),
+  
   communication_tone: z.enum(['professional', 'friendly', 'casual']),
 });
 
