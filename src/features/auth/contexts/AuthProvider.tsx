@@ -1,364 +1,332 @@
-// src/features/auth/contexts/AuthProvider.tsx
+// features/auth/contexts/AuthProvider.tsx
 
-console.log('🔵 AuthProvider.tsx: FILE LOADED');
-
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import { User, Session, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
-import { supabase } from '@/core/lib/supabase';
-import { httpClient } from '@/core/api/client';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { api } from '@/core/api/client';
 import { logger } from '@/core/utils/logger';
-import { AuthState, UserSubscription } from '../types/auth.types';
 
+/**
+ * AUTH CONTEXT PROVIDER
+ * 
+ * Matches backend Phase 0-2 architecture:
+ * - JWT access tokens (15min expiry)
+ * - Refresh tokens (30 days)
+ * - Automatic token refresh
+ * - Onboarding status tracking
+ * - Session persistence
+ */
 
-// =============================================================================
+// ===============================================================================
 // TYPES
-// =============================================================================
+// ===============================================================================
 
-interface Business {
+interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  avatar_url: string | null;
+  onboarding_completed: boolean;
+}
+
+interface Account {
   id: string;
   name: string;
-  industry?: string;
-  created_at: string;
+  credit_balance: number;
+}
+
+interface AuthState {
+  user: User | null;
+  account: Account | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: number | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 interface AuthContextValue extends AuthState {
-  signInWithOAuth: () => Promise<void>;
-  signOut: () => Promise<void>;
-  businesses: Business[];
-  selectedBusiness: Business | null;
-  selectBusiness: (businessId: string) => void;
-  refreshBusinesses: () => Promise<void>;
-  subscription: UserSubscription | null;
-  refreshSubscription: () => Promise<void>;
+  login: (accessToken: string, refreshToken: string, expiresAt: number, user: User, account: Account) => void;
+  logout: () => Promise<void>;
+  refreshAccessToken: () => Promise<boolean>;
+  updateOnboardingStatus: (completed: boolean) => void;
 }
 
-// =============================================================================
+// ===============================================================================
 // CONTEXT
-// =============================================================================
+// ===============================================================================
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// =============================================================================
-// PROVIDER COMPONENT
-// =============================================================================
+// ===============================================================================
+// STORAGE KEYS
+// ===============================================================================
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'oslira_access_token',
+  REFRESH_TOKEN: 'oslira_refresh_token',
+  EXPIRES_AT: 'oslira_expires_at',
+  USER: 'oslira_user',
+  ACCOUNT: 'oslira_account',
+};
 
-export function AuthProvider({ children }: AuthProviderProps) {
-  console.log('🟢 AuthProvider: COMPONENT RENDERING');
-  
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
+// ===============================================================================
+// PROVIDER
+// ===============================================================================
 
-  console.log('🟡 AuthProvider: Initial state', { isLoading, isAuthenticated });
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    account: null,
+    accessToken: null,
+    refreshToken: null,
+    expiresAt: null,
+    isAuthenticated: false,
+    isLoading: true,
+  });
 
-  // ===========================================================================
-  // HELPER: LOAD BUSINESSES
-  // ===========================================================================
-
-const loadBusinesses = useCallback(async (userId: string): Promise<void> => {
-  try {
-    logger.info('Loading user businesses...', { userId });
-    const response = await httpClient.get<Business[]>('/business-profiles');  // ✅ NEW
-      if (response.success && response.data) {
-        setBusinesses(response.data);
-        if (response.data.length > 0 && !selectedBusiness) {
-          const firstBusiness = response.data[0];
-          if (firstBusiness) {
-            setSelectedBusiness(firstBusiness);
-            localStorage.setItem('oslira-selected-business', firstBusiness.id);
-          }
-        }
-        logger.info('Businesses loaded', { count: response.data.length });
-      } else {
-        logger.warn('No businesses returned from API');
-      }
-    } catch (err) {
-      logger.warn('Failed to load businesses (non-critical)', { 
-        error: err instanceof Error ? err.message : 'Unknown error',
-        userId 
-      });
-    }
-  }, [selectedBusiness]);
-
-  // ===========================================================================
-  // HELPER: LOAD SUBSCRIPTION
-  // ===========================================================================
-
-const loadSubscription = useCallback(async (userId: string): Promise<void> => {
-  try {
-    logger.info('Loading user subscription...', { userId });
-    const response = await httpClient.get<UserSubscription>('/user/subscription');  // ✅ NEW
-      if (response.success && response.data) {
-        setSubscription(response.data);
-        logger.info('Subscription loaded', { plan: response.data.plan, status: response.data.status });
-      } else {
-        logger.info('No subscription found, using free tier');
-        setSubscription({
-          id: '',
-          user_id: userId,
-          plan: 'free',
-          status: 'active',
-          credits: 25,
-          credits_used: 0,
-          period_start: new Date().toISOString(),
-          period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-      }
-    } catch (err) {
-      logger.warn('Failed to load subscription, using free tier', {
-        error: err instanceof Error ? err.message : 'Unknown error',
-        userId
-      });
-      setSubscription({
-        id: '',
-        user_id: userId,
-        plan: 'free',
-        status: 'active',
-        credits: 25,
-        credits_used: 0,
-        period_start: new Date().toISOString(),
-        period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      });
-    }
-  }, []);
-
-
-  // ===========================================================================
-  // INITIALIZATION - OPTIMIZED FOR OAUTH CALLBACK
-  // ===========================================================================
+  // ===============================================================================
+  // INITIALIZATION: Load auth from localStorage
+  // ===============================================================================
 
   useEffect(() => {
-    console.log('🟣 AuthProvider: useEffect STARTED');
-    let mounted = true;
+    loadAuthFromStorage();
+  }, []);
 
-    async function initializeAuth() {
-      console.log('🔴 AuthProvider: initializeAuth() CALLED');
+  // ===============================================================================
+  // AUTO-REFRESH: Check token expiry every minute
+  // ===============================================================================
+
+  useEffect(() => {
+    if (!state.isAuthenticated || !state.expiresAt) return;
+
+    const checkAndRefresh = async () => {
+      const now = Date.now();
+      const timeUntilExpiry = state.expiresAt! - now;
       
-      try {
-        console.log('⚪ AuthProvider: Fetching session...');
-        
-        // CRITICAL: getSession() will pick up the session set by the callback
-        // because we're using the SAME Supabase singleton
-        const { data: { session: initialSession }, error: sessionError } = 
-          await supabase.auth.getSession();
-
-        console.log('🟠 AuthProvider: Session fetched', { 
-          hasSession: !!initialSession,
-          hasError: !!sessionError,
-          mounted,
-          userId: initialSession?.user?.id
-        });
-
-        if (sessionError) {
-          console.error('❌ AuthProvider: Session error', sessionError);
-          // Don't throw - just log and continue with no session
-        }
-
-        // Check if component unmounted during async operation
-        if (!mounted) {
-          console.log('⚫ AuthProvider: Component unmounted, stopping');
-          return;
-        }
-
-        // Update state based on session
-        if (initialSession && !sessionError) {
-          console.log('✅ AuthProvider: User authenticated', initialSession.user.id);
-          setSession(initialSession);
-          setUser(initialSession.user);
-          setIsAuthenticated(true);
-
-          // Load user data in background (don't block)
-          console.log('🔵 AuthProvider: Loading businesses & subscription...');
-          Promise.allSettled([
-            loadBusinesses(initialSession.user.id),
-            loadSubscription(initialSession.user.id),
-          ]).then(() => {
-            console.log('🟢 AuthProvider: Businesses & subscription loaded');
-          }).catch((err) => {
-            console.warn('⚠️ AuthProvider: Failed to load user data', err);
-          });
-        } else {
-          console.log('⚠️ AuthProvider: No session, user not authenticated');
-          setSession(null);
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (err) {
-        console.error('💥 AuthProvider: CRITICAL ERROR in initializeAuth', err);
-        
-        if (mounted) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to initialize auth';
-          setError(errorMessage);
-          setSession(null);
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } finally {
-        console.log('🎯 AuthProvider: Setting isLoading = false');
-        if (mounted) {
-          setIsLoading(false);
-          console.log('✨ AuthProvider: Initialization COMPLETE');
-        }
+      // Refresh if token expires in less than 5 minutes
+      if (timeUntilExpiry < 5 * 60 * 1000) {
+        logger.info('Token expiring soon, refreshing...', { timeUntilExpiry });
+        await refreshAccessToken();
       }
-    }
-
-    // Start initialization
-    initializeAuth();
-
-    // Setup auth state listener
-    console.log('👂 AuthProvider: Setting up auth state listener');
-    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        console.log('🔔 AuthProvider: Auth state changed', { 
-          event, 
-          hasSession: !!newSession,
-          userId: newSession?.user?.id
-        });
-        
-        if (!mounted) return;
-
-        if (newSession) {
-          setSession(newSession);
-          setUser(newSession.user);
-          setIsAuthenticated(true);
-          
-          // Defer async operations to prevent blocking
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            setTimeout(() => {
-              if (mounted) {
-                Promise.allSettled([
-                  loadBusinesses(newSession.user.id),
-                  loadSubscription(newSession.user.id),
-                ]).catch((err) => {
-                  console.error('Failed to load user data:', err);
-                });
-              }
-            }, 0);
-          }
-        } else {
-          // User signed out
-          setSession(null);
-          setUser(null);
-          setIsAuthenticated(false);
-          setBusinesses([]);
-          setSelectedBusiness(null);
-          setSubscription(null);
-        }
-      }
-    );
-
-    // Setup token provider for API calls
-    httpClient.setTokenProvider(async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      return currentSession?.access_token ?? null;
-    });
-
-    // Cleanup
-    return () => {
-      console.log('🧹 AuthProvider: Cleanup - unmounting');
-      mounted = false;
-      authSubscription.unsubscribe();
     };
-  }, [loadBusinesses, loadSubscription]);
-  // ===========================================================================
-  // PUBLIC API
-  // ===========================================================================
 
-  const refreshBusinesses = useCallback(async () => {
-    if (user) await loadBusinesses(user.id);
-  }, [user, loadBusinesses]);
+    // Check every minute
+    const interval = setInterval(checkAndRefresh, 60 * 1000);
+    
+    // Also check immediately
+    checkAndRefresh();
 
-  const refreshSubscription = useCallback(async () => {
-    if (user) await loadSubscription(user.id);
-  }, [user, loadSubscription]);
+    return () => clearInterval(interval);
+  }, [state.isAuthenticated, state.expiresAt]);
 
-  const selectBusiness = useCallback((businessId: string) => {
-    const business = businesses.find((b) => b.id === businessId);
-    if (business) {
-      setSelectedBusiness(business);
-      localStorage.setItem('oslira-selected-business', business.id);
-      logger.info('Business selected', { businessId, name: business.name });
-    }
-  }, [businesses]);
+  // ===============================================================================
+  // LOAD AUTH FROM STORAGE
+  // ===============================================================================
 
-  const signInWithOAuth = useCallback(async () => {
+  const loadAuthFromStorage = () => {
     try {
-      setIsLoading(true);
-      setError(null);
-      const redirectTo = `${window.location.origin}/auth/callback`;
-      const { error: signInError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo, scopes: 'email profile' },
+      const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const expiresAtStr = localStorage.getItem(STORAGE_KEYS.EXPIRES_AT);
+      const userStr = localStorage.getItem(STORAGE_KEYS.USER);
+      const accountStr = localStorage.getItem(STORAGE_KEYS.ACCOUNT);
+
+      if (!accessToken || !refreshToken || !userStr || !accountStr) {
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
+      const user = JSON.parse(userStr) as User;
+      const account = JSON.parse(accountStr) as Account;
+      const expiresAt = expiresAtStr ? parseInt(expiresAtStr) : null;
+
+      // Check if token is expired
+      if (expiresAt && expiresAt < Date.now()) {
+        logger.info('Token expired, attempting refresh...');
+        setState(prev => ({
+          ...prev,
+          refreshToken,
+          user,
+          account,
+          isLoading: true,
+        }));
+        
+        // Attempt refresh
+        refreshAccessToken();
+        return;
+      }
+
+      setState({
+        user,
+        account,
+        accessToken,
+        refreshToken,
+        expiresAt,
+        isAuthenticated: true,
+        isLoading: false,
       });
-      if (signInError) throw signInError;
-      logger.info('Google OAuth sign in initiated');
-    } catch (err) {
-      const errorMessage = err instanceof SupabaseAuthError 
-        ? err.message 
-        : 'Failed to sign in with Google';
-      setError(errorMessage);
-      logger.error('Google OAuth sign in failed', err instanceof Error ? err : new Error(errorMessage));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
 
-  const signOut = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
-      localStorage.removeItem('oslira-selected-business');
-      logger.info('Sign out successful');
-    } catch (err) {
-      const errorMessage = err instanceof SupabaseAuthError 
-        ? err.message 
-        : 'Failed to sign out';
-      setError(errorMessage);
-      logger.error('Sign out failed', err instanceof Error ? err : new Error(errorMessage));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      logger.info('Auth loaded from storage', { userId: user.id, onboarding: user.onboarding_completed });
 
-  const value: AuthContextValue = {
-    user,
-    session,
-    isAuthenticated,
-    isLoading,
-    error,
-    signInWithOAuth,
-    signOut,
-    businesses,
-    selectedBusiness,
-    selectBusiness,
-    refreshBusinesses,
-    subscription,
-    refreshSubscription,
+    } catch (error) {
+      logger.error('Failed to load auth from storage', error as Error);
+      clearAuthFromStorage();
+      setState(prev => ({ ...prev, isLoading: false }));
+    }
   };
 
-  console.log('🎨 AuthProvider: About to render children', { isLoading, isAuthenticated, hasUser: !!user });
+  // ===============================================================================
+  // LOGIN: Store auth state
+  // ===============================================================================
+
+  const login = (
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: number,
+    user: User,
+    account: Account
+  ) => {
+    // Store in localStorage
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    localStorage.setItem(STORAGE_KEYS.ACCOUNT, JSON.stringify(account));
+
+    // Update state
+    setState({
+      user,
+      account,
+      accessToken,
+      refreshToken,
+      expiresAt,
+      isAuthenticated: true,
+      isLoading: false,
+    });
+
+    logger.info('User logged in', { userId: user.id, onboarding: user.onboarding_completed });
+  };
+
+  // ===============================================================================
+  // LOGOUT: Clear auth state
+  // ===============================================================================
+
+  const logout = async () => {
+    try {
+      // Call backend logout endpoint
+      if (state.refreshToken) {
+        await api.post('/api/auth/logout', { refreshToken: state.refreshToken });
+      }
+    } catch (error) {
+      logger.warn('Logout API call failed (continuing anyway)', error as Error);
+    }
+
+    // Clear storage and state
+    clearAuthFromStorage();
+    setState({
+      user: null,
+      account: null,
+      accessToken: null,
+      refreshToken: null,
+      expiresAt: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
+
+    logger.info('User logged out');
+  };
+
+  // ===============================================================================
+  // REFRESH ACCESS TOKEN
+  // ===============================================================================
+
+  const refreshAccessToken = async (): Promise<boolean> => {
+    try {
+      const currentRefreshToken = state.refreshToken || localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+
+      if (!currentRefreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      logger.info('Refreshing access token...');
+
+      const response = await api.post('/api/auth/refresh', {
+        refreshToken: currentRefreshToken,
+      });
+
+      const { accessToken, refreshToken, expiresAt } = response.data;
+
+      // Update tokens in storage
+      localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+      localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
+
+      // Update state
+      setState(prev => ({
+        ...prev,
+        accessToken,
+        refreshToken,
+        expiresAt,
+        isAuthenticated: true,
+        isLoading: false,
+      }));
+
+      logger.info('Access token refreshed successfully');
+      return true;
+
+    } catch (error) {
+      logger.error('Token refresh failed', error as Error);
+      
+      // Refresh failed, log user out
+      await logout();
+      return false;
+    }
+  };
+
+  // ===============================================================================
+  // UPDATE ONBOARDING STATUS
+  // ===============================================================================
+
+  const updateOnboardingStatus = (completed: boolean) => {
+    if (!state.user) return;
+
+    const updatedUser = { ...state.user, onboarding_completed: completed };
+    
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+    
+    setState(prev => ({
+      ...prev,
+      user: updatedUser,
+    }));
+
+    logger.info('Onboarding status updated', { completed });
+  };
+
+  // ===============================================================================
+  // CLEAR STORAGE HELPER
+  // ===============================================================================
+
+  const clearAuthFromStorage = () => {
+    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+  };
+
+  // ===============================================================================
+  // CONTEXT VALUE
+  // ===============================================================================
+
+  const value: AuthContextValue = {
+    ...state,
+    login,
+    logout,
+    refreshAccessToken,
+    updateOnboardingStatus,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// =============================================================================
-// EXPORTS
-// =============================================================================
-
-export { AuthContext };
+// ===============================================================================
+// HOOK
+// ===============================================================================
 
 export function useAuth() {
   const context = useContext(AuthContext);
