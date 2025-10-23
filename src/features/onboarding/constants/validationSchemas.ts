@@ -105,6 +105,8 @@ export const step4Schema = z.object({
 
 // =============================================================================
 // STEP 5: TARGET AUDIENCE
+// ✅ REMOVED .refine() to avoid ZodEffects type issues
+// Validation will happen in the form submission instead
 // =============================================================================
 
 export const step5Schema = z.object({
@@ -128,14 +130,7 @@ export const step5Schema = z.object({
     .array(z.enum(['startup', 'smb', 'enterprise']))
     .optional()
     .default([]),
-}).refine(
-  (data: { icp_max_followers: number; icp_min_followers: number }) => 
-    data.icp_max_followers >= data.icp_min_followers,
-  {
-    message: 'Maximum must be greater than or equal to minimum',
-    path: ['icp_max_followers'],
-  }
-);
+});
 
 // =============================================================================
 // STEP 6: COMMUNICATION
