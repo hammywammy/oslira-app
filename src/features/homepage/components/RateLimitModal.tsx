@@ -7,7 +7,7 @@
 
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
-import { ENV } from '@/core/config/env';
+import { env } from '@/core/auth/environment';
 
 // =============================================================================
 // TYPES
@@ -31,7 +31,7 @@ export function RateLimitModal({
   resetIn,
 }: RateLimitModalProps) {
   const handleLogin = () => {
-    window.location.href = `${ENV.frontendUrl}/auth/login`;
+    window.location.href = `${env.appUrl}/auth/login`;
   };
 
   return (
