@@ -47,6 +47,7 @@ interface AuthContextValue {
   login: (accessToken: string, refreshToken: string, expiresAt: number, user: User, account: Account) => void;
   logout: () => Promise<void>;
   updateOnboardingStatus: (completed: boolean) => void;
+  refreshUser: () => Promise<void>; // ✅ ADDED
 }
 
 // =============================================================================
@@ -192,6 +193,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  /**
+   * ✅ REFRESH USER DATA FROM BACKEND
+   * Called after onboarding completion to get updated user object
+   */
+  async function refreshUser() {
+    try {
+      const response = await httpClient.get<{
+        user: User;
+        account: Account;
+      }>('/api/auth/session');
+
+      // Update React state
+      setUser(response.user);
+      setAccount(response.account);
+
+      // Update auth-manager cache
+      authManager.setUser(response.user, response.account);
+
+      console.log('[AuthProvider] User data refreshed:', {
+        onboarding_completed: response.user.onboarding_completed
+      });
+    } catch (error) {
+      console.error('[AuthProvider] Failed to refresh user data:', error);
+      throw error; // Re-throw so onboarding hook can handle it
+    }
+  }
+
   // ===========================================================================
   // CONTEXT VALUE
   // ===========================================================================
@@ -204,6 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     updateOnboardingStatus,
+    refreshUser, // ✅ ADDED
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
