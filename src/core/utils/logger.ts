@@ -1,6 +1,8 @@
+// src/core/utils/logger.ts
+
 /**
  * @file Logger Utility
- * @description Migrated from Logger.js - preserves all logging logic
+ * @description Production-grade logging with environment-aware output
  */
 
 import { env } from '@/core/auth/environment';
