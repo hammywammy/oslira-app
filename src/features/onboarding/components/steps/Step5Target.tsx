@@ -16,7 +16,17 @@ import { FormInput, FormTextarea } from '../FormInput';
 import { ICONS } from '../../constants/icons';
 import { fadeInVariants, containerVariants } from '../../animations/variants';
 import { useFormContext } from 'react-hook-form';
-import type { FormData } from '../../constants/validationSchemas';
+import type { FormData, TargetCompanySize } from '../../constants/validationSchemas';
+
+// =============================================================================
+// DATA
+// =============================================================================
+
+const companySizeOptions: Array<{ value: TargetCompanySize; label: string; description: string }> = [
+  { value: 'startup', label: 'Startup', description: '1-50 employees' },
+  { value: 'smb', label: 'Small/Medium', description: '51-500 employees' },
+  { value: 'enterprise', label: 'Enterprise', description: '500+ employees' },
+];
 
 // =============================================================================
 // COMPONENT
@@ -31,12 +41,6 @@ export function Step5Target() {
 
   const selectedSizes = watch('target_company_sizes') || [];
 
-  const companySizes = [
-    { value: 'startup', label: 'Startup', description: '1-50 employees' },
-    { value: 'smb', label: 'Small/Medium', description: '51-500 employees' },
-    { value: 'enterprise', label: 'Enterprise', description: '500+ employees' },
-  ];
-
   return (
     <motion.div
       variants={containerVariants}
@@ -49,18 +53,17 @@ export function Step5Target() {
         <h2 className="text-3xl font-bold text-white">
           Who is your ideal customer?
         </h2>
-        <p className="text-slate-400">
-          Describe your target audience
-        </p>
+        <p className="text-slate-400">Describe your target audience</p>
       </motion.div>
 
       {/* Target Description */}
       <motion.div variants={fadeInVariants}>
         <FormTextarea
           label="Target Audience Description"
-          placeholder="Small business owners in the wellness industry, age 30-50, focused on sustainable growth..."
+          placeholder="E.g., Health and wellness coaches with engaged audiences who promote holistic living..."
+          icon={ICONS.users}
           error={errors.target_description?.message}
-          helperText="Be specific about demographics, interests, and pain points (20-500 characters)"
+          helperText="Describe who you're targeting (20-500 characters)"
           required
           rows={4}
           maxLength={500}
@@ -71,20 +74,21 @@ export function Step5Target() {
       {/* Follower Range */}
       <motion.div variants={fadeInVariants} className="grid grid-cols-2 gap-4">
         <FormInput
-          label="Minimum Followers"
-          type="number"
+          label="Min Followers"
           placeholder="1000"
-          icon={ICONS.hash}
+          type="number"
+          icon={ICONS.users}
           error={errors.icp_min_followers?.message}
           required
           min={0}
           {...register('icp_min_followers', { valueAsNumber: true })}
         />
+
         <FormInput
-          label="Maximum Followers"
-          type="number"
+          label="Max Followers"
           placeholder="50000"
-          icon={ICONS.hash}
+          type="number"
+          icon={ICONS.users}
           error={errors.icp_max_followers?.message}
           required
           min={0}
@@ -92,75 +96,54 @@ export function Step5Target() {
         />
       </motion.div>
 
-      {/* Target Company Sizes */}
+      {/* Company Size Checkboxes */}
       <motion.div variants={fadeInVariants} className="space-y-3">
-        <label className="block text-sm font-medium text-slate-200">
-          Target Company Sizes <span className="text-slate-500">(optional)</span>
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+          <Icon icon={ICONS.building} className="text-lg text-purple-400" />
+          Target Company Sizes (Optional)
         </label>
-        <div className="grid grid-cols-3 gap-3">
-          {companySizes.map((size) => {
-            const isSelected = selectedSizes.includes(size.value);
-            
+
+        <div className="space-y-2">
+          {companySizeOptions.map((option) => {
+            const isChecked = selectedSizes.includes(option.value);
+
             return (
               <label
-                key={size.value}
+                key={option.value}
                 className={`
-                  relative flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer
+                  flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer
                   transition-all duration-200
                   ${
-                    isSelected
-                      ? 'border-violet-500/50 bg-violet-500/5'
-                      : 'border-slate-700/50 hover:border-violet-500/30'
+                    isChecked
+                      ? 'bg-purple-500/10 border-purple-500'
+                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                   }
                 `}
               >
                 <input
                   type="checkbox"
-                  value={size.value}
+                  value={option.value}
+                  checked={isChecked}
+                  className="w-5 h-5 rounded border-slate-600 text-purple-500 focus:ring-purple-500"
                   {...register('target_company_sizes')}
-                  className="sr-only peer"
                 />
-                
-                {/* Checkmark indicator */}
-                <div className={`
-                  absolute top-2 right-2 w-5 h-5 rounded-full border-2
-                  flex items-center justify-center
-                  transition-colors duration-200
-                  ${
-                    isSelected
-                      ? 'border-violet-500 bg-violet-500'
-                      : 'border-slate-600'
-                  }
-                `}>
-                  {isSelected && (
-                    <Icon icon={ICONS.check} className="w-3 h-3 text-white" />
-                  )}
+                <div className="flex-1">
+                  <span className="font-medium text-white">{option.label}</span>
+                  <p className="text-sm text-slate-400">{option.description}</p>
                 </div>
-
-                {/* Icon */}
-                <Icon
-                  icon={ICONS.users}
-                  className={`
-                    w-6 h-6 mb-2 transition-colors
-                    ${isSelected ? 'text-violet-400' : 'text-slate-400'}
-                  `}
-                />
-
-                {/* Label */}
-                <p className={`
-                  text-sm font-medium text-center transition-colors
-                  ${isSelected ? 'text-violet-300' : 'text-slate-200'}
-                `}>
-                  {size.label}
-                </p>
-                <p className="text-xs text-slate-500 text-center mt-0.5">
-                  {size.description}
-                </p>
               </label>
             );
           })}
         </div>
       </motion.div>
+
+      {/* Errors */}
+      {errors.target_company_sizes && (
+        <div className="flex items-center gap-2 text-sm text-red-400">
+          <Icon icon="lucide:alert-circle" />
+          {errors.target_company_sizes.message}
+        </div>
+      )}
     </motion.div>
   );
 }
