@@ -33,7 +33,7 @@ interface GoogleOAuthButtonProps {
 
 export function GoogleOAuthButton({
   label = 'Continue with Google',
-  mode = 'login',
+  mode: _mode = 'login',
 }: GoogleOAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
