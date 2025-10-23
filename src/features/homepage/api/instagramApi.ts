@@ -1,8 +1,6 @@
 /**
  * @file Instagram Analysis API
  * @description Type-safe API calls for Instagram analysis
- * 
- * Replaces: HomeHandlers.js backend logic
  */
 
 import { httpClient } from '@/core/auth/http-client';
@@ -44,6 +42,14 @@ export interface RateLimitError {
   };
 }
 
+// API response wrapper (matches http-client)
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
 // =============================================================================
 // API FUNCTIONS
 // =============================================================================
@@ -58,12 +64,13 @@ export async function analyzeInstagramAnonymous(
   logger.info('Analyzing Instagram profile anonymously', { username });
 
   try {
-    const response = await httpClient.post<InstagramAnalysisResponse>(
+    const response = await httpClient.post<ApiResponse<InstagramAnalysisResponse>>(
       '/v1/analyze-anonymous',
       { username: username.replace('@', '') },
       { skipAuth: true } // Anonymous endpoint
     );
 
+    // Check wrapped response
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Analysis failed');
     }
@@ -83,7 +90,6 @@ export async function analyzeInstagramAnonymous(
 
 /**
  * Generate demo results (fallback when API unavailable)
- * Matches your old generateDemoResults() logic
  */
 export function generateDemoResults(username: string): InstagramAnalysisResponse {
   const cleanUsername = username.replace('@', '');
