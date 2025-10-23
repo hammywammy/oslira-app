@@ -60,11 +60,16 @@ class HttpClient {
       token = await authManager.getAccessToken();
     }
 
-    // Build headers
-    const headers: HeadersInit = {
+    // Build headers with proper typing (Record instead of HeadersInit)
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...fetchOptions.headers,
     };
+
+    // Merge existing headers if provided
+    if (fetchOptions.headers) {
+      const existingHeaders = fetchOptions.headers as Record<string, string>;
+      Object.assign(headers, existingHeaders);
+    }
 
     // Add authorization if token exists
     if (token) {
