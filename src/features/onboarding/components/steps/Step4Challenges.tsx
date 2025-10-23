@@ -12,7 +12,44 @@ import { Icon } from '@iconify/react';
 import { ICONS } from '../../constants/icons';
 import { fadeInVariants, containerVariants } from '../../animations/variants';
 import { useFormContext } from 'react-hook-form';
-import type { FormData } from '../../constants/validationSchemas';
+import type { FormData, Challenge } from '../../constants/validationSchemas';
+
+// =============================================================================
+// DATA
+// =============================================================================
+
+const challengeOptions: Array<{ value: Challenge; label: string; description: string }> = [
+  {
+    value: 'low-quality-leads',
+    label: 'Low-quality leads',
+    description: 'Wasting time on prospects who aren\'t a good fit',
+  },
+  {
+    value: 'time-consuming',
+    label: 'Time-consuming research',
+    description: 'Manual profile analysis takes hours',
+  },
+  {
+    value: 'expensive-tools',
+    label: 'Expensive tools',
+    description: 'Current solutions cost too much',
+  },
+  {
+    value: 'lack-personalization',
+    label: 'Lack of personalization',
+    description: 'Generic outreach doesn\'t convert',
+  },
+  {
+    value: 'poor-data-quality',
+    label: 'Poor data quality',
+    description: 'Inaccurate or outdated information',
+  },
+  {
+    value: 'difficult-scaling',
+    label: 'Difficult to scale',
+    description: 'Can\'t handle growing volume',
+  },
+];
 
 // =============================================================================
 // COMPONENT
@@ -22,42 +59,18 @@ export function Step4Challenges() {
   const {
     register,
     watch,
+    formState: { errors },
   } = useFormContext<FormData>();
 
   const selectedChallenges = watch('challenges') || [];
 
-  const challenges = [
-    {
-      value: 'low-quality-leads',
-      label: 'Low-Quality Leads',
-      description: 'Spending time on prospects who aren\'t a good fit',
-    },
-    {
-      value: 'time-consuming',
-      label: 'Time-Consuming Research',
-      description: 'Manual profile analysis takes too long',
-    },
-    {
-      value: 'expensive-tools',
-      label: 'Expensive Tools',
-      description: 'Current solutions are too costly',
-    },
-    {
-      value: 'lack-personalization',
-      label: 'Lack of Personalization',
-      description: 'Generic outreach doesn\'t convert',
-    },
-    {
-      value: 'poor-data-quality',
-      label: 'Poor Data Quality',
-      description: 'Inaccurate or outdated prospect information',
-    },
-    {
-      value: 'difficult-scaling',
-      label: 'Difficult to Scale',
-      description: 'Can\'t analyze enough prospects efficiently',
-    },
-  ];
+  const handleToggle = (value: Challenge) => {
+    const currentValues = watch('challenges') || [];
+    const newValues = currentValues.includes(value)
+      ? currentValues.filter((v) => v !== value)
+      : [...currentValues, value];
+    return newValues;
+  };
 
   return (
     <motion.div
@@ -69,79 +82,64 @@ export function Step4Challenges() {
       {/* Header */}
       <motion.div variants={fadeInVariants} className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-white">
-          What challenges do you face?
+          What challenges are you facing?
         </h2>
         <p className="text-slate-400">
           Select all that apply (optional)
         </p>
       </motion.div>
 
-      {/* Challenges */}
-      <motion.div variants={fadeInVariants} className="space-y-2">
-        {challenges.map((challenge, index) => {
-          const isSelected = selectedChallenges.includes(challenge.value);
-          
+      {/* Checkbox Grid */}
+      <motion.div variants={fadeInVariants} className="space-y-3">
+        {challengeOptions.map((option) => {
+          const isChecked = selectedChallenges.includes(option.value);
+
           return (
-            <motion.label
-              key={challenge.value}
-              custom={index}
-              variants={fadeInVariants}
+            <label
+              key={option.value}
               className={`
-                relative flex items-start p-4 border rounded-lg cursor-pointer
+                block p-4 rounded-xl border-2 cursor-pointer
                 transition-all duration-200
                 ${
-                  isSelected
-                    ? 'border-violet-500/50 bg-violet-500/5'
-                    : 'border-slate-700/50 hover:border-violet-500/30'
+                  isChecked
+                    ? 'bg-purple-500/10 border-purple-500'
+                    : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                 }
               `}
             >
-              <input
-                type="checkbox"
-                value={challenge.value}
-                {...register('challenges')}
-                className="sr-only peer"
-              />
-              
-              {/* Checkbox visual */}
-              <div className={`
-                flex-shrink-0 w-5 h-5 rounded border-2 mr-3 mt-0.5
-                flex items-center justify-center
-                transition-colors duration-200
-                ${
-                  isSelected
-                    ? 'border-violet-500 bg-violet-500'
-                    : 'border-slate-600'
-                }
-              `}>
-                {isSelected && (
-                  <Icon icon={ICONS.check} className="w-3 h-3 text-white" />
-                )}
-              </div>
+              <div className="flex items-start gap-4">
+                {/* Checkbox */}
+                <div className="flex items-center h-6 mt-0.5">
+                  <input
+                    type="checkbox"
+                    value={option.value}
+                    checked={isChecked}
+                    className="w-5 h-5 rounded border-slate-600 text-purple-500 focus:ring-purple-500"
+                    {...register('challenges')}
+                  />
+                </div>
 
-              {/* Content */}
-              <div className="flex-1">
-                <p className={`
-                  text-sm font-medium transition-colors
-                  ${isSelected ? 'text-violet-300' : 'text-slate-200'}
-                `}>
-                  {challenge.label}
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {challenge.description}
-                </p>
+                {/* Content */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon icon={ICONS.target} className="text-purple-400" />
+                    <span className="font-semibold text-white">{option.label}</span>
+                  </div>
+                  <p className="text-sm text-slate-400">{option.description}</p>
+                </div>
               </div>
-            </motion.label>
+            </label>
           );
         })}
       </motion.div>
 
-      {/* Helper text */}
-      <motion.p variants={fadeInVariants} className="text-xs text-slate-500 text-center">
-        {selectedChallenges.length > 0
-          ? `${selectedChallenges.length} challenge${selectedChallenges.length > 1 ? 's' : ''} selected`
-          : 'No challenges selected'}
-      </motion.p>
+      {/* Error message */}
+      {errors.challenges && (
+        <div className="flex items-center gap-2 text-sm text-red-400">
+          <Icon icon="lucide:alert-circle" />
+          {errors.challenges.message}
+        </div>
+      )}
     </motion.div>
   );
 }
