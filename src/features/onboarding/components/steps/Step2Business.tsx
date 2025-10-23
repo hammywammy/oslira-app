@@ -13,11 +13,35 @@
  */
 
 import { motion } from 'framer-motion';
+import { Icon } from '@iconify/react';
 import { FormInput, FormTextarea } from '../FormInput';
 import { ICONS } from '../../constants/icons';
 import { fadeInVariants, containerVariants } from '../../animations/variants';
 import { useFormContext } from 'react-hook-form';
-import type { FormData } from '../../constants/validationSchemas';
+import type { FormData, Industry, CompanySize } from '../../constants/validationSchemas';
+
+// =============================================================================
+// DATA
+// =============================================================================
+
+const industries: Industry[] = [
+  'Technology',
+  'Healthcare',
+  'Finance',
+  'Real Estate',
+  'Retail',
+  'Manufacturing',
+  'Consulting',
+  'Marketing',
+  'Education',
+  'Other',
+];
+
+const companySizes: Array<{ value: CompanySize; label: string }> = [
+  { value: '1-10', label: '1-10 employees' },
+  { value: '11-50', label: '11-50 employees' },
+  { value: '51+', label: '51+ employees' },
+];
 
 // =============================================================================
 // COMPONENT
@@ -31,6 +55,7 @@ export function Step2Business() {
   } = useFormContext<FormData>();
 
   const selectedIndustry = watch('industry');
+  const selectedSize = watch('company_size');
   const showOtherIndustry = selectedIndustry === 'Other';
 
   return (
@@ -66,9 +91,10 @@ export function Step2Business() {
       <motion.div variants={fadeInVariants}>
         <FormTextarea
           label="What does your business do?"
-          placeholder="We help small businesses grow their online presence through Instagram marketing and content creation..."
+          placeholder="We help healthcare providers streamline their patient communication..."
+          icon={ICONS.briefcase}
           error={errors.business_summary?.message}
-          helperText="Be specific about your services and target market (50-500 characters)"
+          helperText="Describe your business in 50-500 characters"
           required
           rows={4}
           maxLength={500}
@@ -76,55 +102,57 @@ export function Step2Business() {
         />
       </motion.div>
 
-      {/* Industry */}
-      <motion.div variants={fadeInVariants} className="space-y-1.5">
-        <label className="block text-sm font-medium text-slate-200">
-          Industry <span className="text-violet-400">*</span>
+      {/* Industry Select */}
+      <motion.div variants={fadeInVariants} className="space-y-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+          <Icon icon={ICONS.industry} className="text-lg text-purple-400" />
+          Industry
+          <span className="text-red-400">*</span>
         </label>
-        <div className="relative">
-          <Icon icon={ICONS.briefcase} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-          <select
-            {...register('industry')}
-            className={`
-              w-full pl-11 pr-4 py-2.5
-              bg-slate-900/50 border rounded-lg
-              text-white
-              transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:bg-slate-900
-              ${errors.industry ? 'border-red-500/50' : 'border-slate-700/50'}
-            `}
-          >
-            <option value="">Select industry</option>
-            <option value="Technology">Technology</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Finance">Finance</option>
-            <option value="Real Estate">Real Estate</option>
-            <option value="Retail">Retail</option>
-            <option value="Manufacturing">Manufacturing</option>
-            <option value="Consulting">Consulting</option>
-            <option value="Marketing">Marketing</option>
-            <option value="Education">Education</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+
+        <select
+          className={`
+            w-full px-4 py-3 
+            bg-slate-800/50 
+            border-2 rounded-xl 
+            text-white
+            transition-all duration-200
+            focus:outline-none focus:ring-2 focus:ring-purple-500/50
+            ${
+              errors.industry
+                ? 'border-red-500/50 focus:border-red-500'
+                : 'border-slate-700 focus:border-purple-500'
+            }
+          `}
+          {...register('industry')}
+        >
+          <option value="">Select industry...</option>
+          {industries.map((industry) => (
+            <option key={industry} value={industry}>
+              {industry}
+            </option>
+          ))}
+        </select>
+
         {errors.industry && (
-          <p className="text-xs text-red-400 flex items-center gap-1.5">
-            <Icon icon={ICONS.alertCircle} className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 text-sm text-red-400">
+            <Icon icon="lucide:alert-circle" />
             {errors.industry.message}
-          </p>
+          </div>
         )}
       </motion.div>
 
-      {/* Other Industry (conditional) */}
+      {/* Industry Other (conditional) */}
       {showOtherIndustry && (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
+          variants={fadeInVariants}
+          initial="hidden"
+          animate="visible"
         >
           <FormInput
             label="Specify Industry"
-            placeholder="e.g., Hospitality"
+            placeholder="E.g., SaaS, E-commerce"
+            icon={ICONS.industry}
             error={errors.industry_other?.message}
             required
             {...register('industry_other')}
@@ -132,39 +160,49 @@ export function Step2Business() {
         </motion.div>
       )}
 
-      {/* Company Size */}
-      <motion.div variants={fadeInVariants} className="space-y-2">
-        <label className="block text-sm font-medium text-slate-200">
-          Company Size <span className="text-violet-400">*</span>
+      {/* Company Size Radio */}
+      <motion.div variants={fadeInVariants} className="space-y-3">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+          <Icon icon={ICONS.users} className="text-lg text-purple-400" />
+          Company Size
+          <span className="text-red-400">*</span>
         </label>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { value: '1-10', label: '1-10' },
-            { value: '11-50', label: '11-50' },
-            { value: '51+', label: '51+' },
-          ].map((option) => (
-            <label
-              key={option.value}
-              className="relative flex items-center justify-center p-3 border border-slate-700/50 rounded-lg cursor-pointer hover:border-violet-500/50 transition-colors"
-            >
-              <input
-                type="radio"
-                value={option.value}
-                {...register('company_size')}
-                className="sr-only peer"
-              />
-              <span className="text-sm font-medium text-slate-300 peer-checked:text-violet-400">
-                {option.label}
-              </span>
-              <div className="absolute inset-0 border-2 border-violet-500 rounded-lg opacity-0 peer-checked:opacity-100 transition-opacity" />
-            </label>
-          ))}
+
+        <div className="space-y-2">
+          {companySizes.map((option) => {
+            const isSelected = selectedSize === option.value;
+
+            return (
+              <label
+                key={option.value}
+                className={`
+                  flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer
+                  transition-all duration-200
+                  ${
+                    isSelected
+                      ? 'bg-purple-500/10 border-purple-500'
+                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                  }
+                `}
+              >
+                <input
+                  type="radio"
+                  value={option.value}
+                  checked={isSelected}
+                  className="w-5 h-5 text-purple-500 focus:ring-purple-500"
+                  {...register('company_size')}
+                />
+                <span className="font-medium text-white">{option.label}</span>
+              </label>
+            );
+          })}
         </div>
+
         {errors.company_size && (
-          <p className="text-xs text-red-400 flex items-center gap-1.5">
-            <Icon icon={ICONS.alertCircle} className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 text-sm text-red-400">
+            <Icon icon="lucide:alert-circle" />
             {errors.company_size.message}
-          </p>
+          </div>
         )}
       </motion.div>
 
@@ -172,17 +210,14 @@ export function Step2Business() {
       <motion.div variants={fadeInVariants}>
         <FormInput
           label="Website"
+          placeholder="https://yourcompany.com"
           type="url"
-          placeholder="https://example.com"
           icon={ICONS.globe}
           error={errors.website?.message}
-          helperText="Optional"
+          helperText="Optional - Your company website"
           {...register('website')}
         />
       </motion.div>
     </motion.div>
   );
 }
-
-// Missing Icon import
-import { Icon } from '@iconify/react';
