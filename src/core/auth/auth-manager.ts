@@ -25,12 +25,6 @@ import { env } from './environment';
 // TYPES
 // =============================================================================
 
-interface TokenData {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number; // Unix timestamp (milliseconds)
-}
-
 interface UserData {
   id: string;
   email: string;
