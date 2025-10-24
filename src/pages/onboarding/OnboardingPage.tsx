@@ -1,20 +1,21 @@
 // src/pages/onboarding/OnboardingPage.tsx
 
 /**
- * ONBOARDING PAGE - STREAMLINED 4-STEP FLOW
+ * ONBOARDING PAGE - BULLETPROOF 4-STEP FLOW
  * 
- * Step 1: Identity (signature_name)
- * Step 2: Business (business_summary, communication_tone)
- * Step 3: Target (target_description, followers, company_sizes)
- * Step 4: Review
+ * FIXES:
+ * - Key-based step rendering (prevents desync on spam click)
+ * - Synchronous state updates (no animation conflicts)
+ * - Proper navigation locking during transitions
+ * - Consistent container height (no scroll flash)
  * 
- * BUG FIXES:
- * - Debounced navigation (no spam click glitch)
- * - Dynamic container height (no scroll flash)
- * - Cross-field validation for follower range
+ * SOLID PRINCIPLES:
+ * - Step display driven by state, not animation frames
+ * - Single source of truth (currentStep)
+ * - Immutable step transitions
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { OnboardingShell } from '@/features/onboarding/components/OnboardingShell';
@@ -42,15 +43,11 @@ import {
 
 const TOTAL_STEPS = 4;
 
-// =============================================================================
-// STEP SCHEMAS MAP
-// =============================================================================
-
 const stepSchemas = {
   1: step1Schema,
   2: step2Schema,
   3: step3Schema,
-  4: fullFormSchema, // Full validation before submit
+  4: fullFormSchema,
 };
 
 // =============================================================================
@@ -74,22 +71,17 @@ export function OnboardingPage() {
   const { trigger, handleSubmit, getValues, setError } = methods;
 
   // =============================================================================
-  // NAVIGATION HANDLERS (WITH DEBOUNCE FIX)
+  // NAVIGATION HANDLERS - BULLETPROOF
   // =============================================================================
 
   const handleNext = async () => {
-    // Prevent spam clicking
-    if (isNavigating) return;
+    // ✅ LOCK: Prevent all navigation during transition
+    if (isNavigating || isPending) return;
     setIsNavigating(true);
 
     try {
-      // Get the schema for current step
       const schema = stepSchemas[currentStep as keyof typeof stepSchemas];
-      
-      // Extract field names from schema
       const fields = Object.keys(schema.shape);
-      
-      // Validate current step fields
       const isValid = await trigger(fields as any);
       
       if (!isValid) {
@@ -97,48 +89,54 @@ export function OnboardingPage() {
         return;
       }
 
-      // Manual cross-field validation for Step 3 (follower range)
+      // Cross-field validation for Step 3
       if (currentStep === 3) {
         const values = getValues();
         if (values.icp_max_followers < values.icp_min_followers) {
           setError('icp_max_followers', {
             type: 'manual',
-            message: 'Maximum followers must be greater than or equal to minimum',
+            message: 'Maximum must be greater than or equal to minimum',
           });
           setIsNavigating(false);
           return;
         }
       }
 
+      // Last step - submit
       if (currentStep === TOTAL_STEPS) {
-        // Submit form on last step
         handleSubmit(onSubmit)();
-      } else {
-        // Small delay to prevent animation conflicts
-        setTimeout(() => {
-          nextStep();
-          setIsNavigating(false);
-        }, 150);
+        setIsNavigating(false);
+        return;
       }
+
+      // Navigate to next step
+      nextStep();
+      
+      // ✅ UNLOCK: Brief delay for animation, then release lock
+      setTimeout(() => {
+        setIsNavigating(false);
+      }, 200);
+      
     } catch (error) {
       setIsNavigating(false);
     }
   };
 
   const handleBack = () => {
-    // Prevent spam clicking
-    if (isNavigating) return;
+    // ✅ LOCK: Prevent navigation during transition
+    if (isNavigating || isPending) return;
     setIsNavigating(true);
 
-    // Small delay to prevent animation conflicts
+    prevStep();
+    
+    // ✅ UNLOCK: Brief delay for animation
     setTimeout(() => {
-      prevStep();
       setIsNavigating(false);
-    }, 150);
+    }, 200);
   };
 
   const handleEditStep = (step: number) => {
-    if (isNavigating) return;
+    if (isNavigating || isPending) return;
     goToStep(step);
   };
 
@@ -151,30 +149,32 @@ export function OnboardingPage() {
   };
 
   // =============================================================================
-  // RENDER STEP CONTENT
+  // STEP RENDERING - KEY-BASED FOR IMMUTABILITY
+  // ✅ useMemo ensures step only changes when currentStep changes
+  // ✅ Key forces React to unmount/remount on step change
   // =============================================================================
 
-  const renderStep = () => {
+  const stepContent = useMemo(() => {
     if (isPending) {
       return <LoadingState />;
     }
 
     switch (currentStep) {
       case 1:
-        return <Step1Personal />;
+        return <Step1Personal key="step-1" />;
       case 2:
-        return <Step2Business />;
+        return <Step2Business key="step-2" />;
       case 3:
-        return <Step3Target />;
+        return <Step3Target key="step-3" />;
       case 4:
-        return <Step4Review onEditStep={handleEditStep} />;
+        return <Step4Review key="step-4" onEditStep={handleEditStep} />;
       default:
-        return null;
+        return <Step1Personal key="step-1" />;
     }
-  };
+  }, [currentStep, isPending]);
 
   // =============================================================================
-  // DETERMINE NAVIGATION STATE
+  // NAVIGATION STATE
   // =============================================================================
 
   const canGoBack = currentStep > 1 && !isPending && !isNavigating;
@@ -189,20 +189,19 @@ export function OnboardingPage() {
     <FormProvider {...methods}>
       <div className="relative min-h-screen">
         {/* Progress Bar */}
-        <ProgressBar currentStep={currentStep} />
+        <ProgressBar currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 
-        {/* Main Content - Fixed height container to prevent scroll flash */}
+        {/* Main Content - Fixed height prevents layout shift */}
         <OnboardingShell>
-          <div className="min-h-[600px] flex items-start">
-            <StepContainer step={currentStep} direction={direction}>
-              {renderStep()}
-            </StepContainer>
-          </div>
+          <StepContainer step={currentStep} direction={direction}>
+            {stepContent}
+          </StepContainer>
         </OnboardingShell>
 
         {/* Navigation Bar */}
         <NavigationBar
           currentStep={currentStep}
+          totalSteps={TOTAL_STEPS}
           canGoBack={canGoBack}
           canGoNext={canGoNext}
           isLastStep={isLastStep}
