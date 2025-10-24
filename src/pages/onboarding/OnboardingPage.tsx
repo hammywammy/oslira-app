@@ -5,6 +5,11 @@
  * 
  * Main orchestrator for 8-step onboarding flow
  * Manages form state, validation, and API submission
+ * 
+ * FIXED:
+ * - Proper .shape access handling for all schema types
+ * - Manual Step 5 cross-field validation (max >= min)
+ * - Correct typing for form submission
  */
 
 import { useForm, FormProvider } from 'react-hook-form';
@@ -71,24 +76,38 @@ export function OnboardingPage() {
     },
   });
 
-  const { trigger, handleSubmit } = methods;
+  const { trigger, handleSubmit, getValues, setError } = methods;
 
   // =============================================================================
   // NAVIGATION HANDLERS
   // =============================================================================
 
   const handleNext = async () => {
-    // Validate current step before proceeding
+    // Get the schema for current step
     const schema = stepSchemas[currentStep as keyof typeof stepSchemas];
     
-    // For step 5, just validate the base fields (no refine)
-    // The refine will run on final submission
-    const fields = Object.keys(schema.shape || (schema as any)._def?.schema?.shape || {});
+    // ✅ FIXED: Safely extract field names from schema
+    // All our step schemas are now pure ZodObjects with .shape
+    const fields = Object.keys(schema.shape);
     
+    // Validate current step fields
     const isValid = await trigger(fields as any);
     
     if (!isValid) {
       return; // Stay on current step if validation fails
+    }
+
+    // ✅ ADDED: Manual cross-field validation for Step 5
+    // (Since we removed .refine() from step5Schema to maintain .shape access)
+    if (currentStep === 5) {
+      const values = getValues();
+      if (values.icp_max_followers < values.icp_min_followers) {
+        setError('icp_max_followers', {
+          type: 'manual',
+          message: 'Maximum followers must be greater than or equal to minimum',
+        });
+        return;
+      }
     }
 
     if (currentStep === TOTAL_STEPS) {
@@ -112,6 +131,7 @@ export function OnboardingPage() {
   // =============================================================================
 
   const onSubmit = (data: FormData) => {
+    // ✅ FIXED: Proper typing - data is already FormData type
     completeOnboarding(data);
   };
 
