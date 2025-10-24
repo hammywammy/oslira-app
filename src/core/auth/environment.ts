@@ -1,18 +1,22 @@
 // src/core/auth/environment.ts
 
 /**
- * ENVIRONMENT MANAGER
+ * ENVIRONMENT MANAGER - Build-Time Configuration
  * 
- * Detects environment from hostname (no API calls, instant)
- * Singleton pattern - initialized once on app load
+ * Uses constants injected at build time by Vite (see vite.config.ts)
+ * No runtime detection - environment is determined during build
  * 
- * Environments:
- * - development: localhost → http://localhost:8787
- * - staging: staging-app.oslira.com → api-staging.oslira.com
- * - production: app.oslira.com → api.oslira.com
+ * Build commands:
+ * - Staging: vite build --mode staging
+ * - Production: vite build --mode production (default)
+ * 
+ * Architecture:
+ * - Singleton pattern for consistency
+ * - Type-safe environment access
+ * - No API calls or hostname sniffing
  */
 
-export type Environment = 'development' | 'staging' | 'production';
+export type Environment = 'staging' | 'production';
 
 export interface EnvironmentConfig {
   environment: Environment;
@@ -20,7 +24,6 @@ export interface EnvironmentConfig {
   appUrl: string;
   isStaging: boolean;
   isProduction: boolean;
-  isDevelopment: boolean;
 }
 
 class EnvironmentManager {
@@ -28,48 +31,25 @@ class EnvironmentManager {
   private config: EnvironmentConfig;
 
   private constructor() {
-    this.config = this.detectEnvironment();
+    this.config = this.loadEnvironment();
   }
 
   /**
-   * Detect environment from window.location.hostname
-   * No API calls - instant detection
+   * Load environment from build-time constants
+   * These are injected by Vite during build (see vite.config.ts)
    */
-  private detectEnvironment(): EnvironmentConfig {
-    const hostname = window.location.hostname;
+  private loadEnvironment(): EnvironmentConfig {
+    // Build-time constants (replaced during build)
+    const environment = __APP_ENV__ as Environment;
+    const apiUrl = __API_URL__;
+    const appUrl = __APP_URL__;
 
-    // Development environment (localhost)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return {
-        environment: 'development',
-        apiUrl: 'http://localhost:8787',
-        appUrl: 'http://localhost:5173',
-        isStaging: false,
-        isProduction: false,
-        isDevelopment: true,
-      };
-    }
-
-    // Staging environment
-    if (hostname.includes('staging')) {
-      return {
-        environment: 'staging',
-        apiUrl: 'https://api-staging.oslira.com',
-        appUrl: 'https://staging-app.oslira.com',
-        isStaging: true,
-        isProduction: false,
-        isDevelopment: false,
-      };
-    }
-
-    // Production environment (default)
     return {
-      environment: 'production',
-      apiUrl: 'https://api.oslira.com',
-      appUrl: 'https://app.oslira.com',
-      isStaging: false,
-      isProduction: true,
-      isDevelopment: false,
+      environment,
+      apiUrl,
+      appUrl,
+      isStaging: environment === 'staging',
+      isProduction: environment === 'production',
     };
   }
 
@@ -89,6 +69,26 @@ class EnvironmentManager {
   getConfig(): EnvironmentConfig {
     return this.config;
   }
+
+  /**
+   * Validate environment on startup (development check)
+   */
+  validate(): void {
+    const { environment, apiUrl, appUrl } = this.config;
+
+    // Ensure required config is present
+    if (!apiUrl || !appUrl) {
+      console.error('❌ Environment configuration missing:', this.config);
+      throw new Error('Invalid environment configuration');
+    }
+
+    // Log environment in non-production (debugging)
+    if (environment === 'staging') {
+      console.log('🔧 Running in STAGING environment');
+      console.log('API:', apiUrl);
+      console.log('App:', appUrl);
+    }
+  }
 }
 
 // Export singleton instance
@@ -96,3 +96,6 @@ export const environment = EnvironmentManager.getInstance();
 
 // Export config for convenience
 export const env = environment.getConfig();
+
+// Validate on module load (fails fast if misconfigured)
+environment.validate();
