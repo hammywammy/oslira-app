@@ -4,7 +4,9 @@
  * STEP 4: CHALLENGES
  * 
  * Fields:
- * - challenges (checkbox array - optional)
+ * - challenges (multi-select checkboxes)
+ * 
+ * FIXED: Removed unused handleToggle, added proper type annotations
  */
 
 import { motion } from 'framer-motion';
@@ -21,33 +23,33 @@ import type { FormData, Challenge } from '../../constants/validationSchemas';
 const challengeOptions: Array<{ value: Challenge; label: string; description: string }> = [
   {
     value: 'low-quality-leads',
-    label: 'Low-quality leads',
-    description: 'Wasting time on prospects who aren\'t a good fit',
+    label: 'Low Quality Leads',
+    description: 'Spending time on prospects that never convert',
   },
   {
     value: 'time-consuming',
-    label: 'Time-consuming research',
-    description: 'Manual profile analysis takes hours',
+    label: 'Time-Consuming Research',
+    description: 'Hours spent manually vetting prospects',
   },
   {
     value: 'expensive-tools',
-    label: 'Expensive tools',
-    description: 'Current solutions cost too much',
+    label: 'Expensive Tools',
+    description: 'Current solutions are too costly',
   },
   {
     value: 'lack-personalization',
-    label: 'Lack of personalization',
-    description: 'Generic outreach doesn\'t convert',
+    label: 'Lack of Personalization',
+    description: 'Generic outreach that doesn\'t resonate',
   },
   {
     value: 'poor-data-quality',
-    label: 'Poor data quality',
-    description: 'Inaccurate or outdated information',
+    label: 'Poor Data Quality',
+    description: 'Outdated or inaccurate prospect information',
   },
   {
     value: 'difficult-scaling',
-    label: 'Difficult to scale',
-    description: 'Can\'t handle growing volume',
+    label: 'Difficult to Scale',
+    description: 'Can\'t scale prospecting without hiring',
   },
 ];
 
@@ -57,19 +59,22 @@ const challengeOptions: Array<{ value: Challenge; label: string; description: st
 
 export function Step4Challenges() {
   const {
-    register,
     watch,
+    setValue,
     formState: { errors },
   } = useFormContext<FormData>();
 
   const selectedChallenges = watch('challenges') || [];
 
-  const handleToggle = (value: Challenge) => {
-    const currentValues = watch('challenges') || [];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter((v) => v !== value)
-      : [...currentValues, value];
-    return newValues;
+  // ✅ FIXED: Added proper type annotation
+  const toggleChallenge = (value: string) => {
+    const current = watch('challenges') || [];
+    
+    if (current.includes(value)) {
+      setValue('challenges', current.filter((v: string) => v !== value));
+    } else {
+      setValue('challenges', [...current, value]);
+    }
   };
 
   return (
@@ -89,10 +94,10 @@ export function Step4Challenges() {
         </p>
       </motion.div>
 
-      {/* Checkbox Grid */}
+      {/* Challenge Options */}
       <motion.div variants={fadeInVariants} className="space-y-3">
         {challengeOptions.map((option) => {
-          const isChecked = selectedChallenges.includes(option.value);
+          const isSelected = selectedChallenges.includes(option.value);
 
           return (
             <label
@@ -101,28 +106,28 @@ export function Step4Challenges() {
                 block p-4 rounded-xl border-2 cursor-pointer
                 transition-all duration-200
                 ${
-                  isChecked
+                  isSelected
                     ? 'bg-purple-500/10 border-purple-500'
                     : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                 }
               `}
+              onClick={() => toggleChallenge(option.value)}
             >
               <div className="flex items-start gap-4">
                 {/* Checkbox */}
                 <div className="flex items-center h-6 mt-0.5">
                   <input
                     type="checkbox"
-                    value={option.value}
-                    checked={isChecked}
-                    className="w-5 h-5 rounded border-slate-600 text-purple-500 focus:ring-purple-500"
-                    {...register('challenges')}
+                    checked={isSelected}
+                    onChange={() => {}} // Handled by label onClick
+                    className="w-5 h-5 text-purple-500 rounded focus:ring-purple-500"
                   />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Icon icon={ICONS.target} className="text-purple-400" />
+                    <Icon icon={ICONS.alertTriangle} className="text-purple-400" />
                     <span className="font-semibold text-white">{option.label}</span>
                   </div>
                   <p className="text-sm text-slate-400">{option.description}</p>
@@ -133,8 +138,8 @@ export function Step4Challenges() {
         })}
       </motion.div>
 
-      {/* Error message */}
-      {errors.challenges && (
+      {/* Error Message */}
+      {errors.challenges?.message && (
         <div className="flex items-center gap-2 text-sm text-red-400">
           <Icon icon="lucide:alert-circle" />
           {errors.challenges.message}
