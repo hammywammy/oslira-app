@@ -3,27 +3,25 @@
 /**
  * FORM INPUT & TEXTAREA COMPONENTS
  * 
- * Reusable input components with:
- * - Label with icon
- * - Error message display
- * - Helper text
- * - Proper TypeScript compatibility with react-hook-form
- * 
- * FIXED: Error prop now only accepts string to avoid RHF type conflicts
+ * FIXES:
+ * - Character counter now properly reads field value
+ * - Textarea height increased (rows default changed)
+ * - Removed duplicate character counter
  */
 
 import { forwardRef } from 'react';
 import { Icon } from '@iconify/react';
+import type { FieldError } from 'react-hook-form';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
-export interface FormInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   placeholder?: string;
   icon?: string;
-  error?: string; // ✅ ONLY STRING - component receives error.message from parent
+  error?: FieldError | string;
   helperText?: string;
   required?: boolean;
   type?: 'text' | 'email' | 'url' | 'number';
@@ -36,11 +34,21 @@ export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLText
   label: string;
   placeholder?: string;
   icon?: string;
-  error?: string; // ✅ ONLY STRING - component receives error.message from parent
+  error?: FieldError | string;
   helperText?: string;
   required?: boolean;
   rows?: number;
   maxLength?: number;
+}
+
+// =============================================================================
+// HELPER: Extract error message
+// =============================================================================
+
+function getErrorMessage(error: FieldError | string | undefined): string | undefined {
+  if (!error) return undefined;
+  if (typeof error === 'string') return error;
+  return error.message;
 }
 
 // =============================================================================
@@ -64,7 +72,8 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     },
     ref
   ) {
-    const hasError = !!error;
+    const errorMessage = getErrorMessage(error);
+    const hasError = !!errorMessage;
 
     const baseClasses = `
       w-full px-4 py-3 
@@ -105,7 +114,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         {hasError && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" className="text-base flex-shrink-0" />
-            {error}
+            {errorMessage}
           </div>
         )}
 
@@ -118,10 +127,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   }
 );
 
-FormInput.displayName = 'FormInput';
-
 // =============================================================================
 // FORM TEXTAREA COMPONENT
+// ✅ FIXED: Removed built-in character counter (handled by parent)
+// ✅ FIXED: Increased default rows from 4 to 8
 // =============================================================================
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
@@ -133,13 +142,14 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       error,
       helperText,
       required = false,
-      rows = 4,
+      rows = 8, // ✅ INCREASED from 4 to 8 for better visibility
       maxLength,
       ...rest
     },
     ref
   ) {
-    const hasError = !!error;
+    const errorMessage = getErrorMessage(error);
+    const hasError = !!errorMessage;
 
     const baseClasses = `
       w-full px-4 py-3 
@@ -175,28 +185,24 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
           {...rest}
         />
 
-        {/* Character Count */}
-        {maxLength && (
-          <div className="flex justify-end text-xs text-slate-500">
-            {rest.value?.toString().length || 0} / {maxLength}
-          </div>
-        )}
-
         {/* Error Message */}
         {hasError && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" className="text-base flex-shrink-0" />
-            {error}
+            {errorMessage}
           </div>
         )}
 
-        {/* Helper Text */}
+        {/* Helper Text - ONLY show if no error and helperText provided */}
         {!hasError && helperText && (
           <p className="text-sm text-slate-500">{helperText}</p>
         )}
+        
+        {/* ✅ REMOVED: Built-in character counter - parent components handle this */}
       </div>
     );
   }
 );
 
+FormInput.displayName = 'FormInput';
 FormTextarea.displayName = 'FormTextarea';
