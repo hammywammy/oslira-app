@@ -1,48 +1,50 @@
 // src/features/onboarding/components/steps/Step2Business.tsx
 
 /**
- * STEP 2: BUSINESS BASICS
+ * STEP 2: BUSINESS CONTEXT
  * 
  * Fields:
- * - company_name
- * - business_summary (textarea)
- * - industry (select)
- * - industry_other (conditional text)
- * - company_size (radio)
- * - website (optional)
+ * - business_summary (50-750 chars with progress indicator)
+ * - communication_tone (Professional/Friendly/Casual)
  * 
- * FIXED: Using ICONS.briefcase for industry field (not ICONS.industry)
+ * FEATURES:
+ * - Refinement callout (reduces perfection anxiety)
+ * - Character counter with color coding
+ * - Helpful placeholder with examples
  */
 
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { FormInput, FormTextarea } from '../FormInput';
+import { FormTextarea } from '../FormInput';
+import { RefinementCallout } from '../RefinementCallout';
 import { ICONS } from '../../constants/icons';
 import { fadeInVariants, containerVariants } from '../../animations/variants';
 import { useFormContext } from 'react-hook-form';
-import type { FormData, Industry, CompanySize } from '../../constants/validationSchemas';
+import type { FormData, CommunicationTone } from '../../constants/validationSchemas';
 
 // =============================================================================
 // DATA
 // =============================================================================
 
-const industries: Industry[] = [
-  'Technology',
-  'Healthcare',
-  'Finance',
-  'Real Estate',
-  'Retail',
-  'Manufacturing',
-  'Consulting',
-  'Marketing',
-  'Education',
-  'Other',
-];
-
-const companySizes: Array<{ value: CompanySize; label: string }> = [
-  { value: '1-10', label: '1-10 employees' },
-  { value: '11-50', label: '11-50 employees' },
-  { value: '51+', label: '51+ employees' },
+const toneOptions: Array<{ value: CommunicationTone; label: string; description: string; icon: string }> = [
+  {
+    value: 'professional',
+    label: 'Professional',
+    description: 'Formal, business-focused communication',
+    icon: 'lucide:briefcase',
+  },
+  {
+    value: 'friendly',
+    label: 'Friendly',
+    description: 'Warm and approachable tone',
+    icon: 'lucide:smile',
+  },
+  {
+    value: 'casual',
+    label: 'Casual',
+    description: 'Relaxed, conversational style',
+    icon: 'lucide:message-circle',
+  },
 ];
 
 // =============================================================================
@@ -56,9 +58,22 @@ export function Step2Business() {
     formState: { errors },
   } = useFormContext<FormData>();
 
-  const selectedIndustry = watch('industry');
-  const selectedSize = watch('company_size');
-  const showOtherIndustry = selectedIndustry === 'Other';
+  const businessSummary = watch('business_summary') || '';
+  const selectedTone = watch('communication_tone');
+  const charCount = businessSummary.length;
+
+  // Character counter color logic
+  const getCharCountColor = () => {
+    if (charCount < 50) return 'text-red-400';
+    if (charCount < 150) return 'text-yellow-400';
+    return 'text-green-400';
+  };
+
+  const getCharCountLabel = () => {
+    if (charCount < 50) return 'Add more detail';
+    if (charCount < 150) return 'Good start';
+    return 'Great detail!';
+  };
 
   return (
     <motion.div
@@ -73,111 +88,67 @@ export function Step2Business() {
           Tell us about your business
         </h2>
         <p className="text-slate-400">
-          Help us understand what you do
+          Help the AI understand what you do
         </p>
       </motion.div>
 
-      {/* Company Name */}
+      {/* Refinement Callout */}
       <motion.div variants={fadeInVariants}>
-        <FormInput
-          label="Company Name"
-          placeholder="Acme Marketing"
-          icon={ICONS.building}
-          error={errors.company_name?.message}
-          required
-          {...register('company_name')}
-        />
+        <RefinementCallout />
       </motion.div>
 
       {/* Business Summary */}
-      <motion.div variants={fadeInVariants}>
+      <motion.div variants={fadeInVariants} className="space-y-2">
         <FormTextarea
           label="What does your business do?"
-          placeholder="We help health coaches build their personal brands on Instagram..."
+          placeholder="Example: Acme Marketing is a boutique agency specializing in health & wellness brands. We solve the problem of generic social media presence by creating authentic, data-driven Instagram strategies that convert followers into customers. Our unique approach combines behavioral psychology with influencer partnerships..."
           icon={ICONS.briefcase}
           error={errors.business_summary?.message}
-          helperText="Describe your business in 50-500 characters"
           required
-          rows={4}
-          maxLength={500}
+          rows={6}
+          maxLength={750}
           {...register('business_summary')}
         />
+        
+        {/* Character Counter */}
+        <div className="flex items-center justify-between text-sm">
+          <span className={getCharCountColor()}>
+            {getCharCountLabel()}
+          </span>
+          <span className="text-slate-500">
+            {charCount} / 750
+          </span>
+        </div>
+
+        {/* Helper Prompts */}
+        <div className="bg-slate-800/30 rounded-lg p-3 text-xs text-slate-400">
+          <p className="mb-2 font-medium text-slate-300">Include:</p>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>Company name & industry/niche</li>
+            <li>What problems do you solve?</li>
+            <li>What makes you different?</li>
+            <li>Who you work with (optional)</li>
+          </ul>
+        </div>
       </motion.div>
 
-      {/* Industry Dropdown */}
-      <motion.div variants={fadeInVariants} className="space-y-2">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Icon icon={ICONS.briefcase} className="text-lg text-purple-400" />
-          Industry
-          <span className="text-red-400">*</span>
-        </label>
-
-        <select
-          className={`
-            w-full px-4 py-3 
-            bg-slate-800/50 
-            border-2 rounded-xl 
-            text-white
-            transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-purple-500/50
-            ${
-              errors.industry
-                ? 'border-red-500/50 focus:border-red-500'
-                : 'border-slate-700 focus:border-purple-500'
-            }
-          `}
-          {...register('industry')}
-        >
-          <option value="">Select an industry...</option>
-          {industries.map((industry) => (
-            <option key={industry} value={industry}>
-              {industry}
-            </option>
-          ))}
-        </select>
-
-        {errors.industry?.message && (
-          <div className="flex items-center gap-2 text-sm text-red-400">
-            <Icon icon="lucide:alert-circle" />
-            {errors.industry.message}
-          </div>
-        )}
-      </motion.div>
-
-      {/* Other Industry (Conditional) */}
-      {showOtherIndustry && (
-        <motion.div
-          variants={fadeInVariants}
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-        >
-          <FormInput
-            label="Please specify"
-            placeholder="Your industry"
-            icon={ICONS.briefcase}
-            error={errors.industry_other?.message}
-            {...register('industry_other')}
-          />
-        </motion.div>
-      )}
-
-      {/* Company Size */}
+      {/* Communication Tone */}
       <motion.div variants={fadeInVariants} className="space-y-3">
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Icon icon={ICONS.users} className="text-lg text-purple-400" />
-          Company Size
+          <Icon icon={ICONS.messageSquare} className="text-lg text-purple-400" />
+          How do you prefer to communicate?
           <span className="text-red-400">*</span>
         </label>
 
-        <div className="space-y-2">
-          {companySizes.map((size) => {
-            const isSelected = selectedSize === size.value;
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {toneOptions.map((option) => {
+            const isSelected = selectedTone === option.value;
 
             return (
               <label
-                key={size.value}
+                key={option.value}
                 className={`
-                  flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer
+                  block p-4 rounded-xl border-2 cursor-pointer
                   transition-all duration-200
                   ${
                     isSelected
@@ -186,38 +157,31 @@ export function Step2Business() {
                   }
                 `}
               >
-                <input
-                  type="radio"
-                  value={size.value}
-                  checked={isSelected}
-                  className="w-4 h-4 text-purple-500"
-                  {...register('company_size')}
-                />
-                <span className="text-white">{size.label}</span>
+                <div className="flex flex-col items-center text-center gap-2">
+                  <Icon icon={option.icon} className="text-2xl text-purple-400" />
+                  <div>
+                    <input
+                      type="radio"
+                      value={option.value}
+                      checked={isSelected}
+                      className="sr-only"
+                      {...register('communication_tone')}
+                    />
+                    <div className="font-semibold text-white mb-1">{option.label}</div>
+                    <div className="text-xs text-slate-400">{option.description}</div>
+                  </div>
+                </div>
               </label>
             );
           })}
         </div>
 
-        {errors.company_size?.message && (
+        {errors.communication_tone?.message && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" />
-            {errors.company_size.message}
+            {errors.communication_tone.message}
           </div>
         )}
-      </motion.div>
-
-      {/* Website (Optional) */}
-      <motion.div variants={fadeInVariants}>
-        <FormInput
-          label="Website (Optional)"
-          placeholder="https://example.com"
-          type="url"
-          icon={ICONS.globe}
-          error={errors.website?.message}
-          helperText="Your company website"
-          {...register('website')}
-        />
       </motion.div>
     </motion.div>
   );
