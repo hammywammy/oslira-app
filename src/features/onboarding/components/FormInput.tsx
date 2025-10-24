@@ -7,23 +7,23 @@
  * - Label with icon
  * - Error message display
  * - Helper text
- * - Proper FieldError handling
- * - TypeScript compatibility with react-hook-form
+ * - Proper TypeScript compatibility with react-hook-form
+ * 
+ * FIXED: Error prop now only accepts string to avoid RHF type conflicts
  */
 
 import { forwardRef } from 'react';
 import { Icon } from '@iconify/react';
-import type { FieldError } from 'react-hook-form';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
-export interface FormInputProps {
+export interface FormInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string;
   placeholder?: string;
   icon?: string;
-  error?: FieldError | string;
+  error?: string; // ✅ ONLY STRING - component receives error.message from parent
   helperText?: string;
   required?: boolean;
   type?: 'text' | 'email' | 'url' | 'number';
@@ -32,25 +32,15 @@ export interface FormInputProps {
   step?: string | number;
 }
 
-export interface FormTextareaProps {
+export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string;
   placeholder?: string;
   icon?: string;
-  error?: FieldError | string;
+  error?: string; // ✅ ONLY STRING - component receives error.message from parent
   helperText?: string;
   required?: boolean;
   rows?: number;
   maxLength?: number;
-}
-
-// =============================================================================
-// HELPER: Extract error message
-// =============================================================================
-
-function getErrorMessage(error: FieldError | string | undefined): string | undefined {
-  if (!error) return undefined;
-  if (typeof error === 'string') return error;
-  return error.message;
 }
 
 // =============================================================================
@@ -74,8 +64,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     },
     ref
   ) {
-    const errorMessage = getErrorMessage(error);
-    const hasError = !!errorMessage;
+    const hasError = !!error;
 
     const baseClasses = `
       w-full px-4 py-3 
@@ -116,7 +105,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         {hasError && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" className="text-base flex-shrink-0" />
-            {errorMessage}
+            {error}
           </div>
         )}
 
@@ -128,6 +117,8 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
     );
   }
 );
+
+FormInput.displayName = 'FormInput';
 
 // =============================================================================
 // FORM TEXTAREA COMPONENT
@@ -148,8 +139,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
     },
     ref
   ) {
-    const errorMessage = getErrorMessage(error);
-    const hasError = !!errorMessage;
+    const hasError = !!error;
 
     const baseClasses = `
       w-full px-4 py-3 
@@ -185,26 +175,28 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
           {...rest}
         />
 
-        {/* Character count if maxLength specified */}
-        {maxLength && !hasError && (
-          <p className="text-sm text-slate-500 text-right">
-            {(rest as any).value?.length || 0} / {maxLength}
-          </p>
+        {/* Character Count */}
+        {maxLength && (
+          <div className="flex justify-end text-xs text-slate-500">
+            {rest.value?.toString().length || 0} / {maxLength}
+          </div>
         )}
 
         {/* Error Message */}
         {hasError && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" className="text-base flex-shrink-0" />
-            {errorMessage}
+            {error}
           </div>
         )}
 
         {/* Helper Text */}
-        {!hasError && helperText && !maxLength && (
+        {!hasError && helperText && (
           <p className="text-sm text-slate-500">{helperText}</p>
         )}
       </div>
     );
   }
 );
+
+FormTextarea.displayName = 'FormTextarea';
