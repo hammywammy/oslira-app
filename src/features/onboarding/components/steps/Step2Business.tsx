@@ -3,14 +3,10 @@
 /**
  * STEP 2: BUSINESS CONTEXT
  * 
- * Fields:
- * - business_summary (50-750 chars with progress indicator)
- * - communication_tone (Professional/Friendly/Casual)
- * 
- * FEATURES:
- * - Refinement callout (reduces perfection anxiety)
- * - Character counter with color coding
- * - Helpful placeholder with examples
+ * FIXES:
+ * - Character counter now uses watch() to get real-time value
+ * - Removed duplicate counter (only one now, after textarea)
+ * - Increased textarea rows for better visibility
  */
 
 import { motion } from 'framer-motion';
@@ -58,6 +54,7 @@ export function Step2Business() {
     formState: { errors },
   } = useFormContext<FormData>();
 
+  // ✅ FIX: Use watch() to get real-time character count
   const businessSummary = watch('business_summary') || '';
   const selectedTone = watch('communication_tone');
   const charCount = businessSummary.length;
@@ -105,13 +102,13 @@ export function Step2Business() {
           icon={ICONS.briefcase}
           error={errors.business_summary?.message}
           required
-          rows={6}
+          rows={8}
           maxLength={750}
           {...register('business_summary')}
         />
         
-        {/* Character Counter */}
-        <div className="flex items-center justify-between text-sm">
+        {/* ✅ SINGLE Character Counter - Uses watch() value */}
+        <div className="flex items-center justify-between text-sm px-1">
           <span className={getCharCountColor()}>
             {getCharCountLabel()}
           </span>
