@@ -6,6 +6,8 @@
  * Fields:
  * - primary_objective (radio)
  * - monthly_lead_goal (number)
+ * 
+ * FIXED: Removed unused setValue, properly handles monthly_lead_goal
  */
 
 import { motion } from 'framer-motion';
@@ -51,7 +53,6 @@ export function Step3Goals() {
   const {
     register,
     watch,
-    setValue,
     formState: { errors },
   } = useFormContext<FormData>();
 
@@ -115,20 +116,20 @@ export function Step3Goals() {
       </motion.div>
 
       {/* Error for objective */}
-      {errors.primary_objective && (
+      {errors.primary_objective?.message && (
         <div className="flex items-center gap-2 text-sm text-red-400">
           <Icon icon="lucide:alert-circle" />
           {errors.primary_objective.message}
         </div>
       )}
 
-      {/* Lead Goal */}
+      {/* Monthly Lead Goal */}
       <motion.div variants={fadeInVariants}>
         <FormInput
           label="Monthly Lead Goal"
           placeholder="50"
           type="number"
-          icon={ICONS.target}
+          icon={ICONS.trendingUp}
           error={errors.monthly_lead_goal?.message}
           helperText="How many leads do you want to generate per month?"
           required
