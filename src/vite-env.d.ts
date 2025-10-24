@@ -8,10 +8,8 @@
  * - Values are BAKED INTO the bundle
  * - Change requires rebuild
  * 
- * Runtime secrets (from Cloudflare Pages environment variables):
- * - Accessed via import.meta.env.VITE_*
- * - Values stay in environment, not in bundle
- * - Can change without rebuild
+ * All secrets (including Google OAuth) are fetched from backend
+ * via API calls to /api/auth/google-client-id (which reads from AWS)
  */
 
 // =============================================================================
@@ -47,19 +45,15 @@ declare const __APP_URL__: string;
 declare const __MARKETING_URL__: string;
 
 // =============================================================================
-// RUNTIME ENVIRONMENT VARIABLES (from Cloudflare Pages)
+// VITE BUILT-IN TYPES
 // =============================================================================
 
 interface ImportMetaEnv {
-  // Vite built-ins
   readonly MODE: string;
   readonly BASE_URL: string;
   readonly PROD: boolean;
   readonly DEV: boolean;
   readonly SSR: boolean;
-  
-  // Oslira runtime secrets (set in Cloudflare Pages dashboard)
-  readonly VITE_GOOGLE_OAUTH_CLIENT_ID: string;
 }
 
 interface ImportMeta {
