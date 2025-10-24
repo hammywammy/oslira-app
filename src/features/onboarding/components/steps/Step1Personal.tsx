@@ -5,6 +5,8 @@
  * 
  * Fields:
  * - signature_name (required)
+ * 
+ * FIXED: Proper error.message extraction for TypeScript
  */
 
 import { motion } from 'framer-motion';
