@@ -1,119 +1,65 @@
 // src/shared/types/onboarding.types.ts
 
 /**
- * ONBOARDING TYPES
+ * ONBOARDING TYPES - STREAMLINED
  * 
- * Form data types matching backend API expectations
- * Maps to business_profiles table and JSONB columns
+ * Updated to match 4-step onboarding flow
+ * Maps to backend API expectations
  */
 
 // =============================================================================
-// FORM DATA
+// FORM DATA (STREAMLINED - 4 STEPS)
 // =============================================================================
 
 export interface OnboardingFormData {
-  // Step 1: Personal Identity
+  // Step 1: Identity
   signature_name: string;
 
-  // Step 2: Business Basics
-  company_name: string;
+  // Step 2: Business Context
   business_summary: string;
-  industry: Industry;
-  industry_other?: string;
-  company_size: CompanySize;
-  website?: string;
+  communication_tone: BrandVoice;
 
-  // Step 3: Goals
-  primary_objective: PrimaryObjective;
-  monthly_lead_goal: number;
-
-  // Step 4: Challenges
-  challenges: Challenge[];
-
-  // Step 5: Target Audience
+  // Step 3: Target Customer
   target_description: string;
   icp_min_followers: number;
   icp_max_followers: number;
   target_company_sizes: TargetCompanySize[];
-
-  // Step 6: Communication
-  communication_channels: CommunicationChannel[];
-  communication_tone: BrandVoice;
-
-  // Step 7: Team
-  team_size: TeamSize;
-  campaign_manager: CampaignManager;
 }
 
 // =============================================================================
-// ENUMS
+// ENUMS (MINIMAL)
 // =============================================================================
-
-export type Industry =
-  | 'Technology'
-  | 'Healthcare'
-  | 'Finance'
-  | 'Real Estate'
-  | 'Retail'
-  | 'Manufacturing'
-  | 'Consulting'
-  | 'Marketing'
-  | 'Education'
-  | 'Other';
-
-export type CompanySize = '1-10' | '11-50' | '51+';
-
-export type PrimaryObjective =
-  | 'lead-generation'
-  | 'sales-automation'
-  | 'market-research'
-  | 'customer-retention';
-
-export type Challenge =
-  | 'low-quality-leads'
-  | 'time-consuming'
-  | 'expensive-tools'
-  | 'lack-personalization'
-  | 'poor-data-quality'
-  | 'difficult-scaling';
 
 export type TargetCompanySize = 'startup' | 'smb' | 'enterprise';
-
-export type CommunicationChannel = 'email' | 'instagram' | 'sms';
-
 export type BrandVoice = 'professional' | 'friendly' | 'casual';
 
-export type TeamSize = 'just-me' | 'small-team' | 'large-team';
-
-export type CampaignManager = 'myself' | 'sales-team' | 'marketing-team' | 'mixed-team';
-
 // =============================================================================
-// API PAYLOAD
+// API PAYLOAD (BACKEND STRUCTURE)
 // =============================================================================
 
 export interface OnboardingSubmitPayload {
   signature_name: string;
-  business_name: string;
+  business_name: string; // Extracted from business_summary
   business_summary: string;
   website?: string;
   ideal_customer_profile: {
     business_description: string;
     target_audience: string;
-    industry: string;
+    industry: string; // Extracted from business_summary or default
     icp_min_followers: number;
     icp_max_followers: number;
     brand_voice: string;
   };
   operational_metadata: {
-    company_size: string;
-    monthly_lead_goal: number;
-    primary_objective: string;
+    company_size: string; // Default value
+    monthly_lead_goal: number; // Default value
+    primary_objective: string; // Default value
     challenges: string[];
     target_company_sizes: string[];
-    communication_channels: string[];
+    communication_channels: string[]; // Default: ['instagram']
     communication_tone: string;
-    team_size: string;
-    campaign_manager: string;
+    team_size: string; // Default value
+    campaign_manager: string; // Default value
   };
 }
 
