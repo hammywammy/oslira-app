@@ -7,13 +7,14 @@
  * No runtime detection - environment is determined during build
  * 
  * Build commands:
- * - Staging: vite build --mode staging
- * - Production: vite build --mode production (default)
+ * - Staging: npm run build:staging
+ * - Production: npm run build:production (default)
  * 
  * Architecture:
  * - Singleton pattern for consistency
  * - Type-safe environment access
  * - No API calls or hostname sniffing
+ * - Supports runtime secrets via import.meta.env
  */
 
 export type Environment = 'staging' | 'production';
@@ -22,6 +23,8 @@ export interface EnvironmentConfig {
   environment: Environment;
   apiUrl: string;
   appUrl: string;
+  marketingUrl: string;
+  googleClientId: string; // Runtime secret from Cloudflare Pages
   isStaging: boolean;
   isProduction: boolean;
 }
@@ -35,19 +38,26 @@ class EnvironmentManager {
   }
 
   /**
-   * Load environment from build-time constants
-   * These are injected by Vite during build (see vite.config.ts)
+   * Load environment from build-time constants + runtime secrets
+   * Build-time: Injected by Vite during build (see vite.config.ts)
+   * Runtime: From Cloudflare Pages environment variables
    */
   private loadEnvironment(): EnvironmentConfig {
     // Build-time constants (replaced during build)
     const environment = __APP_ENV__ as Environment;
     const apiUrl = __API_URL__;
     const appUrl = __APP_URL__;
+    const marketingUrl = __MARKETING_URL__;
+
+    // Runtime secret (from Cloudflare Pages)
+    const googleClientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID || '';
 
     return {
       environment,
       apiUrl,
       appUrl,
+      marketingUrl,
+      googleClientId,
       isStaging: environment === 'staging',
       isProduction: environment === 'production',
     };
@@ -74,7 +84,7 @@ class EnvironmentManager {
    * Validate environment on startup (development check)
    */
   validate(): void {
-    const { environment, apiUrl, appUrl } = this.config;
+    const { environment, apiUrl, appUrl, googleClientId } = this.config;
 
     // Ensure required config is present
     if (!apiUrl || !appUrl) {
@@ -82,11 +92,17 @@ class EnvironmentManager {
       throw new Error('Invalid environment configuration');
     }
 
-    // Log environment in non-production (debugging)
+    // Warn if Google OAuth not configured (non-blocking)
+    if (!googleClientId) {
+      console.warn('⚠️ Google OAuth Client ID not configured');
+    }
+
+    // Log environment in staging (debugging)
     if (environment === 'staging') {
       console.log('🔧 Running in STAGING environment');
       console.log('API:', apiUrl);
       console.log('App:', appUrl);
+      console.log('Google OAuth:', googleClientId ? '✅ Configured' : '❌ Missing');
     }
   }
 }
