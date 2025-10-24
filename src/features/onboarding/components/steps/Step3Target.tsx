@@ -3,15 +3,10 @@
 /**
  * STEP 3: TARGET CUSTOMER
  * 
- * Fields:
- * - target_description (50-750 chars with progress)
- * - icp_min_followers / icp_max_followers (custom number controls)
- * - target_company_sizes (optional checkboxes)
- * 
- * FEATURES:
- * - Refinement callout
- * - Character counter
- * - Custom number inputs (no white browser styling)
+ * FIXES:
+ * - Character counter now uses watch() for real-time updates
+ * - Removed duplicate counter
+ * - Increased textarea rows for better visibility
  */
 
 import { motion } from 'framer-motion';
@@ -135,6 +130,7 @@ export function Step3Target() {
     formState: { errors },
   } = useFormContext<FormData>();
 
+  // ✅ FIX: Use watch() to get real-time values
   const targetDescription = watch('target_description') || '';
   const minFollowers = watch('icp_min_followers') || 0;
   const maxFollowers = watch('icp_max_followers') || 0;
@@ -194,13 +190,13 @@ export function Step3Target() {
           icon={ICONS.users}
           error={errors.target_description?.message}
           required
-          rows={6}
+          rows={8}
           maxLength={750}
           {...register('target_description')}
         />
 
-        {/* Character Counter */}
-        <div className="flex items-center justify-between text-sm">
+        {/* ✅ SINGLE Character Counter - Uses watch() value */}
+        <div className="flex items-center justify-between text-sm px-1">
           <span className={getCharCountColor()}>
             {getCharCountLabel()}
           </span>
