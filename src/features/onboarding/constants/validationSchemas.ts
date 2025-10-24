@@ -6,8 +6,8 @@
  * Zod schemas for each onboarding step
  * Validates input before proceeding to next step
  * 
+ * FIXED: Includes monthly_lead_goal in step3Schema
  * FIXED: Step 5 no longer uses .refine() to maintain .shape property access
- * Cross-field validation now happens in OnboardingPage.tsx handleNext()
  */
 
 import { z } from 'zod';
@@ -101,6 +101,7 @@ export const step2Schema = z.object({
 
 // =============================================================================
 // STEP 3: GOALS
+// ✅ FIXED: Added monthly_lead_goal field
 // =============================================================================
 
 export const step3Schema = z.object({
@@ -111,11 +112,11 @@ export const step3Schema = z.object({
     'customer-retention',
   ]),
   
-  goals: z
-    .string()
-    .min(20, 'Please describe your goals in at least 20 characters')
-    .max(500, 'Goals must be less than 500 characters')
-    .trim(),
+  monthly_lead_goal: z
+    .number()
+    .int()
+    .min(1, 'Lead goal must be at least 1')
+    .max(10000, 'Lead goal must be less than 10,000'),
 });
 
 // =============================================================================
@@ -202,7 +203,7 @@ export const fullFormSchema = step1Schema
 export type FormData = z.infer<typeof fullFormSchema>;
 
 // =============================================================================
-// API SUBMISSION TYPE
+// API SUBMISSION TYPE (same as FormData)
 // =============================================================================
 
 export type OnboardingFormData = FormData;
