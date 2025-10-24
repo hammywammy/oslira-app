@@ -5,6 +5,9 @@
  * 
  * Zod schemas for each onboarding step
  * Validates input before proceeding to next step
+ * 
+ * FIXED: Step 5 no longer uses .refine() to maintain .shape property access
+ * Cross-field validation now happens in OnboardingPage.tsx handleNext()
  */
 
 import { z } from 'zod';
@@ -58,7 +61,7 @@ export const step2Schema = z.object({
   
   business_summary: z
     .string()
-    .min(50, 'Description must be at least 50 characters')
+    .min(20, 'Description must be at least 20 characters')
     .max(500, 'Description must be less than 500 characters')
     .trim(),
   
@@ -77,17 +80,23 @@ export const step2Schema = z.object({
   
   industry_other: z
     .string()
-    .max(50, 'Industry must be less than 50 characters')
-    .trim()
+    .max(100)
+    .optional(),
+  
+  website: z
+    .union([
+      z.string().url('Must be a valid URL'),
+      z.literal(''),
+    ])
     .optional(),
   
   company_size: z.enum(['1-10', '11-50', '51+']),
   
-  website: z
-    .string()
-    .url('Invalid website URL')
-    .optional()
-    .or(z.literal('')),
+  employees_count: z
+    .number()
+    .int()
+    .min(1, 'Must have at least 1 employee')
+    .optional(),
 });
 
 // =============================================================================
@@ -102,15 +111,15 @@ export const step3Schema = z.object({
     'customer-retention',
   ]),
   
-  monthly_lead_goal: z
-    .number()
-    .int()
-    .min(1, 'Lead goal must be at least 1')
-    .max(10000, 'Lead goal must be less than 10,000'),
+  goals: z
+    .string()
+    .min(20, 'Please describe your goals in at least 20 characters')
+    .max(500, 'Goals must be less than 500 characters')
+    .trim(),
 });
 
 // =============================================================================
-// STEP 4: CHALLENGES (OPTIONAL)
+// STEP 4: CHALLENGES
 // =============================================================================
 
 export const step4Schema = z.object({
@@ -123,12 +132,12 @@ export const step4Schema = z.object({
       'poor-data-quality',
       'difficult-scaling',
     ]))
-    .optional()
-    .default([]),
+    .min(1, 'Please select at least one challenge'),
 });
 
 // =============================================================================
 // STEP 5: TARGET AUDIENCE
+// ✅ FIXED: No .refine() - cross-field validation handled in OnboardingPage
 // =============================================================================
 
 export const step5Schema = z.object({
@@ -152,13 +161,10 @@ export const step5Schema = z.object({
     .array(z.enum(['startup', 'smb', 'enterprise']))
     .optional()
     .default([]),
-}).refine(
-  (data) => data.icp_max_followers >= data.icp_min_followers,
-  {
-    message: 'Maximum followers must be greater than or equal to minimum',
-    path: ['icp_max_followers'],
-  }
-);
+});
+
+// Note: The validation "max >= min" is now handled in OnboardingPage.tsx
+// This keeps step5Schema as a pure ZodObject with accessible .shape property
 
 // =============================================================================
 // STEP 6: COMMUNICATION
@@ -194,3 +200,9 @@ export const fullFormSchema = step1Schema
   .merge(step7Schema);
 
 export type FormData = z.infer<typeof fullFormSchema>;
+
+// =============================================================================
+// API SUBMISSION TYPE
+// =============================================================================
+
+export type OnboardingFormData = FormData;
