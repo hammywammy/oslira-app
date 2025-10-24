@@ -10,6 +10,8 @@
  * - industry_other (conditional text)
  * - company_size (radio)
  * - website (optional)
+ * 
+ * FIXED: Using ICONS.briefcase for industry field (not ICONS.industry)
  */
 
 import { motion } from 'framer-motion';
@@ -91,7 +93,7 @@ export function Step2Business() {
       <motion.div variants={fadeInVariants}>
         <FormTextarea
           label="What does your business do?"
-          placeholder="We help healthcare providers streamline their patient communication..."
+          placeholder="We help health coaches build their personal brands on Instagram..."
           icon={ICONS.briefcase}
           error={errors.business_summary?.message}
           helperText="Describe your business in 50-500 characters"
@@ -102,10 +104,10 @@ export function Step2Business() {
         />
       </motion.div>
 
-      {/* Industry Select */}
+      {/* Industry Dropdown */}
       <motion.div variants={fadeInVariants} className="space-y-2">
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Icon icon={ICONS.industry} className="text-lg text-purple-400" />
+          <Icon icon={ICONS.briefcase} className="text-lg text-purple-400" />
           Industry
           <span className="text-red-400">*</span>
         </label>
@@ -126,7 +128,7 @@ export function Step2Business() {
           `}
           {...register('industry')}
         >
-          <option value="">Select industry...</option>
+          <option value="">Select an industry...</option>
           {industries.map((industry) => (
             <option key={industry} value={industry}>
               {industry}
@@ -134,7 +136,7 @@ export function Step2Business() {
           ))}
         </select>
 
-        {errors.industry && (
+        {errors.industry?.message && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" />
             {errors.industry.message}
@@ -142,25 +144,24 @@ export function Step2Business() {
         )}
       </motion.div>
 
-      {/* Industry Other (conditional) */}
+      {/* Other Industry (Conditional) */}
       {showOtherIndustry && (
         <motion.div
           variants={fadeInVariants}
-          initial="hidden"
-          animate="visible"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
         >
           <FormInput
-            label="Specify Industry"
-            placeholder="E.g., SaaS, E-commerce"
-            icon={ICONS.industry}
+            label="Please specify"
+            placeholder="Your industry"
+            icon={ICONS.briefcase}
             error={errors.industry_other?.message}
-            required
             {...register('industry_other')}
           />
         </motion.div>
       )}
 
-      {/* Company Size Radio */}
+      {/* Company Size */}
       <motion.div variants={fadeInVariants} className="space-y-3">
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
           <Icon icon={ICONS.users} className="text-lg text-purple-400" />
@@ -169,12 +170,12 @@ export function Step2Business() {
         </label>
 
         <div className="space-y-2">
-          {companySizes.map((option) => {
-            const isSelected = selectedSize === option.value;
+          {companySizes.map((size) => {
+            const isSelected = selectedSize === size.value;
 
             return (
               <label
-                key={option.value}
+                key={size.value}
                 className={`
                   flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer
                   transition-all duration-200
@@ -187,18 +188,18 @@ export function Step2Business() {
               >
                 <input
                   type="radio"
-                  value={option.value}
+                  value={size.value}
                   checked={isSelected}
-                  className="w-5 h-5 text-purple-500 focus:ring-purple-500"
+                  className="w-4 h-4 text-purple-500"
                   {...register('company_size')}
                 />
-                <span className="font-medium text-white">{option.label}</span>
+                <span className="text-white">{size.label}</span>
               </label>
             );
           })}
         </div>
 
-        {errors.company_size && (
+        {errors.company_size?.message && (
           <div className="flex items-center gap-2 text-sm text-red-400">
             <Icon icon="lucide:alert-circle" />
             {errors.company_size.message}
@@ -206,15 +207,15 @@ export function Step2Business() {
         )}
       </motion.div>
 
-      {/* Website (optional) */}
+      {/* Website (Optional) */}
       <motion.div variants={fadeInVariants}>
         <FormInput
-          label="Website"
-          placeholder="https://yourcompany.com"
+          label="Website (Optional)"
+          placeholder="https://example.com"
           type="url"
           icon={ICONS.globe}
           error={errors.website?.message}
-          helperText="Optional - Your company website"
+          helperText="Your company website"
           {...register('website')}
         />
       </motion.div>
