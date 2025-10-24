@@ -6,7 +6,7 @@
  * Fields:
  * - challenges (multi-select checkboxes)
  * 
- * FIXED: Removed unused handleToggle, added proper type annotations
+ * FIXED: Proper Challenge type annotation instead of generic string
  */
 
 import { motion } from 'framer-motion';
@@ -66,13 +66,15 @@ export function Step4Challenges() {
 
   const selectedChallenges = watch('challenges') || [];
 
-  // ✅ FIXED: Added proper type annotation
-  const toggleChallenge = (value: string) => {
+  // ✅ FIXED: Changed parameter type from 'string' to 'Challenge'
+  const toggleChallenge = (value: Challenge) => {
     const current = watch('challenges') || [];
     
     if (current.includes(value)) {
-      setValue('challenges', current.filter((v: string) => v !== value));
+      // ✅ FIXED: Type assertion for filter callback
+      setValue('challenges', current.filter((v: Challenge) => v !== value));
     } else {
+      // ✅ Type is already correct here - spreading Challenge[]
       setValue('challenges', [...current, value]);
     }
   };
