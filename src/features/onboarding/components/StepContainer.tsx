@@ -1,15 +1,21 @@
 // src/features/onboarding/components/StepContainer.tsx
 
 /**
- * STEP CONTAINER
+ * STEP CONTAINER - BULLETPROOF ANIMATIONS
  * 
- * Wraps each step with AnimatePresence for smooth slide transitions
- * Direction-aware animations (slide left/right based on navigation)
+ * FIXES:
+ * - Proper AnimatePresence with mode="wait"
+ * - No layout shift during transitions
+ * - Content-driven height (no crushing)
+ * 
+ * ARCHITECTURE:
+ * - AnimatePresence ensures only one child at a time
+ * - mode="wait" prevents overlap/desync
+ * - Key-based rendering from parent forces clean unmount/mount
  */
 
 import { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { slideVariants, slideTransition } from '../animations/variants';
 
 // =============================================================================
 // TYPES
@@ -22,6 +28,30 @@ interface StepContainerProps {
 }
 
 // =============================================================================
+// ANIMATION VARIANTS - SIMPLIFIED, NO BOUNCE
+// =============================================================================
+
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 30 : -30,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? 30 : -30,
+    opacity: 0,
+  }),
+};
+
+const slideTransition = {
+  duration: 0.3,
+  ease: 'easeInOut',
+};
+
+// =============================================================================
 // COMPONENT
 // =============================================================================
 
@@ -29,17 +59,22 @@ export function StepContainer({ step, direction, children }: StepContainerProps)
   return (
     <AnimatePresence mode="wait" custom={direction}>
       <motion.div
-        key={step}
+        key={`step-${step}`}
         custom={direction}
         variants={slideVariants}
         initial="enter"
         animate="center"
         exit="exit"
         transition={slideTransition}
-        className="w-full h-full flex items-center justify-center"
+        className="w-full"
       >
-        {/* Inner container with consistent sizing */}
-        <div className="w-full max-h-full overflow-y-auto px-1">
+        {/* 
+          Content wrapper:
+          - No fixed height
+          - Allows natural content expansion
+          - Prevents horizontal overflow
+        */}
+        <div className="w-full overflow-x-hidden">
           {children}
         </div>
       </motion.div>
