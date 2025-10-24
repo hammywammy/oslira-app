@@ -77,10 +77,9 @@ class Logger {
     this.storeInHistory(entry);
 
     try {
-      if (env.isDevelopment) {
-        // eslint-disable-next-line no-console
-        console.log(this.formatMessage('debug', message, context));
-      }
+if (env.isStaging) {
+  console.log(this.formatMessage('debug', message, context));
+}
     } catch {
       // Env not ready yet, skip
     }
@@ -99,10 +98,9 @@ class Logger {
     this.storeInHistory(entry);
 
     try {
-      if (env.isDevelopment || env.isStaging) {
-        // eslint-disable-next-line no-console
-        console.log(this.formatMessage('info', message, context));
-      }
+if (env.isStaging) {
+  console.log(this.formatMessage('info', message, context));
+}
     } catch {
       // Env not ready yet, skip
     }
