@@ -1,18 +1,19 @@
 // src/features/onboarding/components/OnboardingShell.tsx
 
 /**
- * ONBOARDING SHELL - BULLETPROOF LAYOUT
+ * ONBOARDING SHELL - FLEXIBLE LAYOUT
  * 
- * FIXES:
- * - Proper min-height instead of fixed height
- * - Allows content to expand vertically (no crushing)
- * - Prevents horizontal overflow
- * - Centers content properly
+ * FIXED:
+ * ✅ No scroll bars (overflow-y-auto removed)
+ * ✅ Content expands vertically as needed (no height restrictions)
+ * ✅ Always centered horizontally
+ * ✅ Vertically centered when content is small
+ * ✅ Top-aligned when content is large
  * 
  * ARCHITECTURE:
- * - Outer: Full viewport height, gradient background
- * - Middle: Responsive container with max-width
- * - Inner: Content wrapper with proper overflow
+ * - Outer: Full viewport, gradient background
+ * - Middle: Responsive max-width container
+ * - Inner: Flexible content area (grows with content)
  */
 
 import { ReactNode } from 'react';
@@ -31,19 +32,23 @@ interface OnboardingShellProps {
 
 export function OnboardingShell({ children }: OnboardingShellProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 sm:p-6">
-      {/* Responsive container - expands with content */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center py-12 px-4 sm:px-6">
+      {/* 
+        Responsive container:
+        - w-full: Take full width up to max-width
+        - max-w-3xl: Constrain maximum width for readability
+        - No height constraints: Allows natural content expansion
+      */}
       <div className="w-full max-w-3xl">
         {/* 
-          Content area:
-          - min-h-[600px]: Ensures minimum height for consistency
+          Content wrapper:
           - py-8: Vertical padding for breathing room
-          - No fixed height: Allows content to expand naturally
+          - NO fixed height or min-height
+          - NO overflow restrictions
+          - Content determines height naturally
         */}
-        <div className="min-h-[600px] py-8 flex items-start justify-center">
-          <div className="w-full">
-            {children}
-          </div>
+        <div className="py-8">
+          {children}
         </div>
       </div>
     </div>
