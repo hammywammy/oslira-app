@@ -1,0 +1,298 @@
+// src/features/onboarding/components/steps/Step3Target.tsx
+
+/**
+ * STEP 3: TARGET CUSTOMER
+ * 
+ * Fields:
+ * - target_description (50-750 chars with progress)
+ * - icp_min_followers / icp_max_followers (custom number controls)
+ * - target_company_sizes (optional checkboxes)
+ * 
+ * FEATURES:
+ * - Refinement callout
+ * - Character counter
+ * - Custom number inputs (no white browser styling)
+ */
+
+import { motion } from 'framer-motion';
+import { Icon } from '@iconify/react';
+import { FormTextarea } from '../FormInput';
+import { RefinementCallout } from '../RefinementCallout';
+import { ICONS } from '../../constants/icons';
+import { fadeInVariants, containerVariants } from '../../animations/variants';
+import { useFormContext } from 'react-hook-form';
+import type { FormData, TargetCompanySize } from '../../constants/validationSchemas';
+
+// =============================================================================
+// DATA
+// =============================================================================
+
+const companySizeOptions: Array<{ value: TargetCompanySize; label: string; description: string }> = [
+  {
+    value: 'startup',
+    label: 'Startups',
+    description: 'Early-stage companies, lean teams',
+  },
+  {
+    value: 'smb',
+    label: 'Small & Medium',
+    description: 'Established businesses, growing teams',
+  },
+  {
+    value: 'enterprise',
+    label: 'Enterprise',
+    description: 'Large corporations, complex structures',
+  },
+];
+
+// =============================================================================
+// CUSTOM NUMBER INPUT COMPONENT
+// =============================================================================
+
+interface NumberInputProps {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  error?: string;
+  min?: number;
+  max?: number;
+  icon?: string;
+}
+
+function CustomNumberInput({ label, value, onChange, error, min = 0, max = 10000000, icon }: NumberInputProps) {
+  const increment = () => {
+    const step = value < 1000 ? 100 : value < 10000 ? 1000 : 10000;
+    onChange(Math.min(value + step, max));
+  };
+
+  const decrement = () => {
+    const step = value <= 1000 ? 100 : value <= 10000 ? 1000 : 10000;
+    onChange(Math.max(value - step, min));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value) || 0;
+    onChange(Math.min(Math.max(val, min), max));
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+        {icon && <Icon icon={icon} className="text-lg text-purple-400" />}
+        {label}
+        <span className="text-red-400">*</span>
+      </label>
+
+      <div className="flex items-center gap-2">
+        {/* Decrement Button */}
+        <button
+          type="button"
+          onClick={decrement}
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-800 border-2 border-slate-700 text-slate-300 hover:border-purple-500 hover:text-purple-400 transition-colors"
+        >
+          <Icon icon="lucide:minus" className="text-xl" />
+        </button>
+
+        {/* Number Input */}
+        <input
+          type="number"
+          value={value}
+          onChange={handleInputChange}
+          min={min}
+          max={max}
+          className="flex-1 px-4 py-2 bg-slate-800/50 border-2 border-slate-700 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+
+        {/* Increment Button */}
+        <button
+          type="button"
+          onClick={increment}
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-800 border-2 border-slate-700 text-slate-300 hover:border-purple-500 hover:text-purple-400 transition-colors"
+        >
+          <Icon icon="lucide:plus" className="text-xl" />
+        </button>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 text-sm text-red-400">
+          <Icon icon="lucide:alert-circle" />
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+export function Step3Target() {
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<FormData>();
+
+  const targetDescription = watch('target_description') || '';
+  const minFollowers = watch('icp_min_followers') || 0;
+  const maxFollowers = watch('icp_max_followers') || 0;
+  const selectedSizes = watch('target_company_sizes') || [];
+  const charCount = targetDescription.length;
+
+  // Character counter logic
+  const getCharCountColor = () => {
+    if (charCount < 50) return 'text-red-400';
+    if (charCount < 150) return 'text-yellow-400';
+    return 'text-green-400';
+  };
+
+  const getCharCountLabel = () => {
+    if (charCount < 50) return 'Add more detail';
+    if (charCount < 150) return 'Good start';
+    return 'Great detail!';
+  };
+
+  // Company size toggle
+  const toggleCompanySize = (size: TargetCompanySize) => {
+    const current = selectedSizes;
+    if (current.includes(size)) {
+      setValue('target_company_sizes', current.filter((s: TargetCompanySize) => s !== size));
+    } else {
+      setValue('target_company_sizes', [...current, size]);
+    }
+  };
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      {/* Header */}
+      <motion.div variants={fadeInVariants} className="text-center space-y-2">
+        <h2 className="text-3xl font-bold text-white">
+          Who is your ideal customer?
+        </h2>
+        <p className="text-slate-400">
+          Describe the Instagram accounts you want to target
+        </p>
+      </motion.div>
+
+      {/* Refinement Callout */}
+      <motion.div variants={fadeInVariants}>
+        <RefinementCallout />
+      </motion.div>
+
+      {/* Target Description */}
+      <motion.div variants={fadeInVariants} className="space-y-2">
+        <FormTextarea
+          label="Describe Your Ideal Customer"
+          placeholder="Example: Health and wellness coaches with engaged audiences who promote holistic living, natural remedies, and mindfulness. They create educational content about nutrition, fitness routines, and mental health. Their followers are typically women aged 25-45 interested in self-improvement..."
+          icon={ICONS.users}
+          error={errors.target_description?.message}
+          required
+          rows={6}
+          maxLength={750}
+          {...register('target_description')}
+        />
+
+        {/* Character Counter */}
+        <div className="flex items-center justify-between text-sm">
+          <span className={getCharCountColor()}>
+            {getCharCountLabel()}
+          </span>
+          <span className="text-slate-500">
+            {charCount} / 750
+          </span>
+        </div>
+
+        {/* Helper Prompts */}
+        <div className="bg-slate-800/30 rounded-lg p-3 text-xs text-slate-400">
+          <p className="mb-2 font-medium text-slate-300">Consider including:</p>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>Their industry or niche</li>
+            <li>Content themes they post about</li>
+            <li>Their audience demographics</li>
+            <li>Business model or offerings</li>
+          </ul>
+        </div>
+      </motion.div>
+
+      {/* Follower Range */}
+      <motion.div variants={fadeInVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CustomNumberInput
+          label="Minimum Followers"
+          value={minFollowers}
+          onChange={(val) => setValue('icp_min_followers', val)}
+          error={errors.icp_min_followers?.message}
+          min={0}
+          icon={ICONS.users}
+        />
+
+        <CustomNumberInput
+          label="Maximum Followers"
+          value={maxFollowers}
+          onChange={(val) => setValue('icp_max_followers', val)}
+          error={errors.icp_max_followers?.message}
+          min={0}
+          icon={ICONS.users}
+        />
+      </motion.div>
+
+      {/* Company Size Checkboxes (Optional) */}
+      <motion.div variants={fadeInVariants} className="space-y-3">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+          <Icon icon={ICONS.building} className="text-lg text-purple-400" />
+          Target Company Sizes (Optional)
+        </label>
+
+        <div className="space-y-2">
+          {companySizeOptions.map((option) => {
+            const isSelected = selectedSizes.includes(option.value);
+
+            return (
+              <label
+                key={option.value}
+                className={`
+                  block p-4 rounded-xl border-2 cursor-pointer
+                  transition-all duration-200
+                  ${
+                    isSelected
+                      ? 'bg-purple-500/10 border-purple-500'
+                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                  }
+                `}
+                onClick={() => toggleCompanySize(option.value)}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex items-center h-6 mt-0.5">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {}}
+                      className="w-5 h-5 text-purple-500 rounded focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-white mb-1">{option.label}</div>
+                    <p className="text-sm text-slate-400">{option.description}</p>
+                  </div>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+
+        {errors.target_company_sizes?.message && (
+          <div className="flex items-center gap-2 text-sm text-red-400">
+            <Icon icon="lucide:alert-circle" />
+            {errors.target_company_sizes.message}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
