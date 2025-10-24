@@ -1,18 +1,18 @@
 // src/features/onboarding/components/StepContainer.tsx
 
 /**
- * STEP CONTAINER - ANIMATION-PERFECT
+ * STEP CONTAINER - FLEXIBLE ANIMATION WRAPPER
  * 
- * FIXES:
- * ✅ AnimatePresence with mode="wait" - one child at a time
- * ✅ Exit completes BEFORE next enters
- * ✅ No layout shift during transitions
- * ✅ Consistent animation timing
+ * FIXED:
+ * ✅ No height restrictions
+ * ✅ No overflow hidden
+ * ✅ Content expands naturally
+ * ✅ Smooth transitions preserved
  * 
  * CRITICAL:
- * - Duration must match ANIMATION_DURATION in OnboardingPage (300ms)
- * - mode="wait" ensures exit animation completes before enter starts
- * - unique key from parent forces proper unmount/remount
+ * - AnimatePresence mode="wait" ensures one child at a time
+ * - Duration matches parent timeout (300ms)
+ * - No layout conflicts during transitions
  */
 
 import { ReactNode } from 'react';
@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // CONSTANTS
 // =============================================================================
 
-const ANIMATION_DURATION = 0.3; // 300ms - matches parent timeout
+const ANIMATION_DURATION = 0.3; // 300ms
 
 // =============================================================================
 // TYPES
@@ -35,7 +35,7 @@ interface StepContainerProps {
 }
 
 // =============================================================================
-// ANIMATION VARIANTS - NO SPRING/BOUNCE
+// ANIMATION VARIANTS
 // =============================================================================
 
 const slideVariants = {
@@ -55,7 +55,7 @@ const slideVariants = {
 
 const slideTransition = {
   duration: ANIMATION_DURATION,
-  ease: [0.22, 1, 0.36, 1], // Smooth easing curve
+  ease: [0.22, 1, 0.36, 1],
 };
 
 // =============================================================================
@@ -64,33 +64,31 @@ const slideTransition = {
 
 export function StepContainer({ step, direction, children }: StepContainerProps) {
   return (
-    <div className="w-full">
-      <AnimatePresence 
-        mode="wait" 
+    <AnimatePresence 
+      mode="wait" 
+      custom={direction}
+      initial={false}
+    >
+      <motion.div
+        key={step}
         custom={direction}
-        initial={false}
+        variants={slideVariants}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={slideTransition}
+        className="w-full"
       >
-        <motion.div
-          key={step} // ✅ Uses step number directly for absolute uniqueness
-          custom={direction}
-          variants={slideVariants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={slideTransition}
-          className="w-full"
-        >
-          {/* 
-            Content wrapper:
-            - No fixed height (allows natural content flow)
-            - Prevents horizontal overflow from slide animation
-            - Maintains full width
-          */}
-          <div className="w-full overflow-x-hidden">
-            {children}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
+        {/* 
+          Content wrapper:
+          - w-full: Full width
+          - NO height or overflow restrictions
+          - Content determines height naturally
+        */}
+        <div className="w-full">
+          {children}
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
