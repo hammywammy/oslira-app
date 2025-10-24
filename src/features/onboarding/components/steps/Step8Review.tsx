@@ -5,6 +5,8 @@
  * 
  * Displays readonly summary of all inputs
  * Allows jumping back to edit specific sections
+ * 
+ * FIXED: Proper type assertions for all fields including monthly_lead_goal
  */
 
 import { motion } from 'framer-motion';
@@ -72,8 +74,11 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       title: 'Business Details',
       items: [
         { label: 'Company', value: values.company_name },
-        { label: 'Industry', value: values.industry === 'Other' ? values.industry_other : values.industry },
-        { label: 'Size', value: values.company_size },
+        { label: 'Industry', value: values.industry === 'Other' 
+          ? values.industry_other || 'Other' 
+          : values.industry 
+        },
+        { label: 'Company Size', value: values.company_size },
         { label: 'Website', value: values.website || 'Not provided' },
       ],
     },
@@ -81,8 +86,14 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       step: 3,
       title: 'Goals',
       items: [
-        { label: 'Objective', value: formatEnum(values.primary_objective) },
-        { label: 'Monthly Target', value: `${values.monthly_lead_goal} leads` },
+        { 
+          label: 'Primary Goal', 
+          value: formatEnum(values.primary_objective as string | undefined) 
+        },
+        { 
+          label: 'Monthly Lead Goal', 
+          value: values.monthly_lead_goal?.toString() || 'Not specified' 
+        },
       ],
     },
     {
@@ -90,8 +101,8 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       title: 'Challenges',
       items: [
         { 
-          label: 'Selected Challenges', 
-          value: formatChallenges(values.challenges)
+          label: 'Challenges', 
+          value: formatChallenges(values.challenges as string[] | undefined) 
         },
       ],
     },
@@ -99,11 +110,10 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       step: 5,
       title: 'Target Audience',
       items: [
-        { label: 'Description', value: values.target_description?.substring(0, 60) + '...' },
-        { label: 'Follower Range', value: `${values.icp_min_followers?.toLocaleString()} - ${values.icp_max_followers?.toLocaleString()}` },
+        { label: 'Follower Range', value: `${values.icp_min_followers || 0} - ${values.icp_max_followers || 0}` },
         { 
           label: 'Company Sizes', 
-          value: formatCompanySizes(values.target_company_sizes)
+          value: formatCompanySizes(values.target_company_sizes as string[] | undefined) 
         },
       ],
     },
@@ -112,18 +122,21 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       title: 'Communication',
       items: [
         { 
-          label: 'Channels', 
-          value: formatChannels(values.communication_channels)
+          label: 'Tone', 
+          value: formatTone(values.communication_tone as string | undefined) 
         },
-        { label: 'Tone', value: formatTone(values.communication_tone) },
+        { 
+          label: 'Channels', 
+          value: formatChannels(values.communication_channels as string[] | undefined) 
+        },
       ],
     },
     {
       step: 7,
       title: 'Team',
       items: [
-        { label: 'Size', value: formatEnum(values.team_size) },
-        { label: 'Manager', value: formatEnum(values.campaign_manager) },
+        { label: 'Team Size', value: formatEnum(values.team_size as string | undefined) },
+        { label: 'Campaign Manager', value: formatEnum(values.campaign_manager as string | undefined) },
       ],
     },
   ];
@@ -136,44 +149,50 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
       className="space-y-6"
     >
       {/* Header */}
-      <motion.div variants={fadeInVariants} className="text-center space-y-2">
+      <motion.div variants={fadeInVariants} className="text-center space-y-3">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-500/20 mb-4">
+          <Icon icon={ICONS.checkCircle} className="text-4xl text-purple-400" />
+        </div>
         <h2 className="text-3xl font-bold text-white">
-          Review & Confirm
+          Review Your Information
         </h2>
-        <p className="text-slate-400">
-          Make sure everything looks good
+        <p className="text-slate-400 text-lg">
+          Make sure everything looks correct before submitting
         </p>
       </motion.div>
 
       {/* Review Sections */}
-      <motion.div variants={fadeInVariants} className="space-y-4 max-h-[380px] overflow-y-auto">
+      <motion.div variants={fadeInVariants} className="space-y-4">
         {sections.map((section) => (
           <div
             key={section.step}
-            className="bg-slate-800/50 rounded-xl p-4 border border-slate-700"
+            className="bg-slate-800/50 rounded-xl p-6 border border-slate-700"
           >
             {/* Section Header */}
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-sm">
+                  {section.step}
+                </span>
                 {section.title}
               </h3>
               <button
                 type="button"
                 onClick={() => onEditStep(section.step)}
-                className="text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+                className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
               >
-                <Icon icon={ICONS.edit} className="text-base" />
+                <Icon icon={ICONS.edit} />
                 Edit
               </button>
             </div>
 
             {/* Section Items */}
-            <div className="space-y-2">
-              {section.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span className="text-slate-400">{item.label}:</span>
-                  <span className="text-white font-medium text-right max-w-[60%]">
-                    {item.value || 'Not provided'}
+            <div className="space-y-3">
+              {section.items.map((item) => (
+                <div key={item.label} className="flex justify-between items-start">
+                  <span className="text-slate-400 text-sm">{item.label}</span>
+                  <span className="text-white text-sm font-medium text-right max-w-[60%]">
+                    {item.value}
                   </span>
                 </div>
               ))}
@@ -182,18 +201,17 @@ export function Step8Review({ onEditStep }: Step8ReviewProps) {
         ))}
       </motion.div>
 
-      {/* Confirmation Note */}
+      {/* Confirmation Message */}
       <motion.div
         variants={fadeInVariants}
         className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4"
       >
         <div className="flex gap-3">
-          <Icon icon={ICONS.sparkles} className="text-2xl text-purple-400 flex-shrink-0" />
-          <div className="text-sm text-slate-300">
-            <p className="font-semibold text-white mb-1">Ready to launch?</p>
-            <p>
-              We'll use this information to create your personalized business profile.
-              This takes about 10-15 seconds.
+          <Icon icon={ICONS.alertCircle} className="text-purple-400 text-xl flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-purple-200">
+            <p className="font-medium mb-1">Ready to get started?</p>
+            <p className="text-purple-300">
+              Click "Complete Setup" to finish your onboarding and start prospecting.
             </p>
           </div>
         </div>
