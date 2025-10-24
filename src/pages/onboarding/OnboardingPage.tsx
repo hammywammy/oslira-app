@@ -189,7 +189,7 @@ export function OnboardingPage() {
     <FormProvider {...methods}>
       <div className="relative min-h-screen">
         {/* Progress Bar */}
-        <ProgressBar currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+        <ProgressBar currentStep={currentStep} />
 
         {/* Main Content - Fixed height prevents layout shift */}
         <OnboardingShell>
@@ -199,10 +199,9 @@ export function OnboardingPage() {
         </OnboardingShell>
 
         {/* Navigation Bar */}
-        <NavigationBar
-          currentStep={currentStep}
-          totalSteps={TOTAL_STEPS}
-          canGoBack={canGoBack}
+<NavigationBar
+  currentStep={currentStep}
+  canGoBack={canGoBack}
           canGoNext={canGoNext}
           isLastStep={isLastStep}
           onBack={handleBack}
