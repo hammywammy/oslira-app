@@ -1,43 +1,28 @@
 // src/features/onboarding/constants/validationSchemas.ts
 
 /**
- * VALIDATION SCHEMAS
+ * VALIDATION SCHEMAS - STREAMLINED 4-STEP ONBOARDING
  * 
- * Zod schemas for each onboarding step
- * Validates input before proceeding to next step
+ * Step 1: Identity (signature_name)
+ * Step 2: Business (business_summary, communication_tone)
+ * Step 3: Target Customer (target_description, followers, company_sizes)
+ * Step 4: Review
  * 
- * FIXED: Includes monthly_lead_goal in step3Schema
- * FIXED: Step 5 no longer uses .refine() to maintain .shape property access
+ * DELETED: All market research fields (goals, challenges, team, company details)
+ * UPDATED: 50-750 character limits on text fields
  */
 
 import { z } from 'zod';
 
 // =============================================================================
-// TYPE EXPORTS (for TypeScript usage)
+// TYPE EXPORTS
 // =============================================================================
-
-export type Industry = 'Technology' | 'Healthcare' | 'Finance' | 'Real Estate' | 'Retail' | 
-  'Manufacturing' | 'Consulting' | 'Marketing' | 'Education' | 'Other';
-
-export type CompanySize = '1-10' | '11-50' | '51+';
-
-export type PrimaryObjective = 'lead-generation' | 'sales-automation' | 'market-research' | 'customer-retention';
-
-export type Challenge = 'low-quality-leads' | 'time-consuming' | 'expensive-tools' | 
-  'lack-personalization' | 'poor-data-quality' | 'difficult-scaling';
 
 export type TargetCompanySize = 'startup' | 'smb' | 'enterprise';
-
-export type CommunicationChannel = 'email' | 'instagram' | 'sms';
-
-export type BrandVoice = 'professional' | 'friendly' | 'casual';
-
-export type TeamSize = 'just-me' | 'small-team' | 'large-team';
-
-export type CampaignManager = 'myself' | 'sales-team' | 'marketing-team' | 'mixed-team';
+export type CommunicationTone = 'professional' | 'friendly' | 'casual';
 
 // =============================================================================
-// STEP 1: PERSONAL IDENTITY
+// STEP 1: IDENTITY
 // =============================================================================
 
 export const step1Schema = z.object({
@@ -49,103 +34,28 @@ export const step1Schema = z.object({
 });
 
 // =============================================================================
-// STEP 2: BUSINESS BASICS
+// STEP 2: BUSINESS CONTEXT
 // =============================================================================
 
 export const step2Schema = z.object({
-  company_name: z
-    .string()
-    .min(2, 'Company name must be at least 2 characters')
-    .max(100, 'Company name must be less than 100 characters')
-    .trim(),
-  
   business_summary: z
     .string()
-    .min(20, 'Description must be at least 20 characters')
-    .max(500, 'Description must be less than 500 characters')
+    .min(50, 'Please provide at least 50 characters')
+    .max(750, 'Please keep it under 750 characters')
     .trim(),
   
-  industry: z.enum([
-    'Technology',
-    'Healthcare',
-    'Finance',
-    'Real Estate',
-    'Retail',
-    'Manufacturing',
-    'Consulting',
-    'Marketing',
-    'Education',
-    'Other',
-  ]),
-  
-  industry_other: z
-    .string()
-    .max(100)
-    .optional(),
-  
-  website: z
-    .union([
-      z.string().url('Must be a valid URL'),
-      z.literal(''),
-    ])
-    .optional(),
-  
-  company_size: z.enum(['1-10', '11-50', '51+']),
-  
-  employees_count: z
-    .number()
-    .int()
-    .min(1, 'Must have at least 1 employee')
-    .optional(),
+  communication_tone: z.enum(['professional', 'friendly', 'casual']),
 });
 
 // =============================================================================
-// STEP 3: GOALS
-// ✅ FIXED: Added monthly_lead_goal field
+// STEP 3: TARGET CUSTOMER
 // =============================================================================
 
 export const step3Schema = z.object({
-  primary_objective: z.enum([
-    'lead-generation',
-    'sales-automation',
-    'market-research',
-    'customer-retention',
-  ]),
-  
-  monthly_lead_goal: z
-    .number()
-    .int()
-    .min(1, 'Lead goal must be at least 1')
-    .max(10000, 'Lead goal must be less than 10,000'),
-});
-
-// =============================================================================
-// STEP 4: CHALLENGES
-// =============================================================================
-
-export const step4Schema = z.object({
-  challenges: z
-    .array(z.enum([
-      'low-quality-leads',
-      'time-consuming',
-      'expensive-tools',
-      'lack-personalization',
-      'poor-data-quality',
-      'difficult-scaling',
-    ]))
-    .min(1, 'Please select at least one challenge'),
-});
-
-// =============================================================================
-// STEP 5: TARGET AUDIENCE
-// ✅ FIXED: No .refine() - cross-field validation handled in OnboardingPage
-// =============================================================================
-
-export const step5Schema = z.object({
   target_description: z
     .string()
-    .min(20, 'Description must be at least 20 characters')
-    .max(500, 'Description must be less than 500 characters')
+    .min(50, 'Please provide at least 50 characters')
+    .max(750, 'Please keep it under 750 characters')
     .trim(),
   
   icp_min_followers: z
@@ -164,46 +74,18 @@ export const step5Schema = z.object({
     .default([]),
 });
 
-// Note: The validation "max >= min" is now handled in OnboardingPage.tsx
-// This keeps step5Schema as a pure ZodObject with accessible .shape property
-
-// =============================================================================
-// STEP 6: COMMUNICATION
-// =============================================================================
-
-export const step6Schema = z.object({
-  communication_channels: z
-    .array(z.enum(['email', 'instagram', 'sms']))
-    .min(1, 'Please select at least one channel'),
-  
-  communication_tone: z.enum(['professional', 'friendly', 'casual']),
-});
-
-// =============================================================================
-// STEP 7: TEAM
-// =============================================================================
-
-export const step7Schema = z.object({
-  team_size: z.enum(['just-me', 'small-team', 'large-team']),
-  campaign_manager: z.enum(['myself', 'sales-team', 'marketing-team', 'mixed-team']),
-});
-
 // =============================================================================
 // FULL FORM SCHEMA
 // =============================================================================
 
 export const fullFormSchema = step1Schema
   .merge(step2Schema)
-  .merge(step3Schema)
-  .merge(step4Schema)
-  .merge(step5Schema)
-  .merge(step6Schema)
-  .merge(step7Schema);
+  .merge(step3Schema);
 
 export type FormData = z.infer<typeof fullFormSchema>;
 
 // =============================================================================
-// API SUBMISSION TYPE (same as FormData)
+// API SUBMISSION TYPE
 // =============================================================================
 
 export type OnboardingFormData = FormData;
