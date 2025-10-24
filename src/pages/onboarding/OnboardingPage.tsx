@@ -1,26 +1,13 @@
 // src/pages/onboarding/OnboardingPage.tsx
 
 /**
- * ONBOARDING PAGE - PRODUCTION-GRADE NAVIGATION
+ * ONBOARDING PAGE - PRODUCTION FIXED
  * 
- * FIXED ISSUES:
- * ❌ Spam clicking next/back causing step desync
- * ❌ Animation conflicts between exit/enter
- * ❌ Race conditions between state updates
- * ❌ Validation running during navigation
- * 
- * SOLUTION ARCHITECTURE:
- * ✅ Ref-based navigation lock (immune to render cycles)
- * ✅ Throttled navigation (300ms minimum between clicks)
- * ✅ Synchronous Zustand updates (no async gaps)
- * ✅ Animation-aware unlocking (waits for exit complete)
- * ✅ Single source of truth (currentStep in Zustand)
- * 
- * TECHNICAL DETAILS:
- * - useRef prevents re-render race conditions
- * - setTimeout unlocking matches animation duration exactly
- * - Key-based rendering forces clean component lifecycle
- * - Cross-field validation only on current step
+ * FIXES:
+ * ✅ Ref-based navigation lock (no race conditions)
+ * ✅ Proper background color on page wrapper (no white bar)
+ * ✅ Vertical expansion (no height restrictions)
+ * ✅ Clean animation transitions
  */
 
 import { useState, useMemo, useRef, useCallback } from 'react';
@@ -45,12 +32,8 @@ import {
   type FormData,
 } from '@/features/onboarding/constants/validationSchemas';
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const TOTAL_STEPS = 4;
-const ANIMATION_DURATION = 300; // Must match StepContainer transition (ms)
+const ANIMATION_DURATION = 300;
 
 const stepSchemas = {
   1: step1Schema,
@@ -59,25 +42,14 @@ const stepSchemas = {
   4: fullFormSchema,
 };
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function OnboardingPage() {
-  // Zustand store for step state
   const { currentStep, direction, nextStep, prevStep, goToStep } = useOnboardingForm();
-  
-  // Form submission mutation
   const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
   
-  // Navigation lock (ref-based to avoid re-render issues)
   const navigationLockRef = useRef(false);
   const lastNavigationTime = useRef(0);
-  
-  // Validation state
   const [isValidating, setIsValidating] = useState(false);
 
-  // React Hook Form setup
   const methods = useForm<FormData>({
     resolver: zodResolver(fullFormSchema),
     mode: 'onBlur',
@@ -88,10 +60,7 @@ export function OnboardingPage() {
 
   const { trigger, handleSubmit, getValues, setError, clearErrors } = methods;
 
-  // =============================================================================
-  // NAVIGATION LOCK SYSTEM
-  // =============================================================================
-
+  // Navigation lock system
   const isLocked = useCallback(() => {
     return navigationLockRef.current || isPending || isValidating;
   }, [isPending, isValidating]);
@@ -105,16 +74,12 @@ export function OnboardingPage() {
     navigationLockRef.current = false;
   };
 
-  // Additional throttle check (prevents spam even if lock somehow fails)
   const isThrottled = () => {
     const now = Date.now();
     return now - lastNavigationTime.current < ANIMATION_DURATION;
   };
 
-  // =============================================================================
-  // VALIDATION
-  // =============================================================================
-
+  // Validation
   const validateCurrentStep = async (): Promise<boolean> => {
     setIsValidating(true);
     
@@ -123,11 +88,8 @@ export function OnboardingPage() {
       const fields = Object.keys(schema.shape);
       const isValid = await trigger(fields as any);
       
-      if (!isValid) {
-        return false;
-      }
+      if (!isValid) return false;
 
-      // Cross-field validation for Step 3 (follower range)
       if (currentStep === 3) {
         const values = getValues();
         if (values.icp_max_followers < values.icp_min_followers) {
@@ -145,48 +107,25 @@ export function OnboardingPage() {
     }
   };
 
-  // =============================================================================
-  // NAVIGATION HANDLERS
-  // =============================================================================
-
+  // Navigation handlers
   const handleNext = async () => {
-    // Guard: Check all lock conditions
-    if (isLocked() || isThrottled()) {
-      console.log('[Onboarding] Navigation blocked - locked or throttled');
-      return;
-    }
-    
-    // Lock immediately (synchronous)
+    if (isLocked() || isThrottled()) return;
     lockNavigation();
-    console.log('[Onboarding] Navigation locked for NEXT');
 
     try {
-      // Validate current step
       const isValid = await validateCurrentStep();
       if (!isValid) {
-        console.log('[Onboarding] Validation failed');
         unlockNavigation();
         return;
       }
 
-      // Last step - submit form
       if (currentStep === TOTAL_STEPS) {
-        console.log('[Onboarding] Final step - submitting');
         handleSubmit(onSubmit)();
-        // Don't unlock - submission redirects
         return;
       }
 
-      // Navigate to next step (synchronous Zustand update)
-      console.log(`[Onboarding] Moving from step ${currentStep} to ${currentStep + 1}`);
       nextStep();
-      
-      // Unlock after animation completes
-      setTimeout(() => {
-        unlockNavigation();
-        console.log('[Onboarding] Navigation unlocked');
-      }, ANIMATION_DURATION);
-      
+      setTimeout(unlockNavigation, ANIMATION_DURATION);
     } catch (error) {
       console.error('[Onboarding] Navigation error:', error);
       unlockNavigation();
@@ -194,75 +133,29 @@ export function OnboardingPage() {
   };
 
   const handleBack = () => {
-    // Guard: Check all lock conditions
-    if (isLocked() || isThrottled()) {
-      console.log('[Onboarding] Navigation blocked - locked or throttled');
-      return;
-    }
-    
-    // Lock immediately (synchronous)
+    if (isLocked() || isThrottled()) return;
     lockNavigation();
-    console.log('[Onboarding] Navigation locked for BACK');
-
-    // Clear any validation errors from current step
     clearErrors();
-
-    // Navigate to previous step (synchronous Zustand update)
-    console.log(`[Onboarding] Moving from step ${currentStep} to ${currentStep - 1}`);
     prevStep();
-    
-    // Unlock after animation completes
-    setTimeout(() => {
-      unlockNavigation();
-      console.log('[Onboarding] Navigation unlocked');
-    }, ANIMATION_DURATION);
+    setTimeout(unlockNavigation, ANIMATION_DURATION);
   };
 
   const handleEditStep = (step: number) => {
-    // Guard: Check all lock conditions
-    if (isLocked() || isThrottled()) {
-      console.log('[Onboarding] Edit navigation blocked');
-      return;
-    }
-    
-    // Lock immediately
+    if (isLocked() || isThrottled()) return;
     lockNavigation();
-    console.log(`[Onboarding] Editing - jumping to step ${step}`);
-    
-    // Clear any validation errors
     clearErrors();
-    
-    // Jump to target step
     goToStep(step);
-    
-    // Unlock after animation completes
-    setTimeout(() => {
-      unlockNavigation();
-      console.log('[Onboarding] Navigation unlocked');
-    }, ANIMATION_DURATION);
+    setTimeout(unlockNavigation, ANIMATION_DURATION);
   };
 
-  // =============================================================================
-  // FORM SUBMISSION
-  // =============================================================================
-
   const onSubmit = (data: FormData) => {
-    console.log('[Onboarding] Submitting form data:', data);
     completeOnboarding(data);
   };
 
-  // =============================================================================
-  // STEP RENDERING
-  // =============================================================================
-
+  // Step rendering
   const stepContent = useMemo(() => {
-    console.log(`[Onboarding] Rendering step ${currentStep}`);
-    
-    if (isPending) {
-      return <LoadingState />;
-    }
+    if (isPending) return <LoadingState />;
 
-    // Each step has unique key - forces clean unmount/remount on step change
     switch (currentStep) {
       case 1:
         return <Step1Personal key="step-1" />;
@@ -277,33 +170,26 @@ export function OnboardingPage() {
     }
   }, [currentStep, isPending]);
 
-  // =============================================================================
-  // UI STATE
-  // =============================================================================
-
   const canGoBack = currentStep > 1 && !isLocked() && !isThrottled();
   const canGoNext = !isLocked() && !isThrottled();
   const isLastStep = currentStep === TOTAL_STEPS;
   const isLoading = isPending || isValidating;
 
-  // =============================================================================
-  // RENDER
-  // =============================================================================
-
   return (
     <FormProvider {...methods}>
-      <div className="relative min-h-screen">
-        {/* Progress Bar */}
+      {/* 
+        ✅ FIXED: Added bg-gradient to match OnboardingShell
+        This prevents the white bar at the bottom
+      */}
+      <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <ProgressBar currentStep={currentStep} />
 
-        {/* Main Content */}
         <OnboardingShell>
           <StepContainer step={currentStep} direction={direction}>
             {stepContent}
           </StepContainer>
         </OnboardingShell>
 
-        {/* Navigation Bar */}
         <NavigationBar
           currentStep={currentStep}
           canGoBack={canGoBack}
