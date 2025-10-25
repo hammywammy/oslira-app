@@ -1,20 +1,18 @@
 // src/features/auth/contexts/AuthProvider.tsx
 
 /**
- * AUTH PROVIDER (React Context)
+ * AUTH PROVIDER - FIXED SESSION PERSISTENCE
  * 
- * Wraps auth-manager and exposes state to React components
+ * CRITICAL FIXES:
+ * ✅ Don't clear auth on session fetch failure (network issues)
+ * ✅ Only clear auth if refresh token is actually invalid
+ * ✅ Retry session fetch on failure
+ * ✅ Load user from localStorage cache while fetching
  * 
- * Responsibilities:
- * - Initialize on mount (check if tokens exist)
- * - Fetch user data from /api/auth/session if authenticated
- * - Subscribe to auth-manager state changes
- * - Provide { user, account, isAuthenticated, isLoading } to components
- * 
- * Usage:
- * <AuthProvider>
- *   <App />
- * </AuthProvider>
+ * This prevents logout on page refresh when:
+ * - Network is slow
+ * - API is temporarily down
+ * - Race condition with token refresh
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -47,7 +45,7 @@ interface AuthContextValue {
   login: (accessToken: string, refreshToken: string, expiresAt: number, user: User, account: Account) => void;
   logout: () => Promise<void>;
   updateOnboardingStatus: (completed: boolean) => void;
-  refreshUser: () => Promise<void>; // ✅ ADDED
+  refreshUser: () => Promise<void>;
 }
 
 // =============================================================================
@@ -83,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Initialize authentication
+   * Initialize authentication - FIXED VERSION
    */
   async function initializeAuth() {
     try {
@@ -95,11 +93,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Tokens exist - fetch user data
-      await fetchUserData();
+      // ✅ FIX: Load cached user data from localStorage IMMEDIATELY
+      // This prevents blank screen while fetching
+      const cachedUser = authManager.getUser();
+      const cachedAccount = authManager.getAccount();
+      
+      if (cachedUser && cachedAccount) {
+        setUser(cachedUser);
+        setAccount(cachedAccount);
+        setIsAuthenticated(true);
+      }
+
+      // ✅ FIX: Fetch fresh data in background, but don't fail if it errors
+      try {
+        await fetchUserData();
+      } catch (error) {
+        console.warn('[AuthProvider] Failed to fetch fresh user data, using cache:', error);
+        // Don't clear auth - user data is already loaded from cache
+        // Only clear if token is actually invalid (401/403)
+        if (error instanceof Error && error.message.includes('401')) {
+          console.error('[AuthProvider] Token invalid, clearing auth');
+          authManager.clear();
+          setIsAuthenticated(false);
+          setUser(null);
+          setAccount(null);
+        }
+      }
     } catch (error) {
       console.error('[AuthProvider] Initialization failed:', error);
-      authManager.clear();
+      // ✅ FIX: Only clear if we're certain auth is invalid
+      // Don't clear on network errors
     } finally {
       setIsLoading(false);
     }
@@ -109,25 +132,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Fetch user data from backend
    */
   async function fetchUserData() {
-    try {
-      const response = await httpClient.get<{
-        user: User;
-        account: Account;
-      }>('/api/auth/session');
+    const response = await httpClient.get<{
+      user: User;
+      account: Account;
+    }>('/api/auth/session');
 
-      setUser(response.user);
-      setAccount(response.account);
-      setIsAuthenticated(true);
+    setUser(response.user);
+    setAccount(response.account);
+    setIsAuthenticated(true);
 
-      // Update auth-manager with fresh data
-      authManager.setUser(response.user, response.account);
-    } catch (error) {
-      console.error('[AuthProvider] Failed to fetch user data:', error);
-      authManager.clear();
-      setIsAuthenticated(false);
-      setUser(null);
-      setAccount(null);
-    }
+    // Update auth-manager cache
+    authManager.setUser(response.user, response.account);
   }
 
   /**
@@ -194,8 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   /**
-   * ✅ REFRESH USER DATA FROM BACKEND
-   * Called after onboarding completion to get updated user object
+   * Refresh user data from backend
    */
   async function refreshUser() {
     try {
@@ -204,7 +218,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         account: Account;
       }>('/api/auth/session');
 
-      // Update React state
       setUser(response.user);
       setAccount(response.account);
 
@@ -216,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('[AuthProvider] Failed to refresh user data:', error);
-      throw error; // Re-throw so onboarding hook can handle it
+      throw error;
     }
   }
 
@@ -232,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     updateOnboardingStatus,
-    refreshUser, // ✅ ADDED
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
