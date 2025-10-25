@@ -1,20 +1,41 @@
 // src/core/auth/http-client.ts
 
 /**
- * HTTP CLIENT
+ * HTTP CLIENT - INDUSTRY STANDARD (2025)
  * 
- * Fetch wrapper with automatic token injection and 401 handling
+ * ARCHITECTURE:
+ * Fetch wrapper with automatic token injection and smart 401 handling
  * 
- * Features:
+ * FEATURES:
  * - Calls authManager.getAccessToken() before each request
- * - Adds Authorization header automatically
- * - On 401 → triggers refresh → retries request ONCE
+ * - Auto-adds Authorization: Bearer <token> header
+ * - On 401 → attempts token refresh → retries request ONCE
  * - If retry fails → clears auth → redirects to login
  * - Comprehensive logging for debugging
  * 
- * Usage:
+ * TOKEN REFRESH FLOW:
+ * 1. Request fails with 401
+ * 2. Call auth-manager to refresh tokens
+ * 3. Auth-manager calls /api/auth/refresh with refresh token
+ * 4. If successful → retry original request with new access token
+ * 5. If fails → clear auth, redirect to login
+ * 
+ * WHY THIS WORKS:
+ * - auth-manager handles refresh logic (calls /refresh endpoint)
+ * - httpClient just retries with whatever token auth-manager returns
+ * - Single responsibility: httpClient = requests, auth-manager = tokens
+ * 
+ * USAGE:
  * const data = await httpClient.get('/api/leads');
  * const result = await httpClient.post('/api/analyze', { username: 'nike' });
+ * 
+ * PUBLIC ENDPOINTS (skip auth):
+ * const data = await httpClient.get('/api/public/pricing', { skipAuth: true });
+ * 
+ * REFERENCES:
+ * - Auth0 SDK: Similar pattern with auto-refresh
+ * - Clerk SDK: Similar pattern with auto-refresh
+ * - Axios interceptors: Same concept, different implementation
  */
 
 import { authManager } from './auth-manager';
@@ -54,6 +75,19 @@ class HttpClient {
 
   /**
    * Make HTTP request with automatic token injection
+   * 
+   * TOKEN FLOW:
+   * 1. Check if auth required (skipAuth flag)
+   * 2. If auth required → call auth-manager.getAccessToken()
+   * 3. Auth-manager checks if token expired → auto-refreshes if needed
+   * 4. Add Authorization header with token
+   * 5. Make request
+   * 6. If 401 → token might be expired → try refresh → retry once
+   * 
+   * ERROR HANDLING:
+   * - Network errors → throw error
+   * - 401 (Unauthorized) → attempt refresh → retry → logout if fails
+   * - Other HTTP errors → return response for caller to handle
    */
   async request<T = unknown>(
     endpoint: string,
@@ -69,7 +103,7 @@ class HttpClient {
       hasBody: !!fetchOptions.body
     });
 
-    // Get valid access token (auto-refreshes if expired)
+    // Get valid access token (auth-manager handles refresh if expired)
     let token: string | null = null;
     if (!skipAuth) {
       logger.debug(`[HttpClient][${requestId}] Getting access token...`);
@@ -82,7 +116,7 @@ class HttpClient {
       logger.debug(`[HttpClient][${requestId}] Skipping auth (public endpoint)`);
     }
 
-    // Build headers with proper typing (Record instead of HeadersInit)
+    // Build headers
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -148,18 +182,19 @@ class HttpClient {
       throw new Error('Network request failed');
     }
 
-    // Handle 401 Unauthorized
+    // Handle 401 Unauthorized - Try token refresh once
     if (response.status === 401 && token && !skipAuth) {
       logger.warn(`[HttpClient][${requestId}] 401 Unauthorized - attempting token refresh`);
 
-      // Force refresh (even if getAccessToken already tried)
-      const refreshed = await authManager.getAccessToken();
+      // Force token refresh via auth-manager
+      // auth-manager will call /refresh endpoint internally
+      const newToken = await authManager.forceRefresh();
 
-      if (refreshed) {
+      if (newToken) {
         logger.info(`[HttpClient][${requestId}] Token refreshed - retrying request`);
         
         // Retry request with new token
-        headers['Authorization'] = `Bearer ${refreshed}`;
+        headers['Authorization'] = `Bearer ${newToken}`;
 
         const retryStartTime = performance.now();
         response = await fetch(url, {
@@ -175,7 +210,7 @@ class HttpClient {
           duration: `${retryDuration.toFixed(2)}ms`
         });
 
-        // Still 401 after refresh? Force logout
+        // Still 401 after refresh? User session is truly invalid
         if (response.status === 401) {
           logger.error(`[HttpClient][${requestId}] Still 401 after refresh - forcing logout`);
           await authManager.logout();
@@ -183,7 +218,7 @@ class HttpClient {
           throw new Error('Authentication failed');
         }
       } else {
-        // Refresh failed - force logout
+        // Refresh failed - clear auth and redirect
         logger.error(`[HttpClient][${requestId}] Token refresh failed - forcing logout`);
         await authManager.logout();
         window.location.href = '/auth/login';
@@ -215,46 +250,33 @@ class HttpClient {
           dataKeys: data.data ? Object.keys(data.data) : []
         });
       }
-    } catch (parseError) {
-      logger.error(`[HttpClient][${requestId}] Failed to parse response`, parseError as Error, {
-        status: response.status,
-        contentType: response.headers.get('content-type')
-      });
+    } catch (error) {
+      logger.error(`[HttpClient][${requestId}] Failed to parse response`, error as Error);
       throw new Error('Invalid response format');
     }
 
     // Handle non-2xx responses
     if (!response.ok) {
-      const errorMessage = data?.error || data?.message || `HTTP ${response.status}`;
-      logger.error(`[HttpClient][${requestId}] Request failed`, new Error(errorMessage), {
+      const errorMessage = data?.error || data?.message || response.statusText;
+      logger.error(`[HttpClient][${requestId}] Request failed`, {
         status: response.status,
         statusText: response.statusText,
-        error: data?.error,
-        message: data?.message,
-        details: data?.details
-      });
+        error: errorMessage,
+        message: data?.message
+      } as any);
+
       throw new Error(errorMessage);
     }
 
     logger.info(`[HttpClient][${requestId}] Request completed successfully`);
-    return data;
+    return data as T;
   }
-
-  // ===========================================================================
-  // CONVENIENCE METHODS
-  // ===========================================================================
 
   /**
    * GET request
    */
-  async get<T = unknown>(
-    endpoint: string,
-    options?: RequestOptions
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'GET',
-    });
+  async get<T = unknown>(endpoint: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
   /**
@@ -268,7 +290,7 @@ class HttpClient {
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: JSON.stringify(body),
     });
   }
 
@@ -283,7 +305,7 @@ class HttpClient {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: JSON.stringify(body),
     });
   }
 
@@ -298,26 +320,17 @@ class HttpClient {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      body: JSON.stringify(body),
     });
   }
 
   /**
    * DELETE request
    */
-  async delete<T = unknown>(
-    endpoint: string,
-    options?: RequestOptions
-  ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'DELETE',
-    });
+  async delete<T = unknown>(endpoint: string, options?: RequestOptions): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 }
 
 // Export singleton instance
 export const httpClient = new HttpClient();
-
-// Export for convenience
-export const api = httpClient;
