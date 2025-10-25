@@ -15,7 +15,6 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
-import { AppSubdomainRoot } from '@/pages/AppSubdomainRoot';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 // =============================================================================
@@ -53,13 +52,6 @@ const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) =
 // =============================================================================
 
 export const router = createBrowserRouter([
-  // ============================================================
-  // APP SUBDOMAIN ROOT (app.oslira.com/)
-  // ============================================================
-  {
-    path: '/app-root',
-    element: <AppSubdomainRoot />,
-  },
 
   // ============================================================
   // MARKETING ROUTES (Public - oslira.com)
