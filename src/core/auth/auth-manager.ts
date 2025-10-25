@@ -1,7 +1,7 @@
 // src/core/auth/auth-manager.ts
 
 /**
- * AUTH MANAGER (Singleton) - INDUSTRY STANDARD (2025)
+ * AUTH MANAGER (Singleton) - PRODUCTION GRADE (2025)
  * 
  * ARCHITECTURE:
  * Central source of truth for authentication state
@@ -13,6 +13,7 @@
  * - Provide getAccessToken() to HTTP client
  * - Manage user/account data cache
  * - Emit state changes to React (via subscribers)
+ * - Cross-tab synchronization (logout in one tab = logout everywhere)
  * 
  * TOKEN REFRESH FLOW:
  * 1. HTTP client calls getAccessToken()
@@ -25,6 +26,12 @@
  * - Uses promise lock to prevent multiple simultaneous refreshes
  * - If refresh in progress, subsequent calls wait for same promise
  * - Ensures only one /refresh call happens at a time
+ * 
+ * CROSS-TAB SYNCHRONIZATION:
+ * - Listens for storage events from other tabs
+ * - Logout in Tab A → automatic logout in Tab B, C, D
+ * - Login in Tab A → automatic state refresh in Tab B, C, D
+ * - Industry standard pattern (Auth0, Clerk, Supabase all do this)
  * 
  * INITIALIZATION:
  * - Loads tokens from localStorage on creation
@@ -105,6 +112,7 @@ class AuthManager {
 
   private constructor() {
     this.loadFromStorage();
+    this.setupCrossTabSync();
   }
 
   /**
@@ -151,9 +159,95 @@ class AuthManager {
     }
   }
 
+  /**
+   * Setup cross-tab synchronization via storage event
+   * 
+   * INDUSTRY STANDARD PATTERN (Auth0, Clerk, Supabase)
+   * 
+   * How it works:
+   * - When localStorage changes in Tab A, browser fires 'storage' event in ALL other tabs
+   * - Other tabs listen for this event and update their state accordingly
+   * - Logout in Tab A → Tab B, C, D automatically clear auth state
+   * - Login in Tab A → Tab B, C, D automatically reload auth state
+   * 
+   * Why this matters:
+   * - Security: Logout in one tab = logout everywhere
+   * - UX: Login in one tab = logged in everywhere
+   * - Real-time: No polling needed, instant synchronization
+   * 
+   * Browser support: All modern browsers (2025)
+   */
+  private setupCrossTabSync(): void {
+    window.addEventListener('storage', (event) => {
+      // Only process auth-related storage changes
+      if (!event.key || !Object.values(STORAGE_KEYS).includes(event.key as any)) {
+        return;
+      }
+
+      console.log('[AuthManager] Cross-tab storage event detected:', {
+        key: event.key,
+        hasNewValue: !!event.newValue,
+        hasOldValue: !!event.oldValue
+      });
+
+      // LOGOUT DETECTION: Any auth key removed = logout
+      if (event.newValue === null) {
+        console.log('[AuthManager] Cross-tab logout detected');
+        
+        // Clear local state (don't trigger another storage event)
+        this.accessToken = null;
+        this.refreshToken = null;
+        this.expiresAt = null;
+        this.user = null;
+        this.account = null;
+
+        // Notify React components
+        this.notifyListeners();
+
+        // Redirect to login if on protected route
+        if (!window.location.pathname.startsWith('/auth')) {
+          console.log('[AuthManager] Redirecting to login page');
+          window.location.href = '/auth/login';
+        }
+        return;
+      }
+
+      // LOGIN DETECTION: Refresh token added/changed = login
+      if (event.key === STORAGE_KEYS.REFRESH_TOKEN && event.newValue) {
+        console.log('[AuthManager] Cross-tab login detected, reloading state...');
+        
+        // Reload all auth state from localStorage
+        this.loadFromStorage();
+        
+        // Notify React components
+        this.notifyListeners();
+      }
+    });
+
+    console.log('[AuthManager] Cross-tab synchronization enabled');
+  }
+
   // ===========================================================================
   // TOKEN MANAGEMENT
   // ===========================================================================
+
+  /**
+   * Get current tokens (for initialization check)
+   * 
+   * Used by AuthProvider during initialization to check if user has tokens
+   * Returns raw token data without triggering refresh
+   */
+  getTokens(): {
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiresAt: number | null;
+  } {
+    return {
+      accessToken: this.accessToken,
+      refreshToken: this.refreshToken,
+      expiresAt: this.expiresAt,
+    };
+  }
 
   /**
    * Get valid access token (auto-refreshes if expired)
@@ -166,6 +260,10 @@ class AuthManager {
    * 3. If valid → return it
    * 4. If expired → call refresh() → return new token
    * 5. If refresh fails → return null (HTTP client will redirect to login)
+   * 
+   * RACE CONDITION PROTECTION:
+   * - If multiple requests happen simultaneously, only one refresh call is made
+   * - Subsequent calls wait for the same refresh promise to resolve
    */
   async getAccessToken(): Promise<string | null> {
     // No refresh token = not authenticated
@@ -187,69 +285,39 @@ class AuthManager {
   }
 
   /**
-   * Get current tokens (for AuthProvider initialization)
-   * Used to check if user has existing session on app load
-   */
-  getTokens(): TokenData | null {
-    if (!this.accessToken || !this.refreshToken || !this.expiresAt) {
-      return null;
-    }
-
-    return {
-      accessToken: this.accessToken,
-      refreshToken: this.refreshToken,
-      expiresAt: this.expiresAt,
-    };
-  }
-
-  /**
-   * Force token refresh (called by HTTP client on 401)
-   * 
-   * Similar to refresh() but always attempts refresh even if token appears valid
-   * Used when HTTP client gets 401 - might indicate server-side token revocation
-   */
-  async forceRefresh(): Promise<string | null> {
-    console.log('[AuthManager] Force refresh requested');
-    const refreshed = await this.refresh();
-    return refreshed ? this.accessToken : null;
-  }
-
-  /**
-   * Refresh access token (race-condition safe)
+   * Refresh access token using refresh token
    * 
    * RACE CONDITION PROTECTION:
-   * - If refresh already in progress, wait for existing promise
-   * - Prevents multiple simultaneous /refresh calls
-   * - All callers get result of single refresh operation
+   * - If refresh already in progress, return existing promise
+   * - Prevents multiple simultaneous refresh calls
+   * 
+   * TOKEN ROTATION:
+   * - Backend invalidates old refresh token
+   * - Returns new refresh token + access token
+   * - This prevents token reuse attacks
    */
   private async refresh(): Promise<boolean> {
-    // If refresh already in progress, wait for it
+    // Race condition protection: only one refresh at a time
     if (this.refreshPromise) {
       console.log('[AuthManager] Refresh already in progress, waiting...');
       return this.refreshPromise;
     }
 
-    // Start new refresh
-    this.refreshPromise = this._doRefresh();
-    const result = await this.refreshPromise;
-    this.refreshPromise = null; // Reset lock
+    this.refreshPromise = this._performRefresh();
 
-    return result;
+    try {
+      return await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
   }
 
   /**
-   * Actually perform the refresh API call
-   * 
-   * Calls /api/auth/refresh with refresh token in body
-   * This is the industry-standard pattern (Auth0, Clerk, WorkOS)
+   * Perform actual refresh API call
    */
-  private async _doRefresh(): Promise<boolean> {
-    if (!this.refreshToken) {
-      return false;
-    }
-
+  private async _performRefresh(): Promise<boolean> {
     try {
-      console.log('[AuthManager] Calling /refresh endpoint');
+      console.log('[AuthManager] Calling /api/auth/refresh');
 
       const response = await fetch(`${env.apiUrl}/api/auth/refresh`, {
         method: 'POST',
@@ -270,7 +338,7 @@ class AuthManager {
 
       console.log('[AuthManager] Refresh successful, storing new tokens');
 
-      // Store new tokens
+      // Store new tokens (triggers cross-tab sync)
       this.setTokens(data.accessToken, data.refreshToken, data.expiresAt);
 
       return true;
@@ -282,13 +350,17 @@ class AuthManager {
 
   /**
    * Store tokens (called after login or refresh)
+   * 
+   * CROSS-TAB SYNC:
+   * - Writing to localStorage automatically triggers 'storage' event in other tabs
+   * - Other tabs detect the change and update their state
    */
   setTokens(accessToken: string, refreshToken: string, expiresAt: number): void {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.expiresAt = expiresAt;
 
-    // Persist to localStorage
+    // Persist to localStorage (triggers storage event in other tabs)
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
@@ -306,12 +378,15 @@ class AuthManager {
 
   /**
    * Store user and account data
+   * 
+   * CROSS-TAB SYNC:
+   * - Writing to localStorage automatically triggers 'storage' event in other tabs
    */
   setUser(user: UserData, account: AccountData): void {
     this.user = user;
     this.account = account;
 
-    // Persist to localStorage
+    // Persist to localStorage (triggers storage event in other tabs)
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
     localStorage.setItem(STORAGE_KEYS.ACCOUNT, JSON.stringify(account));
 
@@ -369,6 +444,10 @@ class AuthManager {
    * 2. Clear all local storage
    * 3. Clear memory state
    * 4. Notify listeners (React updates)
+   * 
+   * CROSS-TAB SYNC:
+   * - Clearing localStorage triggers 'storage' event in all other tabs
+   * - Other tabs detect the logout and clear their state automatically
    */
   async logout(): Promise<void> {
     console.log('[AuthManager] Logout initiated');
@@ -392,14 +471,20 @@ class AuthManager {
       }
     }
 
-    // Clear local state
+    // Clear local state (triggers cross-tab sync)
     this.clear();
   }
 
   /**
    * Clear all auth state (memory + localStorage)
+   * 
+   * CROSS-TAB SYNC:
+   * - Removing items from localStorage triggers 'storage' event in other tabs
+   * - Other tabs detect the changes and clear their state automatically
    */
   clear(): void {
+    console.log('[AuthManager] Clearing auth state');
+
     // Clear memory
     this.accessToken = null;
     this.refreshToken = null;
@@ -407,12 +492,12 @@ class AuthManager {
     this.user = null;
     this.account = null;
 
-    // Clear localStorage
+    // Clear localStorage (triggers storage event in other tabs)
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
     });
 
-    console.log('[AuthManager] Auth state cleared');
+    console.log('[AuthManager] Auth state cleared, other tabs will sync automatically');
     this.notifyListeners();
   }
 
@@ -422,7 +507,9 @@ class AuthManager {
 
   /**
    * Subscribe to auth state changes
-   * Used by AuthProvider to sync React state
+   * Used by AuthProvider to sync React state with auth-manager
+   * 
+   * Returns unsubscribe function
    */
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
@@ -431,11 +518,15 @@ class AuthManager {
 
   /**
    * Notify all listeners of state change
+   * Called after any auth state modification
    */
   private notifyListeners(): void {
     this.listeners.forEach(listener => listener());
   }
 }
 
-// Export singleton instance
+// =============================================================================
+// EXPORT SINGLETON INSTANCE
+// =============================================================================
+
 export const authManager = AuthManager.getInstance();
