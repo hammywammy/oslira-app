@@ -49,6 +49,14 @@ const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) =
 
 export const router = createBrowserRouter([
   // ============================================================
+  // APP SUBDOMAIN ROOT (handles app.oslira.com/)
+  // ============================================================
+  {
+    path: '/app-root',
+    element: <AppSubdomainRoot />,
+  },
+
+  // ============================================================
   // MARKETING ROUTES (Public)
   // ============================================================
   {
