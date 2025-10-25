@@ -64,11 +64,6 @@ interface AccountData {
   credit_balance: number;
 }
 
-interface TokenData {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
-}
 
 interface RefreshResponse {
   accessToken: string;
@@ -231,23 +226,26 @@ class AuthManager {
   // TOKEN MANAGEMENT
   // ===========================================================================
 
-  /**
-   * Get current tokens (for initialization check)
-   * 
-   * Used by AuthProvider during initialization to check if user has tokens
-   * Returns raw token data without triggering refresh
-   */
-  getTokens(): {
-    accessToken: string | null;
-    refreshToken: string | null;
-    expiresAt: number | null;
-  } {
-    return {
-      accessToken: this.accessToken,
-      refreshToken: this.refreshToken,
-      expiresAt: this.expiresAt,
-    };
+/**
+ * Get current tokens (for initialization check)
+ * Returns raw token data without triggering refresh
+ */
+getTokens(): {
+  accessToken: string | null;
+  refreshToken: string | null;
+  expiresAt: number | null;
+} | null {
+  // Return null if no refresh token (not authenticated)
+  if (!this.refreshToken) {
+    return null;
   }
+
+  return {
+    accessToken: this.accessToken,
+    refreshToken: this.refreshToken,
+    expiresAt: this.expiresAt,
+  };
+}
 
   /**
    * Get valid access token (auto-refreshes if expired)
@@ -283,6 +281,26 @@ class AuthManager {
     const refreshed = await this.refresh();
     return refreshed ? this.accessToken : null;
   }
+
+  /**
+ * Force token refresh (public method)
+ * Used by HTTP client when it receives 401 response
+ * 
+ * Returns new access token if successful, null if failed
+ * This is called when backend returns 401 despite having what appears to be a valid token
+ */
+async forceRefresh(): Promise<string | null> {
+  console.log('[AuthManager] Force refresh requested');
+  
+  // Clear existing refresh promise to force new refresh
+  this.refreshPromise = null;
+  
+  // Attempt refresh
+  const success = await this.refresh();
+  
+  // Return new access token if successful
+  return success ? this.accessToken : null;
+}
 
   /**
    * Refresh access token using refresh token
