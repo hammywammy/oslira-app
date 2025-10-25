@@ -2,6 +2,10 @@
 /**
  * @file Router Configuration
  * @description Centralized route definitions with proper Suspense boundaries
+ * 
+ * SUBDOMAIN ROUTING:
+ * - app.oslira.com/ → /app-root (via Cloudflare Pages _redirects)
+ * - oslira.com/ → / (marketing homepage)
  */
 
 import { createBrowserRouter } from 'react-router-dom';
@@ -11,6 +15,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
+import { AppSubdomainRoot } from '@/pages/AppSubdomainRoot';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
 // =============================================================================
@@ -49,7 +54,7 @@ const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) =
 
 export const router = createBrowserRouter([
   // ============================================================
-  // APP SUBDOMAIN ROOT (handles app.oslira.com/)
+  // APP SUBDOMAIN ROOT (app.oslira.com/)
   // ============================================================
   {
     path: '/app-root',
@@ -57,7 +62,7 @@ export const router = createBrowserRouter([
   },
 
   // ============================================================
-  // MARKETING ROUTES (Public)
+  // MARKETING ROUTES (Public - oslira.com)
   // ============================================================
   {
     path: '/',
