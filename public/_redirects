@@ -1,12 +1,29 @@
 # public/_redirects
+# Cloudflare Pages Static Redirects Configuration
+# 
+# Purpose: Route subdomain traffic to appropriate React Router paths
+# - app.oslira.com/ → /app-root → AppSubdomainRoot component
+# - oslira.com/ → / → HomePage component
+#
+# Documentation: https://developers.cloudflare.com/pages/configuration/redirects/
 
-# App subdomain: Redirect root to /dashboard
+# =============================================================================
+# APP SUBDOMAIN ROUTING (app.oslira.com)
+# =============================================================================
+# Redirect root of app subdomain to /app-root handler
+# Production
 https://app.oslira.com/  /app-root  200
+
+# Staging
 https://staging-app.oslira.com/  /app-root  200
 
-# Marketing domain: Keep homepage as-is
-https://oslira.com/*  /:splat  200
-https://staging.oslira.com/*  /:splat  200
+# =============================================================================
+# MARKETING DOMAIN (oslira.com) - Default behavior
+# =============================================================================
+# No explicit redirects needed - falls through to SPA routing
 
-# Fallback: All other paths work normally
-/*  /:splat  200
+# =============================================================================
+# SPA FALLBACK (All other routes)
+# =============================================================================
+# Ensure all routes fall back to index.html for client-side routing
+/*  /index.html  200
