@@ -1,0 +1,12 @@
+# public/_redirects
+
+# App subdomain: Redirect root to /dashboard
+https://app.oslira.com/  /app-root  200
+https://staging-app.oslira.com/  /app-root  200
+
+# Marketing domain: Keep homepage as-is
+https://oslira.com/*  /:splat  200
+https://staging.oslira.com/*  /:splat  200
+
+# Fallback: All other paths work normally
+/*  /:splat  200
