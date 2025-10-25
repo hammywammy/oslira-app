@@ -10,18 +10,37 @@ import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
 
 // =============================================================================
+// CONSTANTS
+// =============================================================================
+
+// Get app subdomain URL from environment
+const APP_URL = import.meta.env.PROD 
+  ? 'https://app.oslira.com'
+  : 'http://localhost:5173';
+
+// =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function MarketingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  /**
+   * Navigate to login page on app subdomain
+   * CRITICAL: Use absolute URL to force cross-domain navigation
+   * This ensures we navigate to app.oslira.com (where tokens are stored)
+   * NOT oslira.com/auth/login (which has empty localStorage)
+   */
   const handleLogin = () => {
-    window.location.href = '/auth/login';
+    window.location.href = `${APP_URL}/auth/login`;
   };
 
+  /**
+   * Navigate to signup page on app subdomain
+   * Same reasoning as handleLogin
+   */
   const handleSignup = () => {
-    window.location.href = '/auth/signup';
+    window.location.href = `${APP_URL}/auth/signup`;
   };
 
   return (
@@ -42,9 +61,9 @@ export function MarketingHeader() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-<a href="/" className="flex items-center gap-2">
-  <Logo size="md" />
-</a>
+              <a href="/" className="flex items-center gap-2">
+                <Logo size="md" />
+              </a>
               <span className="text-xl font-bold text-slate-900">Oslira</span>
             </motion.a>
 
@@ -71,17 +90,18 @@ export function MarketingHeader() {
             <div className="hidden md:flex items-center gap-3">
               <motion.button
                 onClick={handleLogin}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-5 py-2.5 text-slate-700 hover:text-slate-900 font-semibold rounded-lg hover:bg-slate-100 transition-colors"
+                className="px-5 py-2.5 text-slate-700 font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all"
               >
                 Login
               </motion.button>
+              
               <motion.button
                 onClick={handleSignup}
-                whileHover={{ scale: 1.02, boxShadow: "0 10px 30px -12px rgba(59, 130, 246, 0.4)" }}
+                whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-5 py-2.5 bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 transition-all"
+                className="px-5 py-2.5 bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all"
               >
                 Get Started Free
               </motion.button>
@@ -90,9 +110,8 @@ export function MarketingHeader() {
             {/* Mobile Menu Button */}
             <motion.button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-600 hover:text-slate-900"
+              className="md:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-lg"
               whileTap={{ scale: 0.95 }}
-              aria-label="Toggle menu"
             >
               <Icon 
                 icon={mobileMenuOpen ? 'mdi:close' : 'mdi:menu'} 
