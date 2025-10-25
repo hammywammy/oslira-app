@@ -13,8 +13,7 @@
  * - Works in dev and production
  */
 
-import { useEffect } from 'react';
-import { RouterProvider, useLocation, useNavigate } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
@@ -36,48 +35,55 @@ const queryClient = new QueryClient({
 });
 
 // =============================================================================
-// SUBDOMAIN REDIRECT COMPONENT
+// SUBDOMAIN REDIRECT (runs before React Router mounts)
 // =============================================================================
 /**
  * Detects if user is on app subdomain at root and redirects to /auth/login
- * This runs once on app mount before any other routing
+ * Uses native window.location to work before router context exists
  */
-function SubdomainRedirect() {
-  const navigate = useNavigate();
-  const location = useLocation();
+function checkAndRedirectSubdomain() {
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
 
-  useEffect(() => {
-    const hostname = window.location.hostname;
-    const pathname = location.pathname;
+  // Check if we're on app subdomain
+  const isAppSubdomain = 
+    hostname === 'app.oslira.com' ||
+    hostname === 'staging-app.oslira.com' ||
+    hostname === 'app.localhost' || // Local dev with hosts file
+    hostname.startsWith('oslira-app-production.pages.dev'); // Direct Pages URL
 
-    // Check if we're on app subdomain
-    const isAppSubdomain = 
-      hostname === 'app.oslira.com' ||
-      hostname === 'staging-app.oslira.com' ||
-      hostname === 'app.localhost' || // Local dev with hosts file
-      hostname.startsWith('oslira-app-production.pages.dev'); // Direct Pages URL
+  // Only redirect if at root path
+  const isRoot = pathname === '/';
 
-    // Only redirect if at root path
-    const isRoot = pathname === '/';
+  if (isAppSubdomain && isRoot) {
+    console.log('[SubdomainRedirect] App subdomain detected, redirecting to /auth/login');
+    window.location.replace('/auth/login');
+    return true; // Redirect initiated
+  }
 
-    if (isAppSubdomain && isRoot) {
-      console.log('[SubdomainRedirect] App subdomain detected, redirecting to /auth/login');
-      navigate('/auth/login', { replace: true });
-    }
-  }, [navigate, location.pathname]);
-
-  return null;
+  return false; // No redirect needed
 }
+
+// Execute redirect check immediately (before React even renders)
+const shouldRedirect = checkAndRedirectSubdomain();
 
 // =============================================================================
 // APP COMPONENT
 // =============================================================================
 function App() {
+  // If redirect was initiated, show minimal loading state while redirecting
+  if (shouldRedirect) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SubdomainRedirect />
           <RouterProvider router={router} />
           <ShowcaseNav />
         </AuthProvider>
