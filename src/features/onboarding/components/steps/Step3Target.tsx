@@ -4,9 +4,10 @@
  * STEP 3: TARGET CUSTOMER
  * 
  * FIXES:
- * - Character counter now uses watch() for real-time updates
- * - Removed duplicate counter
- * - Increased textarea rows for better visibility
+ * ✅ Company size cards are fully clickable (not just checkbox)
+ * ✅ Added employee count ranges
+ * ✅ Better visual styling and hover states
+ * ✅ Custom checkbox design matching app style
  */
 
 import { motion } from 'framer-motion';
@@ -22,21 +23,29 @@ import type { FormData, TargetCompanySize } from '../../constants/validationSche
 // DATA
 // =============================================================================
 
-const companySizeOptions: Array<{ value: TargetCompanySize; label: string; description: string }> = [
+const companySizeOptions: Array<{ 
+  value: TargetCompanySize; 
+  label: string; 
+  description: string;
+  employees: string;
+}> = [
   {
     value: 'startup',
     label: 'Startups',
     description: 'Early-stage companies, lean teams',
+    employees: '1-50 employees',
   },
   {
     value: 'smb',
     label: 'Small & Medium',
     description: 'Established businesses, growing teams',
+    employees: '51-500 employees',
   },
   {
     value: 'enterprise',
     label: 'Enterprise',
     description: 'Large corporations, complex structures',
+    employees: '500+ employees',
   },
 ];
 
@@ -75,36 +84,32 @@ function CustomNumberInput({ label, value, onChange, error, min = 0, max = 10000
       <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
         {icon && <Icon icon={icon} className="text-lg text-purple-400" />}
         {label}
-        <span className="text-red-400">*</span>
       </label>
 
-      <div className="flex items-center gap-2">
-        {/* Decrement Button */}
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={decrement}
-          className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-800 border-2 border-slate-700 text-slate-300 hover:border-purple-500 hover:text-purple-400 transition-colors"
+          className="flex items-center justify-center w-10 h-10 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 rounded-lg transition-colors"
         >
-          <Icon icon="lucide:minus" className="text-xl" />
+          <Icon icon="lucide:minus" className="w-4 h-4 text-slate-300" />
         </button>
 
-        {/* Number Input */}
         <input
           type="number"
           value={value}
           onChange={handleInputChange}
           min={min}
           max={max}
-          className="flex-1 px-4 py-2 bg-slate-800/50 border-2 border-slate-700 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
         />
 
-        {/* Increment Button */}
         <button
           type="button"
           onClick={increment}
-          className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-800 border-2 border-slate-700 text-slate-300 hover:border-purple-500 hover:text-purple-400 transition-colors"
+          className="flex items-center justify-center w-10 h-10 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 rounded-lg transition-colors"
         >
-          <Icon icon="lucide:plus" className="text-xl" />
+          <Icon icon="lucide:plus" className="w-4 h-4 text-slate-300" />
         </button>
       </div>
 
@@ -130,7 +135,6 @@ export function Step3Target() {
     formState: { errors },
   } = useFormContext<FormData>();
 
-  // ✅ FIX: Use watch() to get real-time values
   const targetDescription = watch('target_description') || '';
   const minFollowers = watch('icp_min_followers') || 0;
   const maxFollowers = watch('icp_max_followers') || 0;
@@ -187,33 +191,19 @@ export function Step3Target() {
         <FormTextarea
           label="Describe Your Ideal Customer"
           placeholder="Example: Health and wellness coaches with engaged audiences who promote holistic living, natural remedies, and mindfulness. They create educational content about nutrition, fitness routines, and mental health. Their followers are typically women aged 25-45 interested in self-improvement..."
-          icon={ICONS.users}
-          error={errors.target_description?.message}
-          required
           rows={8}
           maxLength={750}
+          error={errors.target_description?.message}
           {...register('target_description')}
         />
 
-        {/* ✅ SINGLE Character Counter - Uses watch() value */}
-        <div className="flex items-center justify-between text-sm px-1">
-          <span className={getCharCountColor()}>
+        <div className="flex items-center justify-between text-sm">
+          <span className={`font-medium ${getCharCountColor()}`}>
             {getCharCountLabel()}
           </span>
           <span className="text-slate-500">
-            {charCount} / 750
+            {charCount} / 750 characters
           </span>
-        </div>
-
-        {/* Helper Prompts */}
-        <div className="bg-slate-800/30 rounded-lg p-3 text-xs text-slate-400">
-          <p className="mb-2 font-medium text-slate-300">Consider including:</p>
-          <ul className="space-y-1 list-disc list-inside">
-            <li>Their industry or niche</li>
-            <li>Content themes they post about</li>
-            <li>Their audience demographics</li>
-            <li>Business model or offerings</li>
-          </ul>
         </div>
       </motion.div>
 
@@ -224,8 +214,7 @@ export function Step3Target() {
           value={minFollowers}
           onChange={(val) => setValue('icp_min_followers', val)}
           error={errors.icp_min_followers?.message}
-          min={0}
-          icon={ICONS.users}
+          icon={ICONS.trendingUp}
         />
 
         <CustomNumberInput
@@ -233,51 +222,68 @@ export function Step3Target() {
           value={maxFollowers}
           onChange={(val) => setValue('icp_max_followers', val)}
           error={errors.icp_max_followers?.message}
-          min={0}
-          icon={ICONS.users}
+          icon={ICONS.trendingUp}
         />
       </motion.div>
 
-      {/* Company Size Checkboxes (Optional) */}
+      {/* Company Size Selection - FULLY CLICKABLE CARDS */}
       <motion.div variants={fadeInVariants} className="space-y-3">
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
           <Icon icon={ICONS.building} className="text-lg text-purple-400" />
           Target Company Sizes (Optional)
         </label>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {companySizeOptions.map((option) => {
             const isSelected = selectedSizes.includes(option.value);
 
             return (
-              <label
+              <motion.button
                 key={option.value}
+                type="button"
+                onClick={() => toggleCompanySize(option.value)}
                 className={`
-                  block p-4 rounded-xl border-2 cursor-pointer
-                  transition-all duration-200
+                  w-full text-left p-4 rounded-xl border-2 transition-all
                   ${
                     isSelected
-                      ? 'bg-purple-500/10 border-purple-500'
-                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                      ? 'bg-purple-500/10 border-purple-500 shadow-lg shadow-purple-500/20'
+                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600 hover:bg-slate-800/70'
                   }
                 `}
-                onClick={() => toggleCompanySize(option.value)}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex items-center h-6 mt-0.5">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {}}
-                      className="w-5 h-5 text-purple-500 rounded focus:ring-purple-500"
-                    />
+                  {/* Custom Checkbox */}
+                  <div className="flex items-center justify-center w-6 h-6 mt-0.5 flex-shrink-0">
+                    <div
+                      className={`
+                        w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all
+                        ${
+                          isSelected
+                            ? 'bg-purple-500 border-purple-500'
+                            : 'border-slate-600 bg-slate-900/50'
+                        }
+                      `}
+                    >
+                      {isSelected && (
+                        <Icon icon={ICONS.check} className="w-4 h-4 text-white" />
+                      )}
+                    </div>
                   </div>
+
+                  {/* Content */}
                   <div className="flex-1">
-                    <div className="font-semibold text-white mb-1">{option.label}</div>
+                    <div className="font-semibold text-white mb-1 flex items-center gap-2">
+                      {option.label}
+                      <span className="text-xs text-slate-400 font-normal">
+                        {option.employees}
+                      </span>
+                    </div>
                     <p className="text-sm text-slate-400">{option.description}</p>
                   </div>
                 </div>
-              </label>
+              </motion.button>
             );
           })}
         </div>
