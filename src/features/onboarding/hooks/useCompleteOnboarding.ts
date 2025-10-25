@@ -110,11 +110,12 @@ export function useCompleteOnboarding() {
         const authManager = (await import('@/core/auth/auth-manager')).authManager;
         const currentTokens = authManager.getTokens();
         
+        // FIXED: Check if currentTokens is null before accessing properties
         if (currentTokens) {
           authManager.setTokens(
             response.access_token,
-            currentTokens.refreshToken,
-            currentTokens.expiresAt
+            currentTokens.refreshToken!,
+            currentTokens.expiresAt!
           );
         }
       }
