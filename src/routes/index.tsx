@@ -1,11 +1,16 @@
 // src/routes/index.tsx
+
 /**
- * @file Router Configuration
- * @description Centralized route definitions with proper Suspense boundaries
+ * ROUTER CONFIGURATION
  * 
- * SUBDOMAIN ROUTING:
- * - app.oslira.com/ → /app-root (via Cloudflare Pages _redirects)
- * - oslira.com/ → / (marketing homepage)
+ * Pure routing - domain enforcement handled by environment manager.
+ * Routes are declarative path mappings with domain guards.
+ * 
+ * Domain Architecture:
+ * - oslira.com → Marketing (homepage + showcase pages)
+ * - app.oslira.com → Application (auth, dashboard, onboarding)
+ * 
+ * NO business logic here. Just route declarations.
  */
 
 import { createBrowserRouter } from 'react-router-dom';
@@ -16,6 +21,40 @@ import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
+import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
+
+// =============================================================================
+// DOMAIN GUARD
+// =============================================================================
+
+/**
+ * Enforces domain boundaries using centralized environment detection
+ * Redirects to correct domain if user is on wrong one
+ */
+function DomainGuard({ 
+  domain, 
+  children 
+}: { 
+  domain: 'app' | 'marketing'; 
+  children: JSX.Element 
+}) {
+  const onCorrectDomain = domain === 'app' ? isAppDomain() : isMarketingDomain();
+  
+  // If on wrong domain, redirect to correct one
+  if (!onCorrectDomain) {
+    const correctUrl = getUrlForDomain(domain);
+    window.location.replace(correctUrl + window.location.pathname);
+    
+    // Show loading state during redirect
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+  
+  return children;
+}
 
 // =============================================================================
 // LOADING FALLBACK
@@ -31,7 +70,7 @@ const LoadingFallback = () => (
 );
 
 // =============================================================================
-// LAZY LOADED PAGES (with Suspense wrapper)
+// LAZY LOADED PAGES
 // =============================================================================
 
 const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'));
@@ -40,7 +79,6 @@ const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
 const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
 const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase'));
 
-// Helper to wrap lazy components with Suspense
 const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) => (
   <Suspense fallback={<LoadingFallback />}>
     <Component />
@@ -48,91 +86,127 @@ const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) =
 );
 
 // =============================================================================
-// ROUTER CONFIGURATION
+// ROUTES
 // =============================================================================
 
 export const router = createBrowserRouter([
 
   // ============================================================
-  // MARKETING ROUTES (Public - oslira.com)
+  // MARKETING DOMAIN (oslira.com)
   // ============================================================
+  
   {
     path: '/',
-    element: <HomePage />,
-  },
-
-  // ============================================================
-  // AUTH ROUTES (Public)
-  // ============================================================
-  {
-    path: '/auth/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/auth/signup',
-    element: <SignupPage />,
-  },
-  {
-    path: '/auth/callback',
-    element: <OAuthCallbackPage />,
-  },
-
-  // ============================================================
-  // ONBOARDING ROUTE (Protected - no onboarding required)
-  // ============================================================
-  {
-    path: '/onboarding',
     element: (
-      <ProtectedRoute requireOnboarding={false}>
-        <OnboardingPage />
-      </ProtectedRoute>
+      <DomainGuard domain="marketing">
+        <HomePage />
+      </DomainGuard>
+    ),
+  },
+  {
+    path: '/showcase/tailwind',
+    element: (
+      <DomainGuard domain="marketing">
+        {withSuspense(TailwindShowcase)}
+      </DomainGuard>
+    ),
+  },
+  {
+    path: '/showcase/framer',
+    element: (
+      <DomainGuard domain="marketing">
+        {withSuspense(FramerShowcase)}
+      </DomainGuard>
+    ),
+  },
+  {
+    path: '/showcase/components',
+    element: (
+      <DomainGuard domain="marketing">
+        {withSuspense(ComponentLab)}
+      </DomainGuard>
+    ),
+  },
+  {
+    path: '/showcase/darkmode',
+    element: (
+      <DomainGuard domain="marketing">
+        {withSuspense(DarkModeShowcase)}
+      </DomainGuard>
+    ),
+  },
+  {
+    path: '/showcase/charts',
+    element: (
+      <DomainGuard domain="marketing">
+        {withSuspense(ChartsShowcase)}
+      </DomainGuard>
     ),
   },
 
   // ============================================================
-  // SHOWCASE ROUTES (Public - for testing)
+  // APP DOMAIN (app.oslira.com) - Public Routes
   // ============================================================
+  
   {
-    path: '/showcase/tailwind',
-    element: withSuspense(TailwindShowcase),
+    path: '/auth/login',
+    element: (
+      <DomainGuard domain="app">
+        <LoginPage />
+      </DomainGuard>
+    ),
   },
   {
-    path: '/showcase/framer',
-    element: withSuspense(FramerShowcase),
+    path: '/auth/signup',
+    element: (
+      <DomainGuard domain="app">
+        <SignupPage />
+      </DomainGuard>
+    ),
   },
   {
-    path: '/showcase/components',
-    element: withSuspense(ComponentLab),
-  },
-  {
-    path: '/showcase/darkmode',
-    element: withSuspense(DarkModeShowcase),
-  },
-  {
-    path: '/showcase/charts',
-    element: withSuspense(ChartsShowcase),
+    path: '/auth/callback',
+    element: (
+      <DomainGuard domain="app">
+        <OAuthCallbackPage />
+      </DomainGuard>
+    ),
   },
 
   // ============================================================
-  // APP ROUTES (Protected)
+  // APP DOMAIN (app.oslira.com) - Protected Routes
   // ============================================================
+  
+  {
+    path: '/onboarding',
+    element: (
+      <DomainGuard domain="app">
+        <ProtectedRoute requireOnboarding={false}>
+          <OnboardingPage />
+        </ProtectedRoute>
+      </DomainGuard>
+    ),
+  },
   {
     path: '/dashboard',
     element: (
-      <ProtectedRoute>
-        <div className="flex items-center justify-center min-h-screen bg-slate-50">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">Dashboard</h1>
-            <p className="text-slate-600">Coming soon...</p>
+      <DomainGuard domain="app">
+        <ProtectedRoute>
+          <div className="flex items-center justify-center min-h-screen bg-slate-50">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-slate-900 mb-4">Dashboard</h1>
+              <p className="text-slate-600">Coming soon...</p>
+            </div>
           </div>
-        </div>
-      </ProtectedRoute>
+        </ProtectedRoute>
+      </DomainGuard>
     ),
   },
 
   // ============================================================
   // 404 NOT FOUND
   // ============================================================
+  
   {
     path: '*',
     element: (
