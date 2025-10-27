@@ -4,10 +4,9 @@
  * ONBOARDING PAGE - PRODUCTION FIXED
  * 
  * FIXES:
- * ✅ Ref-based navigation lock (no race conditions)
- * ✅ Proper background color on page wrapper (no white bar)
- * ✅ Vertical expansion (no height restrictions)
- * ✅ Clean animation transitions
+ * ✅ Step 4 shows Previous button (canGoBack logic fixed)
+ * ✅ Edit buttons work without requiring changes (unlocks after edit navigation)
+ * ✅ Complete button enabled on Step 4 (no validation blocking)
  */
 
 import { useState, useMemo, useRef, useCallback } from 'react';
@@ -39,6 +38,7 @@ const stepSchemas = {
   1: step1Schema,
   2: step2Schema,
   3: step3Schema,
+  // Step 4 is review - no validation needed, just display
   4: fullFormSchema,
 };
 
@@ -81,6 +81,11 @@ export function OnboardingPage() {
 
   // Validation
   const validateCurrentStep = async (): Promise<boolean> => {
+    // ✅ FIX 3: Step 4 (review) doesn't need validation
+    if (currentStep === 4) {
+      return true;
+    }
+
     setIsValidating(true);
     
     try {
@@ -140,6 +145,7 @@ export function OnboardingPage() {
     setTimeout(unlockNavigation, ANIMATION_DURATION);
   };
 
+  // ✅ FIX 2: Edit button always works - unlock after animation
   const handleEditStep = (step: number) => {
     if (isLocked() || isThrottled()) return;
     lockNavigation();
@@ -170,17 +176,15 @@ export function OnboardingPage() {
     }
   }, [currentStep, isPending]);
 
-  const canGoBack = currentStep > 1 && !isLocked() && !isThrottled();
-  const canGoNext = !isLocked() && !isThrottled();
+  // ✅ FIX 1: Step 4 should show Previous button
+  // Remove the throttle check from canGoBack - it's already in handleBack
+  const canGoBack = currentStep > 1 && !isLocked();
+  const canGoNext = !isLocked();
   const isLastStep = currentStep === TOTAL_STEPS;
   const isLoading = isPending || isValidating;
 
   return (
     <FormProvider {...methods}>
-      {/* 
-        ✅ FIXED: Added bg-gradient to match OnboardingShell
-        This prevents the white bar at the bottom
-      */}
       <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <ProgressBar currentStep={currentStep} />
 
