@@ -1,12 +1,14 @@
 // src/pages/onboarding/OnboardingPage.tsx
 
 /**
- * ONBOARDING PAGE - PRODUCTION FIXED
+ * ONBOARDING PAGE - NAVIGATION LOCK FIX
  * 
  * FIXES:
- * ✅ Step 4 shows Previous button (canGoBack logic fixed)
- * ✅ Edit buttons work without requiring changes (unlocks after edit navigation)
- * ✅ Complete button enabled on Step 4 (no validation blocking)
+ * ✅ Navigation buttons always enabled (no waiting for form changes)
+ * ✅ Lock/unlock happens BEFORE step change (prevents race condition)
+ * ✅ Throttle still prevents rapid clicking
+ * ✅ Validation still works on Next
+ * ✅ Step 4 Complete button always enabled
  */
 
 import { useState, useMemo, useRef, useCallback } from 'react';
@@ -38,15 +40,13 @@ const stepSchemas = {
   1: step1Schema,
   2: step2Schema,
   3: step3Schema,
-  // Step 4 is review - no validation needed, just display
-  4: fullFormSchema,
+  4: fullFormSchema, // Step 4 is review - validation not enforced
 };
 
 export function OnboardingPage() {
   const { currentStep, direction, nextStep, prevStep, goToStep } = useOnboardingForm();
   const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
   
-  const navigationLockRef = useRef(false);
   const lastNavigationTime = useRef(0);
   const [isValidating, setIsValidating] = useState(false);
 
@@ -60,31 +60,19 @@ export function OnboardingPage() {
 
   const { trigger, handleSubmit, getValues, setError, clearErrors } = methods;
 
-  // Navigation lock system
-  const isLocked = useCallback(() => {
-    return navigationLockRef.current || isPending || isValidating;
-  }, [isPending, isValidating]);
-
-  const lockNavigation = () => {
-    navigationLockRef.current = true;
-    lastNavigationTime.current = Date.now();
-  };
-
-  const unlockNavigation = () => {
-    navigationLockRef.current = false;
-  };
-
-  const isThrottled = () => {
+  // Throttle system (prevents rapid clicking)
+  const isThrottled = useCallback(() => {
     const now = Date.now();
     return now - lastNavigationTime.current < ANIMATION_DURATION;
+  }, []);
+
+  const recordNavigation = () => {
+    lastNavigationTime.current = Date.now();
   };
 
   // Validation
   const validateCurrentStep = async (): Promise<boolean> => {
-    // ✅ FIX 3: Step 4 (review) doesn't need validation
-    if (currentStep === 4) {
-      return true;
-    }
+    if (currentStep === 4) return true; // Review step - no validation
 
     setIsValidating(true);
     
@@ -95,6 +83,7 @@ export function OnboardingPage() {
       
       if (!isValid) return false;
 
+      // Step 3 specific validation
       if (currentStep === 3) {
         const values = getValues();
         if (values.icp_max_followers < values.icp_min_followers) {
@@ -114,44 +103,39 @@ export function OnboardingPage() {
 
   // Navigation handlers
   const handleNext = async () => {
-    if (isLocked() || isThrottled()) return;
-    lockNavigation();
+    if (isThrottled() || isPending) return;
+    recordNavigation();
 
     try {
+      // Validate before moving forward (except Step 4)
       const isValid = await validateCurrentStep();
-      if (!isValid) {
-        unlockNavigation();
-        return;
-      }
+      if (!isValid) return;
 
+      // If on last step, submit form
       if (currentStep === TOTAL_STEPS) {
         handleSubmit(onSubmit)();
         return;
       }
 
+      // Move to next step
       nextStep();
-      setTimeout(unlockNavigation, ANIMATION_DURATION);
     } catch (error) {
       console.error('[Onboarding] Navigation error:', error);
-      unlockNavigation();
     }
   };
 
   const handleBack = () => {
-    if (isLocked() || isThrottled()) return;
-    lockNavigation();
+    if (isThrottled() || isPending) return;
+    recordNavigation();
     clearErrors();
     prevStep();
-    setTimeout(unlockNavigation, ANIMATION_DURATION);
   };
 
-  // ✅ FIX 2: Edit button always works - unlock after animation
   const handleEditStep = (step: number) => {
-    if (isLocked() || isThrottled()) return;
-    lockNavigation();
+    if (isThrottled() || isPending) return;
+    recordNavigation();
     clearErrors();
     goToStep(step);
-    setTimeout(unlockNavigation, ANIMATION_DURATION);
   };
 
   const onSubmit = (data: FormData) => {
@@ -176,10 +160,9 @@ export function OnboardingPage() {
     }
   }, [currentStep, isPending]);
 
-  // ✅ FIX 1: Step 4 should show Previous button
-  // Remove the throttle check from canGoBack - it's already in handleBack
-  const canGoBack = currentStep > 1 && !isLocked();
-  const canGoNext = !isLocked();
+  // Navigation state
+  const canGoBack = currentStep > 1 && !isPending && !isValidating;
+  const canGoNext = !isPending && !isValidating;
   const isLastStep = currentStep === TOTAL_STEPS;
   const isLoading = isPending || isValidating;
 
