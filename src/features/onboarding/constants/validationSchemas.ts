@@ -26,10 +26,10 @@ export type CommunicationTone = 'professional' | 'friendly' | 'casual';
 // =============================================================================
 
 export const step1Schema = z.object({
-  signature_name: z
+  full_name: z  // ✅ Changed from signature_name
     .string()
     .min(2, 'Name must be at least 2 characters')
-    .max(50, 'Name must be less than 50 characters')
+    .max(100, 'Name must be less than 100 characters')
     .trim(),
 });
 
