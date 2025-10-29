@@ -1,18 +1,22 @@
 // src/features/dashboard/layout/DashboardShell.tsx
+
 /**
- * DASHBOARD SHELL
+ * DASHBOARD SHELL - UPDATED
  * 
  * Outer container that assembles:
- * - Sidebar (240px fixed left)
- * - Header (64px fixed top)
+ * - Sidebar (240px fixed left, collapsible to 64px)
  * - Main content area (fills remaining space)
- * - Subtle background gradient overlay
+ * 
+ * CHANGES:
+ * - Now uses shared Sidebar component
+ * - Removed old separate Sidebar import
+ * - Removed Header (functionality moved to Sidebar)
+ * - Simplified to just Sidebar + main content
  */
 
 import { ReactNode } from 'react';
-import { Sidebar } from './Sidebar';
-import { Header } from './Header';
-import { WaveOverlay } from './WaveOverlay';
+import { Sidebar } from '@/shared/components/layout/Sidebar';
+import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
 // TYPES
@@ -27,19 +31,20 @@ interface DashboardShellProps {
 // =============================================================================
 
 export function DashboardShell({ children }: DashboardShellProps) {
+  const { isCollapsed } = useSidebarStore();
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Background Overlay */}
-      <WaveOverlay />
-
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Header */}
-      <Header />
-
-      {/* Main Content */}
-      <main className="ml-60 mt-16 p-6 min-h-[calc(100vh-4rem)]">
+      {/* Main Content - Adjusts margin based on sidebar state */}
+      <main
+        className={`
+          min-h-screen p-6 transition-[margin] duration-300
+          ${isCollapsed ? 'ml-16' : 'ml-60'}
+        `}
+      >
         {children}
       </main>
     </div>
