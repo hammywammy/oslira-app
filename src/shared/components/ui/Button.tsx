@@ -1,9 +1,18 @@
+// src/shared/components/ui/Button.tsx
+
 /**
- * @file Button Component
- * @description Type-safe, reusable button with variants
+ * BUTTON COMPONENT
+ * 
+ * Minimalist button following Linear design principles.
+ * Supports icons, loading states, and multiple variants.
+ * 
+ * USAGE:
+ * <Button variant="primary">Click me</Button>
+ * <Button variant="secondary" icon="mdi:plus" iconPosition="left">Add</Button>
  */
 
 import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Icon } from '@iconify/react';
 
 // =============================================================================
 // TYPES
@@ -15,23 +24,25 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   isLoading?: boolean;
   fullWidth?: boolean;
+  icon?: string; // Iconify icon name (e.g., "mdi:plus")
+  iconPosition?: 'left' | 'right';
 }
 
 // =============================================================================
-// STYLES (maps to your BEM classes)
+// STYLES
 // =============================================================================
 
 const variantStyles = {
-  primary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl',
-  secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-900',
-  outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
-  ghost: 'text-gray-600 hover:bg-gray-100',
+  primary: 'bg-primary text-white hover:bg-primary-600',
+  secondary: 'bg-muted-light text-text hover:bg-muted-100',
+  outline: 'border border-border text-text hover:bg-muted-light',
+  ghost: 'text-text hover:bg-muted-light',
 } as const;
 
 const sizeStyles = {
-  sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-base',
-  lg: 'px-8 py-4 text-lg',
+  sm: 'px-3 py-1.5 text-xs h-8',
+  md: 'px-4 py-2 text-sm h-10',
+  lg: 'px-6 py-3 text-base h-12',
 } as const;
 
 // =============================================================================
@@ -44,24 +55,21 @@ export function Button({
   children,
   isLoading = false,
   fullWidth = false,
+  icon,
+  iconPosition = 'left',
   className = '',
   disabled,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2';
   
   const widthStyles = fullWidth ? 'w-full' : '';
-  
-  const hoverStyles = variant === 'primary' 
-    ? 'hover:transform hover:-translate-y-1' 
-    : '';
 
   const combinedClassName = `
     ${baseStyles}
     ${variantStyles[variant]}
     ${sizeStyles[size]}
     ${widthStyles}
-    ${hoverStyles}
     ${className}
   `.trim().replace(/\s+/g, ' ');
 
@@ -72,7 +80,7 @@ export function Button({
       {...props}
     >
       {isLoading ? (
-        <span className="flex items-center justify-center gap-2">
+        <>
           <svg
             className="animate-spin h-4 w-4"
             fill="none"
@@ -93,12 +101,14 @@ export function Button({
             />
           </svg>
           <span>Loading...</span>
-        </span>
+        </>
       ) : (
-        children
+        <>
+          {icon && iconPosition === 'left' && <Icon icon={icon} width={16} />}
+          {children}
+          {icon && iconPosition === 'right' && <Icon icon={icon} width={16} />}
+        </>
       )}
     </button>
   );
 }
-
-export default Button;
