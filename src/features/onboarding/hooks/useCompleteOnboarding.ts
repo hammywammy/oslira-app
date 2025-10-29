@@ -85,11 +85,13 @@ async function pollGenerationProgress(runId: string): Promise<void> {
 
     console.log(`[Poll] Status: ${response.status}, Progress: ${response.progress}%`);
 
+    // ✅ BREAK LOOP ON COMPLETION
     if (response.status === 'complete') {
-      console.log('[Poll] Generation complete!');
-      return;
+      console.log('[Poll] Generation complete! Proceeding to dashboard...');
+      break; // Exit while loop immediately
     }
 
+    // ✅ THROW ERROR ON FAILURE
     if (response.status === 'failed') {
       throw new Error('Context generation failed');
     }
@@ -99,5 +101,8 @@ async function pollGenerationProgress(runId: string): Promise<void> {
     attempts++;
   }
 
-  throw new Error('Generation timeout - exceeded 60 seconds');
+  // ✅ EXPLICIT TIMEOUT CHECK
+  if (attempts >= maxAttempts) {
+    throw new Error('Generation timeout - exceeded 60 seconds');
+  }
 }
