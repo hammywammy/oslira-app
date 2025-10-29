@@ -43,15 +43,15 @@ export function Step1Personal() {
 
       {/* Form */}
       <motion.div variants={fadeInVariants}>
-        <FormInput
-          label="Your Name"
-          placeholder="John Smith"
-          icon={ICONS.user}
-          error={errors.signature_name?.message}
-          helperText="This will appear in your outreach messages"
-          required
-          {...register('signature_name')}
-        />
+<FormInput
+  label="Your Name"
+  placeholder="John Smith"
+  icon={ICONS.user}
+  error={errors.full_name?.message}  // ✅ Changed
+  helperText="This will appear in your outreach messages"
+  required
+  {...register('full_name')}  // ✅ Changed from signature_name
+/>
       </motion.div>
     </motion.div>
   );
