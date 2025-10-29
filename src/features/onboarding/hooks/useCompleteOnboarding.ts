@@ -146,48 +146,52 @@ async function pollGenerationProgress(runId: string): Promise<void> {
       });
 
       // ✅ CHECK FOR COMPLETION
-      if (response.status === 'complete') {
-        console.log('[Poll] 🎉 GENERATION COMPLETE!', {
-          timestamp: new Date().toISOString(),
-          final_progress: response.progress,
-          final_step: response.current_step,
-          total_attempts: attempts,
-          duration_seconds: attempts
-        });
-        break; // ✅ Exit loop immediately
-      }
+if (response.status === 'complete') {
+  console.log('[Poll] 🎉 GENERATION COMPLETE!', {
+    timestamp: new Date().toISOString(),
+    final_progress: response.progress,
+    final_step: response.current_step,
+    total_attempts: attempts,
+    duration_seconds: attempts
+  });
+  break; // ✅ Exit loop immediately
+}
 
-      // ✅ CHECK FOR FAILURE
-      if (response.status === 'failed') {
-        console.error('[Poll] ❌ Generation failed', {
-          timestamp: new Date().toISOString(),
-          status: response.status,
-          step: response.current_step,
-          attempts: attempts
-        });
-        throw new Error('Context generation failed');
-      }
+// ✅ CHECK FOR FAILURE
+if (response.status === 'failed') {
+  console.error('[Poll] ❌ Generation failed', {
+    timestamp: new Date().toISOString(),
+    status: response.status,
+    step: response.current_step,
+    attempts: attempts
+  });
+  throw new Error('Context generation failed');
+}
 
-      // ⚠️ DETECT STUCK AT 100%
-      if (response.status === 'processing' && response.progress === 100) {
-        stuckAt100Count++;
-        console.warn(`[Poll] ⚠️  Stuck at 100% (count: ${stuckAt100Count}/5)`, {
-          timestamp: new Date().toISOString(),
-          status: response.status,
-          progress: response.progress,
-          step: response.current_step
-        });
+// ⚠️ SAFETY: Detect if backend is stuck (should never happen with the fix)
+if (response.status === 'processing' && response.progress === 100) {
+  stuckAt100Count++;
+  console.warn(`[Poll] ⚠️  Backend stuck at 100% (count: ${stuckAt100Count}/10)`, {
+    timestamp: new Date().toISOString(),
+    status: response.status,
+    progress: response.progress,
+    step: response.current_step,
+    warning: 'This indicates a backend /complete endpoint failure'
+  });
 
-        if (stuckAt100Count >= 5) {
-          console.warn('[Poll] 🛑 Forcing exit - stuck at 100% for 5 seconds', {
-            timestamp: new Date().toISOString(),
-            final_step: response.current_step
-          });
-          break; // Force exit after 5 seconds at 100%
-        }
-      } else {
-        stuckAt100Count = 0; // Reset counter
-      }
+  // Give backend 10 seconds (increased from 5) before forcing through
+  if (stuckAt100Count >= 10) {
+    console.error('[Poll] 🛑 CRITICAL: Backend failed to mark complete after 10 seconds', {
+      timestamp: new Date().toISOString(),
+      final_step: response.current_step,
+      recommendation: 'Check backend logs for /complete endpoint errors'
+    });
+    // Force completion as fallback (backend already did the work)
+    break;
+  }
+} else {
+  stuckAt100Count = 0; // Reset counter
+}
 
       // Wait 1 second before next poll
       await new Promise(resolve => setTimeout(resolve, 1000));
