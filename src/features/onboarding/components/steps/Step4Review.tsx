@@ -52,45 +52,45 @@ export function Step4Review({ onEditStep }: Step4ReviewProps) {
   const values = getValues();
 
   const sections = [
-    {
-      step: 1,
-      title: 'Your Identity',
-      items: [
-        { label: 'Name', value: values.signature_name },
-      ],
-    },
-    {
-      step: 2,
-      title: 'Your Business',
-      items: [
-        { 
-          label: 'Business Summary', 
-          value: truncateText(values.business_summary || '', 200),
-          fullValue: values.business_summary 
-        },
-        { label: 'Communication Tone', value: formatTone(values.communication_tone as string | undefined) },
-      ],
-    },
-    {
-      step: 3,
-      title: 'Your Ideal Customer',
-      items: [
-        { 
-          label: 'Target Description', 
-          value: truncateText(values.target_description || '', 200),
-          fullValue: values.target_description 
-        },
-        { 
-          label: 'Follower Range', 
-          value: `${values.icp_min_followers?.toLocaleString() || 0} - ${values.icp_max_followers?.toLocaleString() || 0}` 
-        },
-        { 
-          label: 'Company Sizes', 
-          value: formatCompanySizes(values.target_company_sizes as string[] | undefined) 
-        },
-      ],
-    },
-  ];
+  {
+    step: 1,
+    title: 'Your Identity',
+    items: [
+      { label: 'Name', value: values.full_name },  // ✅ Changed from signature_name
+    ],
+  },
+  {
+    step: 2,
+    title: 'Your Business',
+    items: [
+      { 
+        label: 'Business Summary', 
+        value: truncateText(values.business_summary || '', 200),
+        fullValue: values.business_summary 
+      },
+      { label: 'Communication Tone', value: formatTone(values.communication_tone as string | undefined) },
+    ],
+  },
+  {
+    step: 3,
+    title: 'Your Ideal Customer',
+    items: [
+      { 
+        label: 'Target Description', 
+        value: truncateText(values.target_description || '', 200),
+        fullValue: values.target_description 
+      },
+      { 
+        label: 'Follower Range', 
+        value: `${values.icp_min_followers?.toLocaleString() || 0} - ${values.icp_max_followers?.toLocaleString() || 0}` 
+      },
+      { 
+        label: 'Company Sizes', 
+        value: formatCompanySizes(values.target_company_sizes as string[] | undefined) 
+      },
+    ],
+  },
+];
 
   return (
     <motion.div
