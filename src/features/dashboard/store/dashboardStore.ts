@@ -1,0 +1,153 @@
+// src/features/dashboard/store/dashboardStore.ts
+/**
+ * DASHBOARD STORE (Zustand)
+ * 
+ * Global state management for dashboard
+ * - Leads state
+ * - Selected leads (bulk selection)
+ * - Filters (before applying to URL)
+ * - Modals (research, bulk, details)
+ * - UI state (sidebar, queue panel)
+ */
+
+import { create } from 'zustand';
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+interface Lead {
+  id: string;
+  username: string;
+  platform: 'instagram';
+  overall_score: number | null;
+  analysis_type: 'light' | 'deep' | 'xray' | null;
+  analysis_status: 'pending' | 'processing' | 'complete' | 'failed';
+  full_name: string | null;
+  avatar_url: string | null;
+  followers_count: number | null;
+  created_at: string;
+}
+
+interface FilterState {
+  platform?: string;
+  analysisType?: string;
+  scoreMin?: number;
+  scoreMax?: number;
+  search?: string;
+}
+
+interface ModalState {
+  research: boolean;
+  bulk: boolean;
+  details: string | null; // lead ID
+  filter: boolean;
+}
+
+interface UIState {
+  sidebarCollapsed: boolean;
+  queuePanelOpen: boolean;
+}
+
+interface DashboardState {
+  // Leads data
+  leads: Lead[];
+  selectedLeadIds: string[];
+  
+  // Filters (ephemeral, before applying to URL)
+  filters: FilterState;
+  
+  // Modals
+  modals: ModalState;
+  
+  // UI
+  ui: UIState;
+  
+  // Actions
+  setLeads: (leads: Lead[]) => void;
+  selectLead: (id: string) => void;
+  toggleLeadSelection: (id: string) => void;
+  selectAllLeads: () => void;
+  clearSelection: () => void;
+  
+  setFilters: (filters: FilterState) => void;
+  clearFilters: () => void;
+  
+  openModal: (type: keyof ModalState, context?: string) => void;
+  closeModal: (type: keyof ModalState) => void;
+  
+  toggleSidebar: () => void;
+  toggleQueuePanel: () => void;
+}
+
+// =============================================================================
+// STORE
+// =============================================================================
+
+export const useDashboardStore = create<DashboardState>((set, get) => ({
+  // Initial state
+  leads: [],
+  selectedLeadIds: [],
+  filters: {},
+  modals: {
+    research: false,
+    bulk: false,
+    details: null,
+    filter: false,
+  },
+  ui: {
+    sidebarCollapsed: false,
+    queuePanelOpen: false,
+  },
+
+  // Lead actions
+  setLeads: (leads) => set({ leads }),
+  
+  selectLead: (id) => set({ selectedLeadIds: [id] }),
+  
+  toggleLeadSelection: (id) => set((state) => ({
+    selectedLeadIds: state.selectedLeadIds.includes(id)
+      ? state.selectedLeadIds.filter((leadId) => leadId !== id)
+      : [...state.selectedLeadIds, id],
+  })),
+  
+  selectAllLeads: () => set((state) => ({
+    selectedLeadIds: state.leads.map((lead) => lead.id),
+  })),
+  
+  clearSelection: () => set({ selectedLeadIds: [] }),
+
+  // Filter actions
+  setFilters: (filters) => set({ filters }),
+  clearFilters: () => set({ filters: {} }),
+
+  // Modal actions
+  openModal: (type, context) => set((state) => ({
+    modals: {
+      ...state.modals,
+      [type]: type === 'details' ? context ?? true : true,
+    },
+  })),
+  
+  closeModal: (type) => set((state) => ({
+    modals: {
+      ...state.modals,
+      [type]: type === 'details' ? null : false,
+    },
+  })),
+
+  // UI actions
+  toggleSidebar: () => set((state) => ({
+    ui: {
+      ...state.ui,
+      sidebarCollapsed: !state.ui.sidebarCollapsed,
+    },
+  })),
+  
+  toggleQueuePanel: () => set((state) => ({
+    ui: {
+      ...state.ui,
+      queuePanelOpen: !state.ui.queuePanelOpen,
+    },
+  })),
+}));
