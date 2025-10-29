@@ -1,7 +1,7 @@
 // src/features/onboarding/hooks/useCompleteOnboarding.ts
 
 /**
- * COMPLETE ONBOARDING HOOK - SIMPLIFIED
+ * COMPLETE ONBOARDING HOOK - WITH EXTENSIVE DIAGNOSTIC LOGGING
  * 
  * Sends EXACTLY what the form collects.
  * No nested objects. No transformations. No bullshit.
@@ -38,6 +38,16 @@ export function useCompleteOnboarding() {
 
   return useMutation({
     mutationFn: async (formData: FormData) => {
+      console.log('[CompleteOnboarding] 🚀 Starting mutation', {
+        timestamp: new Date().toISOString(),
+        formData: {
+          full_name: formData.full_name,
+          signature_name: formData.signature_name,
+          has_business_summary: !!formData.business_summary,
+          has_target_description: !!formData.target_description,
+        }
+      });
+
       // Send the form data EXACTLY as-is
       // Backend will handle transformation to workflow format
       const response = await httpClient.post<OnboardingCompleteResponse>(
@@ -45,25 +55,56 @@ export function useCompleteOnboarding() {
         formData // ✅ Send flat structure directly
       );
 
+      console.log('[CompleteOnboarding] ✅ Mutation response received', {
+        timestamp: new Date().toISOString(),
+        run_id: response.data.run_id,
+        status: response.data.status,
+        message: response.data.message
+      });
+
       return response;
     },
 
     onSuccess: async (response) => {
-      console.log('[CompleteOnboarding] Context generation started:', response.data.run_id);
+      console.log('[CompleteOnboarding] 🎯 onSuccess triggered', {
+        timestamp: new Date().toISOString(),
+        run_id: response.data.run_id
+      });
 
       // Poll for completion
       const runId = response.data.run_id;
+      console.log('[CompleteOnboarding] ⏳ Starting polling for run_id:', runId);
+      
       await pollGenerationProgress(runId);
+      
+      console.log('[CompleteOnboarding] ✅ Polling complete');
 
       // Refresh user data (onboarding_completed will be true)
-      await refreshUser();
+      console.log('[CompleteOnboarding] 🔄 Refreshing user data...');
+      try {
+        await refreshUser();
+        console.log('[CompleteOnboarding] ✅ User data refreshed');
+      } catch (refreshError: any) {
+        console.warn('[CompleteOnboarding] ⚠️  User refresh failed (proceeding anyway)', {
+          error: refreshError.message,
+          timestamp: new Date().toISOString()
+        });
+        // Don't throw - Worker already completed successfully
+      }
 
       // Navigate to dashboard
+      console.log('[CompleteOnboarding] 🧭 Navigating to dashboard', {
+        timestamp: new Date().toISOString()
+      });
       navigate('/dashboard', { replace: true });
     },
 
     onError: (error: any) => {
-      console.error('[CompleteOnboarding] Error:', error);
+      console.error('[CompleteOnboarding] ❌ Error in mutation flow', {
+        timestamp: new Date().toISOString(),
+        error: error.message,
+        stack: error.stack
+      });
     },
   });
 }
@@ -75,34 +116,113 @@ export function useCompleteOnboarding() {
 async function pollGenerationProgress(runId: string): Promise<void> {
   const maxAttempts = 60; // 60 seconds max (1 poll per second)
   let attempts = 0;
+  let stuckAt100Count = 0;
+
+  console.log('[Poll] 🔍 Starting progress polling', {
+    timestamp: new Date().toISOString(),
+    run_id: runId,
+    max_attempts: maxAttempts
+  });
 
   while (attempts < maxAttempts) {
-    const response = await httpClient.get<{
-      status: 'pending' | 'processing' | 'complete' | 'failed';
-      progress: number;
-      current_step: string;
-    }>(`/api/business/generate-context/${runId}/progress`);
-
-    console.log(`[Poll] Status: ${response.status}, Progress: ${response.progress}%`);
-
-    // ✅ BREAK LOOP ON COMPLETION
-    if (response.status === 'complete') {
-      console.log('[Poll] Generation complete! Proceeding to dashboard...');
-      break; // Exit while loop immediately
-    }
-
-    // ✅ THROW ERROR ON FAILURE
-    if (response.status === 'failed') {
-      throw new Error('Context generation failed');
-    }
-
-    // Wait 1 second before next poll
-    await new Promise(resolve => setTimeout(resolve, 1000));
     attempts++;
+
+    try {
+      const response = await httpClient.get<{
+        status: 'pending' | 'processing' | 'complete' | 'failed';
+        progress: number;
+        current_step: string;
+      }>(`/api/business/generate-context/${runId}/progress`);
+
+      // Log every poll with full context
+      console.log(`[Poll #${attempts}] 📊 Progress update`, {
+        timestamp: new Date().toISOString(),
+        status: response.status,
+        progress: response.progress,
+        step: response.current_step,
+        attempt: attempts,
+        max_attempts: maxAttempts
+      });
+
+      // ✅ CHECK FOR COMPLETION
+      if (response.status === 'complete') {
+        console.log('[Poll] 🎉 GENERATION COMPLETE!', {
+          timestamp: new Date().toISOString(),
+          final_progress: response.progress,
+          final_step: response.current_step,
+          total_attempts: attempts,
+          duration_seconds: attempts
+        });
+        break; // ✅ Exit loop immediately
+      }
+
+      // ✅ CHECK FOR FAILURE
+      if (response.status === 'failed') {
+        console.error('[Poll] ❌ Generation failed', {
+          timestamp: new Date().toISOString(),
+          status: response.status,
+          step: response.current_step,
+          attempts: attempts
+        });
+        throw new Error('Context generation failed');
+      }
+
+      // ⚠️ DETECT STUCK AT 100%
+      if (response.status === 'processing' && response.progress === 100) {
+        stuckAt100Count++;
+        console.warn(`[Poll] ⚠️  Stuck at 100% (count: ${stuckAt100Count}/5)`, {
+          timestamp: new Date().toISOString(),
+          status: response.status,
+          progress: response.progress,
+          step: response.current_step
+        });
+
+        if (stuckAt100Count >= 5) {
+          console.warn('[Poll] 🛑 Forcing exit - stuck at 100% for 5 seconds', {
+            timestamp: new Date().toISOString(),
+            final_step: response.current_step
+          });
+          break; // Force exit after 5 seconds at 100%
+        }
+      } else {
+        stuckAt100Count = 0; // Reset counter
+      }
+
+      // Wait 1 second before next poll
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+    } catch (pollError: any) {
+      console.error(`[Poll #${attempts}] ❌ Poll request failed`, {
+        timestamp: new Date().toISOString(),
+        error: pollError.message,
+        attempt: attempts,
+        will_retry: attempts < maxAttempts - 1
+      });
+
+      // If not last attempt, continue polling
+      if (attempts < maxAttempts - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        continue;
+      }
+
+      // Last attempt failed - throw error
+      throw pollError;
+    }
   }
 
-  // ✅ EXPLICIT TIMEOUT CHECK
+  // ✅ CHECK FOR TIMEOUT
   if (attempts >= maxAttempts) {
+    console.error('[Poll] ⏰ TIMEOUT - exceeded max attempts', {
+      timestamp: new Date().toISOString(),
+      attempts: attempts,
+      max_attempts: maxAttempts,
+      duration_seconds: maxAttempts
+    });
     throw new Error('Generation timeout - exceeded 60 seconds');
   }
+
+  console.log('[Poll] ✅ Polling loop exited successfully', {
+    timestamp: new Date().toISOString(),
+    total_attempts: attempts
+  });
 }
