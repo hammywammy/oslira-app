@@ -4,8 +4,7 @@
  * COMPLETE ONBOARDING HOOK - WITH EXTENSIVE DIAGNOSTIC LOGGING
  * 
  * Sends EXACTLY what the form collects.
- * No nested objects. No transformations. No bullshit.
- * Backend handles the mapping.
+ * Backend derives signature_name from full_name.
  */
 
 import { useMutation } from '@tanstack/react-query';
@@ -42,17 +41,19 @@ export function useCompleteOnboarding() {
         timestamp: new Date().toISOString(),
         formData: {
           full_name: formData.full_name,
-          signature_name: formData.signature_name,
           has_business_summary: !!formData.business_summary,
           has_target_description: !!formData.target_description,
+          communication_tone: formData.communication_tone,
+          follower_range: `${formData.icp_min_followers}-${formData.icp_max_followers}`,
+          company_sizes_count: formData.target_company_sizes?.length || 0
         }
       });
 
       // Send the form data EXACTLY as-is
-      // Backend will handle transformation to workflow format
+      // Backend derives signature_name from full_name
       const response = await httpClient.post<OnboardingCompleteResponse>(
         '/api/business/generate-context',
-        formData // ✅ Send flat structure directly
+        formData
       );
 
       console.log('[CompleteOnboarding] ✅ Mutation response received', {
