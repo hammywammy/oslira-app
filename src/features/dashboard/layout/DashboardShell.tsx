@@ -1,17 +1,19 @@
 // src/features/dashboard/layout/DashboardShell.tsx
 
 /**
- * DASHBOARD SHELL - UPDATED
+ * DASHBOARD SHELL - OSLIRA PRODUCTION
  * 
- * Outer container that assembles:
- * - Sidebar (240px fixed left, collapsible to 64px)
- * - Main content area (fills remaining space)
+ * Outer container that assembles the dashboard layout.
+ * Sidebar + main content area with proper spacing.
  * 
- * CHANGES:
- * - Now uses shared Sidebar component
- * - Removed old separate Sidebar import
- * - Removed Header (functionality moved to Sidebar)
- * - Simplified to just Sidebar + main content
+ * LAYOUT:
+ * - Sidebar: Fixed left (240px, collapses to 64px)
+ * - Main: Fills remaining space, adjusts margin
+ * 
+ * USAGE:
+ * <DashboardShell>
+ *   <YourPageContent />
+ * </DashboardShell>
  */
 
 import { ReactNode } from 'react';
@@ -41,11 +43,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
       {/* Main Content - Adjusts margin based on sidebar state */}
       <main
         className={`
-          min-h-screen p-6 transition-[margin] duration-300
+          min-h-screen p-6 transition-[margin] duration-200
           ${isCollapsed ? 'ml-16' : 'ml-60'}
         `}
       >
-        {children}
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );
