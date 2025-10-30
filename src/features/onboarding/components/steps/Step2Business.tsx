@@ -1,10 +1,11 @@
 // src/features/onboarding/components/steps/Step2Business.tsx
-// COLOR FIX: Changed purple-500 to primary-500, purple-400 to primary-400
+// SCHEMA FIX: Removed industry field (not in actual schema)
+// RING FIX: Changed purple to primary colors
 
 import { useFormContext } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { FormInput, FormTextarea } from '@/features/onboarding/components/FormInput';
+import { FormTextarea } from '@/features/onboarding/components/FormInput';
 import type { FormData } from '@/features/onboarding/constants/validationSchemas';
 
 // =============================================================================
@@ -13,11 +14,8 @@ import type { FormData } from '@/features/onboarding/constants/validationSchemas
 
 const ICONS = {
   briefcase: 'lucide:briefcase',
-  target: 'lucide:target',
   wand: 'lucide:wand-sparkles',
-  checkCircle: 'lucide:check-circle',
   messageCircle: 'lucide:message-circle',
-  megaphone: 'lucide:megaphone',
   handshake: 'lucide:handshake',
 } as const;
 
@@ -121,28 +119,11 @@ export function Step2Business() {
         </div>
       </motion.div>
 
-      {/* SECTION 2: Industry */}
+      {/* SECTION 2: Communication Tone */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="space-y-4"
-      >
-        <FormInput
-          label="Industry"
-          placeholder="e.g., Marketing, Design, Development, Consulting"
-          icon={ICONS.target}
-          error={errors.industry}
-          required
-          {...register('industry')}
-        />
-      </motion.div>
-
-      {/* SECTION 3: Communication Tone */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
         className="space-y-4"
       >
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
