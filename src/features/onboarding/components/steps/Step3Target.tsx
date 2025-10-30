@@ -1,56 +1,67 @@
 // src/features/onboarding/components/steps/Step3Target.tsx
+// RING FIX: Changed ring-purple-500 to ring-primary-500 in CustomNumberInput
 
-/**
- * STEP 3: TARGET CUSTOMER
- * 
- * FIXES:
- * ✅ Company size cards are fully clickable (not just checkbox)
- * ✅ Added employee count ranges
- * ✅ Better visual styling and hover states
- * ✅ Custom checkbox design matching app style
- */
-
+import { useFormContext } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { FormTextarea } from '../FormInput';
-import { RefinementCallout } from '../RefinementCallout';
-import { ICONS } from '../../constants/icons';
-import { fadeInVariants, containerVariants } from '../../animations/variants';
-import { useFormContext } from 'react-hook-form';
-import type { FormData, TargetCompanySize } from '../../constants/validationSchemas';
+import { FormTextarea } from '@/features/onboarding/components/FormInput';
+import type { FormData } from '@/features/onboarding/constants/validationSchemas';
+import { useState } from 'react';
 
 // =============================================================================
-// DATA
+// CONSTANTS
 // =============================================================================
 
-const companySizeOptions: Array<{ 
-  value: TargetCompanySize; 
-  label: string; 
-  description: string;
-  employees: string;
-}> = [
+const ICONS = {
+  users: 'lucide:users',
+  target: 'lucide:target',
+  building: 'lucide:building-2',
+  check: 'lucide:check',
+  minus: 'lucide:minus',
+  plus: 'lucide:plus',
+  alertCircle: 'lucide:alert-circle',
+} as const;
+
+const companySizeOptions = [
   {
-    value: 'startup',
-    label: 'Startups',
-    description: 'Early-stage companies, lean teams',
-    employees: '1-50 employees',
+    value: 'solopreneur',
+    label: 'Solopreneur',
+    employees: '1',
+    description: 'Independent professionals',
+    icon: ICONS.users,
   },
   {
-    value: 'smb',
-    label: 'Small & Medium',
-    description: 'Established businesses, growing teams',
-    employees: '51-500 employees',
+    value: 'small',
+    label: 'Small',
+    employees: '2-10',
+    description: 'Small teams & agencies',
+    icon: ICONS.users,
+  },
+  {
+    value: 'medium',
+    label: 'Medium',
+    employees: '11-50',
+    description: 'Growing businesses',
+    icon: ICONS.building,
+  },
+  {
+    value: 'large',
+    label: 'Large',
+    employees: '51-200',
+    description: 'Established companies',
+    icon: ICONS.building,
   },
   {
     value: 'enterprise',
     label: 'Enterprise',
-    description: 'Large corporations, complex structures',
-    employees: '500+ employees',
+    employees: '200+',
+    description: 'Large organizations',
+    icon: ICONS.building,
   },
 ];
 
 // =============================================================================
-// CUSTOM NUMBER INPUT COMPONENT
+// CUSTOM NUMBER INPUT
 // =============================================================================
 
 interface NumberInputProps {
@@ -82,7 +93,7 @@ function CustomNumberInput({ label, value, onChange, error, min = 0, max = 10000
   return (
     <div className="space-y-2">
       <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-        {icon && <Icon icon={icon} className="text-lg text-purple-400" />}
+        {icon && <Icon icon={icon} className="text-lg text-primary-400" />}
         {label}
       </label>
 
@@ -101,7 +112,7 @@ function CustomNumberInput({ label, value, onChange, error, min = 0, max = 10000
           onChange={handleInputChange}
           min={min}
           max={max}
-          className="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
+          className="flex-1 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-white text-center focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500"
         />
 
         <button
@@ -154,86 +165,129 @@ export function Step3Target() {
     return 'Great detail!';
   };
 
-  // Company size toggle
-  const toggleCompanySize = (size: TargetCompanySize) => {
-    const current = selectedSizes;
-    if (current.includes(size)) {
-      setValue('target_company_sizes', current.filter((s: TargetCompanySize) => s !== size));
-    } else {
-      setValue('target_company_sizes', [...current, size]);
-    }
+  const toggleSize = (size: string) => {
+    const newSizes = selectedSizes.includes(size)
+      ? selectedSizes.filter((s) => s !== size)
+      : [...selectedSizes, size];
+    setValue('target_company_sizes', newSizes, { shouldValidate: true });
   };
 
   return (
     <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      className="space-y-8"
     >
-      {/* Header */}
-      <motion.div variants={fadeInVariants} className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-white">
-          Who is your ideal customer?
-        </h2>
-        <p className="text-slate-400">
-          Describe the Instagram accounts you want to target
-        </p>
-      </motion.div>
+      {/* SECTION 1: Target Audience Description */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mt-1">
+            <Icon icon={ICONS.target} className="w-5 h-5 text-primary-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-2">
+              Who are you trying to reach?
+            </h3>
+            <p className="text-sm text-slate-400">
+              Describe your ideal customers. Be specific about their roles, industries, and characteristics.
+            </p>
+          </div>
+        </div>
 
-      {/* Refinement Callout */}
-      <motion.div variants={fadeInVariants}>
-        <RefinementCallout />
-      </motion.div>
-
-      {/* Target Description */}
-      <motion.div variants={fadeInVariants} className="space-y-2">
         <FormTextarea
-          label="Describe Your Ideal Customer"
-          placeholder="Example: Health and wellness coaches with engaged audiences who promote holistic living, natural remedies, and mindfulness. They create educational content about nutrition, fitness routines, and mental health. Their followers are typically women aged 25-45 interested in self-improvement..."
+          label="Target Audience"
+          placeholder="e.g., I help SaaS founders who are frustrated with low conversion rates and want to create compelling copy that actually converts visitors into paying customers..."
+          icon={ICONS.users}
           rows={8}
-          maxLength={750}
-          error={errors.target_description?.message}
+          maxLength={500}
+          error={errors.target_description}
+          required
           {...register('target_description')}
         />
 
+        {/* Character Counter */}
         <div className="flex items-center justify-between text-sm">
           <span className={`font-medium ${getCharCountColor()}`}>
             {getCharCountLabel()}
           </span>
           <span className="text-slate-500">
-            {charCount} / 750 characters
+            {charCount} / 500
           </span>
         </div>
       </motion.div>
 
-      {/* Follower Range */}
-      <motion.div variants={fadeInVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <CustomNumberInput
-          label="Minimum Followers"
-          value={minFollowers}
-          onChange={(val) => setValue('icp_min_followers', val)}
-          error={errors.icp_min_followers?.message}
-          icon={ICONS.trendingUp}
-        />
+      {/* SECTION 2: Follower Range */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mt-1">
+            <Icon icon="lucide:users" className="w-5 h-5 text-primary-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-2">
+              Follower Range
+            </h3>
+            <p className="text-sm text-slate-400">
+              Set the minimum and maximum follower count for your ideal leads.
+            </p>
+          </div>
+        </div>
 
-        <CustomNumberInput
-          label="Maximum Followers"
-          value={maxFollowers}
-          onChange={(val) => setValue('icp_max_followers', val)}
-          error={errors.icp_max_followers?.message}
-          icon={ICONS.trendingUp}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CustomNumberInput
+            label="Minimum Followers"
+            value={minFollowers}
+            onChange={(val) => setValue('icp_min_followers', val, { shouldValidate: true })}
+            icon="lucide:trending-up"
+            min={0}
+            max={10000000}
+            error={errors.icp_min_followers?.message}
+          />
+
+          <CustomNumberInput
+            label="Maximum Followers"
+            value={maxFollowers}
+            onChange={(val) => setValue('icp_max_followers', val, { shouldValidate: true })}
+            icon="lucide:trending-up"
+            min={0}
+            max={10000000}
+            error={errors.icp_max_followers?.message}
+          />
+        </div>
       </motion.div>
 
-      {/* Company Size Selection - FULLY CLICKABLE CARDS */}
-      <motion.div variants={fadeInVariants} className="space-y-3">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Icon icon={ICONS.building} className="text-lg text-purple-400" />
-          Target Company Sizes (Optional)
-        </label>
+      {/* SECTION 3: Company Size */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mt-1">
+            <Icon icon={ICONS.building} className="w-5 h-5 text-primary-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-2">
+              Company Size <span className="text-slate-500 font-normal text-base">(optional)</span>
+            </h3>
+            <p className="text-sm text-slate-400">
+              Select all company sizes you want to target. Leave blank if size doesn't matter.
+            </p>
+          </div>
+        </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {companySizeOptions.map((option) => {
             const isSelected = selectedSizes.includes(option.value);
 
@@ -241,27 +295,27 @@ export function Step3Target() {
               <motion.button
                 key={option.value}
                 type="button"
-                onClick={() => toggleCompanySize(option.value)}
+                onClick={() => toggleSize(option.value)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className={`
-                  w-full text-left p-4 rounded-xl border-2 transition-all
+                  p-4 rounded-xl border-2 text-left transition-all duration-200
                   ${
                     isSelected
-                      ? 'bg-purple-500/10 border-purple-500 shadow-lg shadow-purple-500/20'
-                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600 hover:bg-slate-800/70'
+                      ? 'bg-primary-500/10 border-primary-500'
+                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                   }
                 `}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
               >
-                <div className="flex items-start gap-4">
-                  {/* Custom Checkbox */}
-                  <div className="flex items-center justify-center w-6 h-6 mt-0.5 flex-shrink-0">
+                <div className="flex items-start gap-3">
+                  {/* Checkbox */}
+                  <div className="flex-shrink-0 mt-0.5">
                     <div
                       className={`
-                        w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all
+                        w-5 h-5 rounded border-2 flex items-center justify-center transition-all
                         ${
                           isSelected
-                            ? 'bg-purple-500 border-purple-500'
+                            ? 'bg-primary-500 border-primary-500'
                             : 'border-slate-600 bg-slate-900/50'
                         }
                       `}
