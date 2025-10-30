@@ -19,6 +19,7 @@ import { ReactNode } from 'react';
 
 export interface BadgeProps {
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'primary' | 'info' | 'neutral';
+  size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
   className?: string;
 }
@@ -28,7 +29,8 @@ export interface BadgeProps {
 // =============================================================================
 
 export function Badge({ 
-  variant = 'default', 
+  variant = 'default',
+  size = 'md',
   children,
   className = '' 
 }: BadgeProps) {
@@ -42,11 +44,18 @@ export function Badge({
     neutral: 'bg-muted-light text-muted-600',
   };
 
+  const sizeStyles = {
+    sm: 'px-2 py-0.5 text-xs',
+    md: 'px-2 py-1 text-xs',
+    lg: 'px-3 py-1.5 text-sm',
+  };
+
   return (
     <span
       className={`
-        inline-flex items-center px-2 py-1 rounded-md text-xs font-medium
+        inline-flex items-center rounded-md font-medium
         ${variantStyles[variant]}
+        ${sizeStyles[size]}
         ${className}
       `.trim().replace(/\s+/g, ' ')}
     >
