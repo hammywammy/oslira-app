@@ -1,14 +1,20 @@
 // src/shared/components/ui/Badge.tsx
 
 /**
- * BADGE COMPONENT
+ * BADGE COMPONENT - OSLIRA PRODUCTION
  * 
  * Minimalist status badges for tables and UI elements.
- * Follows 3-5-7 color system.
+ * Semantic color variants matching 3-5-7 system.
+ * 
+ * FEATURES:
+ * - 6 semantic variants (success, warning, danger, primary, neutral, info)
+ * - 3 sizes: sm, md, lg
+ * - Consistent with design system colors
  * 
  * USAGE:
- * <Badge variant="success">Active</Badge>
- * <Badge variant="warning">Pending</Badge>
+ * <Badge variant="success">Complete</Badge>
+ * <Badge variant="warning" size="sm">Pending</Badge>
+ * <Badge variant="info">Deep</Badge>
  */
 
 import { ReactNode } from 'react';
@@ -18,7 +24,7 @@ import { ReactNode } from 'react';
 // =============================================================================
 
 export interface BadgeProps {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'primary' | 'info' | 'neutral';
+  variant?: 'success' | 'warning' | 'danger' | 'primary' | 'neutral' | 'info';
   size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
   className?: string;
@@ -29,36 +35,40 @@ export interface BadgeProps {
 // =============================================================================
 
 export function Badge({ 
-  variant = 'default',
-  size = 'md',
+  variant = 'neutral',
+  size = 'sm',
   children,
   className = '' 
 }: BadgeProps) {
-  const variantStyles = {
-    default: 'bg-muted-light text-muted-600',
-    success: 'bg-success-50 text-success-700',
-    warning: 'bg-warning-50 text-warning-700',
-    danger: 'bg-danger-50 text-danger-700',
-    primary: 'bg-primary-50 text-primary-700',
-    info: 'bg-primary-50 text-primary-700',
-    neutral: 'bg-muted-light text-muted-600',
+  
+  // Variant Styles (using light backgrounds + darker text)
+  const variantClasses = {
+    success: 'bg-success-light text-success-700 border-success-200',
+    warning: 'bg-warning-light text-warning-700 border-warning-200',
+    danger: 'bg-danger-light text-danger-700 border-danger-200',
+    primary: 'bg-primary-light text-primary-700 border-primary-200',
+    info: 'bg-primary-light text-primary-700 border-primary-200',
+    neutral: 'bg-muted-light text-muted-700 border-muted-200',
   };
-
-  const sizeStyles = {
+  
+  // Size Styles
+  const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
-    md: 'px-2 py-1 text-xs',
+    md: 'px-2.5 py-1 text-xs',
     lg: 'px-3 py-1.5 text-sm',
   };
-
+  
+  // Base Classes
+  const baseClasses = [
+    'inline-flex items-center justify-center',
+    'font-medium rounded-md border',
+    variantClasses[variant],
+    sizeClasses[size],
+    className,
+  ].filter(Boolean).join(' ');
+  
   return (
-    <span
-      className={`
-        inline-flex items-center rounded-md font-medium
-        ${variantStyles[variant]}
-        ${sizeStyles[size]}
-        ${className}
-      `.trim().replace(/\s+/g, ' ')}
-    >
+    <span className={baseClasses}>
       {children}
     </span>
   );
