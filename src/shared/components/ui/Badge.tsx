@@ -18,7 +18,7 @@ import { ReactNode } from 'react';
 // =============================================================================
 
 export interface BadgeProps {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'primary';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'primary' | 'info' | 'neutral';
   children: ReactNode;
   className?: string;
 }
@@ -38,6 +38,8 @@ export function Badge({
     warning: 'bg-warning-50 text-warning-700',
     danger: 'bg-danger-50 text-danger-700',
     primary: 'bg-primary-50 text-primary-700',
+    info: 'bg-primary-50 text-primary-700',
+    neutral: 'bg-muted-light text-muted-600',
   };
 
   return (
