@@ -1,12 +1,13 @@
 // src/features/onboarding/components/steps/Step3Target.tsx
-// RING FIX: Changed ring-purple-500 to ring-primary-500 in CustomNumberInput
+// SCHEMA FIX: Use correct company size values (startup, smb, enterprise)
+// TYPESCRIPT FIX: Proper type casting for array operations
+// RING FIX: Changed purple to primary colors
 
 import { useFormContext } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { FormTextarea } from '@/features/onboarding/components/FormInput';
-import type { FormData } from '@/features/onboarding/constants/validationSchemas';
-import { useState } from 'react';
+import type { FormData, TargetCompanySize } from '@/features/onboarding/constants/validationSchemas';
 
 // =============================================================================
 // CONSTANTS
@@ -22,41 +23,29 @@ const ICONS = {
   alertCircle: 'lucide:alert-circle',
 } as const;
 
-const companySizeOptions = [
+const companySizeOptions: Array<{ 
+  value: TargetCompanySize; 
+  label: string; 
+  description: string;
+  employees: string;
+}> = [
   {
-    value: 'solopreneur',
-    label: 'Solopreneur',
-    employees: '1',
-    description: 'Independent professionals',
-    icon: ICONS.users,
+    value: 'startup',
+    label: 'Startups',
+    description: 'Early-stage companies, lean teams',
+    employees: '1-50 employees',
   },
   {
-    value: 'small',
-    label: 'Small',
-    employees: '2-10',
-    description: 'Small teams & agencies',
-    icon: ICONS.users,
-  },
-  {
-    value: 'medium',
-    label: 'Medium',
-    employees: '11-50',
-    description: 'Growing businesses',
-    icon: ICONS.building,
-  },
-  {
-    value: 'large',
-    label: 'Large',
-    employees: '51-200',
-    description: 'Established companies',
-    icon: ICONS.building,
+    value: 'smb',
+    label: 'Small & Medium',
+    description: 'Established businesses, growing teams',
+    employees: '51-500 employees',
   },
   {
     value: 'enterprise',
     label: 'Enterprise',
-    employees: '200+',
-    description: 'Large organizations',
-    icon: ICONS.building,
+    description: 'Large corporations, complex structures',
+    employees: '500+ employees',
   },
 ];
 
@@ -149,7 +138,7 @@ export function Step3Target() {
   const targetDescription = watch('target_description') || '';
   const minFollowers = watch('icp_min_followers') || 0;
   const maxFollowers = watch('icp_max_followers') || 0;
-  const selectedSizes = watch('target_company_sizes') || [];
+  const selectedSizes = (watch('target_company_sizes') || []) as TargetCompanySize[];
   const charCount = targetDescription.length;
 
   // Character counter logic
@@ -165,7 +154,7 @@ export function Step3Target() {
     return 'Great detail!';
   };
 
-  const toggleSize = (size: string) => {
+  const toggleSize = (size: TargetCompanySize) => {
     const newSizes = selectedSizes.includes(size)
       ? selectedSizes.filter((s) => s !== size)
       : [...selectedSizes, size];
