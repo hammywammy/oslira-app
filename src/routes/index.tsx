@@ -20,6 +20,7 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
+import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
 
@@ -187,21 +188,16 @@ export const router = createBrowserRouter([
       </DomainGuard>
     ),
   },
-  {
-    path: '/dashboard',
-    element: (
-      <DomainGuard domain="app">
-        <ProtectedRoute>
-          <div className="flex items-center justify-center min-h-screen bg-slate-50">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-slate-900 mb-4">Dashboard</h1>
-              <p className="text-slate-600">Coming soon...</p>
-            </div>
-          </div>
-        </ProtectedRoute>
-      </DomainGuard>
-    ),
-  },
+{
+  path: '/dashboard',
+  element: (
+    <DomainGuard domain="app">
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    </DomainGuard>
+  ),
+},
 
   // ============================================================
   // 404 NOT FOUND
