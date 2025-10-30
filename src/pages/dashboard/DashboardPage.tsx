@@ -1,19 +1,24 @@
 // src/pages/dashboard/DashboardPage.tsx
+
 /**
- * DASHBOARD PAGE
+ * DASHBOARD PAGE - OSLIRA PRODUCTION
  * 
- * Main dashboard view featuring:
- * - Table-first layout (85% of screen)
- * - Action buttons (Research, Bulk Upload)
- * - Stats strip (future Phase 3)
+ * Main dashboard view featuring table-first layout.
+ * This is where users spend 80% of their time.
  * 
- * This replaces the placeholder "Coming soon..." view
+ * LAYOUT:
+ * - Page header with title + action buttons
+ * - Filter bar (search, filters, sort)
+ * - LeadsTable (85% of screen real estate)
+ * 
+ * PHILOSOPHY:
+ * The table IS the product. Everything else supports it.
  */
 
 import { DashboardShell } from '@/features/dashboard/layout/DashboardShell';
 import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTable';
 import { Button } from '@/shared/components/ui/Button';
-import { Icon } from '@iconify/react';
+import { Input } from '@/shared/components/ui/Input';
 
 // =============================================================================
 // COMPONENT
@@ -22,9 +27,10 @@ import { Icon } from '@iconify/react';
 export function DashboardPage() {
   return (
     <DashboardShell>
-      {/* Page Header */}
+      {/* ===== PAGE HEADER ===== */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
+          {/* Title */}
           <div>
             <h1 className="text-2xl font-semibold text-text mb-1">Leads</h1>
             <p className="text-sm text-text-secondary">
@@ -52,29 +58,31 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* Filter Bar (Placeholder) */}
+      {/* ===== FILTER BAR ===== */}
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex-1 relative">
-          <Icon 
-            icon="mdi:magnify" 
-            width={20} 
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
-          />
-          <input
+        {/* Search Input */}
+        <div className="flex-1">
+          <Input
             type="text"
             placeholder="Search leads..."
-            className="w-full h-10 pl-10 pr-4 bg-surface-raised border border-border rounded-lg text-sm focus:outline-none focus:border-primary transition-colors"
+            icon="mdi:magnify"
+            iconPosition="left"
+            fullWidth
           />
         </div>
-        <Button variant="secondary" icon="mdi:filter" iconPosition="left">
+
+        {/* Filter Button */}
+        <Button variant="secondary" icon="mdi:filter-outline" iconPosition="left">
           Filters
         </Button>
+
+        {/* Sort Button */}
         <Button variant="ghost" icon="mdi:sort" iconPosition="left">
           Sort
         </Button>
       </div>
 
-      {/* Leads Table - The Star of the Show */}
+      {/* ===== LEADS TABLE - THE STAR ===== */}
       <LeadsTable />
     </DashboardShell>
   );
