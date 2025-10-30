@@ -1,4 +1,5 @@
 // src/features/dashboard/store/dashboardStore.ts
+
 /**
  * DASHBOARD STORE (Zustand)
  * 
@@ -84,7 +85,7 @@ interface DashboardState {
 // STORE
 // =============================================================================
 
-export const useDashboardStore = create<DashboardState>((set, get) => ({
+export const useDashboardStore = create<DashboardState>((set) => ({
   // Initial state
   leads: [],
   selectedLeadIds: [],
@@ -107,7 +108,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   
   toggleLeadSelection: (id) => set((state) => ({
     selectedLeadIds: state.selectedLeadIds.includes(id)
-      ? state.selectedLeadIds.filter((leadId) => leadId !== id)
+      ? state.selectedLeadIds.filter((selectedId) => selectedId !== id)
       : [...state.selectedLeadIds, id],
   })),
   
@@ -116,16 +117,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   })),
   
   clearSelection: () => set({ selectedLeadIds: [] }),
-
+  
   // Filter actions
   setFilters: (filters) => set({ filters }),
+  
   clearFilters: () => set({ filters: {} }),
-
+  
   // Modal actions
   openModal: (type, context) => set((state) => ({
     modals: {
       ...state.modals,
-      [type]: type === 'details' ? context ?? true : true,
+      [type]: type === 'details' ? (context ?? null) : true,
     },
   })),
   
@@ -135,7 +137,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       [type]: type === 'details' ? null : false,
     },
   })),
-
+  
   // UI actions
   toggleSidebar: () => set((state) => ({
     ui: {
