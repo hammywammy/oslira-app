@@ -1,6 +1,7 @@
 /**
  * @file Input Component
  * @description Type-safe form input with validation states
+ * RING FIX: Changed ring-blue-500 and ring-red-500 to primary-500 and danger-500
  */
 
 import { InputHTMLAttributes, forwardRef } from 'react';
@@ -35,8 +36,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const baseStyles = 'px-4 py-3 border-2 rounded-lg font-medium transition-all duration-200';
     
     const stateStyles = error
-      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500';
+      ? 'border-red-300 focus:border-danger-500 focus:ring-danger-500'
+      : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500';
     
     const widthStyles = fullWidth ? 'w-full' : '';
 
