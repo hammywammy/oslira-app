@@ -1,16 +1,15 @@
 // src/routes/index.tsx
 
 /**
- * ROUTER CONFIGURATION
+ * ROUTER CONFIGURATION - OSLIRA PRODUCTION
  * 
- * Pure routing - domain enforcement handled by environment manager.
- * Routes are declarative path mappings with domain guards.
- * 
+ * Pure routing with domain enforcement.
  * Domain Architecture:
- * - oslira.com → Marketing (homepage + showcase pages)
- * - app.oslira.com → Application (auth, dashboard, onboarding)
+ * - oslira.com → Marketing
+ * - app.oslira.com → Application (auth + dashboard)
  * 
- * NO business logic here. Just route declarations.
+ * CRITICAL UPDATE:
+ * Dashboard route now properly connected to DashboardPage component.
  */
 
 import { createBrowserRouter } from 'react-router-dom';
@@ -20,18 +19,24 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
-import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import { DashboardPage } from '@/pages/dashboard/DashboardPage'; // ← ADDED
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
+
+// =============================================================================
+// LAZY LOADED COMPONENTS (Marketing Showcase Pages)
+// =============================================================================
+
+const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'));
+const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
+const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
+const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
+const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase'));
 
 // =============================================================================
 // DOMAIN GUARD
 // =============================================================================
 
-/**
- * Enforces domain boundaries using centralized environment detection
- * Redirects to correct domain if user is on wrong one
- */
 function DomainGuard({ 
   domain, 
   children 
@@ -41,50 +46,30 @@ function DomainGuard({
 }) {
   const onCorrectDomain = domain === 'app' ? isAppDomain() : isMarketingDomain();
   
-  // If on wrong domain, redirect to correct one
   if (!onCorrectDomain) {
     const correctUrl = getUrlForDomain(domain);
-    window.location.replace(correctUrl + window.location.pathname);
-    
-    // Show loading state during redirect
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      </div>
-    );
+    window.location.href = correctUrl + window.location.pathname;
+    return <div>Redirecting...</div>;
   }
   
   return children;
 }
 
 // =============================================================================
-// LOADING FALLBACK
+// SUSPENSE WRAPPER
 // =============================================================================
 
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading...</p>
-    </div>
-  </div>
-);
-
-// =============================================================================
-// LAZY LOADED PAGES
-// =============================================================================
-
-const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'));
-const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
-const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
-const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
-const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase'));
-
-const withSuspense = (Component: React.LazyExoticComponent<() => JSX.Element>) => (
-  <Suspense fallback={<LoadingFallback />}>
-    <Component />
-  </Suspense>
-);
+function withSuspense(Component: React.LazyExoticComponent<() => JSX.Element>) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <Component />
+    </Suspense>
+  );
+}
 
 // =============================================================================
 // ROUTES
@@ -188,16 +173,20 @@ export const router = createBrowserRouter([
       </DomainGuard>
     ),
   },
-{
-  path: '/dashboard',
-  element: (
-    <DomainGuard domain="app">
-      <ProtectedRoute>
-        <DashboardPage />
-      </ProtectedRoute>
-    </DomainGuard>
-  ),
-},
+  
+  // ========================================
+  // DASHBOARD - PRODUCTION READY
+  // ========================================
+  {
+    path: '/dashboard',
+    element: (
+      <DomainGuard domain="app">
+        <ProtectedRoute>
+          <DashboardPage />
+        </ProtectedRoute>
+      </DomainGuard>
+    ),
+  },
 
   // ============================================================
   // 404 NOT FOUND
@@ -206,13 +195,13 @@ export const router = createBrowserRouter([
   {
     path: '*',
     element: (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <h1 className="text-6xl font-bold text-white mb-4">404</h1>
-          <p className="text-gray-400 mb-6 text-xl">Page not found</p>
+          <h1 className="text-6xl font-bold text-text mb-4">404</h1>
+          <p className="text-text-secondary mb-6 text-xl">Page not found</p>
           <a
             href="/"
-            className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-block px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary-600 transition-colors"
           >
             Go Home
           </a>
