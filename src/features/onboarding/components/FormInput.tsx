@@ -7,6 +7,7 @@
  * - Character counter now properly reads field value
  * - Textarea height increased (rows default changed)
  * - Removed duplicate character counter
+ * - RING FIX: Changed ring-purple-500 to ring-primary-500
  */
 
 import { forwardRef } from 'react';
@@ -81,11 +82,11 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       border-2 rounded-xl 
       text-white placeholder-slate-500
       transition-all duration-200
-      focus:outline-none focus:ring-2 focus:ring-purple-500/50
+      focus:outline-none focus:ring-2 focus:ring-primary-500/50
       ${
         hasError
           ? 'border-red-500/50 focus:border-red-500'
-          : 'border-slate-700 focus:border-purple-500'
+          : 'border-slate-700 focus:border-primary-500'
       }
     `;
 
@@ -93,7 +94,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       <div className="space-y-2">
         {/* Label */}
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          {icon && <Icon icon={icon} className="text-lg text-purple-400" />}
+          {icon && <Icon icon={icon} className="text-lg text-primary-400" />}
           {label}
           {required && <span className="text-red-400">*</span>}
         </label>
@@ -131,6 +132,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
 // FORM TEXTAREA COMPONENT
 // ✅ FIXED: Removed built-in character counter (handled by parent)
 // ✅ FIXED: Increased default rows from 4 to 8
+// ✅ FIXED: Changed ring-purple-500 to ring-primary-500
 // =============================================================================
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
@@ -157,12 +159,12 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       border-2 rounded-xl 
       text-white placeholder-slate-500
       transition-all duration-200
-      focus:outline-none focus:ring-2 focus:ring-purple-500/50
+      focus:outline-none focus:ring-2 focus:ring-primary-500/50
       resize-none
       ${
         hasError
           ? 'border-red-500/50 focus:border-red-500'
-          : 'border-slate-700 focus:border-purple-500'
+          : 'border-slate-700 focus:border-primary-500'
       }
     `;
 
@@ -170,7 +172,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       <div className="space-y-2">
         {/* Label */}
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          {icon && <Icon icon={icon} className="text-lg text-purple-400" />}
+          {icon && <Icon icon={icon} className="text-lg text-primary-400" />}
           {label}
           {required && <span className="text-red-400">*</span>}
         </label>
