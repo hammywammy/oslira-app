@@ -1,45 +1,44 @@
 // src/features/onboarding/components/steps/Step2Business.tsx
+// COLOR FIX: Changed purple-500 to primary-500, purple-400 to primary-400
 
-/**
- * STEP 2: BUSINESS CONTEXT
- * 
- * FIXES:
- * - Character counter now uses watch() to get real-time value
- * - Removed duplicate counter (only one now, after textarea)
- * - Increased textarea rows for better visibility
- */
-
+import { useFormContext } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { FormTextarea } from '../FormInput';
-import { RefinementCallout } from '../RefinementCallout';
-import { ICONS } from '../../constants/icons';
-import { fadeInVariants, containerVariants } from '../../animations/variants';
-import { useFormContext } from 'react-hook-form';
-import type { FormData, CommunicationTone } from '../../constants/validationSchemas';
+import { FormInput, FormTextarea } from '@/features/onboarding/components/FormInput';
+import type { FormData } from '@/features/onboarding/constants/validationSchemas';
 
 // =============================================================================
-// DATA
+// CONSTANTS
 // =============================================================================
 
-const toneOptions: Array<{ value: CommunicationTone; label: string; description: string; icon: string }> = [
+const ICONS = {
+  briefcase: 'lucide:briefcase',
+  target: 'lucide:target',
+  wand: 'lucide:wand-sparkles',
+  checkCircle: 'lucide:check-circle',
+  messageCircle: 'lucide:message-circle',
+  megaphone: 'lucide:megaphone',
+  handshake: 'lucide:handshake',
+} as const;
+
+const toneOptions = [
   {
     value: 'professional',
     label: 'Professional',
-    description: 'Formal, business-focused communication',
-    icon: 'lucide:briefcase',
+    description: 'Formal and business-focused',
+    icon: ICONS.briefcase,
   },
   {
     value: 'friendly',
     label: 'Friendly',
-    description: 'Warm and approachable tone',
-    icon: 'lucide:smile',
+    description: 'Warm and approachable',
+    icon: ICONS.messageCircle,
   },
   {
     value: 'casual',
     label: 'Casual',
-    description: 'Relaxed, conversational style',
-    icon: 'lucide:message-circle',
+    description: 'Relaxed and conversational',
+    icon: ICONS.handshake,
   },
 ];
 
@@ -54,86 +53,101 @@ export function Step2Business() {
     formState: { errors },
   } = useFormContext<FormData>();
 
-  // ✅ FIX: Use watch() to get real-time character count
   const businessSummary = watch('business_summary') || '';
   const selectedTone = watch('communication_tone');
   const charCount = businessSummary.length;
 
-  // Character counter color logic
+  // Character counter logic
   const getCharCountColor = () => {
-    if (charCount < 50) return 'text-red-400';
-    if (charCount < 150) return 'text-yellow-400';
+    if (charCount < 100) return 'text-red-400';
+    if (charCount < 200) return 'text-yellow-400';
     return 'text-green-400';
   };
 
   const getCharCountLabel = () => {
-    if (charCount < 50) return 'Add more detail';
-    if (charCount < 150) return 'Good start';
-    return 'Great detail!';
+    if (charCount < 100) return 'Add more detail';
+    if (charCount < 200) return 'Good start';
+    return 'Perfect!';
   };
 
   return (
     <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+      className="space-y-8"
     >
-      {/* Header */}
-      <motion.div variants={fadeInVariants} className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-white">
-          Tell us about your business
-        </h2>
-        <p className="text-slate-400">
-          Help the AI understand what you do
-        </p>
-      </motion.div>
+      {/* SECTION 1: Business Description */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-4"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mt-1">
+            <Icon icon={ICONS.briefcase} className="w-5 h-5 text-primary-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-2">
+              Tell us about your business
+            </h3>
+            <p className="text-sm text-slate-400">
+              Describe what you do, who you serve, and what makes you unique. This helps us
+              personalize your outreach messages.
+            </p>
+          </div>
+        </div>
 
-      {/* Refinement Callout */}
-      <motion.div variants={fadeInVariants}>
-        <RefinementCallout />
-      </motion.div>
-
-      {/* Business Summary */}
-      <motion.div variants={fadeInVariants} className="space-y-2">
         <FormTextarea
-          label="What does your business do?"
-          placeholder="Example: Acme Marketing is a boutique agency specializing in health & wellness brands. We solve the problem of generic social media presence by creating authentic, data-driven Instagram strategies that convert followers into customers. Our unique approach combines behavioral psychology with influencer partnerships..."
+          label="Business Description"
+          placeholder="e.g., I'm a copywriter specializing in conversion-focused landing pages for SaaS companies. I help founders turn their product features into compelling benefits that drive sign-ups..."
           icon={ICONS.briefcase}
-          error={errors.business_summary?.message}
-          required
           rows={8}
-          maxLength={750}
+          maxLength={500}
+          error={errors.business_summary}
+          required
           {...register('business_summary')}
         />
-        
-        {/* ✅ SINGLE Character Counter - Uses watch() value */}
-        <div className="flex items-center justify-between text-sm px-1">
-          <span className={getCharCountColor()}>
+
+        {/* Character Counter */}
+        <div className="flex items-center justify-between text-sm">
+          <span className={`font-medium ${getCharCountColor()}`}>
             {getCharCountLabel()}
           </span>
           <span className="text-slate-500">
-            {charCount} / 750
+            {charCount} / 500
           </span>
-        </div>
-
-        {/* Helper Prompts */}
-        <div className="bg-slate-800/30 rounded-lg p-3 text-xs text-slate-400">
-          <p className="mb-2 font-medium text-slate-300">Include:</p>
-          <ul className="space-y-1 list-disc list-inside">
-            <li>Company name & industry/niche</li>
-            <li>What problems do you solve?</li>
-            <li>What makes you different?</li>
-            <li>Who you work with (optional)</li>
-          </ul>
         </div>
       </motion.div>
 
-      {/* Communication Tone */}
-      <motion.div variants={fadeInVariants} className="space-y-3">
+      {/* SECTION 2: Industry */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="space-y-4"
+      >
+        <FormInput
+          label="Industry"
+          placeholder="e.g., Marketing, Design, Development, Consulting"
+          icon={ICONS.target}
+          error={errors.industry}
+          required
+          {...register('industry')}
+        />
+      </motion.div>
+
+      {/* SECTION 3: Communication Tone */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="space-y-4"
+      >
         <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Icon icon={ICONS.messageSquare} className="text-lg text-purple-400" />
-          How do you prefer to communicate?
+          <Icon icon={ICONS.wand} className="text-lg text-primary-400" />
+          Preferred Communication Tone
           <span className="text-red-400">*</span>
         </label>
 
@@ -149,13 +163,13 @@ export function Step2Business() {
                   transition-all duration-200
                   ${
                     isSelected
-                      ? 'bg-purple-500/10 border-purple-500'
+                      ? 'bg-primary-500/10 border-primary-500'
                       : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
                   }
                 `}
               >
                 <div className="flex flex-col items-center text-center gap-2">
-                  <Icon icon={option.icon} className="text-2xl text-purple-400" />
+                  <Icon icon={option.icon} className="text-2xl text-primary-400" />
                   <div>
                     <input
                       type="radio"
