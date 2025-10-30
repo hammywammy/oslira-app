@@ -1,36 +1,28 @@
 // src/shared/components/layout/Sidebar.tsx
 
 /**
- * SIDEBAR - SHARED LAYOUT COMPONENT
+ * SIDEBAR - OSLIRA PRODUCTION
  * 
- * Linear-inspired minimalist sidebar for dashboard navigation.
+ * Linear-inspired minimalist sidebar.
+ * Fixed 240px width, collapses to 64px.
  * 
  * FEATURES:
  * - Collapsible (240px → 64px)
- * - Business profile selector
- * - Credit balance display
- * - Account dropdown menu
  * - Active route highlighting
  * - Keyboard accessible
- * - Persists collapse state
- * 
- * ARCHITECTURE:
- * - State: Zustand + localStorage for collapse
- * - Data: React Query for business profiles
- * - Auth: useAuth hook integration
- * - Icons: Iconify (no emojis)
+ * - Smooth transitions
+ * - Logo + navigation + user section
  * 
  * USAGE:
  * <Sidebar />
  */
 
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-import { Tooltip } from '@/shared/components/ui/Tooltip';
 
 // =============================================================================
 // TYPES
@@ -75,268 +67,208 @@ const NAV_SECTIONS: NavSection[] = [
 // =============================================================================
 
 export function Sidebar() {
-  const navigate = useNavigate();
   const { isCollapsed, toggleCollapse } = useSidebarStore();
   const { user, account, logout } = useAuth();
-  
-  const [showAccountMenu, setShowAccountMenu] = useState(false);
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
-
-  // ==========================================================================
-  // HANDLERS
-  // ==========================================================================
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = async () => {
     await logout();
-    navigate('/auth/login');
   };
-
-  const toggleSection = (title: string) => {
-    setCollapsedSections(prev => {
-      const next = new Set(prev);
-      if (next.has(title)) {
-        next.delete(title);
-      } else {
-        next.add(title);
-      }
-      return next;
-    });
-  };
-
-  // ==========================================================================
-  // DERIVED STATE
-  // ==========================================================================
-
-  const displayName = user?.full_name || user?.email?.split('@')[0] || 'User';
-  const firstName = displayName.split(' ')[0];
-  const initial = displayName[0]?.toUpperCase() || 'U';
-  const creditBalance = account?.credit_balance ?? 0;
-
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
 
   return (
     <aside
       className={`
-        fixed left-0 top-0 h-screen bg-white border-r border-border
-        transition-[width] duration-300 ease-out z-40
+        fixed top-0 left-0 h-screen bg-surface-base border-r border-border
+        transition-all duration-200 flex flex-col z-30
         ${isCollapsed ? 'w-16' : 'w-60'}
       `}
     >
-      <div className="flex flex-col h-full">
-        
-        {/* ===== HEADER ===== */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-border flex-shrink-0">
-          {/* Logo/Brand */}
-          {!isCollapsed && (
-            <span className="text-lg font-semibold text-text">Oslira</span>
-          )}
-          
-          {/* Toggle Button */}
-          <button
-            onClick={toggleCollapse}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted-light transition-colors"
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <Icon
-              icon={isCollapsed ? 'mdi:chevron-right' : 'mdi:chevron-left'}
-              width={20}
-              className="text-text-secondary"
-            />
-          </button>
-        </div>
-
-        {/* ===== NAVIGATION ===== */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-6">
-          {NAV_SECTIONS.map((section) => (
-            <div key={section.title}>
-              {/* Section Header */}
-              {!isCollapsed && (
-                <button
-                  onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between px-2 py-1 mb-1 rounded-lg hover:bg-muted-light transition-colors"
-                >
-                  <span className="text-xs font-semibold text-muted uppercase tracking-wide">
-                    {section.title}
-                  </span>
-                  <Icon
-                    icon="mdi:chevron-down"
-                    width={16}
-                    className={`text-muted transition-transform ${
-                      collapsedSections.has(section.title) ? '-rotate-90' : ''
-                    }`}
-                  />
-                </button>
-              )}
-
-              {/* Section Divider (collapsed sidebar) */}
-              {isCollapsed && (
-                <div className="h-px bg-border my-3" />
-              )}
-
-              {/* Nav Items */}
-              <div
-                className={`space-y-1 ${
-                  !isCollapsed && collapsedSections.has(section.title) ? 'hidden' : ''
-                }`}
-              >
-                {section.items.map((item) => {
-                  const navLink = (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-2 py-2 rounded-lg transition-colors ${
-                          isActive
-                            ? 'bg-primary text-white'
-                            : 'text-text hover:bg-muted-light hover:text-primary'
-                        } ${isCollapsed ? 'justify-center' : ''}`
-                      }
-                    >
-                      <Icon icon={item.icon} width={20} className="flex-shrink-0" />
-                      {!isCollapsed && (
-                        <span className="text-sm font-medium">{item.label}</span>
-                      )}
-                    </NavLink>
-                  );
-
-                  return isCollapsed ? (
-                    <Tooltip key={item.path} content={item.label}>
-                      {navLink}
-                    </Tooltip>
-                  ) : (
-                    navLink
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        {/* ===== ACCOUNT SECTION ===== */}
-        <div className="relative border-t border-border p-4 flex-shrink-0">
-          {/* Account Dropdown */}
+      {/* ===== HEADER ===== */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-border flex-shrink-0">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-sm">O</span>
+          </div>
           <AnimatePresence>
-            {showAccountMenu && (
-              <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowAccountMenu(false)}
-                />
-
-                {/* Dropdown Menu */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className={`
-                    absolute bg-white border border-border rounded-lg shadow-lg z-20
-                    ${isCollapsed ? 'left-full ml-2 bottom-0' : 'bottom-full mb-2 left-0 right-0'}
-                  `}
-                  style={{ minWidth: isCollapsed ? '280px' : undefined }}
-                >
-                  {/* User Info */}
-                  <div className="p-4 border-b border-border">
-                    <p className="text-sm font-semibold text-text">{displayName}</p>
-                    <p className="text-xs text-text-secondary mt-0.5">{user?.email}</p>
-                  </div>
-
-                  {/* Business Selector */}
-                  <div className="p-3 border-b border-border">
-                    <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                      Business
-                    </label>
-                    <select className="w-full px-3 py-2 bg-surface-raised border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary transition-colors">
-                      <option>Personal Account</option>
-                    </select>
-                  </div>
-
-                  {/* Credits Display */}
-                  <div className="p-3 border-b border-border">
-                    <label className="block text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                      Credits
-                    </label>
-                    <div className="px-3 py-2 bg-surface-raised rounded-lg">
-                      <span className="text-base font-semibold text-text">
-                        {creditBalance} / 25
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="p-2">
-                    <button
-                      onClick={() => navigate('/settings')}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted-light text-sm text-text transition-colors"
-                    >
-                      <Icon icon="mdi:cog-outline" width={18} />
-                      <span>Settings</span>
-                    </button>
-                    <a
-                      href="https://oslira.com/help"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted-light text-sm text-text transition-colors"
-                    >
-                      <Icon icon="mdi:help-circle-outline" width={18} />
-                      <span>Get Help</span>
-                    </a>
-                    <a
-                      href="https://oslira.com/upgrade"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary-light text-sm text-primary transition-colors font-medium"
-                    >
-                      <Icon icon="mdi:star-outline" width={18} />
-                      <span>Upgrade Plan</span>
-                    </a>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-danger-light text-sm text-danger transition-colors mt-1 pt-3 border-t border-border"
-                    >
-                      <Icon icon="mdi:logout" width={18} />
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                </motion.div>
-              </>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                className="font-semibold text-text text-lg"
+              >
+                Oslira
+              </motion.span>
             )}
           </AnimatePresence>
+        </div>
 
-          {/* Account Trigger */}
-          <Tooltip content={isCollapsed ? displayName : ''} position="right">
-            <button
-              onClick={() => setShowAccountMenu(!showAccountMenu)}
-              className={`
-                w-full flex items-center gap-3 rounded-lg hover:bg-muted-light transition-colors
-                ${isCollapsed ? 'justify-center p-2' : 'p-2'}
-              `}
-            >
-              {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-sm font-semibold text-white">{initial}</span>
+        {/* Collapse Toggle */}
+        {!isCollapsed && (
+          <button
+            onClick={toggleCollapse}
+            className="p-1.5 hover:bg-muted-light rounded transition-colors"
+            aria-label="Collapse sidebar"
+          >
+            <Icon icon="mdi:chevron-left" width={18} className="text-text-secondary" />
+          </button>
+        )}
+      </div>
+
+      {/* ===== NAVIGATION ===== */}
+      <nav className="flex-1 px-2 py-4 overflow-y-auto scrollbar-thin">
+        {NAV_SECTIONS.map((section, sectionIndex) => (
+          <div key={sectionIndex} className="mb-6">
+            {/* Section Title */}
+            {!isCollapsed && (
+              <h3 className="px-3 mb-2 text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                {section.title}
+              </h3>
+            )}
+
+            {/* Section Items */}
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 px-3 py-2 rounded-lg
+                    transition-all duration-150 text-sm font-medium
+                    ${isActive
+                      ? 'bg-primary text-white'
+                      : 'text-text-secondary hover:bg-muted-light hover:text-text'
+                    }
+                    ${isCollapsed ? 'justify-center' : ''}
+                  `}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <Icon icon={item.icon} width={20} className="flex-shrink-0" />
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Expand Button (when collapsed) */}
+        {isCollapsed && (
+          <button
+            onClick={toggleCollapse}
+            className="w-full flex items-center justify-center p-2 hover:bg-muted-light rounded-lg transition-colors"
+            aria-label="Expand sidebar"
+          >
+            <Icon icon="mdi:chevron-right" width={20} className="text-text-secondary" />
+          </button>
+        )}
+      </nav>
+
+      {/* ===== FOOTER (User + Credits) ===== */}
+      <div className="flex-shrink-0 border-t border-border p-2">
+        {/* Credits Display */}
+        {!isCollapsed && account && (
+          <div className="mb-2 px-3 py-2 bg-primary-light rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Icon icon="mdi:lightning-bolt" width={14} className="text-primary" />
+                <span className="text-xs font-semibold text-primary">
+                  {account.credit_balance ?? 0} credits
+                </span>
               </div>
+            </div>
+          </div>
+        )}
 
-              {/* User Info (expanded only) */}
-              {!isCollapsed && (
-                <>
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-semibold text-text truncate">{firstName}</p>
-                    <p className="text-xs text-text-secondary">Free Plan</p>
-                  </div>
-                  <Icon
-                    icon="mdi:chevron-down"
-                    width={16}
-                    className={`text-text-secondary transition-transform flex-shrink-0 ${
-                      showAccountMenu ? 'rotate-180' : ''
-                    }`}
-                  />
-                </>
-              )}
-            </button>
-          </Tooltip>
+        {/* User Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className={`
+              w-full flex items-center gap-3 px-3 py-2 rounded-lg
+              hover:bg-muted-light transition-colors
+              ${isCollapsed ? 'justify-center' : ''}
+            `}
+          >
+            {/* Avatar */}
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-semibold text-white">
+                {user?.full_name?.charAt(0).toUpperCase() ?? 'U'}
+              </span>
+            </div>
+
+            {/* User Info */}
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium text-text truncate">
+                  {user?.full_name ?? 'User'}
+                </p>
+                <p className="text-xs text-text-secondary truncate">
+                  {user?.email}
+                </p>
+              </div>
+            )}
+
+            {/* Dropdown Icon */}
+            {!isCollapsed && (
+              <Icon icon="mdi:chevron-down" width={16} className="text-text-secondary flex-shrink-0" />
+            )}
+          </button>
+
+          {/* User Dropdown Menu */}
+          <AnimatePresence>
+            {showUserMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                className={`
+                  absolute bottom-full mb-2 bg-surface-raised border border-border
+                  rounded-lg shadow-lg py-1 z-50
+                  ${isCollapsed ? 'left-full ml-2 w-48' : 'left-0 right-0'}
+                `}
+              >
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    // Navigate to settings
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-text hover:bg-muted-light transition-colors flex items-center gap-2"
+                >
+                  <Icon icon="mdi:cog-outline" width={16} />
+                  Settings
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    // Navigate to billing
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-text hover:bg-muted-light transition-colors flex items-center gap-2"
+                >
+                  <Icon icon="mdi:credit-card-outline" width={16} />
+                  Billing
+                </button>
+                <div className="my-1 border-t border-border" />
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-sm text-danger hover:bg-danger-light transition-colors flex items-center gap-2"
+                >
+                  <Icon icon="mdi:logout" width={16} />
+                  Sign out
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </aside>
