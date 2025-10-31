@@ -1,46 +1,23 @@
 /**
  * TAILWIND CSS V4 CONFIGURATION - FIXED
- * 
- * CRITICAL FIX: Colors are now REPLACED, not extended
- * This prevents Tailwind's default neutral scale from overriding our CSS vars
- * 
- * DARK MODE ARCHITECTURE:
- * - Strategy: 'selector' (class-based toggling)
- * - Toggle by adding/removing 'dark' class on <html> element
- * - CSS variables automatically flip via .dark overrides in theme.css
- * - Components use Tailwind dark: variant (e.g., dark:bg-neutral-900)
- * 
- * DESIGN PHILOSOPHY:
- * - Semantic color tokens (--text-primary, --bg-primary)
- * - Single source of truth for theme values
- * - Enterprise-grade pattern (Shadcn, Vercel, Linear approach)
+ * Colors now REPLACE defaults instead of extending them
  */
 
 import tailwindcss from '@tailwindcss/vite';
 
 export default {
-  // Enable class-based dark mode (required for manual toggle)
   darkMode: 'selector',
   
   theme: {
-    // ==========================================================================
-    // COLORS - COMPLETE REPLACEMENT (NOT EXTEND)
-    // ==========================================================================
-    // By defining colors at theme.colors instead of theme.extend.colors,
-    // we completely replace Tailwind's defaults and prevent conflicts
+    // CRITICAL: Define colors HERE, not in "extend"
     colors: {
-      // Required by Tailwind core
+      // Required by Tailwind
       transparent: 'transparent',
       current: 'currentColor',
       white: '#ffffff',
       black: '#000000',
       
-      // ========================================================================
-      // NEUTRAL SCALE (Foundation)
-      // ========================================================================
-      // These values flip automatically via CSS variables in theme.css
-      // Light mode: 0=white → 900=black
-      // Dark mode:  0=black → 900=white
+      // Your custom colors (auto-flip via CSS vars)
       neutral: {
         0: 'var(--color-neutral-0)',
         50: 'var(--color-neutral-50)',
@@ -55,10 +32,6 @@ export default {
         900: 'var(--color-neutral-900)',
       },
       
-      // ========================================================================
-      // PRIMARY BRAND (Electric Blue)
-      // ========================================================================
-      // Strategic accent - stays consistent across light/dark modes
       primary: {
         300: 'var(--color-primary-300)',
         400: 'var(--color-primary-400)',
@@ -68,10 +41,6 @@ export default {
         800: 'var(--color-primary-800)',
       },
       
-      // ========================================================================
-      // SECONDARY BRAND (Subtle Purple)
-      // ========================================================================
-      // Micro-accent (5% usage max)
       secondary: {
         300: 'var(--color-secondary-300)',
         400: 'var(--color-secondary-400)',
@@ -80,9 +49,6 @@ export default {
         700: 'var(--color-secondary-700)',
       },
       
-      // ========================================================================
-      // SEMANTIC STATE COLORS
-      // ========================================================================
       success: {
         100: 'var(--color-success-100)',
         200: 'var(--color-success-200)',
@@ -91,6 +57,7 @@ export default {
         600: 'var(--color-success-600)',
         700: 'var(--color-success-700)',
       },
+      
       error: {
         100: 'var(--color-error-100)',
         200: 'var(--color-error-200)',
@@ -99,6 +66,7 @@ export default {
         600: 'var(--color-error-600)',
         700: 'var(--color-error-700)',
       },
+      
       warning: {
         100: 'var(--color-warning-100)',
         200: 'var(--color-warning-200)',
@@ -107,6 +75,7 @@ export default {
         600: 'var(--color-warning-600)',
         700: 'var(--color-warning-700)',
       },
+      
       info: {
         100: 'var(--color-info-100)',
         200: 'var(--color-info-200)',
@@ -116,23 +85,15 @@ export default {
         700: 'var(--color-info-700)',
       },
       
-      // ========================================================================
-      // SEMANTIC ALIASES
-      // ========================================================================
-      // High-level tokens that adapt to light/dark modes automatically
+      // Semantic aliases
       background: 'var(--bg-primary)',
       foreground: 'var(--text-primary)',
       muted: 'var(--text-tertiary)',
       border: 'var(--border-default)',
     },
     
-    // ==========================================================================
-    // EXTEND - Non-color customizations
-    // ==========================================================================
+    // Everything else goes in extend
     extend: {
-      // ========================================================================
-      // SPACING SCALE (8px base unit)
-      // ========================================================================
       spacing: {
         xs: 'var(--space-xs)',
         sm: 'var(--space-sm)',
@@ -144,9 +105,6 @@ export default {
         '4xl': 'var(--space-4xl)',
       },
       
-      // ========================================================================
-      // BORDER RADIUS SCALE
-      // ========================================================================
       borderRadius: {
         sm: 'var(--radius-sm)',
         DEFAULT: 'var(--radius-md)',
@@ -157,9 +115,6 @@ export default {
         full: 'var(--radius-full)',
       },
       
-      // ========================================================================
-      // ELEVATION SHADOWS
-      // ========================================================================
       boxShadow: {
         raised: 'var(--shadow-raised)',
         elevated: 'var(--shadow-elevated)',
@@ -167,12 +122,10 @@ export default {
         modal: 'var(--shadow-modal)',
       },
       
-      // ========================================================================
-      // TYPOGRAPHY
-      // ========================================================================
       fontFamily: {
         sans: 'var(--font-sans)',
       },
+      
       fontSize: {
         xs: ['var(--font-size-xs)', { lineHeight: '1.333' }],
         sm: ['var(--font-size-sm)', { lineHeight: '1.385' }],
@@ -184,6 +137,7 @@ export default {
         '3xl': ['var(--font-size-3xl)', { lineHeight: '1.25' }],
         '4xl': ['var(--font-size-4xl)', { lineHeight: '1.167' }],
       },
+      
       fontWeight: {
         normal: 'var(--font-weight-normal)',
         medium: 'var(--font-weight-medium)',
@@ -191,9 +145,6 @@ export default {
         bold: 'var(--font-weight-bold)',
       },
       
-      // ========================================================================
-      // ANIMATION TIMING
-      // ========================================================================
       transitionDuration: {
         fast: 'var(--duration-fast)',
         normal: 'var(--duration-normal)',
@@ -201,15 +152,13 @@ export default {
         slow: 'var(--duration-slow)',
         slower: 'var(--duration-slower)',
       },
+      
       transitionTimingFunction: {
         default: 'var(--easing-default)',
         out: 'var(--easing-out)',
         in: 'var(--easing-in)',
       },
       
-      // ========================================================================
-      // CONTAINER WIDTHS
-      // ========================================================================
       maxWidth: {
         narrow: 'var(--container-narrow)',
         default: 'var(--container-default)',
@@ -217,9 +166,6 @@ export default {
         full: 'var(--container-full)',
       },
       
-      // ========================================================================
-      // Z-INDEX SCALE
-      // ========================================================================
       zIndex: {
         base: 'var(--z-base)',
         dropdown: 'var(--z-dropdown)',
