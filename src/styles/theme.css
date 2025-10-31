@@ -271,4 +271,42 @@
     --z-modal: 50;
     --z-toast: 60;
   }
+
+  /* =========================================================================
+   DARK MODE OVERRIDES
+   ========================================================================= */
+
+.dark {
+  /* Dark Mode Colors */
+  --color-neutral-0: #0A0D14;
+  --color-neutral-50: #1F2937;
+  --color-neutral-100: #374151;
+  --color-neutral-200: #4B5563;
+  --color-neutral-300: #6B7280;
+  --color-neutral-400: #9CA3AF;
+  --color-neutral-500: #D1D5DB;
+  --color-neutral-600: #E5E7EB;
+  --color-neutral-700: #F3F4F6;
+  --color-neutral-800: #F9FAFB;
+  --color-neutral-900: #FFFFFF;
+
+  /* Dark Mode Text */
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-700);
+  --text-tertiary: var(--color-neutral-600);
+  --text-disabled: var(--color-neutral-500);
+  --text-inverse: var(--color-neutral-0);
+
+  /* Dark Mode Backgrounds */
+  --bg-primary: var(--color-neutral-0);
+  --bg-secondary: var(--color-neutral-50);
+  --bg-tertiary: var(--color-neutral-100);
+  --bg-elevated: var(--color-neutral-50);
+  --bg-overlay: rgba(255, 255, 255, 0.1);
+
+  /* Dark Mode Borders */
+  --border-default: var(--color-neutral-400);
+  --border-strong: var(--color-neutral-500);
+  --border-subtle: var(--color-neutral-300);
+}
 }
