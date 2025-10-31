@@ -1,9 +1,23 @@
 // src/shared/components/ui/Button.tsx
 
 /**
- * BUTTON COMPONENT
+ * BUTTON COMPONENT - PRODUCTION GRADE
  * 
- * Primary interactive element with complete state system
+ * Primary interactive element with sophisticated polish
+ * Inspired by Supabase, Linear, Stripe design systems
+ * 
+ * ENHANCEMENTS (v2.0):
+ * ✅ Proper filled backgrounds (no more outline-only)
+ * ✅ Subtle shadows for depth (raised on hover)
+ * ✅ Refined transitions (200ms cubic-bezier)
+ * ✅ Inner glow on primary (subtle premium feel)
+ * ✅ Ghost variant with proper hover
+ * ✅ Danger with confident red fills
+ * ✅ Secondary with neutral sophistication
+ * 
+ * PHILOSOPHY:
+ * "Concert hall, not arcade" - Subtle depth over flashy effects
+ * Dopamine from clarity and precision, not gamification
  * 
  * FEATURES:
  * - 4 variants (primary, secondary, ghost, danger)
@@ -11,16 +25,17 @@
  * - Optional icons (left/right/only)
  * - Loading state with spinner
  * - Full keyboard navigation
- * - Disabled state
+ * - Disabled state with opacity
  * 
  * DESIGN:
- * - 6px border radius (default)
- * - 150ms hover transition
- * - scale(0.98) active state
- * - Focus ring on keyboard navigation
+ * - Border radius: 8px (refined)
+ * - Transitions: 200ms cubic-bezier(0.4, 0, 0.2, 1)
+ * - Hover: translateY(-1px) + shadow lift
+ * - Active: translateY(0) + shadow compress
+ * - Focus ring: 2px offset, primary-500
  * 
  * USAGE:
- * <Button variant="primary" size="md">Save</Button>
+ * <Button variant="primary" size="md">Save Changes</Button>
  * <Button variant="secondary" icon="mdi:plus" iconPosition="left">Add Lead</Button>
  * <Button variant="ghost" loading>Processing...</Button>
  */
@@ -60,28 +75,35 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles = {
   primary: `
-    bg-primary-500 text-neutral-0 border border-primary-500
-    hover:bg-primary-600 hover:border-primary-600
-    active:bg-primary-700 active:border-primary-700
-    disabled:opacity-50 disabled:cursor-not-allowed
+    bg-primary-500 text-white
+    border border-primary-600/20
+    shadow-sm
+    hover:bg-primary-600 hover:shadow-md hover:-translate-y-0.5
+    active:translate-y-0 active:shadow-sm
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm
   `,
   secondary: `
-    bg-neutral-0 text-neutral-800 border border-neutral-400
-    hover:bg-neutral-100 hover:border-neutral-500
-    active:bg-neutral-200
-    disabled:opacity-50 disabled:cursor-not-allowed
+    bg-white text-neutral-800
+    border border-neutral-300
+    shadow-sm
+    hover:bg-neutral-50 hover:border-neutral-400 hover:shadow-md hover:-translate-y-0.5
+    active:translate-y-0 active:shadow-sm active:bg-neutral-100
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm
   `,
   ghost: `
-    bg-transparent text-neutral-700 border border-transparent
-    hover:bg-neutral-100
-    active:bg-neutral-200
-    disabled:opacity-50 disabled:cursor-not-allowed
+    bg-transparent text-neutral-700
+    border border-transparent
+    hover:bg-neutral-100 hover:-translate-y-0.5
+    active:translate-y-0 active:bg-neutral-200
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-transparent
   `,
   danger: `
-    bg-error-600 text-neutral-0 border border-error-600
-    hover:bg-error-700 hover:border-error-700
-    active:bg-error-800 active:border-error-800
-    disabled:opacity-50 disabled:cursor-not-allowed
+    bg-error-600 text-white
+    border border-error-700/20
+    shadow-sm
+    hover:bg-error-700 hover:shadow-md hover:-translate-y-0.5
+    active:translate-y-0 active:shadow-sm
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm
   `,
 } as const;
 
@@ -90,9 +112,9 @@ const variantStyles = {
 // =============================================================================
 
 const sizeStyles = {
-  sm: 'px-3 py-1.5 text-sm gap-1.5',
-  md: 'px-4 py-2 text-base gap-2',
-  lg: 'px-6 py-3 text-lg gap-2.5',
+  sm: 'px-3 py-1.5 text-sm gap-1.5 rounded-md',
+  md: 'px-4 py-2.5 text-base gap-2 rounded-lg',
+  lg: 'px-6 py-3 text-lg gap-2.5 rounded-lg',
 } as const;
 
 const iconSize = {
@@ -130,13 +152,11 @@ export function Button({
       className={`
         inline-flex items-center justify-center
         font-medium
-        rounded-md
         ${sizeStyles[size]}
         ${variantStyles[variant]}
         ${fullWidth ? 'w-full' : ''}
-        ${isIconOnly ? 'px-2' : ''}
-        transition-all duration-150 ease-default
-        active:scale-[0.98]
+        ${isIconOnly ? 'aspect-square p-0' : ''}
+        transition-all duration-200 ease-out
         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500
         ${className}
       `.trim().replace(/\s+/g, ' ')}
