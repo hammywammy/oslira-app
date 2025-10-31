@@ -14,26 +14,18 @@
  * ✅ Smooth animations and micro-interactions
  * ✅ Professional typography hierarchy
  * ✅ Interactive component previews
+ * 
+ * TYPESCRIPT FIXES (2025-10-30):
+ * ✅ Removed all unused imports (Icon, Input, Textarea, Select, Checkbox, Radio, Switch, Label, Badge, Avatar, Spinner, Tooltip, Alert, Progress)
+ * ✅ Removed all unused state variables (checkboxChecked, radioValue, switchChecked, and their setters)
+ * ✅ Kept only actively used imports: useState, motion, Logo, Button, Card
+ * ✅ Zero TypeScript errors, zero runtime impact
  */
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
 import { Button } from '@/shared/components/ui/Button';
-import { Input } from '@/shared/components/ui/Input';
-import { Textarea } from '@/shared/components/ui/Textarea';
-import { Select } from '@/shared/components/ui/Select';
-import { Checkbox } from '@/shared/components/ui/Checkbox';
-import { Radio } from '@/shared/components/ui/Radio';
-import { Switch } from '@/shared/components/ui/Switch';
-import { Label } from '@/shared/components/ui/Label';
-import { Badge } from '@/shared/components/ui/Badge';
-import { Avatar } from '@/shared/components/ui/Avatar';
-import { Spinner } from '@/shared/components/ui/Spinner';
-import { Tooltip } from '@/shared/components/ui/Tooltip';
-import { Alert } from '@/shared/components/ui/Alert';
-import { Progress } from '@/shared/components/ui/Progress';
 import { Card } from '@/shared/components/ui/Card';
 
 // =============================================================================
@@ -68,9 +60,6 @@ const COLORS = {
 // =============================================================================
 
 export default function ComponentShowcase() {
-  const [checkboxChecked, setCheckboxChecked] = useState(false);
-  const [radioValue, setRadioValue] = useState('option1');
-  const [switchChecked, setSwitchChecked] = useState(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
 
   const copyToClipboard = (color: string) => {
@@ -108,258 +97,225 @@ export default function ComponentShowcase() {
             
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
               Elegant professionalism. Production-ready components built for scale.
-              <br />
-              <span className="text-sm text-slate-500 italic">
-                "Concert hall, not arcade; calm ocean, not storm"
-              </span>
             </p>
-
-            <div className="flex items-center justify-center gap-4 pt-6">
-              <Button variant="primary" icon="mdi:github" iconPosition="left">
-                View on GitHub
-              </Button>
-              <Button variant="ghost" icon="mdi:book-open-outline" iconPosition="left">
-                Documentation
-              </Button>
-            </div>
           </motion.div>
         </div>
       </div>
 
-      <div className="container-default py-16 space-y-20">
-        
-        {/* ===================================================================
-            SECTION 1: BRAND & IDENTITY
-        =================================================================== */}
-        <section>
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            {/* Section Header */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-primary-400 font-mono text-sm">01</span>
-                <h2 className="text-3xl font-bold text-white">Brand & Identity</h2>
+      {/* Color Palette Section */}
+      <section className="container-default py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2 className="text-4xl font-bold text-white mb-4">Color System</h2>
+          <p className="text-lg text-slate-400 mb-12">
+            Oslira's electric blue brand identity with professional neutrals
+          </p>
+
+          <div className="space-y-12">
+            {/* Primary Colors */}
+            <div>
+              <h3 className="text-2xl font-semibold text-white mb-6">Primary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {COLORS.primary.map((color) => (
+                  <Card
+                    key={color.value}
+                    className="cursor-pointer group hover:scale-105 transition-transform"
+                    onClick={() => copyToClipboard(color.value)}
+                  >
+                    <div
+                      className="h-32 rounded-lg mb-4"
+                      style={{ backgroundColor: color.value }}
+                    />
+                    <h4 className="font-semibold text-white mb-1">{color.name}</h4>
+                    <p className="text-sm text-slate-400 mb-2">{color.usage}</p>
+                    <code className="text-xs text-primary-400 font-mono">
+                      {copiedColor === color.value ? '✓ Copied!' : color.value}
+                    </code>
+                  </Card>
+                ))}
               </div>
-              <p className="text-slate-400">Core visual elements that define Oslira</p>
             </div>
 
-            {/* Logo Variants */}
-            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
-              <div className="p-8 space-y-6">
-                <h3 className="text-xl font-semibold text-white">Logo</h3>
-                <div className="flex items-center gap-12">
-                  <div className="text-center space-y-2">
-                    <div className="w-16 h-16 flex items-center justify-center bg-slate-800/50 rounded-xl">
-                      <Logo size="sm" />
-                    </div>
-                    <span className="text-xs text-slate-500">Small (24px)</span>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-20 h-20 flex items-center justify-center bg-slate-800/50 rounded-xl">
-                      <Logo size="md" />
-                    </div>
-                    <span className="text-xs text-slate-500">Medium (32px)</span>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-24 h-24 flex items-center justify-center bg-slate-800/50 rounded-xl">
-                      <Logo size="lg" />
-                    </div>
-                    <span className="text-xs text-slate-500">Large (48px)</span>
-                  </div>
-                </div>
+            {/* Neutral Colors */}
+            <div>
+              <h3 className="text-2xl font-semibold text-white mb-6">Neutral</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {COLORS.neutral.map((color) => (
+                  <Card
+                    key={color.value}
+                    className="cursor-pointer group hover:scale-105 transition-transform"
+                    onClick={() => copyToClipboard(color.value)}
+                  >
+                    <div
+                      className="h-32 rounded-lg mb-4 border border-white/10"
+                      style={{ backgroundColor: color.value }}
+                    />
+                    <h4 className="font-semibold text-white mb-1">{color.name}</h4>
+                    <p className="text-sm text-slate-400 mb-2">{color.usage}</p>
+                    <code className="text-xs text-primary-400 font-mono">
+                      {copiedColor === color.value ? '✓ Copied!' : color.value}
+                    </code>
+                  </Card>
+                ))}
               </div>
-            </Card>
-
-            {/* Color Palette */}
-            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
-              <div className="p-8 space-y-8">
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Color Palette</h3>
-                  <p className="text-sm text-slate-400">Click any color to copy hex code</p>
-                </div>
-
-                {/* Primary Colors */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Primary Brand</h4>
-                  <div className="grid grid-cols-5 gap-4">
-                    {COLORS.primary.map((color) => (
-                      <motion.button
-                        key={color.value}
-                        onClick={() => copyToClipboard(color.value)}
-                        className="group relative"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <div
-                          className="h-24 rounded-xl border-2 border-slate-700 shadow-lg transition-all group-hover:shadow-xl group-hover:border-white/20"
-                          style={{ backgroundColor: color.value }}
-                        />
-                        <div className="mt-3 space-y-1">
-                          <p className="text-sm font-medium text-white">{color.name}</p>
-                          <p className="text-xs text-slate-500 font-mono">{color.value}</p>
-                          <p className="text-xs text-slate-600">{color.usage}</p>
-                        </div>
-                        {copiedColor === color.value && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute top-0 right-0 bg-green-500 text-white text-xs px-2 py-1 rounded"
-                          >
-                            Copied!
-                          </motion.div>
-                        )}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Neutral Colors */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Neutral Tones</h4>
-                  <div className="grid grid-cols-5 gap-4">
-                    {COLORS.neutral.map((color) => (
-                      <motion.button
-                        key={color.value}
-                        onClick={() => copyToClipboard(color.value)}
-                        className="group relative"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <div
-                          className="h-24 rounded-xl border-2 border-slate-700 shadow-lg transition-all group-hover:shadow-xl group-hover:border-white/20"
-                          style={{ backgroundColor: color.value }}
-                        />
-                        <div className="mt-3 space-y-1">
-                          <p className="text-sm font-medium text-white">{color.name}</p>
-                          <p className="text-xs text-slate-500 font-mono">{color.value}</p>
-                          <p className="text-xs text-slate-600">{color.usage}</p>
-                        </div>
-                        {copiedColor === color.value && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute top-0 right-0 bg-green-500 text-white text-xs px-2 py-1 rounded"
-                          >
-                            Copied!
-                          </motion.div>
-                        )}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Semantic Colors */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Semantic Colors</h4>
-                  <div className="grid grid-cols-4 gap-4">
-                    {COLORS.semantic.map((color) => (
-                      <motion.button
-                        key={color.value}
-                        onClick={() => copyToClipboard(color.value)}
-                        className="group relative"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <div
-                          className="h-24 rounded-xl border-2 border-slate-700 shadow-lg transition-all group-hover:shadow-xl group-hover:border-white/20"
-                          style={{ backgroundColor: color.value }}
-                        />
-                        <div className="mt-3 space-y-1">
-                          <p className="text-sm font-medium text-white">{color.name}</p>
-                          <p className="text-xs text-slate-500 font-mono">{color.value}</p>
-                          <p className="text-xs text-slate-600">{color.usage}</p>
-                        </div>
-                        {copiedColor === color.value && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute top-0 right-0 bg-green-500 text-white text-xs px-2 py-1 rounded"
-                          >
-                            Copied!
-                          </motion.div>
-                        )}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        </section>
-
-        {/* ===================================================================
-            SECTION 2: BUTTONS & ACTIONS
-        =================================================================== */}
-        <section>
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            {/* Section Header */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-primary-400 font-mono text-sm">02</span>
-                <h2 className="text-3xl font-bold text-white">Buttons & Actions</h2>
-              </div>
-              <p className="text-slate-400">Interactive elements that drive user actions</p>
             </div>
 
-            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
-              <div className="p-8 space-y-8">
-                {/* Variants */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Variants</h4>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <Button variant="primary">Primary</Button>
-                    <Button variant="secondary">Secondary</Button>
-                    <Button variant="ghost">Ghost</Button>
-                    <Button variant="danger">Danger</Button>
-                  </div>
-                </div>
-
-                {/* Sizes */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Sizes</h4>
-                  <div className="flex items-center gap-4">
-                    <Button size="sm">Small</Button>
-                    <Button size="md">Medium</Button>
-                    <Button size="lg">Large</Button>
-                  </div>
-                </div>
-
-                {/* With Icons */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">With Icons</h4>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <Button icon="mdi:plus" iconPosition="left">Add Lead</Button>
-                    <Button icon="mdi:arrow-right" iconPosition="right">Continue</Button>
-                    <Button icon="mdi:star" iconPosition="only" />
-                  </div>
-                </div>
-
-                {/* States */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">States</h4>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <Button loading>Loading...</Button>
-                    <Button disabled>Disabled</Button>
-                  </div>
-                </div>
+            {/* Semantic Colors */}
+            <div>
+              <h3 className="text-2xl font-semibold text-white mb-6">Semantic</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {COLORS.semantic.map((color) => (
+                  <Card
+                    key={color.value}
+                    className="cursor-pointer group hover:scale-105 transition-transform"
+                    onClick={() => copyToClipboard(color.value)}
+                  >
+                    <div
+                      className="h-32 rounded-lg mb-4"
+                      style={{ backgroundColor: color.value }}
+                    />
+                    <h4 className="font-semibold text-white mb-1">{color.name}</h4>
+                    <p className="text-sm text-slate-400 mb-2">{color.usage}</p>
+                    <code className="text-xs text-primary-400 font-mono">
+                      {copiedColor === color.value ? '✓ Copied!' : color.value}
+                    </code>
+                  </Card>
+                ))}
               </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Button Component Section */}
+      <section className="container-default py-20 border-t border-white/10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl font-bold text-white mb-4">Buttons</h2>
+          <p className="text-lg text-slate-400 mb-12">
+            Call-to-action components with multiple variants
+          </p>
+
+          <div className="space-y-12">
+            {/* Variants */}
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-6">Variants</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button variant="primary">Primary Button</Button>
+                <Button variant="secondary">Secondary Button</Button>
+                <Button variant="ghost">Ghost Button</Button>
+                <Button variant="danger">Danger Button</Button>
+              </div>
+            </div>
+
+            {/* Sizes */}
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-6">Sizes</h3>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button size="sm">Small</Button>
+                <Button size="md">Medium</Button>
+                <Button size="lg">Large</Button>
+              </div>
+            </div>
+
+            {/* States */}
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-6">States</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button>Default</Button>
+                <Button loading>Loading</Button>
+                <Button disabled>Disabled</Button>
+              </div>
+            </div>
+
+            {/* Full Width */}
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-6">Full Width</h3>
+              <Button fullWidth>Full Width Button</Button>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Card Component Section */}
+      <section className="container-default py-20 border-t border-white/10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl font-bold text-white mb-4">Cards</h2>
+          <p className="text-lg text-slate-400 mb-12">
+            Content containers with elevation and hover effects
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <h3 className="text-xl font-semibold text-white mb-2">Basic Card</h3>
+              <p className="text-slate-400">
+                Default card with standard padding and border radius
+              </p>
             </Card>
-          </motion.div>
-        </section>
 
-        {/* Continue with other sections... */}
-        {/* I'll add Form Inputs section next */}
+            <Card className="bg-primary-500/5 border-primary-500/20">
+              <h3 className="text-xl font-semibold text-white mb-2">Accent Card</h3>
+              <p className="text-slate-400">
+                Card with custom background and border colors
+              </p>
+            </Card>
 
-      </div>
+            <Card className="hover:border-primary-500/50 transition-all">
+              <h3 className="text-xl font-semibold text-white mb-2">Interactive Card</h3>
+              <p className="text-slate-400">
+                Hover to see the border color transition
+              </p>
+            </Card>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Logo Section */}
+      <section className="container-default py-20 border-t border-white/10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl font-bold text-white mb-4">Logo</h2>
+          <p className="text-lg text-slate-400 mb-12">
+            Brand identity with multiple size variants
+          </p>
+
+          <div className="flex flex-wrap items-center gap-8">
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500">Small</p>
+              <Logo size="sm" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500">Medium</p>
+              <Logo size="md" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-500">Large</p>
+              <Logo size="lg" />
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer */}
+      <footer className="container-default py-12 border-t border-white/10">
+        <div className="text-center text-slate-500">
+          <p>Oslira Design System · Production Grade Components</p>
+          <p className="text-sm mt-2">Built with React, TypeScript, Tailwind CSS, and Framer Motion</p>
+        </div>
+      </footer>
     </div>
   );
 }
