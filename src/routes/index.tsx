@@ -32,6 +32,7 @@ const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
 const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
 const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
 const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase'));
+const ComponentShowcase = lazy(() => import('@/pages/showcase/ComponentShowcase'));
 
 // =============================================================================
 // DOMAIN GUARD
@@ -97,6 +98,14 @@ export const router = createBrowserRouter([
       </DomainGuard>
     ),
   },
+  {
+  path: '/showcase/design-system',
+  element: (
+    <DomainGuard domain="marketing">
+      {withSuspense(ComponentShowcase)}
+    </DomainGuard>
+  ),
+},
   {
     path: '/showcase/framer',
     element: (
