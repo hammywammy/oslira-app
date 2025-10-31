@@ -34,7 +34,7 @@ import { SelectHTMLAttributes, forwardRef } from 'react';
 // TYPES
 // =============================================================================
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   /** Size variant */
   size?: 'sm' | 'md' | 'lg';
   /** Error message (shows error state) */
