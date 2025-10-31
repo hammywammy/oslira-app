@@ -1,29 +1,47 @@
 // src/shared/components/ui/Card.tsx
 
 /**
- * CARD COMPONENT
+ * CARD COMPONENT - PRODUCTION GRADE
  * 
- * Versatile container primitive for content grouping
+ * Versatile container with sophisticated elevation system
+ * Inspired by Supabase, Linear, Stripe design systems
+ * 
+ * ENHANCEMENTS (v2.0):
+ * ✅ Proper elevation with shadow-raised (default)
+ * ✅ Refined border colors (neutral-200/300)
+ * ✅ Subtle hover lift with shadow-elevated
+ * ✅ Smooth 200ms transitions
+ * ✅ Optional header/footer with proper dividers
+ * ✅ 3 padding variants (compact/default/spacious)
+ * ✅ Interactive states without over-animation
+ * 
+ * PHILOSOPHY:
+ * "Concert hall, not arcade" - Elegant depth over dramatic effects
+ * Cards breathe with subtle elevation, not aggressive shadows
  * 
  * FEATURES:
  * - 3 padding variants (compact, default, spacious)
- * - Optional hover effect
- * - Optional header/footer sections
- * - Elevated background with shadow
- * - Full customization
+ * - Optional hover effect (lift + shadow)
+ * - Optional header/footer sections with dividers
+ * - Elevated background with refined shadows
+ * - Full customization via className
  * 
  * DESIGN:
- * - Background: White (elevated)
- * - Border: 1px solid neutral-400
- * - Border radius: 8px
- * - Shadow: Elevated level (default)
- * - Hover: Lift effect with overlay shadow
+ * - Background: White (neutral-0)
+ * - Border: 1px solid neutral-200 (light) / neutral-300 (dividers)
+ * - Border radius: 12px (refined, modern)
+ * - Shadow: shadow-raised (default) → shadow-elevated (hover)
+ * - Transition: 200ms cubic-bezier(0.4, 0, 0.2, 1)
+ * - Hover lift: translateY(-2px)
  * 
  * USAGE:
- * <Card>Content here</Card>
- * <Card padding="compact" hoverable>Compact card</Card>
- * <Card header={<h3>Title</h3>} footer={<Button>Action</Button>}>
- *   Card content
+ * <Card>Basic content</Card>
+ * <Card padding="compact" hoverable>Interactive card</Card>
+ * <Card 
+ *   header={<h3 className="font-semibold">Title</h3>}
+ *   footer={<Button>Action</Button>}
+ * >
+ *   Card with header and footer
  * </Card>
  */
 
@@ -38,7 +56,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   /** Padding variant */
   padding?: 'compact' | 'default' | 'spacious';
-  /** Enable hover effect */
+  /** Enable hover effect (lift + shadow) */
   hoverable?: boolean;
   /** Optional header section */
   header?: ReactNode;
@@ -74,13 +92,13 @@ export function Card({
   return (
     <div
       className={`
-        bg-neutral-0
-        border border-neutral-400
-        rounded-lg
-        shadow-elevated
-        ${hoverable ? 'transition-all duration-200 hover:shadow-overlay hover:-translate-y-0.5 cursor-pointer' : ''}
+        bg-white
+        border border-neutral-200
+        rounded-xl
+        shadow-raised
+        ${hoverable ? 'transition-all duration-200 ease-out hover:shadow-elevated hover:-translate-y-0.5 cursor-pointer' : ''}
         ${className}
-      `}
+      `.trim().replace(/\s+/g, ' ')}
       {...props}
     >
       {/* Header */}
