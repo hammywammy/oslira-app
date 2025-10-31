@@ -3,16 +3,34 @@
  * 
  * Extends Tailwind with Oslira design tokens
  * Uses CSS custom properties from theme.css
+ * 
+ * DARK MODE ARCHITECTURE:
+ * - Strategy: 'selector' (class-based toggling)
+ * - Toggle by adding/removing 'dark' class on <html> element
+ * - CSS variables automatically flip via .dark overrides in theme.css
+ * - Components use Tailwind dark: variant (e.g., dark:bg-neutral-900)
+ * 
+ * DESIGN PHILOSOPHY:
+ * - Semantic color tokens (--text-primary, --bg-primary)
+ * - Single source of truth for theme values
+ * - Enterprise-grade pattern (Shadcn, Vercel, Linear approach)
  */
 
 import tailwindcss from '@tailwindcss/vite';
 
 export default {
-  darkMode: 'class', // ← CRITICAL: Enable class-based dark mode
+  // Enable class-based dark mode (required for manual toggle)
+  darkMode: 'selector',
+  
   theme: {
     extend: {
       colors: {
-        // Neutrals (Foundation)
+        // =====================================================================
+        // NEUTRAL SCALE (Foundation)
+        // =====================================================================
+        // These values flip automatically via CSS variables in theme.css
+        // Light mode: 0=white → 900=black
+        // Dark mode:  0=black → 900=white
         neutral: {
           0: 'var(--color-neutral-0)',
           50: 'var(--color-neutral-50)',
@@ -26,7 +44,11 @@ export default {
           800: 'var(--color-neutral-800)',
           900: 'var(--color-neutral-900)',
         },
-        // Primary (Electric Blue - Strategic Accent)
+        
+        // =====================================================================
+        // PRIMARY BRAND (Electric Blue)
+        // =====================================================================
+        // Strategic accent - stays consistent across light/dark modes
         primary: {
           300: 'var(--color-primary-300)',
           400: 'var(--color-primary-400)',
@@ -35,7 +57,11 @@ export default {
           700: 'var(--color-primary-700)',
           800: 'var(--color-primary-800)',
         },
-        // Secondary (Subtle Purple - Micro-Accent)
+        
+        // =====================================================================
+        // SECONDARY BRAND (Subtle Purple)
+        // =====================================================================
+        // Micro-accent (5% usage max)
         secondary: {
           300: 'var(--color-secondary-300)',
           400: 'var(--color-secondary-400)',
@@ -43,7 +69,10 @@ export default {
           600: 'var(--color-secondary-600)',
           700: 'var(--color-secondary-700)',
         },
-        // Semantic States
+        
+        // =====================================================================
+        // SEMANTIC STATE COLORS
+        // =====================================================================
         success: {
           100: 'var(--color-success-100)',
           200: 'var(--color-success-200)',
@@ -76,12 +105,20 @@ export default {
           600: 'var(--color-info-600)',
           700: 'var(--color-info-700)',
         },
-        // Semantic Aliases
+        
+        // =====================================================================
+        // SEMANTIC ALIASES
+        // =====================================================================
+        // High-level tokens that adapt to light/dark modes automatically
         background: 'var(--bg-primary)',
         foreground: 'var(--text-primary)',
         muted: 'var(--text-tertiary)',
         border: 'var(--border-default)',
       },
+      
+      // =======================================================================
+      // SPACING SCALE (8px base unit)
+      // =======================================================================
       spacing: {
         xs: 'var(--space-xs)',
         sm: 'var(--space-sm)',
@@ -92,6 +129,10 @@ export default {
         '3xl': 'var(--space-3xl)',
         '4xl': 'var(--space-4xl)',
       },
+      
+      // =======================================================================
+      // BORDER RADIUS SCALE
+      // =======================================================================
       borderRadius: {
         sm: 'var(--radius-sm)',
         DEFAULT: 'var(--radius-md)',
@@ -101,12 +142,20 @@ export default {
         '2xl': 'var(--radius-2xl)',
         full: 'var(--radius-full)',
       },
+      
+      // =======================================================================
+      // ELEVATION SHADOWS
+      // =======================================================================
       boxShadow: {
         raised: 'var(--shadow-raised)',
         elevated: 'var(--shadow-elevated)',
         overlay: 'var(--shadow-overlay)',
         modal: 'var(--shadow-modal)',
       },
+      
+      // =======================================================================
+      // TYPOGRAPHY
+      // =======================================================================
       fontFamily: {
         sans: 'var(--font-sans)',
       },
@@ -127,6 +176,10 @@ export default {
         semibold: 'var(--font-weight-semibold)',
         bold: 'var(--font-weight-bold)',
       },
+      
+      // =======================================================================
+      // ANIMATION TIMING
+      // =======================================================================
       transitionDuration: {
         fast: 'var(--duration-fast)',
         normal: 'var(--duration-normal)',
@@ -139,12 +192,20 @@ export default {
         out: 'var(--easing-out)',
         in: 'var(--easing-in)',
       },
+      
+      // =======================================================================
+      // CONTAINER WIDTHS
+      // =======================================================================
       maxWidth: {
         narrow: 'var(--container-narrow)',
         default: 'var(--container-default)',
         wide: 'var(--container-wide)',
         full: 'var(--container-full)',
       },
+      
+      // =======================================================================
+      // Z-INDEX SCALE
+      // =======================================================================
       zIndex: {
         base: 'var(--z-base)',
         dropdown: 'var(--z-dropdown)',
@@ -156,5 +217,6 @@ export default {
       },
     },
   },
+  
   plugins: [tailwindcss],
 };
