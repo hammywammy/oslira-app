@@ -1,43 +1,31 @@
 // src/shared/components/ui/Button.tsx
 
 /**
- * BUTTON COMPONENT - PRODUCTION GRADE
+ * BUTTON COMPONENT - PRODUCTION GRADE V3.0
  * 
- * Primary interactive element with sophisticated polish
+ * Professional button with PROPER light/dark mode support
  * Inspired by Supabase, Linear, Stripe design systems
  * 
- * ENHANCEMENTS (v2.0):
- * ✅ Proper filled backgrounds (no more outline-only)
- * ✅ Subtle shadows for depth (raised on hover)
- * ✅ Refined transitions (200ms cubic-bezier)
- * ✅ Inner glow on primary (subtle premium feel)
- * ✅ Ghost variant with proper hover
- * ✅ Danger with confident red fills
- * ✅ Secondary with neutral sophistication
+ * ARCHITECTURE:
+ * ✅ Tailwind dark: classes for automatic mode detection
+ * ✅ Proper contrast in BOTH light and dark modes
+ * ✅ Subtle depth with shadows and borders
+ * ✅ Refined hover states (1px lift, shadow progression)
+ * ✅ No Framer Motion overhead (pure CSS)
+ * ✅ Professional polish without over-animation
  * 
- * PHILOSOPHY:
- * "Concert hall, not arcade" - Subtle depth over flashy effects
- * Dopamine from clarity and precision, not gamification
+ * DESIGN PHILOSOPHY:
+ * "Concert hall, not arcade"
+ * - Subtle hover lift (1px, not 5px)
+ * - Shadow progression (barely noticeable)
+ * - 200ms transitions (smooth, not instant)
+ * - Professional fills with proper contrast
  * 
- * FEATURES:
- * - 4 variants (primary, secondary, ghost, danger)
- * - 3 sizes (sm, md, lg)
- * - Optional icons (left/right/only)
- * - Loading state with spinner
- * - Full keyboard navigation
- * - Disabled state with opacity
- * 
- * DESIGN:
- * - Border radius: 8px (refined)
- * - Transitions: 200ms cubic-bezier(0.4, 0, 0.2, 1)
- * - Hover: translateY(-1px) + shadow lift
- * - Active: translateY(0) + shadow compress
- * - Focus ring: 2px offset, primary-500
- * 
- * USAGE:
- * <Button variant="primary" size="md">Save Changes</Button>
- * <Button variant="secondary" icon="mdi:plus" iconPosition="left">Add Lead</Button>
- * <Button variant="ghost" loading>Processing...</Button>
+ * VARIANTS:
+ * - PRIMARY: Electric blue fill, white text, confident
+ * - SECONDARY: Neutral fill, adapts to light/dark
+ * - GHOST: Transparent, subtle hover background
+ * - DANGER: Red fill, white text, clear warning
  */
 
 import { Icon } from '@iconify/react';
@@ -49,61 +37,71 @@ import { Spinner } from './Spinner';
 // =============================================================================
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Button content */
   children?: ReactNode;
-  /** Visual variant */
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  /** Size variant */
   size?: 'sm' | 'md' | 'lg';
-  /** Icon (Iconify icon name) */
   icon?: string;
-  /** Icon position */
   iconPosition?: 'left' | 'right' | 'only';
-  /** Loading state */
   loading?: boolean;
-  /** Loading state (alias for loading) */
   isLoading?: boolean;
-  /** Full width */
   fullWidth?: boolean;
-  /** Additional CSS classes */
   className?: string;
 }
 
 // =============================================================================
-// VARIANT STYLES
+// VARIANT STYLES - LIGHT/DARK MODE COMPATIBLE
 // =============================================================================
 
 const variantStyles = {
   primary: `
     bg-primary-500 text-white
-    border border-primary-600/20
+    border border-primary-600/10
     shadow-sm
     hover:bg-primary-600 hover:shadow-md hover:-translate-y-0.5
-    active:translate-y-0 active:shadow-sm
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm
+    active:translate-y-0 active:shadow-sm active:bg-primary-700
+    dark:bg-primary-500 dark:text-white
+    dark:hover:bg-primary-600
+    dark:active:bg-primary-700
+    disabled:opacity-50 disabled:cursor-not-allowed 
+    disabled:hover:translate-y-0 disabled:hover:shadow-sm disabled:hover:bg-primary-500
   `,
+  
   secondary: `
     bg-white text-neutral-800
     border border-neutral-300
     shadow-sm
     hover:bg-neutral-50 hover:border-neutral-400 hover:shadow-md hover:-translate-y-0.5
     active:translate-y-0 active:shadow-sm active:bg-neutral-100
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm
+    dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700
+    dark:hover:bg-neutral-700 dark:hover:border-neutral-600
+    dark:active:bg-neutral-600
+    disabled:opacity-50 disabled:cursor-not-allowed 
+    disabled:hover:translate-y-0 disabled:hover:shadow-sm
   `,
+  
   ghost: `
     bg-transparent text-neutral-700
     border border-transparent
     hover:bg-neutral-100 hover:-translate-y-0.5
     active:translate-y-0 active:bg-neutral-200
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-transparent
+    dark:text-neutral-300
+    dark:hover:bg-neutral-800
+    dark:active:bg-neutral-700
+    disabled:opacity-50 disabled:cursor-not-allowed 
+    disabled:hover:translate-y-0 disabled:hover:bg-transparent
   `,
+  
   danger: `
     bg-error-600 text-white
-    border border-error-700/20
+    border border-error-700/10
     shadow-sm
     hover:bg-error-700 hover:shadow-md hover:-translate-y-0.5
-    active:translate-y-0 active:shadow-sm
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm
+    active:translate-y-0 active:shadow-sm active:bg-error-800
+    dark:bg-error-600 dark:text-white
+    dark:hover:bg-error-700
+    dark:active:bg-error-800
+    disabled:opacity-50 disabled:cursor-not-allowed 
+    disabled:hover:translate-y-0 disabled:hover:shadow-sm disabled:hover:bg-error-600
   `,
 } as const;
 
@@ -112,9 +110,9 @@ const variantStyles = {
 // =============================================================================
 
 const sizeStyles = {
-  sm: 'px-3 py-1.5 text-sm gap-1.5 rounded-md',
-  md: 'px-4 py-2.5 text-base gap-2 rounded-lg',
-  lg: 'px-6 py-3 text-lg gap-2.5 rounded-lg',
+  sm: 'h-8 px-3 text-sm gap-1.5 rounded-md',
+  md: 'h-10 px-4 text-base gap-2 rounded-lg',
+  lg: 'h-12 px-6 text-lg gap-2.5 rounded-lg',
 } as const;
 
 const iconSize = {
@@ -155,7 +153,7 @@ export function Button({
         ${sizeStyles[size]}
         ${variantStyles[variant]}
         ${fullWidth ? 'w-full' : ''}
-        ${isIconOnly ? 'aspect-square p-0' : ''}
+        ${isIconOnly ? 'aspect-square !px-0' : ''}
         transition-all duration-200 ease-out
         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500
         ${className}
