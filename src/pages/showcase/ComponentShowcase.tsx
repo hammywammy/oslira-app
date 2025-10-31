@@ -685,7 +685,7 @@ export default function ComponentShowcase() {
                 </div>
                 <div>
                   <p className={`text-sm font-medium mb-3 ${subtleText}`}>Progress Bar</p>
-                  <Progress value={progress} max={100} />
+                  <Progress value={progress} />
                   <div className="flex gap-2 mt-3">
                     <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>-10</Button>
                     <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>+10</Button>
@@ -697,11 +697,85 @@ export default function ComponentShowcase() {
             {/* Avatar */}
             <Card className={`${cardBg} border ${borderColor}`}>
               <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Avatars</h3>
-              <div className="flex items-center gap-4">
-                <Avatar size="sm" src="https://i.pravatar.cc/150?img=1" alt="User" />
-                <Avatar size="md" src="https://i.pravatar.cc/150?img=2" alt="User" />
-                <Avatar size="lg" src="https://i.pravatar.cc/150?img=3" alt="User" />
-                <Avatar size="lg" fallback="JD" />
+              <div className="space-y-6">
+                {/* Single Avatars */}
+                <div>
+                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Sizes</p>
+                  <div className="flex items-center gap-4">
+                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=1" alt="User" />
+                    <Avatar size="md" src="https://i.pravatar.cc/150?img=2" alt="User" />
+                    <Avatar size="lg" src="https://i.pravatar.cc/150?img=3" alt="User" />
+                    <Avatar size="lg" name="John Doe" />
+                  </div>
+                </div>
+
+                {/* Avatar Stack - Google Meet Style */}
+                <div>
+                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Avatar Stack (Google Meet Style)</p>
+                  
+                  {/* Stack with 5+ participants */}
+                  <div className="flex items-center">
+                    {/* Active participants */}
+                    <div className="flex -space-x-2">
+                      <Avatar 
+                        size="md" 
+                        src="https://i.pravatar.cc/150?img=10" 
+                        alt="Active User 1"
+                        status="online"
+                        className="ring-2 ring-white"
+                      />
+                      <Avatar 
+                        size="md" 
+                        src="https://i.pravatar.cc/150?img=11" 
+                        alt="Active User 2"
+                        status="online"
+                        className="ring-2 ring-white"
+                      />
+                      <Avatar 
+                        size="md" 
+                        src="https://i.pravatar.cc/150?img=12" 
+                        alt="Active User 3"
+                        status="online"
+                        className="ring-2 ring-white"
+                      />
+                      
+                      {/* Inactive participant (dimmed) */}
+                      <div className="relative">
+                        <Avatar 
+                          size="md" 
+                          src="https://i.pravatar.cc/150?img=13" 
+                          alt="Inactive User"
+                          status="offline"
+                          className="ring-2 ring-white opacity-50"
+                        />
+                      </div>
+                      
+                      {/* +5 overflow indicator */}
+                      <div className={`relative w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ring-2 ring-white ${
+                        isDark 
+                          ? 'bg-neutral-700 text-neutral-300' 
+                          : 'bg-neutral-200 text-neutral-700'
+                      }`}>
+                        +5
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className={`text-xs mt-2 ${subtleText}`}>
+                    Active participants have green status, inactive are dimmed
+                  </p>
+                </div>
+
+                {/* Status Variants */}
+                <div>
+                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Status Indicators</p>
+                  <div className="flex items-center gap-4">
+                    <Avatar size="md" src="https://i.pravatar.cc/150?img=20" alt="Online" status="online" />
+                    <Avatar size="md" src="https://i.pravatar.cc/150?img=21" alt="Away" status="away" />
+                    <Avatar size="md" src="https://i.pravatar.cc/150?img=22" alt="Busy" status="busy" />
+                    <Avatar size="md" src="https://i.pravatar.cc/150?img=23" alt="Offline" status="offline" />
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
