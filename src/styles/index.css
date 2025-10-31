@@ -1,0 +1,387 @@
+/**
+ * OSLIRA BASE STYLES
+ * 
+ * Base layer: Reset, typography, and global styles
+ * Uses design tokens from theme.css
+ */
+
+@import './theme.css';
+
+/* =========================================================================
+   TAILWIND DIRECTIVES
+   ========================================================================= */
+
+@import 'tailwindcss';
+
+/* =========================================================================
+   GLOBAL RESET & BASE
+   ========================================================================= */
+
+@layer base {
+  /* Box Sizing Reset */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Root Element */
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Body */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+  }
+
+  /* Typography Elements */
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--text-primary);
+  }
+
+  h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.01em;
+    line-height: var(--line-height-snug);
+  }
+
+  h3 {
+    font-size: var(--font-size-2xl);
+    line-height: 1.333;
+  }
+
+  h4 {
+    font-size: var(--font-size-xl);
+    line-height: 1.4;
+  }
+
+  p {
+    margin: 0;
+    line-height: var(--line-height-normal);
+  }
+
+  /* Links */
+  a {
+    color: var(--text-link);
+    text-decoration: none;
+    transition: color var(--duration-normal) var(--easing-default);
+  }
+
+  a:hover {
+    color: var(--text-link-hover);
+  }
+
+  /* Lists */
+  ul, ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Form Elements Reset */
+  button, input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* Focus Visible */
+  :focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Images */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Horizontal Rule */
+  hr {
+    border: none;
+    border-top: 1px solid var(--border-default);
+    margin: var(--space-md) 0;
+  }
+
+  /* Code */
+  code, pre {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.875em;
+  }
+
+  code {
+    padding: 0.125rem 0.25rem;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+  }
+
+  pre {
+    padding: var(--space-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+
+  pre code {
+    padding: 0;
+    background: none;
+  }
+}
+
+/* =========================================================================
+   UTILITY CLASSES
+   ========================================================================= */
+
+@layer utilities {
+  /* Text Utilities */
+  .text-primary {
+    color: var(--text-primary);
+  }
+
+  .text-secondary {
+    color: var(--text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  .text-disabled {
+    color: var(--text-disabled);
+  }
+
+  .text-inverse {
+    color: var(--text-inverse);
+  }
+
+  .text-link {
+    color: var(--text-link);
+  }
+
+  .text-success {
+    color: var(--text-success);
+  }
+
+  .text-error {
+    color: var(--text-error);
+  }
+
+  .text-warning {
+    color: var(--text-warning);
+  }
+
+  /* Background Utilities */
+  .bg-primary {
+    background-color: var(--bg-primary);
+  }
+
+  .bg-secondary {
+    background-color: var(--bg-secondary);
+  }
+
+  .bg-tertiary {
+    background-color: var(--bg-tertiary);
+  }
+
+  .bg-elevated {
+    background-color: var(--bg-elevated);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Border Utilities */
+  .border-default {
+    border-color: var(--border-default);
+  }
+
+  .border-strong {
+    border-color: var(--border-strong);
+  }
+
+  .border-subtle {
+    border-color: var(--border-subtle);
+  }
+
+  /* Shadow Utilities */
+  .shadow-raised {
+    box-shadow: var(--shadow-raised);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .shadow-overlay {
+    box-shadow: var(--shadow-overlay);
+  }
+
+  .shadow-modal {
+    box-shadow: var(--shadow-modal);
+  }
+
+  /* Container Utilities */
+  .container-narrow {
+    max-width: var(--container-narrow);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  .container-default {
+    max-width: var(--container-default);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-lg);
+    padding-right: var(--space-lg);
+  }
+
+  .container-wide {
+    max-width: var(--container-wide);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-xl);
+    padding-right: var(--space-xl);
+  }
+
+  /* Transition Utilities */
+  .transition-default {
+    transition: all var(--duration-medium) var(--easing-default);
+  }
+
+  .transition-fast {
+    transition: all var(--duration-fast) var(--easing-default);
+  }
+
+  .transition-slow {
+    transition: all var(--duration-slow) var(--easing-default);
+  }
+
+  /* Screen Reader Only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Focus Ring (Keyboard Navigation) */
+  .focus-ring {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* =========================================================================
+   COMPONENT PATTERNS
+   ========================================================================= */
+
+@layer components {
+  /* Card Pattern */
+  .card {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .card-compact {
+    padding: var(--space-md);
+  }
+
+  .card-hover {
+    transition: transform var(--duration-medium) var(--easing-default),
+                box-shadow var(--duration-medium) var(--easing-default);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-overlay);
+  }
+
+  /* Section Spacing Pattern */
+  .section {
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+  }
+
+  .section-tight {
+    padding-top: var(--space-2xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  .section-generous {
+    padding-top: var(--space-4xl);
+    padding-bottom: var(--space-4xl);
+  }
+
+  /* Stack Pattern (Vertical Spacing) */
+  .stack > * + * {
+    margin-top: var(--space-md);
+  }
+
+  .stack-sm > * + * {
+    margin-top: var(--space-sm);
+  }
+
+  .stack-lg > * + * {
+    margin-top: var(--space-lg);
+  }
+
+  /* Cluster Pattern (Horizontal Spacing) */
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .cluster-sm {
+    gap: var(--space-sm);
+  }
+
+  .cluster-lg {
+    gap: var(--space-lg);
+  }
+}
