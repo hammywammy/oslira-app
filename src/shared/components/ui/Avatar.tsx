@@ -18,7 +18,6 @@
  */
 
 import { useState } from 'react';
-import { Icon } from '@iconify/react';
 
 // =============================================================================
 // TYPES
