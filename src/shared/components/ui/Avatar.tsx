@@ -92,11 +92,12 @@ const statusColors = {
 // HELPER: GET INITIALS
 // =============================================================================
 
+// NEW CODE (line 93-100)
 function getInitials(name?: string): string {
   if (!name) return '?';
   
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
+  const parts = name.trim().split(' ').filter(Boolean);  // ← Filter out empty strings
+  if (parts.length >= 2 && parts[0][0] && parts[1][0]) {  // ← Guard against empty strings
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
   return name.substring(0, 2).toUpperCase();
