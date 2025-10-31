@@ -1,9 +1,14 @@
 // src/shared/components/ui/Textarea.tsx
 
 /**
- * TEXTAREA COMPONENT
+ * TEXTAREA COMPONENT - PRODUCTION GRADE
  * 
  * Multi-line text input primitive
+ * 
+ * FIXES:
+ * ✅ React Error #137 - Explicitly destructures children to prevent spreading
+ * ✅ Development warning when children accidentally passed
+ * ✅ Type safety with strict prop filtering
  * 
  * FEATURES:
  * - Validation states (default, error, success)
@@ -82,6 +87,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       maxLength,
       value,
       onChange,
+      children, // ← CRITICAL: Explicitly extract to prevent spreading to <textarea>
       ...props
     },
     ref
@@ -90,7 +96,31 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const [charCount, setCharCount] = useState(0);
     const errorId = error && id ? `${id}-error` : undefined;
 
-    // Auto-resize functionality
+    // =========================================================================
+    // SAFETY CHECK - Development warning for children
+    // =========================================================================
+    if (process.env.NODE_ENV === 'development' && children !== undefined) {
+      console.error(
+        '[Textarea] Textarea elements should not have children. Use value/defaultValue instead. The children prop has been ignored.',
+        { receivedChildren: children }
+      );
+    }
+
+    // =========================================================================
+    // COMBINE REFS
+    // =========================================================================
+    const setRefs = (element: HTMLTextAreaElement | null) => {
+      internalRef.current = element;
+      if (typeof ref === 'function') {
+        ref(element);
+      } else if (ref) {
+        ref.current = element;
+      }
+    };
+
+    // =========================================================================
+    // AUTO-RESIZE LOGIC
+    // =========================================================================
     useEffect(() => {
       if (autoResize && internalRef.current) {
         const textarea = internalRef.current;
@@ -99,10 +129,13 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       }
     }, [value, autoResize]);
 
-    // Character count tracking
+    // =========================================================================
+    // CHARACTER COUNT TRACKING
+    // =========================================================================
     useEffect(() => {
-      if (showCount && value) {
-        setCharCount(String(value).length);
+      if (showCount && value !== undefined) {
+        const count = typeof value === 'string' ? value.length : 0;
+        setCharCount(count);
       }
     }, [value, showCount]);
 
@@ -115,70 +148,51 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     return (
       <div className={`flex flex-col gap-2 ${fullWidth ? 'w-full' : ''}`}>
-        {/* Textarea */}
+        {/* Textarea - CRITICAL: Self-closing, children explicitly excluded */}
         <textarea
-          ref={(node) => {
-            // Handle both forwarded ref and internal ref
-            if (typeof ref === 'function') {
-              ref(node);
-            } else if (ref) {
-              ref.current = node;
-            }
-            internalRef.current = node;
-          }}
+          ref={setRefs}
           id={id}
           rows={rows}
-          disabled={disabled}
           maxLength={maxLength}
           value={value}
-          onChange={handleChange}
+          disabled={disabled}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={errorId}
+          onChange={handleChange}
           className={`
             ${getStateStyles(error, success, disabled)}
             ${fullWidth ? 'w-full' : ''}
             px-3 py-2
-            bg-neutral-0
-            border
-            rounded-md
-            font-normal
-            text-base
-            text-neutral-900
-            placeholder:text-neutral-500
-            transition-all duration-100
+            rounded-md border bg-white
+            font-normal text-neutral-900 placeholder-neutral-500
+            transition-all duration-200
             focus:outline-none
-            resize-y
-            ${autoResize ? 'resize-none' : ''}
+            disabled:opacity-50
+            resize-none
             ${className}
           `.trim().replace(/\s+/g, ' ')}
           {...props}
         />
 
-        {/* Footer: Error or Character Count */}
-        <div className="flex items-center justify-between gap-2">
+        {/* Character Count / Error Row */}
+        <div className="flex items-center justify-between">
           {/* Error Message */}
           {error && (
-            <span
+            <div 
               id={errorId}
-              className="text-xs text-error-700 flex items-center gap-1"
+              className="flex items-center gap-1.5 text-sm text-error-600"
               role="alert"
             >
-              <Icon icon="mdi:alert-circle" width={12} height={12} aria-hidden="true" />
-              {error}
-            </span>
+              <Icon icon="lucide:alert-circle" width={14} height={14} />
+              <span>{error}</span>
+            </div>
           )}
 
           {/* Character Count */}
-          {showCount && (
-            <span
-              className={`
-                text-xs ml-auto
-                ${maxLength && charCount > maxLength ? 'text-error-700' : 'text-neutral-600'}
-              `}
-            >
-              {charCount}
-              {maxLength && ` / ${maxLength}`}
-            </span>
+          {showCount && maxLength && (
+            <div className="text-xs text-neutral-600 ml-auto">
+              {charCount} / {maxLength}
+            </div>
           )}
         </div>
       </div>
