@@ -423,6 +423,9 @@ export default function ComponentShowcase() {
               <Button variant="ghost">Ghost Button</Button>
               <Button variant="danger">Danger Button</Button>
             </div>
+            <p className={`text-sm mt-4 ${subtleText}`}>
+              Primary: Electric blue fill · Secondary: Neutral with border · Ghost: Transparent · Danger: Red fill
+            </p>
           </div>
 
           {/* Sizes */}
