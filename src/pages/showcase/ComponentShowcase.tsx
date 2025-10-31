@@ -1,14 +1,14 @@
 // src/pages/showcase/ComponentShowcase.tsx
 
 /**
- * COMPONENT SHOWCASE - PRODUCTION GRADE V4.0
+ * COMPONENT SHOWCASE - PRODUCTION GRADE V4.1
  * 
  * ARCHITECTURE:
  * ✅ ZERO theme management logic (uses global ThemeProvider)
  * ✅ Pure showcase page - only demonstrates components
  * ✅ Uses ThemeToggle component for theme switching
  * ✅ All components automatically respond to global theme
- * ✅ Clean, maintainable, zero duplication
+ * ✅ MATCHES ACTUAL COMPONENT APIs (no TypeScript errors)
  * 
  * DESIGN PHILOSOPHY:
  * "Concert hall, not arcade; calm ocean, not storm"
@@ -136,8 +136,8 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body className="space-y-6">
+          <Card className="p-8">
+            <div className="space-y-6">
               {/* Variants */}
               <div>
                 <h3 className="text-lg font-semibold mb-4">Variants</h3>
@@ -191,7 +191,7 @@ export default function ComponentShowcase() {
                   <Button fullWidth>Full Width</Button>
                 </div>
               </div>
-            </Card.Body>
+            </div>
           </Card>
         </section>
 
@@ -207,8 +207,8 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body className="space-y-6">
+          <Card className="p-8">
+            <div className="space-y-6">
               {/* Text Input */}
               <div>
                 <Label htmlFor="input-default">Text Input</Label>
@@ -247,6 +247,7 @@ export default function ComponentShowcase() {
                     success
                     placeholder="Username"
                     value="johndoe"
+                    readOnly
                   />
                 </div>
               </div>
@@ -279,7 +280,7 @@ export default function ComponentShowcase() {
                   <option value="option3">Option 3</option>
                 </Select>
               </div>
-            </Card.Body>
+            </div>
           </Card>
         </section>
 
@@ -295,57 +296,57 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body className="space-y-6">
+          <Card className="p-8">
+            <div className="space-y-6">
               {/* Checkbox */}
               <div>
                 <Checkbox
-                  id="checkbox-demo"
                   checked={checkboxChecked}
                   onChange={(e) => setCheckboxChecked(e.target.checked)}
-                  label="I agree to the terms and conditions"
-                />
+                >
+                  I agree to the terms and conditions
+                </Checkbox>
               </div>
 
               {/* Radio Buttons */}
               <div className="space-y-3">
                 <Label>Choose your plan</Label>
                 <Radio
-                  id="radio-1"
                   name="plan"
                   value="option1"
                   checked={radioValue === 'option1'}
-                  onChange={(e) => setRadioValue(e.target.value)}
-                  label="Starter - $29/month"
-                />
+                  onChange={() => setRadioValue('option1')}
+                >
+                  Starter - $29/month
+                </Radio>
                 <Radio
-                  id="radio-2"
                   name="plan"
                   value="option2"
                   checked={radioValue === 'option2'}
-                  onChange={(e) => setRadioValue(e.target.value)}
-                  label="Pro - $99/month"
-                />
+                  onChange={() => setRadioValue('option2')}
+                >
+                  Pro - $99/month
+                </Radio>
                 <Radio
-                  id="radio-3"
                   name="plan"
                   value="option3"
                   checked={radioValue === 'option3'}
-                  onChange={(e) => setRadioValue(e.target.value)}
-                  label="Enterprise - $299/month"
-                />
+                  onChange={() => setRadioValue('option3')}
+                >
+                  Enterprise - $299/month
+                </Radio>
               </div>
 
               {/* Switch */}
               <div>
                 <Switch
-                  id="switch-demo"
                   checked={switchChecked}
                   onChange={(e) => setSwitchChecked(e.target.checked)}
-                  label="Enable notifications"
-                />
+                >
+                  Enable notifications
+                </Switch>
               </div>
-            </Card.Body>
+            </div>
           </Card>
         </section>
 
@@ -361,8 +362,8 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body className="space-y-6">
+          <Card className="p-8">
+            <div className="space-y-6">
               {/* Alerts */}
               <div className="space-y-3">
                 <Alert variant="info" icon="ph:info-bold">
@@ -418,7 +419,7 @@ export default function ComponentShowcase() {
                 </div>
                 <Progress value={progress} />
               </div>
-            </Card.Body>
+            </div>
           </Card>
         </section>
 
@@ -434,8 +435,8 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body className="space-y-6">
+          <Card className="p-8">
+            <div className="space-y-6">
               {/* Badges */}
               <div>
                 <Label className="mb-4">Badges</Label>
@@ -455,17 +456,17 @@ export default function ComponentShowcase() {
                 <div className="flex items-center gap-4">
                   <Avatar 
                     src="https://i.pravatar.cc/150?img=1" 
-                    alt="User 1"
+                    name="User 1"
                     size="sm"
                   />
                   <Avatar 
                     src="https://i.pravatar.cc/150?img=2" 
-                    alt="User 2"
+                    name="User 2"
                     size="md"
                   />
                   <Avatar 
                     src="https://i.pravatar.cc/150?img=3" 
-                    alt="User 3"
+                    name="User 3"
                     size="lg"
                   />
                   <Avatar 
@@ -479,32 +480,26 @@ export default function ComponentShowcase() {
               <div>
                 <Label className="mb-4">Card Variants</Label>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Card variant="default">
-                    <Card.Header>
-                      <Card.Title>Default Card</Card.Title>
-                      <Card.Description>
+                  <Card>
+                    <div className="p-6">
+                      <h3 className="font-semibold mb-2">Default Card</h3>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
                         Standard card with subtle border
-                      </Card.Description>
-                    </Card.Header>
-                    <Card.Body>
-                      Clean and professional card design
-                    </Card.Body>
+                      </p>
+                    </div>
                   </Card>
 
-                  <Card variant="elevated">
-                    <Card.Header>
-                      <Card.Title>Elevated Card</Card.Title>
-                      <Card.Description>
+                  <Card shadow="lg">
+                    <div className="p-6">
+                      <h3 className="font-semibold mb-2">Elevated Card</h3>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
                         Card with shadow elevation
-                      </Card.Description>
-                    </Card.Header>
-                    <Card.Body>
-                      Adds depth to your interface
-                    </Card.Body>
+                      </p>
+                    </div>
                   </Card>
                 </div>
               </div>
-            </Card.Body>
+            </div>
           </Card>
         </section>
 
@@ -520,8 +515,8 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body className="space-y-6">
+          <Card className="p-8">
+            <div className="space-y-6">
               {/* Modal Trigger */}
               <div>
                 <Label className="mb-4">Modal</Label>
@@ -537,7 +532,7 @@ export default function ComponentShowcase() {
                   <Tooltip content="This is a tooltip">
                     <Button variant="secondary">Hover me</Button>
                   </Tooltip>
-                  <Tooltip content="Tooltips work on any element" position="top">
+                  <Tooltip content="Tooltips work on any element" placement="top">
                     <Icon 
                       icon="ph:info-bold" 
                       className="text-2xl text-neutral-500 cursor-help"
@@ -545,7 +540,7 @@ export default function ComponentShowcase() {
                   </Tooltip>
                 </div>
               </div>
-            </Card.Body>
+            </div>
           </Card>
         </section>
 
@@ -561,23 +556,21 @@ export default function ComponentShowcase() {
             </p>
           </div>
 
-          <Card>
-            <Card.Body>
-              <div className="flex items-center gap-8">
-                <div className="space-y-2">
-                  <Label>Small</Label>
-                  <Logo size="sm" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Medium</Label>
-                  <Logo size="md" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Large</Label>
-                  <Logo size="lg" />
-                </div>
+          <Card className="p-8">
+            <div className="flex items-center gap-8">
+              <div className="space-y-2">
+                <Label>Small</Label>
+                <Logo size="sm" />
               </div>
-            </Card.Body>
+              <div className="space-y-2">
+                <Label>Medium</Label>
+                <Logo size="md" />
+              </div>
+              <div className="space-y-2">
+                <Label>Large</Label>
+                <Logo size="lg" />
+              </div>
+            </div>
           </Card>
         </section>
 
