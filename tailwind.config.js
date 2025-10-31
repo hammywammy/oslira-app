@@ -8,6 +8,7 @@
 import tailwindcss from '@tailwindcss/vite';
 
 export default {
+  darkMode: 'class', // ← CRITICAL: Enable class-based dark mode
   theme: {
     extend: {
       colors: {
