@@ -1,9 +1,14 @@
 // src/shared/components/ui/Input.tsx
 
 /**
- * INPUT COMPONENT
+ * INPUT COMPONENT - PRODUCTION GRADE
  * 
  * Text input primitive with validation states
+ * 
+ * FIXES:
+ * ✅ React Error #137 - Explicitly destructures children to prevent spreading
+ * ✅ Development warning when children accidentally passed
+ * ✅ Type safety with strict prop filtering
  * 
  * FEATURES:
  * - 3 sizes (sm, md, lg)
@@ -96,12 +101,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       disabled = false,
       className = '',
       id,
+      children, // ← CRITICAL: Explicitly extract to prevent spreading to <input>
       ...props
     },
     ref
   ) => {
     const hasIcon = Boolean(icon);
     const errorId = error && id ? `${id}-error` : undefined;
+
+    // =========================================================================
+    // SAFETY CHECK - Development warning for children
+    // =========================================================================
+    if (process.env.NODE_ENV === 'development' && children !== undefined) {
+      console.error(
+        '[Input] Input elements cannot have children. The children prop has been ignored.',
+        { receivedChildren: children }
+      );
+    }
 
     return (
       <div className={`flex flex-col gap-2 ${fullWidth ? 'w-full' : ''}`}>
@@ -120,7 +136,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
 
-          {/* Input - CRITICAL: Self-closing, NO children allowed */}
+          {/* Input - CRITICAL: Self-closing, children explicitly excluded */}
           <input
             ref={ref}
             id={id}
