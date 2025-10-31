@@ -1,6 +1,6 @@
 /**
  * OSLIRA DESIGN SYSTEM - THEME TOKENS
- * Version 1.0 | October 2025
+ * Version 2.0 | Production Ready with Dark Mode
  * 
  * PHILOSOPHY:
  * - Neutral grays are the foundation (OpenAI/Stripe style)
@@ -12,30 +12,41 @@
  * - CSS Custom Properties for runtime theming
  * - Semantic naming for scalable systems
  * - WCAG AA compliance on all text combinations
+ * - Enterprise dark mode pattern (Shadcn/Vercel/Linear approach)
+ * 
+ * DARK MODE STRATEGY:
+ * - :root defines light mode (default)
+ * - .dark overrides flip neutrals and semantic tokens
+ * - Brand colors (primary, secondary, states) remain consistent
+ * - Components use Tailwind dark: variant automatically
  */
 
 @layer base {
+  /* ===========================================================================
+     LIGHT MODE (DEFAULT)
+     =========================================================================== */
+  
   :root {
     /* =========================================================================
        1. NEUTRAL GRAYS (FOUNDATION) - Perceptually Uniform
        ========================================================================= */
     
     /* Backgrounds & Surfaces */
-    --color-neutral-0: #FFFFFF;
-    --color-neutral-50: #FAFBFC;
-    --color-neutral-100: #F4F6F8;
-    --color-neutral-200: #E8ECEF;
-    --color-neutral-300: #DFE3E8;
+    --color-neutral-0: #FFFFFF;      /* Pure white */
+    --color-neutral-50: #FAFBFC;     /* Subtle off-white */
+    --color-neutral-100: #F4F6F8;    /* Light gray background */
+    --color-neutral-200: #E8ECEF;    /* Card background */
+    --color-neutral-300: #DFE3E8;    /* Subtle borders */
     
     /* Borders & Dividers */
-    --color-neutral-400: #C9CED6;
-    --color-neutral-500: #A8ADB7;
+    --color-neutral-400: #C9CED6;    /* Default borders */
+    --color-neutral-500: #A8ADB7;    /* Strong borders */
     
     /* Text & Foreground */
-    --color-neutral-600: #6E7681;
-    --color-neutral-700: #4B5563;
-    --color-neutral-800: #1F2937;
-    --color-neutral-900: #0A0D14;
+    --color-neutral-600: #6E7681;    /* Tertiary text */
+    --color-neutral-700: #4B5563;    /* Secondary text */
+    --color-neutral-800: #1F2937;    /* Body text */
+    --color-neutral-900: #0A0D14;    /* Headings, primary text */
 
     /* =========================================================================
        2. PRIMARY BRAND (ELECTRIC BLUE) - Strategic Accent
@@ -43,10 +54,10 @@
     
     --color-primary-300: #66D4FF;
     --color-primary-400: #33C7FF;
-    --color-primary-500: #00B8FF; /* Main brand */
-    --color-primary-600: #0099D6; /* Enhanced contrast */
-    --color-primary-700: #007AB3; /* Hover */
-    --color-primary-800: #005A85; /* Active/pressed */
+    --color-primary-500: #00B8FF;    /* Main brand */
+    --color-primary-600: #0099D6;    /* Enhanced contrast */
+    --color-primary-700: #007AB3;    /* Hover */
+    --color-primary-800: #005A85;    /* Active/pressed */
 
     /* =========================================================================
        3. SECONDARY BRAND (SUBTLE PURPLE) - Micro-Accent (5% usage max)
@@ -54,7 +65,7 @@
     
     --color-secondary-300: #BFB3E1;
     --color-secondary-400: #A599D4;
-    --color-secondary-500: #8B7FC7; /* Main accent */
+    --color-secondary-500: #8B7FC7;  /* Main accent */
     --color-secondary-600: #7566B3;
     --color-secondary-700: #5F4D99;
 
@@ -107,7 +118,7 @@
     --color-data-gray: #6E7681;
 
     /* =========================================================================
-       6. SEMANTIC TEXT TOKENS
+       6. SEMANTIC TEXT TOKENS (Light Mode)
        ========================================================================= */
     
     --text-primary: var(--color-neutral-900);
@@ -122,21 +133,21 @@
     --text-warning: var(--color-warning-700);
 
     /* =========================================================================
-       7. SEMANTIC BACKGROUND TOKENS
+       7. SEMANTIC BACKGROUND TOKENS (Light Mode)
        ========================================================================= */
     
     --bg-primary: var(--color-neutral-0);
     --bg-secondary: var(--color-neutral-50);
     --bg-tertiary: var(--color-neutral-100);
     --bg-elevated: var(--color-neutral-0);
-    --bg-overlay: rgba(10, 13, 20, 0.6); /* Neutral-900 @ 60% */
+    --bg-overlay: rgba(10, 13, 20, 0.6);
     --bg-success-subtle: var(--color-success-100);
     --bg-error-subtle: var(--color-error-100);
     --bg-warning-subtle: var(--color-warning-100);
     --bg-info-subtle: var(--color-info-100);
 
     /* =========================================================================
-       8. SEMANTIC BORDER TOKENS
+       8. SEMANTIC BORDER TOKENS (Light Mode)
        ========================================================================= */
     
     --border-default: var(--color-neutral-400);
@@ -147,7 +158,7 @@
     --border-success: var(--color-success-500);
 
     /* =========================================================================
-       9. INTERACTIVE COMPONENT TOKENS
+       9. INTERACTIVE COMPONENT TOKENS (Light Mode)
        ========================================================================= */
     
     /* Primary Button */
@@ -222,91 +233,137 @@
     --easing-in: cubic-bezier(0.4, 0.0, 1.0, 1.0);
 
     /* =========================================================================
-       14. TYPOGRAPHY SCALE
+       14. TYPOGRAPHY SYSTEM
        ========================================================================= */
     
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     
-    /* Font Sizes */
-    --font-size-xs: 0.75rem;      /* 12px - Fine print */
-    --font-size-sm: 0.8125rem;    /* 13px - Captions */
-    --font-size-base: 0.875rem;   /* 14px - Body small */
-    --font-size-md: 1rem;         /* 16px - Body default */
-    --font-size-lg: 1.125rem;     /* 18px - Body large */
-    --font-size-xl: 1.25rem;      /* 20px - H4 */
-    --font-size-2xl: 1.5rem;      /* 24px - H3 */
-    --font-size-3xl: 2rem;        /* 32px - H2 */
-    --font-size-4xl: 3rem;        /* 48px - H1 */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.8125rem;  /* 13px */
+    --font-size-base: 0.875rem; /* 14px - DEFAULT */
+    --font-size-md: 1rem;       /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 2rem;      /* 32px */
+    --font-size-4xl: 2.5rem;    /* 40px */
     
-    /* Line Heights */
-    --line-height-tight: 1.167;
-    --line-height-snug: 1.25;
-    --line-height-normal: 1.5;
-    --line-height-relaxed: 1.556;
-    
-    /* Font Weights */
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
+    
+    --line-height-tight: 1.2;
+    --line-height-snug: 1.375;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.625;
 
     /* =========================================================================
-       15. CONTAINER MAX-WIDTHS
+       15. CONTAINER WIDTHS
        ========================================================================= */
     
     --container-narrow: 640px;
-    --container-default: 1140px;
+    --container-default: 1024px;
     --container-wide: 1280px;
-    --container-full: 1440px;
+    --container-full: 100%;
 
     /* =========================================================================
        16. Z-INDEX SCALE
        ========================================================================= */
     
     --z-base: 0;
-    --z-dropdown: 10;
-    --z-sticky: 20;
-    --z-fixed: 30;
-    --z-overlay: 40;
-    --z-modal: 50;
-    --z-toast: 60;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-overlay: 400;
+    --z-modal: 500;
+    --z-toast: 600;
   }
 
-  /* =========================================================================
-   DARK MODE OVERRIDES
-   ========================================================================= */
+  /* ===========================================================================
+     DARK MODE OVERRIDES
+     ===========================================================================
+     
+     STRATEGY:
+     - Flip the neutral scale (0 becomes dark, 900 becomes light)
+     - Update semantic tokens to reference flipped neutrals
+     - Keep brand colors (primary, secondary, states) consistent
+     - Adjust overlay and shadow opacity for dark backgrounds
+     
+     INSPIRED BY:
+     - Shadcn UI's semantic token approach
+     - Vercel's CSS variable architecture
+     - Linear's professional dark mode
+     =========================================================================== */
+  
+  .dark {
+    /* =========================================================================
+       INVERTED NEUTRAL SCALE
+       ========================================================================= */
+    /* The magic: flip light↔dark to make components adapt automatically */
+    
+    --color-neutral-0: #0A0D14;      /* Was white → now dark */
+    --color-neutral-50: #1F2937;     /* Deep gray surface */
+    --color-neutral-100: #374151;    /* Card background */
+    --color-neutral-200: #4B5563;    /* Elevated surface */
+    --color-neutral-300: #6B7280;    /* Subtle borders */
+    --color-neutral-400: #9CA3AF;    /* Default borders */
+    --color-neutral-500: #D1D5DB;    /* Strong borders */
+    --color-neutral-600: #E5E7EB;    /* Tertiary text */
+    --color-neutral-700: #F3F4F6;    /* Secondary text */
+    --color-neutral-800: #F9FAFB;    /* Body text */
+    --color-neutral-900: #FFFFFF;    /* Was dark → now white (headings) */
 
-.dark {
-  /* Dark Mode Colors */
-  --color-neutral-0: #0A0D14;
-  --color-neutral-50: #1F2937;
-  --color-neutral-100: #374151;
-  --color-neutral-200: #4B5563;
-  --color-neutral-300: #6B7280;
-  --color-neutral-400: #9CA3AF;
-  --color-neutral-500: #D1D5DB;
-  --color-neutral-600: #E5E7EB;
-  --color-neutral-700: #F3F4F6;
-  --color-neutral-800: #F9FAFB;
-  --color-neutral-900: #FFFFFF;
+    /* =========================================================================
+       SEMANTIC TEXT TOKENS (Dark Mode)
+       ========================================================================= */
+    /* These auto-update because they reference the flipped neutrals above */
+    
+    --text-primary: var(--color-neutral-900);     /* Now white */
+    --text-secondary: var(--color-neutral-700);   /* Light gray */
+    --text-tertiary: var(--color-neutral-600);    /* Medium gray */
+    --text-disabled: var(--color-neutral-500);    /* Dimmed */
+    --text-inverse: var(--color-neutral-0);       /* Now dark */
 
-  /* Dark Mode Text */
-  --text-primary: var(--color-neutral-900);
-  --text-secondary: var(--color-neutral-700);
-  --text-tertiary: var(--color-neutral-600);
-  --text-disabled: var(--color-neutral-500);
-  --text-inverse: var(--color-neutral-0);
+    /* =========================================================================
+       SEMANTIC BACKGROUND TOKENS (Dark Mode)
+       ========================================================================= */
+    
+    --bg-primary: var(--color-neutral-0);         /* Now dark */
+    --bg-secondary: var(--color-neutral-50);      /* Slightly lighter */
+    --bg-tertiary: var(--color-neutral-100);      /* Card surface */
+    --bg-elevated: var(--color-neutral-50);       /* Floating elements */
+    --bg-overlay: rgba(0, 0, 0, 0.7);             /* Darker overlay */
 
-  /* Dark Mode Backgrounds */
-  --bg-primary: var(--color-neutral-0);
-  --bg-secondary: var(--color-neutral-50);
-  --bg-tertiary: var(--color-neutral-100);
-  --bg-elevated: var(--color-neutral-50);
-  --bg-overlay: rgba(255, 255, 255, 0.1);
+    /* =========================================================================
+       SEMANTIC BORDER TOKENS (Dark Mode)
+       ========================================================================= */
+    
+    --border-default: var(--color-neutral-400);   /* Lighter in dark mode */
+    --border-strong: var(--color-neutral-500);    /* Emphasized borders */
+    --border-subtle: var(--color-neutral-300);    /* Very subtle */
 
-  /* Dark Mode Borders */
-  --border-default: var(--color-neutral-400);
-  --border-strong: var(--color-neutral-500);
-  --border-subtle: var(--color-neutral-300);
-}
+    /* =========================================================================
+       INTERACTIVE COMPONENT TOKENS (Dark Mode)
+       ========================================================================= */
+    
+    /* Secondary Button - needs specific dark mode treatment */
+    --button-secondary-bg: var(--color-neutral-800);
+    --button-secondary-bg-hover: var(--color-neutral-700);
+    --button-secondary-text: var(--color-neutral-100);
+    
+    /* Ghost Button - lighter hover in dark mode */
+    --button-ghost-bg-hover: var(--color-neutral-800);
+    --button-ghost-text: var(--color-neutral-300);
+
+    /* =========================================================================
+       ELEVATION SHADOWS (Dark Mode)
+       ========================================================================= */
+    /* Lighter shadows with more alpha for visibility on dark backgrounds */
+    
+    --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-overlay: 0 4px 8px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+    --shadow-modal: 0 8px 16px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.5);
+  }
 }
