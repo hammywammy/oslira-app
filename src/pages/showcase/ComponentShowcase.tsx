@@ -1,28 +1,21 @@
 // src/pages/showcase/ComponentShowcase.tsx
 
 /**
- * COMPONENT SHOWCASE - PRODUCTION GRADE
- * 
- * Oslira Design System: Intelligence + Mastery
- * Inspired by Supabase, Linear, Stripe, OpenAI
+ * COMPONENT SHOWCASE - PRODUCTION GRADE V2.0
  * 
  * ARCHITECTURE:
- * ✅ Light mode PRIMARY (default)
- * ✅ Dark mode toggle (bottom-left corner)
- * ✅ Professional color system from design doc
- * ✅ WCAG AA compliant contrast ratios
- * ✅ Perceptually uniform neutrals
- * ✅ Semantic state colors
- * ✅ Copy-to-clipboard color swatches
- * ✅ Mode-specific component variants
+ * ✅ Manual toggle button controls Tailwind's natural dark mode
+ * ✅ isDark state syncs with <html class="dark">
+ * ✅ All components automatically respond via dark: classes
+ * ✅ No manual theme management - pure Tailwind
+ * ✅ Professional, clean showcase layout
  * 
  * DESIGN PHILOSOPHY:
  * "Concert hall, not arcade; calm ocean, not storm"
- * Clean, professional, never boring
- * Data-driven intelligence over gimmicks
+ * Let the components speak for themselves
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
@@ -40,101 +33,15 @@ import { Avatar } from '@/shared/components/ui/Avatar';
 import { Spinner } from '@/shared/components/ui/Spinner';
 import { Alert } from '@/shared/components/ui/Alert';
 import { Progress } from '@/shared/components/ui/Progress';
-
-// =============================================================================
-// COMPLETE OSLIRA COLOR SYSTEM (v1.0 - October 2025)
-// =============================================================================
-
-const COLOR_SYSTEM = {
-  // PRIMARY BRAND: Electric Intelligence Blue
-  primary: [
-    { name: 'Primary 800', value: '#005A85', usage: 'Deepest - pressed states', wcag: 'AAA' },
-    { name: 'Primary 700', value: '#007AB3', usage: 'Darker - hover states', wcag: 'AAA' },
-    { name: 'Primary 600', value: '#0099D6', usage: 'Dark - links', wcag: 'AA' },
-    { name: 'Primary 500', value: '#00B8FF', usage: 'Main brand', wcag: 'AA' },
-    { name: 'Primary 400', value: '#33C7FF', usage: 'Light - loading states', wcag: 'AA' },
-    { name: 'Primary 300', value: '#66D4FF', usage: 'Subtle - disabled', wcag: 'A' },
-  ],
-
-  // SECONDARY: Subtle Intelligence Purple (5% usage max)
-  secondary: [
-    { name: 'Secondary 700', value: '#5F4D99', usage: 'Deeper - hover', wcag: 'AA' },
-    { name: 'Secondary 600', value: '#7566B3', usage: 'Dark - premium tier', wcag: 'AA' },
-    { name: 'Secondary 500', value: '#8B7FC7', usage: 'Main - micro-interactions', wcag: 'AA' },
-    { name: 'Secondary 400', value: '#A599D4', usage: 'Light - processing', wcag: 'AA' },
-    { name: 'Secondary 300', value: '#BFB3E1', usage: 'Subtle - accents', wcag: 'A' },
-  ],
-
-  // NEUTRALS: Perceptually Uniform (Stripe LAB methodology)
-  neutral: [
-    { name: 'Neutral 0', value: '#FFFFFF', usage: 'White - page bg', wcag: '—' },
-    { name: 'Neutral 50', value: '#FAFBFC', usage: 'Snow - card surfaces', wcag: '—' },
-    { name: 'Neutral 100', value: '#F4F6F8', usage: 'Lightest - hover bg', wcag: '—' },
-    { name: 'Neutral 200', value: '#E8ECEF', usage: 'Subtle - disabled bg', wcag: '—' },
-    { name: 'Neutral 300', value: '#DFE3E8', usage: 'Light - subtle borders', wcag: '—' },
-    { name: 'Neutral 400', value: '#C9CED6', usage: 'Border - default', wcag: '—' },
-    { name: 'Neutral 500', value: '#A8ADB7', usage: 'Mid - strong borders', wcag: 'AA' },
-    { name: 'Neutral 600', value: '#6E7681', usage: 'Muted - secondary text', wcag: 'AA' },
-    { name: 'Neutral 700', value: '#4B5563', usage: 'Body - body text', wcag: 'AAA' },
-    { name: 'Neutral 800', value: '#1F2937', usage: 'Heading - headings', wcag: 'AAA' },
-    { name: 'Neutral 900', value: '#0A0D14', usage: 'Black - primary text', wcag: 'AAA' },
-  ],
-
-  // SEMANTIC STATES
-  success: [
-    { name: 'Success 100', value: '#D1FAE5', usage: 'Surface - alert bg', wcag: '—' },
-    { name: 'Success 200', value: '#A7F3D0', usage: 'Subtle - border', wcag: '—' },
-    { name: 'Success 400', value: '#34D399', usage: 'Light - icons', wcag: 'AA' },
-    { name: 'Success 500', value: '#10B981', usage: 'Main - badges', wcag: 'AA' },
-    { name: 'Success 600', value: '#059669', usage: 'Dark - buttons', wcag: 'AA' },
-    { name: 'Success 700', value: '#047857', usage: 'Deeper - text', wcag: 'AAA' },
-  ],
-
-  error: [
-    { name: 'Error 100', value: '#FEE2E2', usage: 'Surface - alert bg', wcag: '—' },
-    { name: 'Error 200', value: '#FECACA', usage: 'Subtle - border', wcag: '—' },
-    { name: 'Error 400', value: '#F87171', usage: 'Light - icons', wcag: 'AA' },
-    { name: 'Error 500', value: '#EF4444', usage: 'Main - validation', wcag: 'AA' },
-    { name: 'Error 600', value: '#DC2626', usage: 'Dark - buttons', wcag: 'AA' },
-    { name: 'Error 700', value: '#B91C1C', usage: 'Deeper - text', wcag: 'AAA' },
-  ],
-
-  warning: [
-    { name: 'Warning 100', value: '#FEF3C7', usage: 'Surface - alert bg', wcag: '—' },
-    { name: 'Warning 200', value: '#FDE68A', usage: 'Subtle - border', wcag: '—' },
-    { name: 'Warning 400', value: '#FBBF24', usage: 'Light - icons', wcag: 'AA' },
-    { name: 'Warning 500', value: '#F59E0B', usage: 'Main - warnings', wcag: 'AA' },
-    { name: 'Warning 600', value: '#D97706', usage: 'Dark - buttons', wcag: 'AA' },
-    { name: 'Warning 700', value: '#B45309', usage: 'Deeper - text', wcag: 'AAA' },
-  ],
-
-  info: [
-    { name: 'Info 100', value: '#DBEAFE', usage: 'Surface - alert bg', wcag: '—' },
-    { name: 'Info 200', value: '#BFDBFE', usage: 'Subtle - border', wcag: '—' },
-    { name: 'Info 400', value: '#60A5FA', usage: 'Light - icons', wcag: 'AA' },
-    { name: 'Info 500', value: '#3B82F6', usage: 'Main - info', wcag: 'AA' },
-    { name: 'Info 600', value: '#2563EB', usage: 'Dark - buttons', wcag: 'AA' },
-    { name: 'Info 700', value: '#1D4ED8', usage: 'Deeper - text', wcag: 'AAA' },
-  ],
-
-  // DATA VISUALIZATION
-  data: [
-    { name: 'Data Blue', value: '#00B8FF', usage: 'High-value leads', wcag: 'AA' },
-    { name: 'Data Teal', value: '#14B8A6', usage: 'Engagement metrics', wcag: 'AA' },
-    { name: 'Data Purple', value: '#8B7FC7', usage: 'Premium tier data', wcag: 'AA' },
-    { name: 'Data Green', value: '#10B981', usage: 'Positive trends', wcag: 'AA' },
-    { name: 'Data Orange', value: '#F59E0B', usage: 'Warning metrics', wcag: 'AA' },
-    { name: 'Data Red', value: '#EF4444', usage: 'Critical metrics', wcag: 'AA' },
-    { name: 'Data Gray', value: '#6E7681', usage: 'Neutral data', wcag: 'AA' },
-  ],
-};
+import { Tooltip } from '@/shared/components/ui/Tooltip';
+import { Modal } from '@/shared/components/ui/Modal';
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export default function ComponentShowcase() {
-  const [copiedColor, setCopiedColor] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState(false);
   
   // Form state
   const [checkboxChecked, setCheckboxChecked] = useState(false);
@@ -143,72 +50,72 @@ export default function ComponentShowcase() {
   const [selectValue, setSelectValue] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [textareaValue, setTextareaValue] = useState('');
-  
-  // Toast/Alert state
-  const [showToast, setShowToast] = useState(false);
   const [progress, setProgress] = useState(60);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const copyToClipboard = (color: string) => {
-    navigator.clipboard.writeText(color);
-    setCopiedColor(color);
-    setTimeout(() => setCopiedColor(null), 2000);
-  };
-  
-  const triggerToast = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  };
-
-  // Toggle dark mode by adding/removing 'dark' class on document
-  const toggleDarkMode = () => {
-    document.documentElement.classList.toggle('dark');
-  };
+  // Sync isDark with <html class="dark">
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       
-      {/* Dark Mode Toggle - Bottom Left Corner */}
+      {/* =====================================================================
+          DARK MODE TOGGLE - BOTTOM LEFT CORNER
+          ===================================================================== */}
       <motion.button
-        onClick={toggleDarkMode}
-        className="fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 dark:border-neutral-600"
+        onClick={() => setIsDark(!isDark)}
+        className="fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all
+                   bg-white dark:bg-neutral-800 
+                   hover:bg-neutral-50 dark:hover:bg-neutral-700 
+                   border border-neutral-300 dark:border-neutral-600"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Toggle dark mode"
       >
         <AnimatePresence mode="wait">
-          <motion.div
-            key={document.documentElement.classList.contains('dark') ? 'sun' : 'moon'}
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Icon 
-              icon={document.documentElement.classList.contains('dark') ? "ph:sun-bold" : "ph:moon-bold"} 
-              className="text-2xl text-neutral-700 dark:text-yellow-400" 
-            />
-          </motion.div>
+          {isDark ? (
+            <motion.div
+              key="sun"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Icon icon="ph:sun-bold" className="text-2xl text-yellow-400" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="moon"
+              initial={{ rotate: 90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Icon icon="ph:moon-bold" className="text-2xl text-neutral-700" />
+            </motion.div>
+          )}
         </AnimatePresence>
       </motion.button>
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-neutral-200 dark:border-neutral-700">
-        {/* Subtle Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)',
-            backgroundSize: '48px 48px'
-          }} />
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      {/* =====================================================================
+          HERO SECTION
+          ===================================================================== */}
+      <div className="relative overflow-hidden border-b border-neutral-200 dark:border-neutral-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center space-y-6"
           >
             {/* Brand Badge */}
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border bg-primary-500/5 dark:bg-primary-500/10 border-primary-500/20">
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border
+                            bg-primary-500/5 border-primary-500/20">
               <Logo size="sm" />
               <span className="font-semibold text-primary-600 dark:text-primary-400">
                 Oslira Design System
@@ -220,276 +127,142 @@ export default function ComponentShowcase() {
             </h1>
             
             <p className="text-xl max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
-              Intelligence + Mastery · Inspired by Supabase, Linear, Stripe, OpenAI
+              Production-grade UI components with natural dark mode support
             </p>
 
             {/* Metrics */}
             <div className="flex items-center justify-center gap-8 pt-4">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  60+
-                </div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Colors</div>
+                <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">14</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Components</div>
               </div>
               <div className="w-px h-12 bg-neutral-300 dark:bg-neutral-700" />
               <div className="text-center">
-                <div className="text-3xl font-bold text-success-600 dark:text-success-400">
-                  WCAG AA
-                </div>
+                <div className="text-3xl font-bold text-success-600 dark:text-success-400">WCAG AA</div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">Compliant</div>
               </div>
               <div className="w-px h-12 bg-neutral-300 dark:bg-neutral-700" />
               <div className="text-center">
-                <div className="text-3xl font-bold text-secondary-600 dark:text-secondary-400">
-                  Production
-                </div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Ready</div>
+                <div className="text-3xl font-bold text-secondary-600 dark:text-secondary-400">0</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Tech Debt</div>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
 
+      {/* =====================================================================
+          MAIN CONTENT
+          ===================================================================== */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
-        
-        {/* PRIMARY BRAND COLORS */}
-        <ColorSection
-          title="Primary Brand"
-          subtitle="Electric Intelligence Blue · Main CTAs, links, active states"
-          colors={COLOR_SYSTEM.primary}
-          isDark={isDark}
-          copiedColor={copiedColor}
-          onCopy={copyToClipboard}
-          cardBg={cardBg}
-          borderColor={borderColor}
-          subtleText={subtleText}
-          headingText={headingText}
-        />
 
-        {/* SECONDARY COLORS */}
-        <ColorSection
-          title="Secondary Intelligence"
-          subtitle="Subtle Purple · 5% usage max · Micro-interactions, premium tiers"
-          colors={COLOR_SYSTEM.secondary}
-          isDark={isDark}
-          copiedColor={copiedColor}
-          onCopy={copyToClipboard}
-          cardBg={cardBg}
-          borderColor={borderColor}
-          subtleText={subtleText}
-          headingText={headingText}
-        />
-
-        {/* NEUTRAL SYSTEM */}
-        <ColorSection
-          title="Neutral System"
-          subtitle="Perceptually Uniform · Stripe LAB methodology · Backgrounds, text, borders"
-          colors={COLOR_SYSTEM.neutral}
-          isDark={isDark}
-          copiedColor={copiedColor}
-          onCopy={copyToClipboard}
-          cardBg={cardBg}
-          borderColor={borderColor}
-          subtleText={subtleText}
-          headingText={headingText}
-          gridCols="grid-cols-2 md:grid-cols-4 lg:grid-cols-6"
-        />
-
-        {/* SEMANTIC STATES */}
-        <div className="space-y-12">
-          <div className="text-center space-y-3">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Semantic States</h2>
-            <p className={`text-lg ${subtleText}`}>
-              Universal patterns · Success, error, warning, info
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <ColorSection
-              title="Success"
-              subtitle="Confirmation, positive actions"
-              colors={COLOR_SYSTEM.success}
-              isDark={isDark}
-              copiedColor={copiedColor}
-              onCopy={copyToClipboard}
-              cardBg={cardBg}
-              borderColor={borderColor}
-              subtleText={subtleText}
-              headingText={headingText}
-              gridCols="grid-cols-2 md:grid-cols-3"
-              compact
-            />
-
-            <ColorSection
-              title="Error"
-              subtitle="Destructive, critical states"
-              colors={COLOR_SYSTEM.error}
-              isDark={isDark}
-              copiedColor={copiedColor}
-              onCopy={copyToClipboard}
-              cardBg={cardBg}
-              borderColor={borderColor}
-              subtleText={subtleText}
-              headingText={headingText}
-              gridCols="grid-cols-2 md:grid-cols-3"
-              compact
-            />
-
-            <ColorSection
-              title="Warning"
-              subtitle="Caution, important notices"
-              colors={COLOR_SYSTEM.warning}
-              isDark={isDark}
-              copiedColor={copiedColor}
-              onCopy={copyToClipboard}
-              cardBg={cardBg}
-              borderColor={borderColor}
-              subtleText={subtleText}
-              headingText={headingText}
-              gridCols="grid-cols-2 md:grid-cols-3"
-              compact
-            />
-
-            <ColorSection
-              title="Info"
-              subtitle="Informational, neutral updates"
-              colors={COLOR_SYSTEM.info}
-              isDark={isDark}
-              copiedColor={copiedColor}
-              onCopy={copyToClipboard}
-              cardBg={cardBg}
-              borderColor={borderColor}
-              subtleText={subtleText}
-              headingText={headingText}
-              gridCols="grid-cols-2 md:grid-cols-3"
-              compact
-            />
-          </div>
-        </div>
-
-        {/* DATA VISUALIZATION */}
-        <ColorSection
-          title="Data Visualization"
-          subtitle="Lead scores, metrics, analytics charts"
-          colors={COLOR_SYSTEM.data}
-          isDark={isDark}
-          copiedColor={copiedColor}
-          onCopy={copyToClipboard}
-          cardBg={cardBg}
-          borderColor={borderColor}
-          subtleText={subtleText}
-          headingText={headingText}
-          gridCols="grid-cols-2 md:grid-cols-4 lg:grid-cols-7"
-        />
-
-        {/* BUTTON COMPONENTS */}
+        {/* BUTTONS */}
         <section className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Button Components</h2>
-            <p className={`text-lg ${subtleText}`}>
+            <h2 className="text-4xl font-bold">Buttons</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400">
               Professional CTAs with multiple variants and states
             </p>
           </div>
 
-          {/* Variants */}
-          <div className={`p-8 rounded-2xl border ${borderColor} ${cardBg}`}>
-            <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Variants</h3>
-            <div className="flex flex-wrap gap-4">
-              <Button variant="primary">Primary Button</Button>
-              <Button variant="secondary">Secondary Button</Button>
-              <Button variant="ghost">Ghost Button</Button>
-              <Button variant="danger">Danger Button</Button>
-            </div>
-            <p className={`text-sm mt-4 ${subtleText}`}>
-              Primary: Electric blue fill · Secondary: Neutral with border · Ghost: Transparent · Danger: Red fill
-            </p>
-          </div>
+          <Card size="lg" rounded="xl">
+            <div className="space-y-8">
+              {/* Variants */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Variants</h3>
+                <div className="flex flex-wrap gap-4">
+                  <Button variant="primary">Primary Button</Button>
+                  <Button variant="secondary">Secondary Button</Button>
+                  <Button variant="ghost">Ghost Button</Button>
+                  <Button variant="danger">Danger Button</Button>
+                </div>
+              </div>
 
-          {/* Sizes */}
-          <div className={`p-8 rounded-2xl border ${borderColor} ${cardBg}`}>
-            <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Sizes</h3>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button size="sm">Small</Button>
-              <Button size="md">Medium</Button>
-              <Button size="lg">Large</Button>
-            </div>
-          </div>
+              {/* Sizes */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Sizes</h3>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button size="sm">Small</Button>
+                  <Button size="md">Medium</Button>
+                  <Button size="lg">Large</Button>
+                </div>
+              </div>
 
-          {/* States */}
-          <div className={`p-8 rounded-2xl border ${borderColor} ${cardBg}`}>
-            <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>States</h3>
-            <div className="flex flex-wrap gap-4">
-              <Button>Default</Button>
-              <Button loading>Loading</Button>
-              <Button disabled>Disabled</Button>
-            </div>
-          </div>
+              {/* With Icons */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">With Icons</h3>
+                <div className="flex flex-wrap gap-4">
+                  <Button icon="mdi:magnify" iconPosition="left">Search</Button>
+                  <Button icon="mdi:arrow-right" iconPosition="right">Next</Button>
+                  <Button icon="mdi:plus" iconPosition="only" />
+                </div>
+              </div>
 
-          {/* Full Width */}
-          <div className={`p-8 rounded-2xl border ${borderColor} ${cardBg}`}>
-            <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Full Width</h3>
-            <Button fullWidth variant="primary">Full Width Button</Button>
-          </div>
+              {/* States */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">States</h3>
+                <div className="flex flex-wrap gap-4">
+                  <Button>Default</Button>
+                  <Button loading>Loading</Button>
+                  <Button disabled>Disabled</Button>
+                </div>
+              </div>
+
+              {/* Full Width */}
+              <div>
+                <h3 className="text-xl font-semibold mb-4">Full Width</h3>
+                <Button fullWidth variant="primary">Full Width Button</Button>
+              </div>
+            </div>
+          </Card>
         </section>
 
-        {/* CARD COMPONENTS */}
+        {/* CARDS */}
         <section className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Card Components</h2>
-            <p className={`text-lg ${subtleText}`}>
-              Content containers with elevation and interactive states
+            <h2 className="text-4xl font-bold">Cards</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400">
+              Flexible containers with multiple configurations
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-2 ${headingText}`}>Basic Card</h3>
-              <p className={subtleText}>
-                Default card with standard padding and border radius. Perfect for content grouping.
+            <Card size="md" rounded="xl" hoverable>
+              <h3 className="text-xl font-semibold mb-2">Basic Card</h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Default card with hover effect. Clean and professional.
               </p>
             </Card>
 
-            <Card className={`border transition-all ${
-              isDark 
-                ? 'bg-primary-500/5 border-primary-500/30 hover:border-primary-500/50' 
-                : 'bg-primary-500/5 border-primary-500/30 hover:border-primary-600/50'
-            }`}>
-              <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-primary-400' : 'text-primary-700'}`}>
-                Accent Card
-              </h3>
-              <p className={subtleText}>
-                Card with custom background and brand colors. Hover to see border transition.
+            <Card size="md" rounded="xl" shadow="md">
+              <h3 className="text-xl font-semibold mb-2">Elevated Card</h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Card with medium shadow for emphasis.
               </p>
             </Card>
 
-            <Card className={`border transition-all ${
-              isDark 
-                ? 'bg-secondary-500/5 border-secondary-500/30 hover:border-secondary-500/50' 
-                : 'bg-secondary-500/5 border-secondary-500/30 hover:border-secondary-600/50'
-            }`}>
-              <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-secondary-400' : 'text-secondary-700'}`}>
-                Premium Card
-              </h3>
-              <p className={subtleText}>
-                Subtle purple accent for premium features. 5% usage maximum.
+            <Card size="md" rounded="xl" clickable onClick={() => alert('Card clicked!')}>
+              <h3 className="text-xl font-semibold mb-2">Clickable Card</h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                Interactive card with onClick handler.
               </p>
             </Card>
           </div>
         </section>
 
-        {/* FORM ELEMENTS */}
+        {/* FORM INPUTS */}
         <section className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Form Elements</h2>
-            <p className={`text-lg ${subtleText}`}>
+            <h2 className="text-4xl font-bold">Form Inputs</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400">
               Professional inputs with validation states
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Input */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Input</h3>
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Input</h3>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="input-default">Default Input</Label>
@@ -498,6 +271,7 @@ export default function ComponentShowcase() {
                     placeholder="Enter text..." 
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
+                    fullWidth
                   />
                 </div>
                 <div>
@@ -507,6 +281,7 @@ export default function ComponentShowcase() {
                     icon="mdi:magnify" 
                     iconPosition="left"
                     placeholder="Search..."
+                    fullWidth
                   />
                 </div>
                 <div>
@@ -515,14 +290,24 @@ export default function ComponentShowcase() {
                     id="input-error"
                     error="This field is required"
                     placeholder="Invalid input"
+                    fullWidth
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="input-success">Success State</Label>
+                  <Input 
+                    id="input-success"
+                    success
+                    placeholder="Valid input"
+                    fullWidth
                   />
                 </div>
               </div>
             </Card>
 
             {/* Textarea */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Textarea</h3>
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Textarea</h3>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="textarea-default">Default Textarea</Label>
@@ -532,14 +317,26 @@ export default function ComponentShowcase() {
                     value={textareaValue}
                     onChange={(e) => setTextareaValue(e.target.value)}
                     rows={4}
+                    fullWidth
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="textarea-counter">With Character Counter</Label>
+                  <Textarea 
+                    id="textarea-counter"
+                    placeholder="Max 200 characters..."
+                    maxLength={200}
+                    showCount
+                    rows={4}
+                    fullWidth
                   />
                 </div>
               </div>
             </Card>
 
             {/* Select */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Select</h3>
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Select</h3>
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="select-default">Default Select</Label>
@@ -547,6 +344,7 @@ export default function ComponentShowcase() {
                     id="select-default"
                     value={selectValue}
                     onChange={(e) => setSelectValue(e.target.value)}
+                    fullWidth
                   >
                     <option value="">Choose an option</option>
                     <option value="1">Option 1</option>
@@ -554,25 +352,40 @@ export default function ComponentShowcase() {
                     <option value="3">Option 3</option>
                   </Select>
                 </div>
+                <div>
+                  <Label htmlFor="select-error">Error State</Label>
+                  <Select 
+                    id="select-error"
+                    error="Please select an option"
+                    fullWidth
+                  >
+                    <option value="">Choose an option</option>
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                  </Select>
+                </div>
               </div>
             </Card>
 
-            {/* Checkbox & Radio & Switch */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Toggles</h3>
+            {/* Toggles */}
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Toggles</h3>
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <p className={`text-sm font-medium ${subtleText}`}>Checkbox</p>
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Checkbox</p>
                   <Checkbox 
                     checked={checkboxChecked}
                     onChange={(e) => setCheckboxChecked(e.target.checked)}
                   >
                     Accept terms and conditions
                   </Checkbox>
+                  <Checkbox indeterminate>
+                    Indeterminate state
+                  </Checkbox>
                 </div>
 
                 <div className="space-y-3">
-                  <p className={`text-sm font-medium ${subtleText}`}>Radio Group</p>
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Radio Group</p>
                   <div className="space-y-2">
                     <Radio 
                       name="radio-demo"
@@ -594,7 +407,7 @@ export default function ComponentShowcase() {
                 </div>
 
                 <div className="space-y-3">
-                  <p className={`text-sm font-medium ${subtleText}`}>Switch</p>
+                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Switch</p>
                   <Switch 
                     checked={switchChecked}
                     onChange={(e) => setSwitchChecked(e.target.checked)}
@@ -610,16 +423,16 @@ export default function ComponentShowcase() {
         {/* FEEDBACK COMPONENTS */}
         <section className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Feedback Components</h2>
-            <p className={`text-lg ${subtleText}`}>
+            <h2 className="text-4xl font-bold">Feedback Components</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400">
               Alerts, badges, spinners, and progress indicators
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Alerts */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Alerts</h3>
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Alerts</h3>
               <div className="space-y-4">
                 <Alert variant="success">
                   <strong>Success!</strong> Your changes have been saved.
@@ -633,500 +446,284 @@ export default function ComponentShowcase() {
                 <Alert variant="info">
                   <strong>Info:</strong> This is an informational message.
                 </Alert>
+                <Alert variant="success" closeable onClose={() => console.log('Alert closed')}>
+                  <strong>Closeable!</strong> Click the X to dismiss.
+                </Alert>
               </div>
             </Card>
 
             {/* Badges */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Badges</h3>
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Badges</h3>
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="primary">Primary</Badge>
-                  <Badge variant="secondary">Secondary</Badge>
-                  <Badge variant="success">Success</Badge>
-                  <Badge variant="error">Error</Badge>
-                  <Badge variant="warning">Warning</Badge>
-                  <Badge variant="info">Info</Badge>
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Variants</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="primary">Primary</Badge>
+                    <Badge variant="secondary">Secondary</Badge>
+                    <Badge variant="success">Success</Badge>
+                    <Badge variant="error">Error</Badge>
+                    <Badge variant="warning">Warning</Badge>
+                    <Badge variant="info">Info</Badge>
+                    <Badge variant="neutral">Neutral</Badge>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">With Icons</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="primary" icon="mdi:star">Premium</Badge>
+                    <Badge variant="success" icon="mdi:check">Verified</Badge>
+                    <Badge variant="warning" icon="mdi:alert">Warning</Badge>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">With Status Dots</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="success" dot>Online</Badge>
+                    <Badge variant="error" dot>Offline</Badge>
+                    <Badge variant="warning" dot>Away</Badge>
+                  </div>
                 </div>
               </div>
             </Card>
 
             {/* Spinner & Progress */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Loading States</h3>
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Loading States</h3>
               <div className="space-y-6">
                 <div>
-                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Spinners</p>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Spinners</p>
                   <div className="flex items-center gap-4">
                     <Spinner size="sm" />
                     <Spinner size="md" />
                     <Spinner size="lg" />
+                    <Spinner size="xl" />
                   </div>
                 </div>
                 <div>
-                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Progress Bar</p>
-                  <Progress value={progress} />
-                  <div className="flex gap-2 mt-3">
-                    <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>-10</Button>
-                    <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>+10</Button>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Spinner Variants</p>
+                  <div className="flex items-center gap-4">
+                    <Spinner variant="primary" />
+                    <Spinner variant="neutral" />
                   </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Progress Bar</p>
+                  <Progress value={progress} showPercentage />
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>-10%</Button>
+                    <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>+10%</Button>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Progress with Label</p>
+                  <Progress value={75} label="Analyzing leads..." showPercentage variant="success" />
                 </div>
               </div>
             </Card>
 
-            {/* Avatar */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Avatars</h3>
+            {/* Avatars */}
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Avatars</h3>
               <div className="space-y-6">
-                {/* Single Avatars */}
                 <div>
-                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Sizes</p>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Sizes</p>
                   <div className="flex items-center gap-4">
-                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=1" alt="User" />
-                    <Avatar size="md" src="https://i.pravatar.cc/150?img=2" alt="User" />
-                    <Avatar size="lg" src="https://i.pravatar.cc/150?img=3" alt="User" />
-                    <Avatar size="lg" name="John Doe" />
+                    <Avatar size="sm" name="John Doe" />
+                    <Avatar size="md" name="Jane Smith" />
+                    <Avatar size="lg" name="Bob Johnson" />
+                    <Avatar size="xl" name="Alice Brown" />
                   </div>
                 </div>
-
-                {/* Avatar Stack - Google Meet Style */}
                 <div>
-                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Avatar Stack (Google Meet Style)</p>
-                  
-                  {/* Stack with 5+ participants */}
-                  <div className="flex items-center">
-                    {/* Active participants */}
-                    <div className="flex -space-x-2">
-                      <Avatar 
-                        size="md" 
-                        src="https://i.pravatar.cc/150?img=10" 
-                        alt="Active User 1"
-                        status="online"
-                        className="ring-2 ring-white"
-                      />
-                      <Avatar 
-                        size="md" 
-                        src="https://i.pravatar.cc/150?img=11" 
-                        alt="Active User 2"
-                        status="online"
-                        className="ring-2 ring-white"
-                      />
-                      <Avatar 
-                        size="md" 
-                        src="https://i.pravatar.cc/150?img=12" 
-                        alt="Active User 3"
-                        status="online"
-                        className="ring-2 ring-white"
-                      />
-                      
-                      {/* Inactive participant (dimmed) */}
-                      <div className="relative">
-                        <Avatar 
-                          size="md" 
-                          src="https://i.pravatar.cc/150?img=13" 
-                          alt="Inactive User"
-                          status="offline"
-                          className="ring-2 ring-white opacity-50"
-                        />
-                      </div>
-                      
-                      {/* +5 overflow indicator */}
-                      <div className={`relative w-10 h-10 rounded-full flex items-center justify-center text-xs font-semibold ring-2 ring-white ${
-                        isDark 
-                          ? 'bg-neutral-700 text-neutral-300' 
-                          : 'bg-neutral-200 text-neutral-700'
-                      }`}>
-                        +5
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className={`text-xs mt-2 ${subtleText}`}>
-                    Active participants have green status, inactive are dimmed
-                  </p>
-                </div>
-
-                {/* Status Variants */}
-                <div>
-                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Status Indicators</p>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">With Status</p>
                   <div className="flex items-center gap-4">
-                    <Avatar size="md" src="https://i.pravatar.cc/150?img=20" alt="Online" status="online" />
-                    <Avatar size="md" src="https://i.pravatar.cc/150?img=21" alt="Away" status="away" />
-                    <Avatar size="md" src="https://i.pravatar.cc/150?img=22" alt="Busy" status="busy" />
-                    <Avatar size="md" src="https://i.pravatar.cc/150?img=23" alt="Offline" status="offline" />
+                    <Avatar name="Online User" status="online" />
+                    <Avatar name="Offline User" status="offline" />
+                    <Avatar name="Away User" status="away" />
+                    <Avatar name="Busy User" status="busy" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Avatar Group</p>
+                  <div className="flex -space-x-2">
+                    <Avatar size="md" name="User 1" />
+                    <Avatar size="md" name="User 2" />
+                    <Avatar size="md" name="User 3" />
+                    <Avatar size="md" name="User 4" />
                   </div>
                 </div>
               </div>
             </Card>
           </div>
-
-          {/* Toast Notification Demo */}
-          <Card className={`${cardBg} border ${borderColor}`}>
-            <h3 className={`text-xl font-semibold mb-4 ${headingText}`}>Toast Notification</h3>
-            <p className={`${subtleText} mb-6`}>Click to trigger a temporary notification</p>
-            <Button onClick={triggerToast}>Show Toast</Button>
-          </Card>
-
-          {/* Toast */}
-          <AnimatePresence>
-            {showToast && (
-              <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className={`fixed bottom-8 right-8 z-50 ${isDark ? 'bg-neutral-800' : 'bg-white'} border ${borderColor} rounded-xl shadow-elevated p-4 min-w-[300px]`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-success-500/20' : 'bg-success-100'}`}>
-                    <Icon icon="ph:check-bold" className={`text-xl ${isDark ? 'text-success-400' : 'text-success-600'}`} />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className={`font-semibold ${headingText}`}>Success</h4>
-                    <p className={`text-sm ${subtleText}`}>Your changes have been saved successfully.</p>
-                  </div>
-                  <button 
-                    onClick={() => setShowToast(false)}
-                    className={`${subtleText} hover:${headingText}`}
-                  >
-                    <Icon icon="ph:x-bold" />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </section>
 
-        {/* APPLIED EXAMPLES */}
+        {/* UTILITY COMPONENTS */}
         <section className="space-y-8">
           <div className="text-center space-y-3">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Applied Examples</h2>
-            <p className={`text-lg ${subtleText}`}>
-              Components working together in real-world scenarios
+            <h2 className="text-4xl font-bold">Utility Components</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400">
+              Tooltips and modals for enhanced UX
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Login Form Example */}
-            <Card className={`${cardBg} border ${borderColor}`}>
+            {/* Tooltips */}
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Tooltips</h3>
               <div className="space-y-6">
                 <div>
-                  <h3 className={`text-2xl font-bold ${headingText}`}>Sign In</h3>
-                  <p className={subtleText}>Welcome back! Please enter your details.</p>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Placement</p>
+                  <div className="flex flex-wrap gap-4">
+                    <Tooltip content="Tooltip on top" placement="top">
+                      <Button variant="secondary">Top</Button>
+                    </Tooltip>
+                    <Tooltip content="Tooltip on bottom" placement="bottom">
+                      <Button variant="secondary">Bottom</Button>
+                    </Tooltip>
+                    <Tooltip content="Tooltip on left" placement="left">
+                      <Button variant="secondary">Left</Button>
+                    </Tooltip>
+                    <Tooltip content="Tooltip on right" placement="right">
+                      <Button variant="secondary">Right</Button>
+                    </Tooltip>
+                  </div>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email"
-                      type="email"
-                      placeholder="you@company.com"
-                      icon="mdi:email"
-                      iconPosition="left"
-                    />
+                <div>
+                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Variants</p>
+                  <div className="flex flex-wrap gap-4">
+                    <Tooltip content="Dark tooltip" variant="dark">
+                      <Button variant="secondary">Dark</Button>
+                    </Tooltip>
+                    <Tooltip content="Light tooltip" variant="light">
+                      <Button variant="secondary">Light</Button>
+                    </Tooltip>
                   </div>
-                  <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input 
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      icon="mdi:lock"
-                      iconPosition="left"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Checkbox>Remember me</Checkbox>
-                    <a href="#" className={`text-sm ${isDark ? 'text-primary-400' : 'text-primary-600'} hover:underline`}>
-                      Forgot password?
-                    </a>
-                  </div>
-                  <Button variant="primary" fullWidth>Sign In</Button>
                 </div>
               </div>
             </Card>
 
-            {/* Settings Panel Example */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <div className="space-y-6">
-                <h3 className={`text-2xl font-bold ${headingText}`}>Notification Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: isDark ? '#2d3748' : '#e8ecef' }}>
-                    <div>
-                      <p className={`font-medium ${headingText}`}>Email Notifications</p>
-                      <p className={`text-sm ${subtleText}`}>Receive updates via email</p>
-                    </div>
-                    <Switch checked={switchChecked} onChange={(e) => setSwitchChecked(e.target.checked)} />
-                  </div>
-                  <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: isDark ? '#2d3748' : '#e8ecef' }}>
-                    <div>
-                      <p className={`font-medium ${headingText}`}>Push Notifications</p>
-                      <p className={`text-sm ${subtleText}`}>Receive push notifications</p>
-                    </div>
-                    <Switch />
-                  </div>
-                  <div className="flex items-center justify-between py-3">
-                    <div>
-                      <p className={`font-medium ${headingText}`}>SMS Notifications</p>
-                      <p className={`text-sm ${subtleText}`}>Receive text messages</p>
-                    </div>
-                    <Switch />
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button variant="ghost">Cancel</Button>
-                  <Button variant="primary">Save Changes</Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* User Profile Card Example */}
-            <Card className={`${cardBg} border ${borderColor}`}>
+            {/* Modal */}
+            <Card size="lg" rounded="xl">
+              <h3 className="text-xl font-semibold mb-6">Modal</h3>
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Avatar size="lg" src="https://i.pravatar.cc/150?img=5" alt="Sarah Johnson" />
-                  <div className="flex-1">
-                    <h4 className={`text-lg font-semibold ${headingText}`}>Sarah Johnson</h4>
-                    <p className={subtleText}>Product Designer</p>
-                  </div>
-                  <Badge variant="success">Active</Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-4 py-4 border-y" style={{ borderColor: isDark ? '#2d3748' : '#e8ecef' }}>
-                  <div className="text-center">
-                    <p className={`text-2xl font-bold ${headingText}`}>24</p>
-                    <p className={`text-sm ${subtleText}`}>Projects</p>
-                  </div>
-                  <div className="text-center">
-                    <p className={`text-2xl font-bold ${headingText}`}>1.2k</p>
-                    <p className={`text-sm ${subtleText}`}>Followers</p>
-                  </div>
-                  <div className="text-center">
-                    <p className={`text-2xl font-bold ${headingText}`}>89</p>
-                    <p className={`text-sm ${subtleText}`}>Following</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="primary" fullWidth>Message</Button>
-                  <Button variant="secondary" icon="mdi:account-plus" iconPosition="only" />
-                </div>
-              </div>
-            </Card>
-
-            {/* Data Table Row Example */}
-            <Card className={`${cardBg} border ${borderColor}`}>
-              <div className="space-y-4">
-                <h3 className={`text-xl font-semibold ${headingText}`}>Lead Analysis Results</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: isDark ? '#1F2937' : '#f4f6f8' }}>
-                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=10" alt="Lead" />
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium truncate ${headingText}`}>@techfounder</p>
-                      <p className={`text-sm truncate ${subtleText}`}>Technology Startup CEO</p>
-                    </div>
-                    <Badge variant="success">Hot Lead</Badge>
-                    <span className={`text-lg font-bold ${isDark ? 'text-primary-400' : 'text-primary-600'}`}>94</span>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: isDark ? '#1F2937' : '#f4f6f8' }}>
-                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=11" alt="Lead" />
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium truncate ${headingText}`}>@designagency</p>
-                      <p className={`text-sm truncate ${subtleText}`}>Creative Agency Owner</p>
-                    </div>
-                    <Badge variant="warning">Warm</Badge>
-                    <span className={`text-lg font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>67</span>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: isDark ? '#1F2937' : '#f4f6f8' }}>
-                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=12" alt="Lead" />
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-medium truncate ${headingText}`}>@marketingpro</p>
-                      <p className={`text-sm truncate ${subtleText}`}>Marketing Consultant</p>
-                    </div>
-                    <Badge variant="info">Cold</Badge>
-                    <span className={`text-lg font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>42</span>
-                  </div>
-                </div>
+                <Button onClick={() => setModalOpen(true)}>Open Modal</Button>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  Professional dialog with backdrop, header, body, and footer sections.
+                </p>
               </div>
             </Card>
           </div>
         </section>
 
-        {/* DESIGN PRINCIPLES */}
-        <section className={`p-12 rounded-2xl border ${borderColor} ${cardBg}`}>
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h2 className={`text-4xl font-bold ${headingText}`}>Design Principles</h2>
-            <p className={`text-lg ${subtleText}`}>
-              The foundation of Oslira's visual identity
+        {/* REAL-WORLD EXAMPLE */}
+        <section className="space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className="text-4xl font-bold">Real-World Example</h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400">
+              Components working together in production
             </p>
+          </div>
 
-            <div className="grid md:grid-cols-2 gap-6 pt-8">
-              <div className={`p-6 rounded-xl border ${borderColor} ${isDark ? 'bg-neutral-800/30' : 'bg-white'}`}>
-                <Icon icon="ph:sparkle-bold" className={`text-4xl mb-4 ${isDark ? 'text-primary-400' : 'text-primary-600'}`} />
-                <h3 className={`text-lg font-semibold mb-2 ${headingText}`}>Intelligence + Mastery</h3>
-                <p className={`text-sm ${subtleText}`}>
-                  Clean, professional, never boring. Data-driven intelligence over gimmicks.
-                </p>
+          <Card size="lg" rounded="xl" className="max-w-md mx-auto">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold mb-2">Sign In</h3>
+                <p className="text-neutral-600 dark:text-neutral-400">Welcome back! Please enter your details.</p>
               </div>
 
-              <div className={`p-6 rounded-xl border ${borderColor} ${isDark ? 'bg-neutral-800/30' : 'bg-white'}`}>
-                <Icon icon="ph:check-circle-bold" className={`text-4xl mb-4 ${isDark ? 'text-success-400' : 'text-success-600'}`} />
-                <h3 className={`text-lg font-semibold mb-2 ${headingText}`}>WCAG AA Compliant</h3>
-                <p className={`text-sm ${subtleText}`}>
-                  All color combinations tested for 4.5:1 contrast minimum.
-                </p>
-              </div>
+              <Alert variant="info">
+                Demo mode - no actual authentication
+              </Alert>
 
-              <div className={`p-6 rounded-xl border ${borderColor} ${isDark ? 'bg-neutral-800/30' : 'bg-white'}`}>
-                <Icon icon="ph:palette-bold" className={`text-4xl mb-4 ${isDark ? 'text-secondary-400' : 'text-secondary-600'}`} />
-                <h3 className={`text-lg font-semibold mb-2 ${headingText}`}>Perceptual Uniformity</h3>
-                <p className={`text-sm ${subtleText}`}>
-                  Stripe LAB methodology for consistent visual weight across scales.
-                </p>
-              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="demo-email" required>Email</Label>
+                  <Input 
+                    id="demo-email"
+                    type="email"
+                    placeholder="you@company.com"
+                    icon="mdi:email"
+                    iconPosition="left"
+                    fullWidth
+                  />
+                </div>
 
-              <div className={`p-6 rounded-xl border ${borderColor} ${isDark ? 'bg-neutral-800/30' : 'bg-white'}`}>
-                <Icon icon="ph:code-bold" className={`text-4xl mb-4 ${isDark ? 'text-info-400' : 'text-info-600'}`} />
-                <h3 className={`text-lg font-semibold mb-2 ${headingText}`}>Semantic Tokens</h3>
-                <p className={`text-sm ${subtleText}`}>
-                  Design tokens for scalable, maintainable design systems.
-                </p>
+                <div>
+                  <Label htmlFor="demo-password" required>Password</Label>
+                  <Input 
+                    id="demo-password"
+                    type="password"
+                    placeholder="••••••••"
+                    icon="mdi:lock"
+                    iconPosition="left"
+                    fullWidth
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Checkbox>Remember me</Checkbox>
+                  <a href="#" className="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                    Forgot password?
+                  </a>
+                </div>
+
+                <Button variant="primary" fullWidth>
+                  Sign In
+                </Button>
+
+                <div className="text-center">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Don't have an account?{' '}
+                    <a href="#" className="text-primary-600 dark:text-primary-400 hover:underline">
+                      Sign up
+                    </a>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
         </section>
 
       </div>
 
-      {/* Footer */}
-      <footer className={`border-t ${borderColor} mt-24`}>
+      {/* =====================================================================
+          FOOTER
+          ===================================================================== */}
+      <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center space-y-2">
-            <p className={subtleText}>
-              Oslira Design System v1.0 · October 2025
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Oslira Design System v2.0 · October 2025
             </p>
-            <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+            <p className="text-sm text-neutral-500 dark:text-neutral-500">
               Built with React, TypeScript, Tailwind CSS, Framer Motion
             </p>
           </div>
         </div>
       </footer>
+
+      {/* =====================================================================
+          MODAL DIALOG (CONTROLLED BY STATE)
+          ===================================================================== */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="md" centered>
+        <Modal.Header>Example Modal</Modal.Header>
+        <Modal.Body>
+          <p>This is a professional modal dialog with proper backdrop, header, body, and footer sections.</p>
+          <p className="mt-4 text-neutral-600 dark:text-neutral-400">
+            Try clicking outside or pressing ESC to close.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="ghost" onClick={() => setModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={() => setModalOpen(false)}>
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </div>
-  );
-}
-
-// =============================================================================
-// COLOR SECTION COMPONENT
-// =============================================================================
-
-interface ColorSectionProps {
-  title: string;
-  subtitle: string;
-  colors: Array<{ name: string; value: string; usage: string; wcag?: string }>;
-  isDark: boolean;
-  copiedColor: string | null;
-  onCopy: (color: string) => void;
-  cardBg: string;
-  borderColor: string;
-  subtleText: string;
-  headingText: string;
-  gridCols?: string;
-  compact?: boolean;
-}
-
-function ColorSection({
-  title,
-  subtitle,
-  colors,
-  isDark,
-  copiedColor,
-  onCopy,
-  cardBg,
-  borderColor,
-  subtleText,
-  headingText,
-  gridCols = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6',
-  compact = false,
-}: ColorSectionProps) {
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="space-y-8"
-    >
-      {!compact && (
-        <div className="text-center space-y-3">
-          <h2 className={`text-4xl font-bold ${headingText}`}>{title}</h2>
-          <p className={`text-lg ${subtleText}`}>{subtitle}</p>
-        </div>
-      )}
-      
-      {compact && (
-        <div className="space-y-2">
-          <h3 className={`text-2xl font-semibold ${headingText}`}>{title}</h3>
-          <p className={`text-sm ${subtleText}`}>{subtitle}</p>
-        </div>
-      )}
-
-      <div className={`grid ${gridCols} gap-4`}>
-        {colors.map((color) => (
-          <motion.button
-            key={color.value}
-            onClick={() => onCopy(color.value)}
-            className={`group relative p-4 rounded-xl border ${borderColor} ${cardBg} hover:scale-105 transition-all text-left`}
-            whileHover={{ y: -4 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {/* Color Swatch */}
-            <div
-              className="h-20 rounded-lg mb-3 border border-black/10"
-              style={{ backgroundColor: color.value }}
-            />
-
-            {/* Color Info */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <h4 className={`font-semibold text-sm ${headingText}`}>{color.name}</h4>
-                {color.wcag && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    color.wcag === 'AAA' 
-                      ? isDark ? 'bg-success-500/20 text-success-400' : 'bg-success-100 text-success-700'
-                      : color.wcag === 'AA'
-                      ? isDark ? 'bg-info-500/20 text-info-400' : 'bg-info-100 text-info-700'
-                      : isDark ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-600'
-                  }`}>
-                    {color.wcag}
-                  </span>
-                )}
-              </div>
-              
-              <p className={`text-xs ${subtleText}`}>{color.usage}</p>
-              
-              <div className="flex items-center justify-between pt-2">
-                <code className={`text-xs font-mono ${isDark ? 'text-primary-400' : 'text-primary-600'}`}>
-                  {color.value}
-                </code>
-                
-                {copiedColor === color.value && (
-                  <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className={`text-xs font-medium ${isDark ? 'text-success-400' : 'text-success-600'}`}
-                  >
-                    ✓ Copied
-                  </motion.span>
-                )}
-              </div>
-            </div>
-
-            {/* Hover Icon */}
-            <div className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity`}>
-              <Icon 
-                icon="ph:copy-bold" 
-                className={`text-lg ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`} 
-              />
-            </div>
-          </motion.button>
-        ))}
-      </div>
-    </motion.section>
   );
 }
