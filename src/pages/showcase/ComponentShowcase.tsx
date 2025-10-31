@@ -1,15 +1,14 @@
 // src/pages/showcase/ComponentShowcase.tsx
 
 /**
- * COMPONENT SHOWCASE - PRODUCTION GRADE V3.0
+ * COMPONENT SHOWCASE - PRODUCTION GRADE V4.0
  * 
  * ARCHITECTURE:
- * ✅ Enterprise dark mode pattern (Shadcn/Vercel approach)
- * ✅ Clean state management with localStorage persistence
- * ✅ Proper initialization and cleanup
- * ✅ All components use Tailwind dark: variant automatically
- * ✅ CSS variables flip via .dark class in theme.css
- * ✅ Professional, minimal toggle UI
+ * ✅ ZERO theme management logic (uses global ThemeProvider)
+ * ✅ Pure showcase page - only demonstrates components
+ * ✅ Uses ThemeToggle component for theme switching
+ * ✅ All components automatically respond to global theme
+ * ✅ Clean, maintainable, zero duplication
  * 
  * DESIGN PHILOSOPHY:
  * "Concert hall, not arcade; calm ocean, not storm"
@@ -17,18 +16,12 @@
  * - Subtle, purposeful animations
  * - Clean, scannable layout
  * - Professional polish without over-design
- * 
- * HOW IT WORKS:
- * 1. Toggle button controls isDark state
- * 2. useEffect syncs isDark ↔ <html class="dark">
- * 3. Tailwind sees .dark class → applies dark: variants
- * 4. CSS variables flip (theme.css .dark overrides)
- * 5. Components adapt automatically
  */
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import { ThemeToggle } from '@/core/theme/ThemeToggle';
 import { Logo } from '@/shared/components/ui/Logo';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
@@ -48,31 +41,12 @@ import { Tooltip } from '@/shared/components/ui/Tooltip';
 import { Modal } from '@/shared/components/ui/Modal';
 
 // =============================================================================
-// CONSTANTS
-// =============================================================================
-
-const STORAGE_KEY = 'oslira-theme-mode';
-
-// =============================================================================
 // COMPONENT
 // =============================================================================
 
 export default function ComponentShowcase() {
   // ===========================================================================
-  // STATE: Dark Mode with localStorage persistence
-  // ===========================================================================
-  
-  const [isDark, setIsDark] = useState<boolean>(() => {
-    // Initialize from localStorage or default to light mode
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored === 'dark';
-    }
-    return false;
-  });
-  
-  // ===========================================================================
-  // STATE: Form Inputs (for demonstration)
+  // STATE: Form Inputs (for demonstration only)
   // ===========================================================================
   
   const [checkboxChecked, setCheckboxChecked] = useState(false);
@@ -85,45 +59,6 @@ export default function ComponentShowcase() {
   const [modalOpen, setModalOpen] = useState(false);
 
   // ===========================================================================
-  // EFFECT: Initialize dark mode on mount (cleanup any stale state)
-  // ===========================================================================
-  
-  useEffect(() => {
-    // Force clean slate on mount
-    const root = document.documentElement;
-    root.classList.remove('dark');
-    
-    // Apply stored preference
-    if (isDark) {
-      root.classList.add('dark');
-    }
-  }, []); // Run once on mount
-
-  // ===========================================================================
-  // EFFECT: Sync isDark state with DOM and localStorage
-  // ===========================================================================
-  
-  useEffect(() => {
-    const root = document.documentElement;
-    
-    if (isDark) {
-      root.classList.add('dark');
-      localStorage.setItem(STORAGE_KEY, 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem(STORAGE_KEY, 'light');
-    }
-  }, [isDark]);
-
-  // ===========================================================================
-  // HANDLERS
-  // ===========================================================================
-  
-  const toggleDarkMode = () => {
-    setIsDark(!isDark);
-  };
-
-  // ===========================================================================
   // RENDER
   // ===========================================================================
   
@@ -131,45 +66,11 @@ export default function ComponentShowcase() {
     <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       
       {/* =====================================================================
-          DARK MODE TOGGLE - FIXED BOTTOM LEFT
+          THEME TOGGLE - FIXED BOTTOM LEFT
+          Uses global ThemeToggle component - zero local theme logic
           ===================================================================== */}
       
-      <motion.button
-        onClick={toggleDarkMode}
-        className="fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-elevated 
-                   flex items-center justify-center transition-all duration-200
-                   bg-white dark:bg-neutral-800 
-                   hover:bg-neutral-50 dark:hover:bg-neutral-700 
-                   border border-neutral-300 dark:border-neutral-600
-                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        <AnimatePresence mode="wait">
-          {isDark ? (
-            <motion.div
-              key="sun"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Icon icon="ph:sun-bold" className="text-2xl text-yellow-400" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="moon"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Icon icon="ph:moon-bold" className="text-2xl text-neutral-700 dark:text-neutral-300" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      <ThemeToggle variant="fixed" />
 
       {/* =====================================================================
           HERO SECTION
@@ -204,410 +105,499 @@ export default function ComponentShowcase() {
               Built with Tailwind v4 and enterprise-grade architecture.
             </p>
 
-            {/* Stats */}
-            <div className="flex items-center justify-center gap-8 pt-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">14</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Components</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">WCAG AA</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Compliant</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">0</div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">Tech Debt</div>
-              </div>
+            {/* CTA Buttons */}
+            <div className="flex items-center justify-center gap-4 pt-4">
+              <Button variant="primary" size="lg" icon="ph:code-bold">
+                View on GitHub
+              </Button>
+              <Button variant="secondary" size="lg" icon="ph:book-open-bold">
+                Documentation
+              </Button>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* =====================================================================
-          COMPONENTS GRID
+          MAIN CONTENT
           ===================================================================== */}
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid gap-16">
-
-          {/* ===================================================================
-              SECTION: BUTTONS
-              =================================================================== */}
-          
-          <section>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
+        
+        {/* ===================================================================
+            SECTION: BUTTONS
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
             <h2 className="text-3xl font-bold mb-2">Buttons</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Professional CTAs with multiple variants and states
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Professional buttons with proper hover states and loading indicators
             </p>
-            
-            <Card className="p-8">
-              <div className="space-y-6">
-                {/* Variants */}
-                <div>
-                  <Label className="mb-3 block">Variants</Label>
-                  <div className="flex flex-wrap gap-3">
-                    <Button variant="primary">Primary Button</Button>
-                    <Button variant="secondary">Secondary Button</Button>
-                    <Button variant="ghost">Ghost Button</Button>
-                    <Button variant="danger">Danger Button</Button>
-                  </div>
-                </div>
+          </div>
 
-                {/* Sizes */}
-                <div>
-                  <Label className="mb-3 block">Sizes</Label>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button size="sm">Small</Button>
-                    <Button size="md">Medium</Button>
-                    <Button size="lg">Large</Button>
-                  </div>
-                </div>
-
-                {/* With Icons */}
-                <div>
-                  <Label className="mb-3 block">With Icons</Label>
-                  <div className="flex flex-wrap gap-3">
-                    <Button icon="ph:magnifying-glass-bold" iconPosition="left">
-                      Search
-                    </Button>
-                    <Button icon="ph:arrow-right-bold" iconPosition="right">
-                      Next
-                    </Button>
-                    <Button icon="ph:plus-bold" iconPosition="only" />
-                  </div>
-                </div>
-
-                {/* States */}
-                <div>
-                  <Label className="mb-3 block">States</Label>
-                  <div className="flex flex-wrap gap-3">
-                    <Button>Default</Button>
-                    <Button loading>Loading</Button>
-                    <Button disabled>Disabled</Button>
-                  </div>
+          <Card>
+            <Card.Body className="space-y-6">
+              {/* Variants */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Variants</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Button variant="primary">Primary</Button>
+                  <Button variant="secondary">Secondary</Button>
+                  <Button variant="ghost">Ghost</Button>
+                  <Button variant="danger">Danger</Button>
                 </div>
               </div>
-            </Card>
-          </section>
 
-          {/* ===================================================================
-              SECTION: FORM INPUTS
-              =================================================================== */}
-          
-          <section>
-            <h2 className="text-3xl font-bold mb-2">Form Inputs</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Clean, accessible form controls with validation states
-            </p>
-            
-            <Card className="p-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Text Input */}
-                <div>
-                  <Label htmlFor="input-demo">Text Input</Label>
-                  <Input
-                    id="input-demo"
-                    placeholder="Enter text..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    className="mt-2"
+              {/* Sizes */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Sizes</h3>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button size="sm">Small</Button>
+                  <Button size="md">Medium</Button>
+                  <Button size="lg">Large</Button>
+                </div>
+              </div>
+
+              {/* With Icons */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">With Icons</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Button icon="ph:paper-plane-tilt-bold" iconPosition="left">
+                    Send
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    icon="ph:download-bold" 
+                    iconPosition="right"
+                  >
+                    Download
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    icon="ph:gear-bold" 
+                    iconPosition="only"
+                    aria-label="Settings"
                   />
                 </div>
+              </div>
 
-                {/* Text Input with Error */}
+              {/* States */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">States</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Button loading>Loading</Button>
+                  <Button disabled>Disabled</Button>
+                  <Button fullWidth>Full Width</Button>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        </section>
+
+        {/* ===================================================================
+            SECTION: FORM INPUTS
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Form Inputs</h2>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Clean inputs with validation states and proper accessibility
+            </p>
+          </div>
+
+          <Card>
+            <Card.Body className="space-y-6">
+              {/* Text Input */}
+              <div>
+                <Label htmlFor="input-default">Text Input</Label>
+                <Input
+                  id="input-default"
+                  placeholder="Enter text..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                />
+              </div>
+
+              {/* Input with Icon */}
+              <div>
+                <Label htmlFor="input-icon">With Icon</Label>
+                <Input
+                  id="input-icon"
+                  icon="ph:magnifying-glass-bold"
+                  placeholder="Search..."
+                />
+              </div>
+
+              {/* Validation States */}
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="input-error">Input with Error</Label>
+                  <Label htmlFor="input-error">Error State</Label>
                   <Input
                     id="input-error"
-                    placeholder="Required field"
                     error="This field is required"
-                    className="mt-2"
+                    placeholder="Email address"
                   />
                 </div>
-
-                {/* Select */}
                 <div>
-                  <Label htmlFor="select-demo">Select</Label>
-                  <Select
-                    id="select-demo"
-                    value={selectValue}
-                    onChange={(e) => setSelectValue(e.target.value)}
-                    className="mt-2"
-                  >
-                    <option value="">Choose option...</option>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                    <option value="3">Option 3</option>
-                  </Select>
-                </div>
-
-                {/* Textarea */}
-                <div>
-                  <Label htmlFor="textarea-demo">Textarea</Label>
-                  <Textarea
-                    id="textarea-demo"
-                    placeholder="Enter description..."
-                    rows={3}
-                    value={textareaValue}
-                    onChange={(e) => setTextareaValue(e.target.value)}
-                    className="mt-2"
+                  <Label htmlFor="input-success">Success State</Label>
+                  <Input
+                    id="input-success"
+                    success
+                    placeholder="Username"
+                    value="johndoe"
                   />
                 </div>
               </div>
 
-              {/* Checkboxes & Radio Buttons */}
-              <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
-                <div className="grid md:grid-cols-2 gap-8">
-                  {/* Checkbox */}
-                  <div>
-                    <Label className="mb-3 block">Checkbox</Label>
-                    <Checkbox
-                      checked={checkboxChecked}
-                      onChange={(e) => setCheckboxChecked(e.target.checked)}
-                    >
-                      I agree to the terms and conditions
-                    </Checkbox>
-                  </div>
+              {/* Textarea */}
+              <div>
+                <Label htmlFor="textarea">Textarea</Label>
+                <Textarea
+                  id="textarea"
+                  rows={4}
+                  placeholder="Enter your message..."
+                  value={textareaValue}
+                  onChange={(e) => setTextareaValue(e.target.value)}
+                  maxLength={500}
+                  showCount
+                />
+              </div>
 
-                  {/* Radio Buttons */}
-                  <div>
-                    <Label className="mb-3 block">Radio Buttons</Label>
-                    <div className="space-y-2">
-                      <Radio
-                        checked={radioValue === 'option1'}
-                        onChange={() => setRadioValue('option1')}
-                        name="radio-demo"
-                      >
-                        Option 1
-                      </Radio>
-                      <Radio
-                        checked={radioValue === 'option2'}
-                        onChange={() => setRadioValue('option2')}
-                        name="radio-demo"
-                      >
-                        Option 2
-                      </Radio>
-                      <Radio
-                        checked={radioValue === 'option3'}
-                        onChange={() => setRadioValue('option3')}
-                        name="radio-demo"
-                      >
-                        Option 3
-                      </Radio>
-                    </div>
-                  </div>
-                </div>
+              {/* Select */}
+              <div>
+                <Label htmlFor="select">Select Dropdown</Label>
+                <Select
+                  id="select"
+                  value={selectValue}
+                  onChange={(e) => setSelectValue(e.target.value)}
+                >
+                  <option value="">Choose an option</option>
+                  <option value="option1">Option 1</option>
+                  <option value="option2">Option 2</option>
+                  <option value="option3">Option 3</option>
+                </Select>
+              </div>
+            </Card.Body>
+          </Card>
+        </section>
+
+        {/* ===================================================================
+            SECTION: TOGGLES & SWITCHES
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Toggles & Switches</h2>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Interactive controls for boolean states
+            </p>
+          </div>
+
+          <Card>
+            <Card.Body className="space-y-6">
+              {/* Checkbox */}
+              <div>
+                <Checkbox
+                  id="checkbox-demo"
+                  checked={checkboxChecked}
+                  onChange={(e) => setCheckboxChecked(e.target.checked)}
+                  label="I agree to the terms and conditions"
+                />
+              </div>
+
+              {/* Radio Buttons */}
+              <div className="space-y-3">
+                <Label>Choose your plan</Label>
+                <Radio
+                  id="radio-1"
+                  name="plan"
+                  value="option1"
+                  checked={radioValue === 'option1'}
+                  onChange={(e) => setRadioValue(e.target.value)}
+                  label="Starter - $29/month"
+                />
+                <Radio
+                  id="radio-2"
+                  name="plan"
+                  value="option2"
+                  checked={radioValue === 'option2'}
+                  onChange={(e) => setRadioValue(e.target.value)}
+                  label="Pro - $99/month"
+                />
+                <Radio
+                  id="radio-3"
+                  name="plan"
+                  value="option3"
+                  checked={radioValue === 'option3'}
+                  onChange={(e) => setRadioValue(e.target.value)}
+                  label="Enterprise - $299/month"
+                />
               </div>
 
               {/* Switch */}
-              <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
-                <Label className="mb-3 block">Switch</Label>
+              <div>
                 <Switch
+                  id="switch-demo"
                   checked={switchChecked}
                   onChange={(e) => setSwitchChecked(e.target.checked)}
-                >
-                  Enable notifications
-                </Switch>
+                  label="Enable notifications"
+                />
               </div>
-            </Card>
-          </section>
+            </Card.Body>
+          </Card>
+        </section>
 
-          {/* ===================================================================
-              SECTION: FEEDBACK COMPONENTS
-              =================================================================== */}
-          
-          <section>
-            <h2 className="text-3xl font-bold mb-2">Feedback Components</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Alerts, progress indicators, and loading states
+        {/* ===================================================================
+            SECTION: FEEDBACK COMPONENTS
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Feedback</h2>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Alerts, spinners, and progress indicators
             </p>
-            
-            <div className="space-y-6">
+          </div>
+
+          <Card>
+            <Card.Body className="space-y-6">
               {/* Alerts */}
-              <Card className="p-8">
-                <Label className="mb-4 block">Alerts</Label>
-                <div className="space-y-4">
-                  <Alert variant="success">
-                    Changes saved successfully!
-                  </Alert>
-                  <Alert variant="error">
-                    An error occurred. Please try again.
-                  </Alert>
-                  <Alert variant="warning">
-                    Your session will expire in 5 minutes.
-                  </Alert>
-                  <Alert variant="info">
-                    New features are available. Check them out!
-                  </Alert>
+              <div className="space-y-3">
+                <Alert variant="info" icon="ph:info-bold">
+                  This is an informational message
+                </Alert>
+                <Alert variant="success" icon="ph:check-circle-bold">
+                  Your changes have been saved successfully
+                </Alert>
+                <Alert variant="warning" icon="ph:warning-bold">
+                  Your subscription expires in 3 days
+                </Alert>
+                <Alert variant="error" icon="ph:x-circle-bold">
+                  Failed to process payment. Please try again.
+                </Alert>
+              </div>
+
+              {/* Spinners */}
+              <div className="flex items-center gap-6">
+                <div className="space-y-2">
+                  <Label>Small</Label>
+                  <Spinner size="sm" />
                 </div>
-              </Card>
+                <div className="space-y-2">
+                  <Label>Medium</Label>
+                  <Spinner size="md" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Large</Label>
+                  <Spinner size="lg" />
+                </div>
+              </div>
 
-              {/* Progress */}
-              <Card className="p-8">
-                <div className="space-y-6">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label>Progress</Label>
-                      <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                        {progress}%
-                      </span>
-                    </div>
-                    <Progress value={progress} />
-                  </div>
-
+              {/* Progress Bar */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Progress: {progress}%</Label>
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>
-                      -10%
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setProgress(Math.max(0, progress - 10))}
+                    >
+                      -10
                     </Button>
-                    <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>
-                      +10%
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setProgress(Math.min(100, progress + 10))}
+                    >
+                      +10
                     </Button>
                   </div>
                 </div>
-              </Card>
+                <Progress value={progress} />
+              </div>
+            </Card.Body>
+          </Card>
+        </section>
 
-              {/* Spinner */}
-              <Card className="p-8">
-                <Label className="mb-4 block">Loading Spinners</Label>
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <Spinner size="sm" />
-                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">Small</p>
-                  </div>
-                  <div className="text-center">
-                    <Spinner size="md" />
-                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">Medium</p>
-                  </div>
-                  <div className="text-center">
-                    <Spinner size="lg" />
-                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">Large</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </section>
-
-          {/* ===================================================================
-              SECTION: DATA DISPLAY
-              =================================================================== */}
-          
-          <section>
+        {/* ===================================================================
+            SECTION: DATA DISPLAY
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
             <h2 className="text-3xl font-bold mb-2">Data Display</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Badges, avatars, and content containers
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Badges, avatars, and cards for presenting information
             </p>
-            
-            <div className="space-y-6">
+          </div>
+
+          <Card>
+            <Card.Body className="space-y-6">
               {/* Badges */}
-              <Card className="p-8">
-                <Label className="mb-4 block">Badges</Label>
+              <div>
+                <Label className="mb-4">Badges</Label>
                 <div className="flex flex-wrap gap-3">
+                  <Badge variant="default">Default</Badge>
                   <Badge variant="primary">Primary</Badge>
-                  <Badge variant="secondary">Secondary</Badge>
                   <Badge variant="success">Success</Badge>
-                  <Badge variant="error">Error</Badge>
                   <Badge variant="warning">Warning</Badge>
-                  <Badge variant="info">Info</Badge>
+                  <Badge variant="error">Error</Badge>
+                  <Badge variant="neutral">Neutral</Badge>
                 </div>
-              </Card>
+              </div>
 
               {/* Avatars */}
-              <Card className="p-8">
-                <Label className="mb-4 block">Avatars</Label>
+              <div>
+                <Label className="mb-4">Avatars</Label>
                 <div className="flex items-center gap-4">
-                  <Avatar size="sm" name="John Doe" />
-                  <Avatar size="md" name="Jane Smith" />
-                  <Avatar size="lg" name="Alex Johnson" />
-                  <Avatar size="sm" src="https://i.pravatar.cc/150?img=1" />
-                  <Avatar size="md" src="https://i.pravatar.cc/150?img=2" />
-                  <Avatar size="lg" src="https://i.pravatar.cc/150?img=3" />
+                  <Avatar 
+                    src="https://i.pravatar.cc/150?img=1" 
+                    alt="User 1"
+                    size="sm"
+                  />
+                  <Avatar 
+                    src="https://i.pravatar.cc/150?img=2" 
+                    alt="User 2"
+                    size="md"
+                  />
+                  <Avatar 
+                    src="https://i.pravatar.cc/150?img=3" 
+                    alt="User 3"
+                    size="lg"
+                  />
+                  <Avatar 
+                    name="John Doe"
+                    size="md"
+                  />
                 </div>
-              </Card>
+              </div>
 
               {/* Cards */}
-              <div className="grid md:grid-cols-3 gap-6">
-                <Card hoverable>
-                  <div className="p-6">
-                    <h3 className="font-semibold mb-2">Hoverable Card</h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      Lift effect on hover for interactive elements
-                    </p>
-                  </div>
-                </Card>
-                
-                <Card clickable onClick={() => alert('Card clicked!')}>
-                  <div className="p-6">
-                    <h3 className="font-semibold mb-2">Clickable Card</h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      Full card acts as a button
-                    </p>
-                  </div>
-                </Card>
-                
-                <Card selected>
-                  <div className="p-6">
-                    <h3 className="font-semibold mb-2">Selected Card</h3>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                      Visual indication of selection state
-                    </p>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          </section>
+              <div>
+                <Label className="mb-4">Card Variants</Label>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Card variant="default">
+                    <Card.Header>
+                      <Card.Title>Default Card</Card.Title>
+                      <Card.Description>
+                        Standard card with subtle border
+                      </Card.Description>
+                    </Card.Header>
+                    <Card.Body>
+                      Clean and professional card design
+                    </Card.Body>
+                  </Card>
 
-          {/* ===================================================================
-              SECTION: OVERLAYS
-              =================================================================== */}
-          
-          <section>
+                  <Card variant="elevated">
+                    <Card.Header>
+                      <Card.Title>Elevated Card</Card.Title>
+                      <Card.Description>
+                        Card with shadow elevation
+                      </Card.Description>
+                    </Card.Header>
+                    <Card.Body>
+                      Adds depth to your interface
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        </section>
+
+        {/* ===================================================================
+            SECTION: OVERLAYS
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
             <h2 className="text-3xl font-bold mb-2">Overlays</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
-              Modals, tooltips, and contextual information
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Modals and tooltips for focused interactions
             </p>
-            
-            <Card className="p-8">
-              <div className="space-y-6">
-                {/* Tooltips */}
-                <div>
-                  <Label className="mb-4 block">Tooltips</Label>
-                  <div className="flex gap-4">
-                    <Tooltip content="Helpful tooltip content">
-                      <Button variant="secondary">Hover me</Button>
-                    </Tooltip>
-                    <Tooltip content="Another useful tooltip" placement="top">
-                      <Button variant="secondary">Top tooltip</Button>
-                    </Tooltip>
-                  </div>
-                </div>
+          </div>
 
-                {/* Modal */}
-                <div>
-                  <Label className="mb-4 block">Modal</Label>
-                  <Button onClick={() => setModalOpen(true)}>
-                    Open Modal
-                  </Button>
+          <Card>
+            <Card.Body className="space-y-6">
+              {/* Modal Trigger */}
+              <div>
+                <Label className="mb-4">Modal</Label>
+                <Button onClick={() => setModalOpen(true)}>
+                  Open Modal
+                </Button>
+              </div>
+
+              {/* Tooltips */}
+              <div>
+                <Label className="mb-4">Tooltips</Label>
+                <div className="flex gap-4">
+                  <Tooltip content="This is a tooltip">
+                    <Button variant="secondary">Hover me</Button>
+                  </Tooltip>
+                  <Tooltip content="Tooltips work on any element" position="top">
+                    <Icon 
+                      icon="ph:info-bold" 
+                      className="text-2xl text-neutral-500 cursor-help"
+                    />
+                  </Tooltip>
                 </div>
               </div>
-            </Card>
-          </section>
+            </Card.Body>
+          </Card>
+        </section>
 
-        </div>
+        {/* ===================================================================
+            SECTION: LOGO & BRANDING
+            =================================================================== */}
+        
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Logo & Branding</h2>
+            <p className="text-neutral-600 dark:text-neutral-400">
+              Consistent branding across all sizes
+            </p>
+          </div>
+
+          <Card>
+            <Card.Body>
+              <div className="flex items-center gap-8">
+                <div className="space-y-2">
+                  <Label>Small</Label>
+                  <Logo size="sm" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Medium</Label>
+                  <Logo size="md" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Large</Label>
+                  <Logo size="lg" />
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        </section>
+
       </div>
 
       {/* =====================================================================
           FOOTER
           ===================================================================== */}
       
-      <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center space-y-4">
-            <Logo size="md" />
-            <p className="text-neutral-600 dark:text-neutral-400">
-              Built with React, TypeScript, Tailwind v4, and enterprise-grade architecture
-            </p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-500">
-              © 2025 Oslira. Production-ready design system.
+      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Logo size="sm" />
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                Oslira Design System
+              </span>
+            </div>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              Production-ready design system.
             </p>
           </div>
         </div>
@@ -625,7 +615,7 @@ export default function ComponentShowcase() {
         <Modal.Body>
           <p className="text-neutral-700 dark:text-neutral-300">
             This is a modal dialog with proper dark mode support. It demonstrates the overlay pattern
-            and content containment.
+            and content containment. The theme automatically switches between light and dark modes.
           </p>
         </Modal.Body>
         <Modal.Footer>
