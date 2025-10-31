@@ -27,8 +27,7 @@
  */
 
 import { Icon } from '@iconify/react';
-import { TextareaHTMLAttributes, forwardRef, useEffect, useRef, useState } from 'react';
-
+import { TextareaHTMLAttributes, forwardRef, useEffect, useState } from 'react';
 // =============================================================================
 // TYPES
 // =============================================================================
