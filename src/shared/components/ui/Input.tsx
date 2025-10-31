@@ -33,7 +33,7 @@ import { InputHTMLAttributes, forwardRef } from 'react';
 // TYPES
 // =============================================================================
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   /** Size variant */
   size?: 'sm' | 'md' | 'lg';
   /** Error message (shows error state) */
@@ -111,7 +111,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {/* Input Container */}
         <div className="relative">
           {/* Left Icon */}
-          {hasIcon && iconPosition === 'left' && (
+          {hasIcon && iconPosition === 'left' && icon && (
             <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
               <Icon
                 icon={icon}
@@ -150,7 +150,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
 
           {/* Right Icon */}
-          {hasIcon && iconPosition === 'right' && (
+          {hasIcon && iconPosition === 'right' && icon && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
               <Icon
                 icon={icon}
