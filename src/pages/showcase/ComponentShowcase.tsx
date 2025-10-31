@@ -62,8 +62,8 @@ export default function ComponentShowcase() {
   // RENDER
   // ===========================================================================
   
-  return (
-    <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
+return (
+  <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       
       {/* =====================================================================
           THEME TOGGLE - FIXED BOTTOM LEFT
