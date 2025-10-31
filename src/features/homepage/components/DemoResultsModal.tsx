@@ -37,7 +37,7 @@ export function DemoResultsModal({ isOpen, onClose, data }: DemoResultsModalProp
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal open={isOpen} onClose={onClose} size="lg">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
