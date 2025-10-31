@@ -1,13 +1,15 @@
 // src/features/onboarding/components/FormInput.tsx
 
 /**
- * FORM INPUT & TEXTAREA COMPONENTS
+ * FORM INPUT & TEXTAREA COMPONENTS - PRODUCTION GRADE
  * 
  * FIXES:
- * - Character counter now properly reads field value
- * - Textarea height increased (rows default changed)
- * - Removed duplicate character counter
- * - RING FIX: Changed ring-purple-500 to ring-primary-500
+ * ✅ React Error #137 - Explicitly destructures children to prevent spreading
+ * ✅ Development warning when children accidentally passed
+ * ✅ Character counter properly reads field value
+ * ✅ Textarea height increased (rows default changed)
+ * ✅ Removed duplicate character counter
+ * ✅ RING FIX: Changed ring-purple-500 to ring-primary-500
  */
 
 import { forwardRef } from 'react';
@@ -69,12 +71,23 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       min,
       max,
       step,
+      children, // ← CRITICAL: Explicitly extract to prevent spreading to <input>
       ...rest
     },
     ref
   ) {
     const errorMessage = getErrorMessage(error);
     const hasError = !!errorMessage;
+
+    // =========================================================================
+    // SAFETY CHECK - Development warning for children
+    // =========================================================================
+    if (process.env.NODE_ENV === 'development' && children !== undefined) {
+      console.error(
+        '[FormInput] Input elements cannot have children. The children prop has been ignored.',
+        { receivedChildren: children }
+      );
+    }
 
     const baseClasses = `
       w-full px-4 py-3 
@@ -99,7 +112,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           {required && <span className="text-red-400">*</span>}
         </label>
 
-        {/* Input */}
+        {/* Input - CRITICAL: Self-closing, children explicitly excluded */}
         <input
           ref={ref}
           type={type}
@@ -133,6 +146,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
 // ✅ FIXED: Removed built-in character counter (handled by parent)
 // ✅ FIXED: Increased default rows from 4 to 8
 // ✅ FIXED: Changed ring-purple-500 to ring-primary-500
+// ✅ FIXED: React Error #137 - children explicitly excluded
 // =============================================================================
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
@@ -146,12 +160,23 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
       required = false,
       rows = 8, // ✅ INCREASED from 4 to 8 for better visibility
       maxLength,
+      children, // ← CRITICAL: Explicitly extract to prevent spreading to <textarea>
       ...rest
     },
     ref
   ) {
     const errorMessage = getErrorMessage(error);
     const hasError = !!errorMessage;
+
+    // =========================================================================
+    // SAFETY CHECK - Development warning for children
+    // =========================================================================
+    if (process.env.NODE_ENV === 'development' && children !== undefined) {
+      console.error(
+        '[FormTextarea] Textarea elements should not have children. Use value/defaultValue instead. The children prop has been ignored.',
+        { receivedChildren: children }
+      );
+    }
 
     const baseClasses = `
       w-full px-4 py-3 
@@ -177,7 +202,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
           {required && <span className="text-red-400">*</span>}
         </label>
 
-        {/* Textarea */}
+        {/* Textarea - CRITICAL: Self-closing, children explicitly excluded */}
         <textarea
           ref={ref}
           placeholder={placeholder}
