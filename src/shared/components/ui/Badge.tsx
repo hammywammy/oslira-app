@@ -29,7 +29,7 @@ export interface BadgeProps {
   /** Content to display */
   children: ReactNode;
   /** Visual variant */
-  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
+  variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
   /** Size variant */
   size?: 'sm' | 'md' | 'lg';
   /** Optional icon (Iconify icon name) */
@@ -46,6 +46,7 @@ export interface BadgeProps {
 
 const variantStyles = {
   default: 'bg-neutral-100 text-neutral-700 border border-neutral-300',
+  neutral: 'bg-neutral-100 text-neutral-700 border border-neutral-300',
   primary: 'bg-primary-100 text-primary-700 border border-primary-300',
   secondary: 'bg-secondary-100 text-secondary-700 border border-secondary-300',
   success: 'bg-success-100 text-success-700 border border-success-300',
