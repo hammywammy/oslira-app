@@ -134,7 +134,6 @@ const COLOR_SYSTEM = {
 // =============================================================================
 
 export default function ComponentShowcase() {
-  const [isDark, setIsDark] = useState(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
   
   // Form state
@@ -160,62 +159,44 @@ export default function ComponentShowcase() {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  // Theme classes
-  const themeClasses = isDark
-    ? 'bg-[#0A0D14] text-neutral-50'
-    : 'bg-white text-neutral-900';
-
-  const cardBg = isDark ? 'bg-[#1F2937]/50' : 'bg-neutral-50';
-  const borderColor = isDark ? 'border-neutral-700' : 'border-neutral-300';
-  const subtleText = isDark ? 'text-neutral-400' : 'text-neutral-600';
-  const headingText = isDark ? 'text-neutral-50' : 'text-neutral-900';
+  // Toggle dark mode by adding/removing 'dark' class on document
+  const toggleDarkMode = () => {
+    document.documentElement.classList.toggle('dark');
+  };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${themeClasses}`}>
+    <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 transition-colors duration-300">
       
       {/* Dark Mode Toggle - Bottom Left Corner */}
       <motion.button
-        onClick={() => setIsDark(!isDark)}
-        className={`fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all ${
-          isDark 
-            ? 'bg-neutral-800 hover:bg-neutral-700 border border-neutral-600' 
-            : 'bg-white hover:bg-neutral-50 border border-neutral-300 shadow-xl'
-        }`}
+        onClick={toggleDarkMode}
+        className="fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 dark:border-neutral-600"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Toggle dark mode"
       >
         <AnimatePresence mode="wait">
-          {isDark ? (
-            <motion.div
-              key="sun"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Icon icon="ph:sun-bold" className="text-2xl text-yellow-400" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="moon"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Icon icon="ph:moon-bold" className="text-2xl text-neutral-700" />
-            </motion.div>
-          )}
+          <motion.div
+            key={document.documentElement.classList.contains('dark') ? 'sun' : 'moon'}
+            initial={{ rotate: -90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 90, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Icon 
+              icon={document.documentElement.classList.contains('dark') ? "ph:sun-bold" : "ph:moon-bold"} 
+              className="text-2xl text-neutral-700 dark:text-yellow-400" 
+            />
+          </motion.div>
         </AnimatePresence>
       </motion.button>
 
       {/* Hero Section */}
-      <div className={`relative overflow-hidden border-b ${borderColor}`}>
+      <div className="relative overflow-hidden border-b border-neutral-200 dark:border-neutral-700">
         {/* Subtle Background Pattern */}
         <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, ${isDark ? 'rgb(255 255 255 / 0.1)' : 'rgb(0 0 0 / 0.1)'} 1px, transparent 0)`,
+            backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)',
             backgroundSize: '48px 48px'
           }} />
         </div>
@@ -227,46 +208,42 @@ export default function ComponentShowcase() {
             className="text-center space-y-6"
           >
             {/* Brand Badge */}
-            <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full border ${
-              isDark 
-                ? 'bg-primary-500/5 border-primary-500/20' 
-                : 'bg-primary-500/5 border-primary-500/20'
-            }`}>
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border bg-primary-500/5 dark:bg-primary-500/10 border-primary-500/20">
               <Logo size="sm" />
-              <span className={`font-semibold ${isDark ? 'text-primary-400' : 'text-primary-600'}`}>
+              <span className="font-semibold text-primary-600 dark:text-primary-400">
                 Oslira Design System
               </span>
             </div>
             
-            <h1 className={`text-5xl sm:text-6xl font-bold tracking-tight ${headingText}`}>
+            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight">
               Component Showcase
             </h1>
             
-            <p className={`text-xl max-w-2xl mx-auto ${subtleText}`}>
+            <p className="text-xl max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
               Intelligence + Mastery · Inspired by Supabase, Linear, Stripe, OpenAI
             </p>
 
             {/* Metrics */}
             <div className="flex items-center justify-center gap-8 pt-4">
               <div className="text-center">
-                <div className={`text-3xl font-bold ${isDark ? 'text-primary-400' : 'text-primary-600'}`}>
+                <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">
                   60+
                 </div>
-                <div className={`text-sm ${subtleText}`}>Colors</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Colors</div>
               </div>
-              <div className={`w-px h-12 ${isDark ? 'bg-neutral-700' : 'bg-neutral-300'}`} />
+              <div className="w-px h-12 bg-neutral-300 dark:bg-neutral-700" />
               <div className="text-center">
-                <div className={`text-3xl font-bold ${isDark ? 'text-success-400' : 'text-success-600'}`}>
+                <div className="text-3xl font-bold text-success-600 dark:text-success-400">
                   WCAG AA
                 </div>
-                <div className={`text-sm ${subtleText}`}>Compliant</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Compliant</div>
               </div>
-              <div className={`w-px h-12 ${isDark ? 'bg-neutral-700' : 'bg-neutral-300'}`} />
+              <div className="w-px h-12 bg-neutral-300 dark:bg-neutral-700" />
               <div className="text-center">
-                <div className={`text-3xl font-bold ${isDark ? 'text-secondary-400' : 'text-secondary-600'}`}>
+                <div className="text-3xl font-bold text-secondary-600 dark:text-secondary-400">
                   Production
                 </div>
-                <div className={`text-sm ${subtleText}`}>Ready</div>
+                <div className="text-sm text-neutral-600 dark:text-neutral-400">Ready</div>
               </div>
             </div>
           </motion.div>
