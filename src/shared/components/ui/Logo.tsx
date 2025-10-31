@@ -18,7 +18,7 @@ export function Logo({ size = 'md', className = '' }: LogoProps) {
 
   return (
     <img
-      src="/simple.png"
+      src="/favicon.svg"
       alt="Oslira"
       className={`w-auto ${sizeClasses[size]} ${className}`}
     />
