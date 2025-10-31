@@ -79,14 +79,6 @@ export default function ComponentShowcase() {
                 <Logo size="lg" />
                 <span className="text-xs text-neutral-600">Large</span>
               </div>
-              <div className="flex flex-col items-center gap-2">
-                <Logo size="xl" />
-                <span className="text-xs text-neutral-600">X-Large</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Logo size="lg" showText />
-                <span className="text-xs text-neutral-600">With Text</span>
-              </div>
             </div>
           </Card>
 
