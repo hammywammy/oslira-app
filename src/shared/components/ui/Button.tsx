@@ -46,6 +46,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconPosition?: 'left' | 'right' | 'only';
   /** Loading state */
   loading?: boolean;
+  /** Loading state (alias for loading) */
+  isLoading?: boolean;
   /** Full width */
   fullWidth?: boolean;
   /** Additional CSS classes */
@@ -110,14 +112,16 @@ export function Button({
   icon,
   iconPosition = 'left',
   loading = false,
+  isLoading = false,
   fullWidth = false,
   disabled = false,
   className = '',
   type = 'button',
   ...props
 }: ButtonProps) {
-  const isDisabled = disabled || loading;
+  const isDisabled = disabled || loading || isLoading;
   const isIconOnly = iconPosition === 'only' && !children;
+  const showLoading = loading || isLoading;
 
   return (
     <button
@@ -139,7 +143,7 @@ export function Button({
       {...props}
     >
       {/* Loading Spinner */}
-      {loading && (
+      {showLoading && (
         <Spinner
           size={size === 'lg' ? 'md' : 'sm'}
           variant={variant === 'primary' || variant === 'danger' ? 'neutral' : 'primary'}
@@ -147,7 +151,7 @@ export function Button({
       )}
 
       {/* Left Icon */}
-      {!loading && icon && (iconPosition === 'left' || iconPosition === 'only') && (
+      {!showLoading && icon && (iconPosition === 'left' || iconPosition === 'only') && (
         <Icon
           icon={icon}
           width={iconSize[size]}
@@ -162,7 +166,7 @@ export function Button({
       )}
 
       {/* Right Icon */}
-      {!loading && icon && iconPosition === 'right' && (
+      {!showLoading && icon && iconPosition === 'right' && (
         <Icon
           icon={icon}
           width={iconSize[size]}
