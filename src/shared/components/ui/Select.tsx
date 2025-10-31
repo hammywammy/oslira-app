@@ -1,9 +1,11 @@
 // src/shared/components/ui/Select.tsx
 
 /**
- * SELECT COMPONENT
+ * SELECT COMPONENT - PRODUCTION GRADE
  * 
  * Dropdown select primitive with custom styling
+ * 
+ * NOTE: Select elements REQUIRE children (<option> elements), unlike input/textarea
  * 
  * FEATURES:
  * - Native <select> for performance and accessibility
@@ -28,7 +30,7 @@
  */
 
 import { Icon } from '@iconify/react';
-import { SelectHTMLAttributes, forwardRef } from 'react';
+import { SelectHTMLAttributes, forwardRef, ReactNode } from 'react';
 
 // =============================================================================
 // TYPES
@@ -45,6 +47,8 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   fullWidth?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Option elements (REQUIRED for select) */
+  children: ReactNode;
 }
 
 // =============================================================================
@@ -100,7 +104,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       disabled = false,
       className = '',
       id,
-      children,
+      children, // ← NOTE: Select REQUIRES children (option elements)
       ...props
     },
     ref
@@ -111,7 +115,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <div className={`flex flex-col gap-2 ${fullWidth ? 'w-full' : ''}`}>
         {/* Select Container */}
         <div className="relative">
-          {/* Select Element */}
+          {/* Select - NOTE: Unlike input/textarea, select NEEDS children */}
           <select
             ref={ref}
             id={id}
@@ -122,14 +126,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               ${sizeStyles[size]}
               ${getStateStyles(error, success, disabled)}
               ${fullWidth ? 'w-full' : ''}
-              appearance-none
-              bg-neutral-0
-              border
-              rounded-md
-              font-normal
-              text-neutral-900
-              transition-all duration-100
+              rounded-md border bg-white
+              font-normal text-neutral-900
+              transition-all duration-200
               focus:outline-none
+              disabled:opacity-50
+              appearance-none
+              cursor-pointer
+              ${disabled ? 'cursor-not-allowed' : ''}
               ${className}
             `.trim().replace(/\s+/g, ' ')}
             {...props}
@@ -137,17 +141,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {children}
           </select>
 
-          {/* Chevron Icon */}
-          <div
-            className={`
-              absolute ${iconPosition[size]} top-1/2 -translate-y-1/2 pointer-events-none
-            `}
-          >
+          {/* Custom Chevron Icon */}
+          <div className={`absolute ${iconPosition[size]} top-1/2 -translate-y-1/2 pointer-events-none`}>
             <Icon
-              icon="mdi:chevron-down"
+              icon="lucide:chevron-down"
               width={iconSize[size]}
               height={iconSize[size]}
-              className={disabled ? 'text-neutral-500' : 'text-neutral-600'}
+              className={`${disabled ? 'text-neutral-500' : 'text-neutral-700'}`}
               aria-hidden="true"
             />
           </div>
@@ -155,14 +155,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
         {/* Error Message */}
         {error && (
-          <span
+          <div 
             id={errorId}
-            className="text-xs text-error-700 flex items-center gap-1"
+            className="flex items-center gap-1.5 text-sm text-error-600"
             role="alert"
           >
-            <Icon icon="mdi:alert-circle" width={12} height={12} aria-hidden="true" />
-            {error}
-          </span>
+            <Icon icon="lucide:alert-circle" width={14} height={14} />
+            <span>{error}</span>
+          </div>
         )}
       </div>
     );
