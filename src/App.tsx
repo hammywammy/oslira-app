@@ -18,6 +18,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
 import { ShowcaseNav } from '@/shared/components/dev/ShowcaseNav'; 
+import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
 
 // =============================================================================
@@ -82,12 +83,14 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RouterProvider router={router} />
-          <ShowcaseNav />
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider defaultTheme="light" enableSystem={true}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RouterProvider router={router} />
+            <ShowcaseNav />
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
