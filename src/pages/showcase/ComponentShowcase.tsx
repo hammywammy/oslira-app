@@ -1,18 +1,29 @@
 // src/pages/showcase/ComponentShowcase.tsx
 
 /**
- * COMPONENT SHOWCASE - PRODUCTION GRADE V2.0
+ * COMPONENT SHOWCASE - PRODUCTION GRADE V3.0
  * 
  * ARCHITECTURE:
- * ✅ Manual toggle button controls Tailwind's natural dark mode
- * ✅ isDark state syncs with <html class="dark">
- * ✅ All components automatically respond via dark: classes
- * ✅ No manual theme management - pure Tailwind
- * ✅ Professional, clean showcase layout
+ * ✅ Enterprise dark mode pattern (Shadcn/Vercel approach)
+ * ✅ Clean state management with localStorage persistence
+ * ✅ Proper initialization and cleanup
+ * ✅ All components use Tailwind dark: variant automatically
+ * ✅ CSS variables flip via .dark class in theme.css
+ * ✅ Professional, minimal toggle UI
  * 
  * DESIGN PHILOSOPHY:
  * "Concert hall, not arcade; calm ocean, not storm"
- * Let the components speak for themselves
+ * - Let the design system speak for itself
+ * - Subtle, purposeful animations
+ * - Clean, scannable layout
+ * - Professional polish without over-design
+ * 
+ * HOW IT WORKS:
+ * 1. Toggle button controls isDark state
+ * 2. useEffect syncs isDark ↔ <html class="dark">
+ * 3. Tailwind sees .dark class → applies dark: variants
+ * 4. CSS variables flip (theme.css .dark overrides)
+ * 5. Components adapt automatically
  */
 
 import { useState, useEffect } from 'react';
@@ -37,13 +48,33 @@ import { Tooltip } from '@/shared/components/ui/Tooltip';
 import { Modal } from '@/shared/components/ui/Modal';
 
 // =============================================================================
+// CONSTANTS
+// =============================================================================
+
+const STORAGE_KEY = 'oslira-theme-mode';
+
+// =============================================================================
 // COMPONENT
 // =============================================================================
 
 export default function ComponentShowcase() {
-  const [isDark, setIsDark] = useState(false);
+  // ===========================================================================
+  // STATE: Dark Mode with localStorage persistence
+  // ===========================================================================
   
-  // Form state
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    // Initialize from localStorage or default to light mode
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored === 'dark';
+    }
+    return false;
+  });
+  
+  // ===========================================================================
+  // STATE: Form Inputs (for demonstration)
+  // ===========================================================================
+  
   const [checkboxChecked, setCheckboxChecked] = useState(false);
   const [radioValue, setRadioValue] = useState('option1');
   const [switchChecked, setSwitchChecked] = useState(false);
@@ -53,30 +84,67 @@ export default function ComponentShowcase() {
   const [progress, setProgress] = useState(60);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Sync isDark with <html class="dark">
+  // ===========================================================================
+  // EFFECT: Initialize dark mode on mount (cleanup any stale state)
+  // ===========================================================================
+  
   useEffect(() => {
+    // Force clean slate on mount
+    const root = document.documentElement;
+    root.classList.remove('dark');
+    
+    // Apply stored preference
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
+    }
+  }, []); // Run once on mount
+
+  // ===========================================================================
+  // EFFECT: Sync isDark state with DOM and localStorage
+  // ===========================================================================
+  
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    if (isDark) {
+      root.classList.add('dark');
+      localStorage.setItem(STORAGE_KEY, 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
+      localStorage.setItem(STORAGE_KEY, 'light');
     }
   }, [isDark]);
 
+  // ===========================================================================
+  // HANDLERS
+  // ===========================================================================
+  
+  const toggleDarkMode = () => {
+    setIsDark(!isDark);
+  };
+
+  // ===========================================================================
+  // RENDER
+  // ===========================================================================
+  
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
       
       {/* =====================================================================
-          DARK MODE TOGGLE - BOTTOM LEFT CORNER
+          DARK MODE TOGGLE - FIXED BOTTOM LEFT
           ===================================================================== */}
+      
       <motion.button
-        onClick={() => setIsDark(!isDark)}
-        className="fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all
+        onClick={toggleDarkMode}
+        className="fixed bottom-8 left-8 z-50 w-14 h-14 rounded-full shadow-elevated 
+                   flex items-center justify-center transition-all duration-200
                    bg-white dark:bg-neutral-800 
                    hover:bg-neutral-50 dark:hover:bg-neutral-700 
-                   border border-neutral-300 dark:border-neutral-600"
-        whileHover={{ scale: 1.1 }}
+                   border border-neutral-300 dark:border-neutral-600
+                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        aria-label="Toggle dark mode"
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         <AnimatePresence mode="wait">
           {isDark ? (
@@ -97,7 +165,7 @@ export default function ComponentShowcase() {
               exit={{ rotate: -90, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Icon icon="ph:moon-bold" className="text-2xl text-neutral-700" />
+              <Icon icon="ph:moon-bold" className="text-2xl text-neutral-700 dark:text-neutral-300" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -106,6 +174,7 @@ export default function ComponentShowcase() {
       {/* =====================================================================
           HERO SECTION
           ===================================================================== */}
+      
       <div className="relative overflow-hidden border-b border-neutral-200 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <motion.div
@@ -115,35 +184,38 @@ export default function ComponentShowcase() {
           >
             {/* Brand Badge */}
             <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border
-                            bg-primary-500/5 border-primary-500/20">
+                            bg-primary-500/5 border-primary-500/20
+                            dark:bg-primary-500/10 dark:border-primary-500/30">
               <Logo size="sm" />
               <span className="font-semibold text-primary-600 dark:text-primary-400">
                 Oslira Design System
               </span>
             </div>
-            
-            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight">
-              Component Showcase
+
+            {/* Headline */}
+            <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+              Production-grade UI components with <br />
+              <span className="text-primary-500">natural dark mode support</span>
             </h1>
-            
-            <p className="text-xl max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
-              Production-grade UI components with natural dark mode support
+
+            {/* Subtitle */}
+            <p className="text-lg text-neutral-700 dark:text-neutral-300 max-w-2xl mx-auto">
+              14 components, WCAG AA compliant, 0 tech debt. 
+              Built with Tailwind v4 and enterprise-grade architecture.
             </p>
 
-            {/* Metrics */}
+            {/* Stats */}
             <div className="flex items-center justify-center gap-8 pt-4">
               <div className="text-center">
-                <div className="text-3xl font-bold text-primary-600 dark:text-primary-400">14</div>
+                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">14</div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">Components</div>
               </div>
-              <div className="w-px h-12 bg-neutral-300 dark:bg-neutral-700" />
               <div className="text-center">
-                <div className="text-3xl font-bold text-success-600 dark:text-success-400">WCAG AA</div>
+                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">WCAG AA</div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">Compliant</div>
               </div>
-              <div className="w-px h-12 bg-neutral-300 dark:bg-neutral-700" />
               <div className="text-center">
-                <div className="text-3xl font-bold text-secondary-600 dark:text-secondary-400">0</div>
+                <div className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">0</div>
                 <div className="text-sm text-neutral-600 dark:text-neutral-400">Tech Debt</div>
               </div>
             </div>
@@ -152,576 +224,411 @@ export default function ComponentShowcase() {
       </div>
 
       {/* =====================================================================
-          MAIN CONTENT
+          COMPONENTS GRID
           ===================================================================== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-24">
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid gap-16">
 
-        {/* BUTTONS */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl font-bold">Buttons</h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400">
+          {/* ===================================================================
+              SECTION: BUTTONS
+              =================================================================== */}
+          
+          <section>
+            <h2 className="text-3xl font-bold mb-2">Buttons</h2>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
               Professional CTAs with multiple variants and states
             </p>
-          </div>
-
-          <Card size="lg" rounded="xl">
-            <div className="space-y-8">
-              {/* Variants */}
-              <div>
-                <h3 className="text-xl font-semibold mb-4">Variants</h3>
-                <div className="flex flex-wrap gap-4">
-                  <Button variant="primary">Primary Button</Button>
-                  <Button variant="secondary">Secondary Button</Button>
-                  <Button variant="ghost">Ghost Button</Button>
-                  <Button variant="danger">Danger Button</Button>
-                </div>
-              </div>
-
-              {/* Sizes */}
-              <div>
-                <h3 className="text-xl font-semibold mb-4">Sizes</h3>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Button size="sm">Small</Button>
-                  <Button size="md">Medium</Button>
-                  <Button size="lg">Large</Button>
-                </div>
-              </div>
-
-              {/* With Icons */}
-              <div>
-                <h3 className="text-xl font-semibold mb-4">With Icons</h3>
-                <div className="flex flex-wrap gap-4">
-                  <Button icon="mdi:magnify" iconPosition="left">Search</Button>
-                  <Button icon="mdi:arrow-right" iconPosition="right">Next</Button>
-                  <Button icon="mdi:plus" iconPosition="only" />
-                </div>
-              </div>
-
-              {/* States */}
-              <div>
-                <h3 className="text-xl font-semibold mb-4">States</h3>
-                <div className="flex flex-wrap gap-4">
-                  <Button>Default</Button>
-                  <Button loading>Loading</Button>
-                  <Button disabled>Disabled</Button>
-                </div>
-              </div>
-
-              {/* Full Width */}
-              <div>
-                <h3 className="text-xl font-semibold mb-4">Full Width</h3>
-                <Button fullWidth variant="primary">Full Width Button</Button>
-              </div>
-            </div>
-          </Card>
-        </section>
-
-        {/* CARDS */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl font-bold">Cards</h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400">
-              Flexible containers with multiple configurations
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card size="md" rounded="xl" hoverable>
-              <h3 className="text-xl font-semibold mb-2">Basic Card</h3>
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Default card with hover effect. Clean and professional.
-              </p>
-            </Card>
-
-            <Card size="md" rounded="xl" shadow="md">
-              <h3 className="text-xl font-semibold mb-2">Elevated Card</h3>
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Card with medium shadow for emphasis.
-              </p>
-            </Card>
-
-            <Card size="md" rounded="xl" clickable onClick={() => alert('Card clicked!')}>
-              <h3 className="text-xl font-semibold mb-2">Clickable Card</h3>
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Interactive card with onClick handler.
-              </p>
-            </Card>
-          </div>
-        </section>
-
-        {/* FORM INPUTS */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl font-bold">Form Inputs</h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400">
-              Professional inputs with validation states
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Input */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Input</h3>
-              <div className="space-y-4">
+            
+            <Card className="p-8">
+              <div className="space-y-6">
+                {/* Variants */}
                 <div>
-                  <Label htmlFor="input-default">Default Input</Label>
-                  <Input 
-                    id="input-default"
-                    placeholder="Enter text..." 
+                  <Label className="mb-3 block">Variants</Label>
+                  <div className="flex flex-wrap gap-3">
+                    <Button variant="primary">Primary Button</Button>
+                    <Button variant="secondary">Secondary Button</Button>
+                    <Button variant="ghost">Ghost Button</Button>
+                    <Button variant="danger">Danger Button</Button>
+                  </div>
+                </div>
+
+                {/* Sizes */}
+                <div>
+                  <Label className="mb-3 block">Sizes</Label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button size="sm">Small</Button>
+                    <Button size="md">Medium</Button>
+                    <Button size="lg">Large</Button>
+                  </div>
+                </div>
+
+                {/* With Icons */}
+                <div>
+                  <Label className="mb-3 block">With Icons</Label>
+                  <div className="flex flex-wrap gap-3">
+                    <Button icon="ph:magnifying-glass-bold" iconPosition="left">
+                      Search
+                    </Button>
+                    <Button icon="ph:arrow-right-bold" iconPosition="right">
+                      Next
+                    </Button>
+                    <Button icon="ph:plus-bold" iconPosition="only" />
+                  </div>
+                </div>
+
+                {/* States */}
+                <div>
+                  <Label className="mb-3 block">States</Label>
+                  <div className="flex flex-wrap gap-3">
+                    <Button>Default</Button>
+                    <Button loading>Loading</Button>
+                    <Button disabled>Disabled</Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </section>
+
+          {/* ===================================================================
+              SECTION: FORM INPUTS
+              =================================================================== */}
+          
+          <section>
+            <h2 className="text-3xl font-bold mb-2">Form Inputs</h2>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+              Clean, accessible form controls with validation states
+            </p>
+            
+            <Card className="p-8">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* Text Input */}
+                <div>
+                  <Label htmlFor="input-demo">Text Input</Label>
+                  <Input
+                    id="input-demo"
+                    placeholder="Enter text..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    fullWidth
+                    className="mt-2"
                   />
                 </div>
+
+                {/* Text Input with Error */}
                 <div>
-                  <Label htmlFor="input-icon">With Icon</Label>
-                  <Input 
-                    id="input-icon"
-                    icon="mdi:magnify" 
-                    iconPosition="left"
-                    placeholder="Search..."
-                    fullWidth
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="input-error">Error State</Label>
-                  <Input 
+                  <Label htmlFor="input-error">Input with Error</Label>
+                  <Input
                     id="input-error"
+                    placeholder="Required field"
                     error="This field is required"
-                    placeholder="Invalid input"
-                    fullWidth
+                    className="mt-2"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="input-success">Success State</Label>
-                  <Input 
-                    id="input-success"
-                    success
-                    placeholder="Valid input"
-                    fullWidth
-                  />
-                </div>
-              </div>
-            </Card>
 
-            {/* Textarea */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Textarea</h3>
-              <div className="space-y-4">
+                {/* Select */}
                 <div>
-                  <Label htmlFor="textarea-default">Default Textarea</Label>
-                  <Textarea 
-                    id="textarea-default"
-                    placeholder="Enter message..."
-                    value={textareaValue}
-                    onChange={(e) => setTextareaValue(e.target.value)}
-                    rows={4}
-                    fullWidth
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="textarea-counter">With Character Counter</Label>
-                  <Textarea 
-                    id="textarea-counter"
-                    placeholder="Max 200 characters..."
-                    maxLength={200}
-                    showCount
-                    rows={4}
-                    fullWidth
-                  />
-                </div>
-              </div>
-            </Card>
-
-            {/* Select */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Select</h3>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="select-default">Default Select</Label>
-                  <Select 
-                    id="select-default"
+                  <Label htmlFor="select-demo">Select</Label>
+                  <Select
+                    id="select-demo"
                     value={selectValue}
                     onChange={(e) => setSelectValue(e.target.value)}
-                    fullWidth
+                    className="mt-2"
                   >
-                    <option value="">Choose an option</option>
+                    <option value="">Choose option...</option>
                     <option value="1">Option 1</option>
                     <option value="2">Option 2</option>
                     <option value="3">Option 3</option>
                   </Select>
                 </div>
+
+                {/* Textarea */}
                 <div>
-                  <Label htmlFor="select-error">Error State</Label>
-                  <Select 
-                    id="select-error"
-                    error="Please select an option"
-                    fullWidth
-                  >
-                    <option value="">Choose an option</option>
-                    <option value="1">Option 1</option>
-                    <option value="2">Option 2</option>
-                  </Select>
+                  <Label htmlFor="textarea-demo">Textarea</Label>
+                  <Textarea
+                    id="textarea-demo"
+                    placeholder="Enter description..."
+                    rows={3}
+                    value={textareaValue}
+                    onChange={(e) => setTextareaValue(e.target.value)}
+                    className="mt-2"
+                  />
                 </div>
               </div>
-            </Card>
 
-            {/* Toggles */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Toggles</h3>
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Checkbox</p>
-                  <Checkbox 
-                    checked={checkboxChecked}
-                    onChange={(e) => setCheckboxChecked(e.target.checked)}
-                  >
-                    Accept terms and conditions
-                  </Checkbox>
-                  <Checkbox indeterminate>
-                    Indeterminate state
-                  </Checkbox>
-                </div>
+              {/* Checkboxes & Radio Buttons */}
+              <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Checkbox */}
+                  <div>
+                    <Label className="mb-3 block">Checkbox</Label>
+                    <Checkbox
+                      checked={checkboxChecked}
+                      onChange={(e) => setCheckboxChecked(e.target.checked)}
+                      label="I agree to the terms and conditions"
+                    />
+                  </div>
 
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Radio Group</p>
-                  <div className="space-y-2">
-                    <Radio 
-                      name="radio-demo"
-                      value="option1"
-                      checked={radioValue === 'option1'}
-                      onChange={(e) => setRadioValue(e.target.value)}
-                    >
-                      Option 1
-                    </Radio>
-                    <Radio 
-                      name="radio-demo"
-                      value="option2"
-                      checked={radioValue === 'option2'}
-                      onChange={(e) => setRadioValue(e.target.value)}
-                    >
-                      Option 2
-                    </Radio>
+                  {/* Radio Buttons */}
+                  <div>
+                    <Label className="mb-3 block">Radio Buttons</Label>
+                    <div className="space-y-2">
+                      <Radio
+                        checked={radioValue === 'option1'}
+                        onChange={() => setRadioValue('option1')}
+                        label="Option 1"
+                        name="radio-demo"
+                      />
+                      <Radio
+                        checked={radioValue === 'option2'}
+                        onChange={() => setRadioValue('option2')}
+                        label="Option 2"
+                        name="radio-demo"
+                      />
+                      <Radio
+                        checked={radioValue === 'option3'}
+                        onChange={() => setRadioValue('option3')}
+                        label="Option 3"
+                        name="radio-demo"
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Switch</p>
-                  <Switch 
-                    checked={switchChecked}
-                    onChange={(e) => setSwitchChecked(e.target.checked)}
-                  >
-                    Enable notifications
-                  </Switch>
-                </div>
+              {/* Switch */}
+              <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+                <Label className="mb-3 block">Switch</Label>
+                <Switch
+                  checked={switchChecked}
+                  onChange={(e) => setSwitchChecked(e.target.checked)}
+                  label="Enable notifications"
+                />
               </div>
             </Card>
-          </div>
-        </section>
+          </section>
 
-        {/* FEEDBACK COMPONENTS */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl font-bold">Feedback Components</h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400">
-              Alerts, badges, spinners, and progress indicators
+          {/* ===================================================================
+              SECTION: FEEDBACK COMPONENTS
+              =================================================================== */}
+          
+          <section>
+            <h2 className="text-3xl font-bold mb-2">Feedback Components</h2>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+              Alerts, progress indicators, and loading states
             </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Alerts */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Alerts</h3>
-              <div className="space-y-4">
-                <Alert variant="success">
-                  <strong>Success!</strong> Your changes have been saved.
-                </Alert>
-                <Alert variant="error">
-                  <strong>Error!</strong> Something went wrong.
-                </Alert>
-                <Alert variant="warning">
-                  <strong>Warning!</strong> Please review your input.
-                </Alert>
-                <Alert variant="info">
-                  <strong>Info:</strong> This is an informational message.
-                </Alert>
-                <Alert variant="success" closeable onClose={() => console.log('Alert closed')}>
-                  <strong>Closeable!</strong> Click the X to dismiss.
-                </Alert>
-              </div>
-            </Card>
-
-            {/* Badges */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Badges</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Variants</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="primary">Primary</Badge>
-                    <Badge variant="secondary">Secondary</Badge>
-                    <Badge variant="success">Success</Badge>
-                    <Badge variant="error">Error</Badge>
-                    <Badge variant="warning">Warning</Badge>
-                    <Badge variant="info">Info</Badge>
-                    <Badge variant="neutral">Neutral</Badge>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">With Icons</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="primary" icon="mdi:star">Premium</Badge>
-                    <Badge variant="success" icon="mdi:check">Verified</Badge>
-                    <Badge variant="warning" icon="mdi:alert">Warning</Badge>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">With Status Dots</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="success" dot>Online</Badge>
-                    <Badge variant="error" dot>Offline</Badge>
-                    <Badge variant="warning" dot>Away</Badge>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Spinner & Progress */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Loading States</h3>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Spinners</p>
-                  <div className="flex items-center gap-4">
-                    <Spinner size="sm" />
-                    <Spinner size="md" />
-                    <Spinner size="lg" />
-                    <Spinner size="xl" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Spinner Variants</p>
-                  <div className="flex items-center gap-4">
-                    <Spinner variant="primary" />
-                    <Spinner variant="neutral" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Progress Bar</p>
-                  <Progress value={progress} showPercentage />
-                  <div className="flex gap-2 mt-3">
-                    <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>-10%</Button>
-                    <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>+10%</Button>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Progress with Label</p>
-                  <Progress value={75} label="Analyzing leads..." showPercentage variant="success" />
-                </div>
-              </div>
-            </Card>
-
-            {/* Avatars */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Avatars</h3>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Sizes</p>
-                  <div className="flex items-center gap-4">
-                    <Avatar size="sm" name="John Doe" />
-                    <Avatar size="md" name="Jane Smith" />
-                    <Avatar size="lg" name="Bob Johnson" />
-                    <Avatar size="xl" name="Alice Brown" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">With Status</p>
-                  <div className="flex items-center gap-4">
-                    <Avatar name="Online User" status="online" />
-                    <Avatar name="Offline User" status="offline" />
-                    <Avatar name="Away User" status="away" />
-                    <Avatar name="Busy User" status="busy" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Avatar Group</p>
-                  <div className="flex -space-x-2">
-                    <Avatar size="md" name="User 1" />
-                    <Avatar size="md" name="User 2" />
-                    <Avatar size="md" name="User 3" />
-                    <Avatar size="md" name="User 4" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* UTILITY COMPONENTS */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl font-bold">Utility Components</h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400">
-              Tooltips and modals for enhanced UX
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Tooltips */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Tooltips</h3>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Placement</p>
-                  <div className="flex flex-wrap gap-4">
-                    <Tooltip content="Tooltip on top" placement="top">
-                      <Button variant="secondary">Top</Button>
-                    </Tooltip>
-                    <Tooltip content="Tooltip on bottom" placement="bottom">
-                      <Button variant="secondary">Bottom</Button>
-                    </Tooltip>
-                    <Tooltip content="Tooltip on left" placement="left">
-                      <Button variant="secondary">Left</Button>
-                    </Tooltip>
-                    <Tooltip content="Tooltip on right" placement="right">
-                      <Button variant="secondary">Right</Button>
-                    </Tooltip>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-3 text-neutral-600 dark:text-neutral-400">Variants</p>
-                  <div className="flex flex-wrap gap-4">
-                    <Tooltip content="Dark tooltip" variant="dark">
-                      <Button variant="secondary">Dark</Button>
-                    </Tooltip>
-                    <Tooltip content="Light tooltip" variant="light">
-                      <Button variant="secondary">Light</Button>
-                    </Tooltip>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Modal */}
-            <Card size="lg" rounded="xl">
-              <h3 className="text-xl font-semibold mb-6">Modal</h3>
-              <div className="space-y-4">
-                <Button onClick={() => setModalOpen(true)}>Open Modal</Button>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  Professional dialog with backdrop, header, body, and footer sections.
-                </p>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* REAL-WORLD EXAMPLE */}
-        <section className="space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-4xl font-bold">Real-World Example</h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400">
-              Components working together in production
-            </p>
-          </div>
-
-          <Card size="lg" rounded="xl" className="max-w-md mx-auto">
+            
             <div className="space-y-6">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold mb-2">Sign In</h3>
-                <p className="text-neutral-600 dark:text-neutral-400">Welcome back! Please enter your details.</p>
-              </div>
-
-              <Alert variant="info">
-                Demo mode - no actual authentication
-              </Alert>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="demo-email" required>Email</Label>
-                  <Input 
-                    id="demo-email"
-                    type="email"
-                    placeholder="you@company.com"
-                    icon="mdi:email"
-                    iconPosition="left"
-                    fullWidth
-                  />
+              {/* Alerts */}
+              <Card className="p-8">
+                <Label className="mb-4 block">Alerts</Label>
+                <div className="space-y-4">
+                  <Alert variant="success">
+                    Changes saved successfully!
+                  </Alert>
+                  <Alert variant="error">
+                    An error occurred. Please try again.
+                  </Alert>
+                  <Alert variant="warning">
+                    Your session will expire in 5 minutes.
+                  </Alert>
+                  <Alert variant="info">
+                    New features are available. Check them out!
+                  </Alert>
                 </div>
+              </Card>
 
-                <div>
-                  <Label htmlFor="demo-password" required>Password</Label>
-                  <Input 
-                    id="demo-password"
-                    type="password"
-                    placeholder="••••••••"
-                    icon="mdi:lock"
-                    iconPosition="left"
-                    fullWidth
-                  />
+              {/* Progress */}
+              <Card className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label>Progress</Label>
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                        {progress}%
+                      </span>
+                    </div>
+                    <Progress value={progress} />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>
+                      -10%
+                    </Button>
+                    <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>
+                      +10%
+                    </Button>
+                  </div>
                 </div>
+              </Card>
 
-                <div className="flex items-center justify-between">
-                  <Checkbox>Remember me</Checkbox>
-                  <a href="#" className="text-sm text-primary-600 dark:text-primary-400 hover:underline">
-                    Forgot password?
-                  </a>
+              {/* Spinner */}
+              <Card className="p-8">
+                <Label className="mb-4 block">Loading Spinners</Label>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <Spinner size="sm" />
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">Small</p>
+                  </div>
+                  <div className="text-center">
+                    <Spinner size="md" />
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">Medium</p>
+                  </div>
+                  <div className="text-center">
+                    <Spinner size="lg" />
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2">Large</p>
+                  </div>
                 </div>
+              </Card>
+            </div>
+          </section>
 
-                <Button variant="primary" fullWidth>
-                  Sign In
-                </Button>
-
-                <div className="text-center">
-                  <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Don't have an account?{' '}
-                    <a href="#" className="text-primary-600 dark:text-primary-400 hover:underline">
-                      Sign up
-                    </a>
-                  </span>
+          {/* ===================================================================
+              SECTION: DATA DISPLAY
+              =================================================================== */}
+          
+          <section>
+            <h2 className="text-3xl font-bold mb-2">Data Display</h2>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+              Badges, avatars, and content containers
+            </p>
+            
+            <div className="space-y-6">
+              {/* Badges */}
+              <Card className="p-8">
+                <Label className="mb-4 block">Badges</Label>
+                <div className="flex flex-wrap gap-3">
+                  <Badge variant="primary">Primary</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="success">Success</Badge>
+                  <Badge variant="error">Error</Badge>
+                  <Badge variant="warning">Warning</Badge>
+                  <Badge variant="info">Info</Badge>
                 </div>
+              </Card>
+
+              {/* Avatars */}
+              <Card className="p-8">
+                <Label className="mb-4 block">Avatars</Label>
+                <div className="flex items-center gap-4">
+                  <Avatar size="sm" name="John Doe" />
+                  <Avatar size="md" name="Jane Smith" />
+                  <Avatar size="lg" name="Alex Johnson" />
+                  <Avatar size="sm" src="https://i.pravatar.cc/150?img=1" />
+                  <Avatar size="md" src="https://i.pravatar.cc/150?img=2" />
+                  <Avatar size="lg" src="https://i.pravatar.cc/150?img=3" />
+                </div>
+              </Card>
+
+              {/* Cards */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card hoverable>
+                  <div className="p-6">
+                    <h3 className="font-semibold mb-2">Hoverable Card</h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      Lift effect on hover for interactive elements
+                    </p>
+                  </div>
+                </Card>
+                
+                <Card clickable onClick={() => alert('Card clicked!')}>
+                  <div className="p-6">
+                    <h3 className="font-semibold mb-2">Clickable Card</h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      Full card acts as a button
+                    </p>
+                  </div>
+                </Card>
+                
+                <Card selected>
+                  <div className="p-6">
+                    <h3 className="font-semibold mb-2">Selected Card</h3>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      Visual indication of selection state
+                    </p>
+                  </div>
+                </Card>
               </div>
             </div>
-          </Card>
-        </section>
+          </section>
 
+          {/* ===================================================================
+              SECTION: OVERLAYS
+              =================================================================== */}
+          
+          <section>
+            <h2 className="text-3xl font-bold mb-2">Overlays</h2>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
+              Modals, tooltips, and contextual information
+            </p>
+            
+            <Card className="p-8">
+              <div className="space-y-6">
+                {/* Tooltips */}
+                <div>
+                  <Label className="mb-4 block">Tooltips</Label>
+                  <div className="flex gap-4">
+                    <Tooltip content="Helpful tooltip content">
+                      <Button variant="secondary">Hover me</Button>
+                    </Tooltip>
+                    <Tooltip content="Another useful tooltip" placement="top">
+                      <Button variant="secondary">Top tooltip</Button>
+                    </Tooltip>
+                  </div>
+                </div>
+
+                {/* Modal */}
+                <div>
+                  <Label className="mb-4 block">Modal</Label>
+                  <Button onClick={() => setModalOpen(true)}>
+                    Open Modal
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </section>
+
+        </div>
       </div>
 
       {/* =====================================================================
           FOOTER
           ===================================================================== */}
+      
       <footer className="border-t border-neutral-200 dark:border-neutral-800 mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-4">
+            <Logo size="md" />
             <p className="text-neutral-600 dark:text-neutral-400">
-              Oslira Design System v2.0 · October 2025
+              Built with React, TypeScript, Tailwind v4, and enterprise-grade architecture
             </p>
             <p className="text-sm text-neutral-500 dark:text-neutral-500">
-              Built with React, TypeScript, Tailwind CSS, Framer Motion
+              © 2025 Oslira. Production-ready design system.
             </p>
           </div>
         </div>
       </footer>
 
       {/* =====================================================================
-          MODAL DIALOG (CONTROLLED BY STATE)
+          MODAL COMPONENT
           ===================================================================== */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="md" centered>
-        <Modal.Header>Example Modal</Modal.Header>
-        <Modal.Body>
-          <p>This is a professional modal dialog with proper backdrop, header, body, and footer sections.</p>
-          <p className="mt-4 text-neutral-600 dark:text-neutral-400">
-            Try clicking outside or pressing ESC to close.
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="ghost" onClick={() => setModalOpen(false)}>
+      
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Example Modal"
+      >
+        <p className="text-neutral-700 dark:text-neutral-300 mb-4">
+          This is a modal dialog with proper dark mode support. It demonstrates the overlay pattern
+          and content containment.
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setModalOpen(false)}>
             Cancel
           </Button>
           <Button variant="primary" onClick={() => setModalOpen(false)}>
             Confirm
           </Button>
-        </Modal.Footer>
+        </div>
       </Modal>
 
     </div>
