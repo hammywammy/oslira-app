@@ -9,20 +9,17 @@
  * - 3 sizes (sm, md, lg)
  * - Validation states (default, error, success)
  * - Optional icons (left/right)
- * - Full accessibility (aria-invalid, aria-describedby)
- * - Error message display
+ * - Full accessibility
  * - Disabled state
  * 
  * DESIGN:
- * - Height: 40px default (md)
  * - Border radius: 6px
- * - Border: 1px solid, 2px on focus
  * - Focus: Electric blue ring
- * - Transition: 100ms for immediate feedback
+ * - Height: 32px (sm), 40px (md), 48px (lg)
  * 
  * USAGE:
  * <Input placeholder="Enter email..." />
- * <Input icon="mdi:magnify" iconPosition="left" placeholder="Search..." />
+ * <Input icon="mdi:magnify" iconPosition="left" />
  * <Input error="Email is required" />
  */
 
@@ -40,7 +37,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   error?: string;
   /** Success state */
   success?: boolean;
-  /** Icon (Iconify icon name) */
+  /** Icon name from Iconify */
   icon?: string;
   /** Icon position */
   iconPosition?: 'left' | 'right';
@@ -123,7 +120,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
 
-          {/* Input */}
+          {/* Input - CRITICAL: Self-closing, NO children allowed */}
           <input
             ref={ref}
             id={id}
@@ -136,14 +133,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               ${hasIcon && iconPosition === 'left' ? 'pl-10' : ''}
               ${hasIcon && iconPosition === 'right' ? 'pr-10' : ''}
               ${fullWidth ? 'w-full' : ''}
-              bg-neutral-0
-              border
-              rounded-md
-              font-normal
-              text-neutral-900
-              placeholder:text-neutral-500
-              transition-all duration-100
+              rounded-md border bg-white
+              font-normal text-neutral-900 placeholder-neutral-500
+              transition-all duration-200
               focus:outline-none
+              disabled:opacity-50
               ${className}
             `.trim().replace(/\s+/g, ' ')}
             {...props}
@@ -165,14 +159,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {/* Error Message */}
         {error && (
-          <span
+          <div 
             id={errorId}
-            className="text-xs text-error-700 flex items-center gap-1"
+            className="flex items-center gap-1.5 text-sm text-error-600"
             role="alert"
           >
-            <Icon icon="mdi:alert-circle" width={12} height={12} aria-hidden="true" />
-            {error}
-          </span>
+            <Icon icon="lucide:alert-circle" width={14} height={14} />
+            <span>{error}</span>
+          </div>
         )}
       </div>
     );
