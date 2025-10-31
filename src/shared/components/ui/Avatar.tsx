@@ -92,17 +92,31 @@ const statusColors = {
 // HELPER: GET INITIALS
 // =============================================================================
 
-// NEW CODE (line 93-100)
 function getInitials(name?: string): string {
   if (!name) return '?';
   
-  const parts = name.trim().split(' ').filter(Boolean);  // ← Filter out empty strings
-  if (parts.length >= 2 && parts[0][0] && parts[1][0]) {  // ← Guard against empty strings
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  // Filter out empty strings from split
+  const parts = name.trim().split(' ').filter(part => part.length > 0);
+  
+  // Two-part name: use first letter of each part
+  if (parts.length >= 2) {
+    const firstInitial = parts[0]?.[0];
+    const secondInitial = parts[1]?.[0];
+    
+    if (firstInitial && secondInitial) {
+      return `${firstInitial}${secondInitial}`.toUpperCase();
+    }
   }
-  return name.substring(0, 2).toUpperCase();
+  
+  // Single name or fallback: use first two characters
+  const cleanName = name.trim();
+  if (cleanName.length >= 2) {
+    return cleanName.substring(0, 2).toUpperCase();
+  }
+  
+  // Final fallback for single character names
+  return cleanName.length === 1 ? cleanName.toUpperCase() : '?';
 }
-
 // =============================================================================
 // COMPONENT
 // =============================================================================
