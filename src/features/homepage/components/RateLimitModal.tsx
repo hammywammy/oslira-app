@@ -35,7 +35,7 @@ export function RateLimitModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" showCloseButton={false}>
+    <Modal open={isOpen} onClose={onClose} size="sm" closeable={false}>
       <div className="text-center">
         {/* Icon */}
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
