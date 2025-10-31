@@ -1,8 +1,8 @@
 /**
- * TAILWIND CSS V4 CONFIGURATION
+ * TAILWIND CSS V4 CONFIGURATION - FIXED
  * 
- * Extends Tailwind with Oslira design tokens
- * Uses CSS custom properties from theme.css
+ * CRITICAL FIX: Colors are now REPLACED, not extended
+ * This prevents Tailwind's default neutral scale from overriding our CSS vars
  * 
  * DARK MODE ARCHITECTURE:
  * - Strategy: 'selector' (class-based toggling)
@@ -23,102 +23,116 @@ export default {
   darkMode: 'selector',
   
   theme: {
-    extend: {
-      colors: {
-        // =====================================================================
-        // NEUTRAL SCALE (Foundation)
-        // =====================================================================
-        // These values flip automatically via CSS variables in theme.css
-        // Light mode: 0=white → 900=black
-        // Dark mode:  0=black → 900=white
-        neutral: {
-          0: 'var(--color-neutral-0)',
-          50: 'var(--color-neutral-50)',
-          100: 'var(--color-neutral-100)',
-          200: 'var(--color-neutral-200)',
-          300: 'var(--color-neutral-300)',
-          400: 'var(--color-neutral-400)',
-          500: 'var(--color-neutral-500)',
-          600: 'var(--color-neutral-600)',
-          700: 'var(--color-neutral-700)',
-          800: 'var(--color-neutral-800)',
-          900: 'var(--color-neutral-900)',
-        },
-        
-        // =====================================================================
-        // PRIMARY BRAND (Electric Blue)
-        // =====================================================================
-        // Strategic accent - stays consistent across light/dark modes
-        primary: {
-          300: 'var(--color-primary-300)',
-          400: 'var(--color-primary-400)',
-          500: 'var(--color-primary-500)',
-          600: 'var(--color-primary-600)',
-          700: 'var(--color-primary-700)',
-          800: 'var(--color-primary-800)',
-        },
-        
-        // =====================================================================
-        // SECONDARY BRAND (Subtle Purple)
-        // =====================================================================
-        // Micro-accent (5% usage max)
-        secondary: {
-          300: 'var(--color-secondary-300)',
-          400: 'var(--color-secondary-400)',
-          500: 'var(--color-secondary-500)',
-          600: 'var(--color-secondary-600)',
-          700: 'var(--color-secondary-700)',
-        },
-        
-        // =====================================================================
-        // SEMANTIC STATE COLORS
-        // =====================================================================
-        success: {
-          100: 'var(--color-success-100)',
-          200: 'var(--color-success-200)',
-          400: 'var(--color-success-400)',
-          500: 'var(--color-success-500)',
-          600: 'var(--color-success-600)',
-          700: 'var(--color-success-700)',
-        },
-        error: {
-          100: 'var(--color-error-100)',
-          200: 'var(--color-error-200)',
-          400: 'var(--color-error-400)',
-          500: 'var(--color-error-500)',
-          600: 'var(--color-error-600)',
-          700: 'var(--color-error-700)',
-        },
-        warning: {
-          100: 'var(--color-warning-100)',
-          200: 'var(--color-warning-200)',
-          400: 'var(--color-warning-400)',
-          500: 'var(--color-warning-500)',
-          600: 'var(--color-warning-600)',
-          700: 'var(--color-warning-700)',
-        },
-        info: {
-          100: 'var(--color-info-100)',
-          200: 'var(--color-info-200)',
-          400: 'var(--color-info-400)',
-          500: 'var(--color-info-500)',
-          600: 'var(--color-info-600)',
-          700: 'var(--color-info-700)',
-        },
-        
-        // =====================================================================
-        // SEMANTIC ALIASES
-        // =====================================================================
-        // High-level tokens that adapt to light/dark modes automatically
-        background: 'var(--bg-primary)',
-        foreground: 'var(--text-primary)',
-        muted: 'var(--text-tertiary)',
-        border: 'var(--border-default)',
+    // ==========================================================================
+    // COLORS - COMPLETE REPLACEMENT (NOT EXTEND)
+    // ==========================================================================
+    // By defining colors at theme.colors instead of theme.extend.colors,
+    // we completely replace Tailwind's defaults and prevent conflicts
+    colors: {
+      // Required by Tailwind core
+      transparent: 'transparent',
+      current: 'currentColor',
+      white: '#ffffff',
+      black: '#000000',
+      
+      // ========================================================================
+      // NEUTRAL SCALE (Foundation)
+      // ========================================================================
+      // These values flip automatically via CSS variables in theme.css
+      // Light mode: 0=white → 900=black
+      // Dark mode:  0=black → 900=white
+      neutral: {
+        0: 'var(--color-neutral-0)',
+        50: 'var(--color-neutral-50)',
+        100: 'var(--color-neutral-100)',
+        200: 'var(--color-neutral-200)',
+        300: 'var(--color-neutral-300)',
+        400: 'var(--color-neutral-400)',
+        500: 'var(--color-neutral-500)',
+        600: 'var(--color-neutral-600)',
+        700: 'var(--color-neutral-700)',
+        800: 'var(--color-neutral-800)',
+        900: 'var(--color-neutral-900)',
       },
       
-      // =======================================================================
+      // ========================================================================
+      // PRIMARY BRAND (Electric Blue)
+      // ========================================================================
+      // Strategic accent - stays consistent across light/dark modes
+      primary: {
+        300: 'var(--color-primary-300)',
+        400: 'var(--color-primary-400)',
+        500: 'var(--color-primary-500)',
+        600: 'var(--color-primary-600)',
+        700: 'var(--color-primary-700)',
+        800: 'var(--color-primary-800)',
+      },
+      
+      // ========================================================================
+      // SECONDARY BRAND (Subtle Purple)
+      // ========================================================================
+      // Micro-accent (5% usage max)
+      secondary: {
+        300: 'var(--color-secondary-300)',
+        400: 'var(--color-secondary-400)',
+        500: 'var(--color-secondary-500)',
+        600: 'var(--color-secondary-600)',
+        700: 'var(--color-secondary-700)',
+      },
+      
+      // ========================================================================
+      // SEMANTIC STATE COLORS
+      // ========================================================================
+      success: {
+        100: 'var(--color-success-100)',
+        200: 'var(--color-success-200)',
+        400: 'var(--color-success-400)',
+        500: 'var(--color-success-500)',
+        600: 'var(--color-success-600)',
+        700: 'var(--color-success-700)',
+      },
+      error: {
+        100: 'var(--color-error-100)',
+        200: 'var(--color-error-200)',
+        400: 'var(--color-error-400)',
+        500: 'var(--color-error-500)',
+        600: 'var(--color-error-600)',
+        700: 'var(--color-error-700)',
+      },
+      warning: {
+        100: 'var(--color-warning-100)',
+        200: 'var(--color-warning-200)',
+        400: 'var(--color-warning-400)',
+        500: 'var(--color-warning-500)',
+        600: 'var(--color-warning-600)',
+        700: 'var(--color-warning-700)',
+      },
+      info: {
+        100: 'var(--color-info-100)',
+        200: 'var(--color-info-200)',
+        400: 'var(--color-info-400)',
+        500: 'var(--color-info-500)',
+        600: 'var(--color-info-600)',
+        700: 'var(--color-info-700)',
+      },
+      
+      // ========================================================================
+      // SEMANTIC ALIASES
+      // ========================================================================
+      // High-level tokens that adapt to light/dark modes automatically
+      background: 'var(--bg-primary)',
+      foreground: 'var(--text-primary)',
+      muted: 'var(--text-tertiary)',
+      border: 'var(--border-default)',
+    },
+    
+    // ==========================================================================
+    // EXTEND - Non-color customizations
+    // ==========================================================================
+    extend: {
+      // ========================================================================
       // SPACING SCALE (8px base unit)
-      // =======================================================================
+      // ========================================================================
       spacing: {
         xs: 'var(--space-xs)',
         sm: 'var(--space-sm)',
@@ -130,9 +144,9 @@ export default {
         '4xl': 'var(--space-4xl)',
       },
       
-      // =======================================================================
+      // ========================================================================
       // BORDER RADIUS SCALE
-      // =======================================================================
+      // ========================================================================
       borderRadius: {
         sm: 'var(--radius-sm)',
         DEFAULT: 'var(--radius-md)',
@@ -143,9 +157,9 @@ export default {
         full: 'var(--radius-full)',
       },
       
-      // =======================================================================
+      // ========================================================================
       // ELEVATION SHADOWS
-      // =======================================================================
+      // ========================================================================
       boxShadow: {
         raised: 'var(--shadow-raised)',
         elevated: 'var(--shadow-elevated)',
@@ -153,9 +167,9 @@ export default {
         modal: 'var(--shadow-modal)',
       },
       
-      // =======================================================================
+      // ========================================================================
       // TYPOGRAPHY
-      // =======================================================================
+      // ========================================================================
       fontFamily: {
         sans: 'var(--font-sans)',
       },
@@ -177,9 +191,9 @@ export default {
         bold: 'var(--font-weight-bold)',
       },
       
-      // =======================================================================
+      // ========================================================================
       // ANIMATION TIMING
-      // =======================================================================
+      // ========================================================================
       transitionDuration: {
         fast: 'var(--duration-fast)',
         normal: 'var(--duration-normal)',
@@ -193,9 +207,9 @@ export default {
         in: 'var(--easing-in)',
       },
       
-      // =======================================================================
+      // ========================================================================
       // CONTAINER WIDTHS
-      // =======================================================================
+      // ========================================================================
       maxWidth: {
         narrow: 'var(--container-narrow)',
         default: 'var(--container-default)',
@@ -203,9 +217,9 @@ export default {
         full: 'var(--container-full)',
       },
       
-      // =======================================================================
+      // ========================================================================
       // Z-INDEX SCALE
-      // =======================================================================
+      // ========================================================================
       zIndex: {
         base: 'var(--z-base)',
         dropdown: 'var(--z-dropdown)',
