@@ -28,6 +28,18 @@ import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
+import { Input } from '@/shared/components/ui/Input';
+import { Textarea } from '@/shared/components/ui/Textarea';
+import { Select } from '@/shared/components/ui/Select';
+import { Checkbox } from '@/shared/components/ui/Checkbox';
+import { Radio } from '@/shared/components/ui/Radio';
+import { Switch } from '@/shared/components/ui/Switch';
+import { Label } from '@/shared/components/ui/Label';
+import { Badge } from '@/shared/components/ui/Badge';
+import { Avatar } from '@/shared/components/ui/Avatar';
+import { Spinner } from '@/shared/components/ui/Spinner';
+import { Alert } from '@/shared/components/ui/Alert';
+import { Progress } from '@/shared/components/ui/Progress';
 
 // =============================================================================
 // COMPLETE OSLIRA COLOR SYSTEM (v1.0 - October 2025)
@@ -124,11 +136,28 @@ const COLOR_SYSTEM = {
 export default function ComponentShowcase() {
   const [isDark, setIsDark] = useState(false);
   const [copiedColor, setCopiedColor] = useState<string | null>(null);
+  
+  // Form state
+  const [checkboxChecked, setCheckboxChecked] = useState(false);
+  const [radioValue, setRadioValue] = useState('option1');
+  const [switchChecked, setSwitchChecked] = useState(false);
+  const [selectValue, setSelectValue] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [textareaValue, setTextareaValue] = useState('');
+  
+  // Toast/Alert state
+  const [showToast, setShowToast] = useState(false);
+  const [progress, setProgress] = useState(60);
 
   const copyToClipboard = (color: string) => {
     navigator.clipboard.writeText(color);
     setCopiedColor(color);
     setTimeout(() => setCopiedColor(null), 2000);
+  };
+  
+  const triggerToast = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   // Theme classes
@@ -464,6 +493,404 @@ export default function ComponentShowcase() {
               <p className={subtleText}>
                 Subtle purple accent for premium features. 5% usage maximum.
               </p>
+            </Card>
+          </div>
+        </section>
+
+        {/* FORM ELEMENTS */}
+        <section className="space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className={`text-4xl font-bold ${headingText}`}>Form Elements</h2>
+            <p className={`text-lg ${subtleText}`}>
+              Professional inputs with validation states
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Input */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Input</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="input-default">Default Input</Label>
+                  <Input 
+                    id="input-default"
+                    placeholder="Enter text..." 
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="input-icon">With Icon</Label>
+                  <Input 
+                    id="input-icon"
+                    icon="mdi:magnify" 
+                    iconPosition="left"
+                    placeholder="Search..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="input-error">Error State</Label>
+                  <Input 
+                    id="input-error"
+                    error="This field is required"
+                    placeholder="Invalid input"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Textarea */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Textarea</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="textarea-default">Default Textarea</Label>
+                  <Textarea 
+                    id="textarea-default"
+                    placeholder="Enter message..."
+                    value={textareaValue}
+                    onChange={(e) => setTextareaValue(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Select */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Select</h3>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="select-default">Default Select</Label>
+                  <Select 
+                    id="select-default"
+                    value={selectValue}
+                    onChange={(e) => setSelectValue(e.target.value)}
+                  >
+                    <option value="">Choose an option</option>
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                  </Select>
+                </div>
+              </div>
+            </Card>
+
+            {/* Checkbox & Radio & Switch */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Toggles</h3>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <p className={`text-sm font-medium ${subtleText}`}>Checkbox</p>
+                  <Checkbox 
+                    checked={checkboxChecked}
+                    onChange={(e) => setCheckboxChecked(e.target.checked)}
+                  >
+                    Accept terms and conditions
+                  </Checkbox>
+                </div>
+
+                <div className="space-y-3">
+                  <p className={`text-sm font-medium ${subtleText}`}>Radio Group</p>
+                  <div className="space-y-2">
+                    <Radio 
+                      name="radio-demo"
+                      value="option1"
+                      checked={radioValue === 'option1'}
+                      onChange={(e) => setRadioValue(e.target.value)}
+                    >
+                      Option 1
+                    </Radio>
+                    <Radio 
+                      name="radio-demo"
+                      value="option2"
+                      checked={radioValue === 'option2'}
+                      onChange={(e) => setRadioValue(e.target.value)}
+                    >
+                      Option 2
+                    </Radio>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className={`text-sm font-medium ${subtleText}`}>Switch</p>
+                  <Switch 
+                    checked={switchChecked}
+                    onChange={(e) => setSwitchChecked(e.target.checked)}
+                  >
+                    Enable notifications
+                  </Switch>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* FEEDBACK COMPONENTS */}
+        <section className="space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className={`text-4xl font-bold ${headingText}`}>Feedback Components</h2>
+            <p className={`text-lg ${subtleText}`}>
+              Alerts, badges, spinners, and progress indicators
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Alerts */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Alerts</h3>
+              <div className="space-y-4">
+                <Alert variant="success">
+                  <strong>Success!</strong> Your changes have been saved.
+                </Alert>
+                <Alert variant="error">
+                  <strong>Error!</strong> Something went wrong.
+                </Alert>
+                <Alert variant="warning">
+                  <strong>Warning!</strong> Please review your input.
+                </Alert>
+                <Alert variant="info">
+                  <strong>Info:</strong> This is an informational message.
+                </Alert>
+              </div>
+            </Card>
+
+            {/* Badges */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Badges</h3>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="primary">Primary</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="success">Success</Badge>
+                  <Badge variant="error">Error</Badge>
+                  <Badge variant="warning">Warning</Badge>
+                  <Badge variant="info">Info</Badge>
+                </div>
+              </div>
+            </Card>
+
+            {/* Spinner & Progress */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Loading States</h3>
+              <div className="space-y-6">
+                <div>
+                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Spinners</p>
+                  <div className="flex items-center gap-4">
+                    <Spinner size="sm" />
+                    <Spinner size="md" />
+                    <Spinner size="lg" />
+                  </div>
+                </div>
+                <div>
+                  <p className={`text-sm font-medium mb-3 ${subtleText}`}>Progress Bar</p>
+                  <Progress value={progress} max={100} />
+                  <div className="flex gap-2 mt-3">
+                    <Button size="sm" onClick={() => setProgress(Math.max(0, progress - 10))}>-10</Button>
+                    <Button size="sm" onClick={() => setProgress(Math.min(100, progress + 10))}>+10</Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Avatar */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <h3 className={`text-xl font-semibold mb-6 ${headingText}`}>Avatars</h3>
+              <div className="flex items-center gap-4">
+                <Avatar size="sm" src="https://i.pravatar.cc/150?img=1" alt="User" />
+                <Avatar size="md" src="https://i.pravatar.cc/150?img=2" alt="User" />
+                <Avatar size="lg" src="https://i.pravatar.cc/150?img=3" alt="User" />
+                <Avatar size="lg" fallback="JD" />
+              </div>
+            </Card>
+          </div>
+
+          {/* Toast Notification Demo */}
+          <Card className={`${cardBg} border ${borderColor}`}>
+            <h3 className={`text-xl font-semibold mb-4 ${headingText}`}>Toast Notification</h3>
+            <p className={`${subtleText} mb-6`}>Click to trigger a temporary notification</p>
+            <Button onClick={triggerToast}>Show Toast</Button>
+          </Card>
+
+          {/* Toast */}
+          <AnimatePresence>
+            {showToast && (
+              <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className={`fixed bottom-8 right-8 z-50 ${isDark ? 'bg-neutral-800' : 'bg-white'} border ${borderColor} rounded-xl shadow-elevated p-4 min-w-[300px]`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-success-500/20' : 'bg-success-100'}`}>
+                    <Icon icon="ph:check-bold" className={`text-xl ${isDark ? 'text-success-400' : 'text-success-600'}`} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`font-semibold ${headingText}`}>Success</h4>
+                    <p className={`text-sm ${subtleText}`}>Your changes have been saved successfully.</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowToast(false)}
+                    className={`${subtleText} hover:${headingText}`}
+                  >
+                    <Icon icon="ph:x-bold" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        {/* APPLIED EXAMPLES */}
+        <section className="space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className={`text-4xl font-bold ${headingText}`}>Applied Examples</h2>
+            <p className={`text-lg ${subtleText}`}>
+              Components working together in real-world scenarios
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Login Form Example */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <div className="space-y-6">
+                <div>
+                  <h3 className={`text-2xl font-bold ${headingText}`}>Sign In</h3>
+                  <p className={subtleText}>Welcome back! Please enter your details.</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email"
+                      type="email"
+                      placeholder="you@company.com"
+                      icon="mdi:email"
+                      iconPosition="left"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <Input 
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      icon="mdi:lock"
+                      iconPosition="left"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Checkbox>Remember me</Checkbox>
+                    <a href="#" className={`text-sm ${isDark ? 'text-primary-400' : 'text-primary-600'} hover:underline`}>
+                      Forgot password?
+                    </a>
+                  </div>
+                  <Button variant="primary" fullWidth>Sign In</Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Settings Panel Example */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <div className="space-y-6">
+                <h3 className={`text-2xl font-bold ${headingText}`}>Notification Settings</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: isDark ? '#2d3748' : '#e8ecef' }}>
+                    <div>
+                      <p className={`font-medium ${headingText}`}>Email Notifications</p>
+                      <p className={`text-sm ${subtleText}`}>Receive updates via email</p>
+                    </div>
+                    <Switch checked={switchChecked} onChange={(e) => setSwitchChecked(e.target.checked)} />
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-b" style={{ borderColor: isDark ? '#2d3748' : '#e8ecef' }}>
+                    <div>
+                      <p className={`font-medium ${headingText}`}>Push Notifications</p>
+                      <p className={`text-sm ${subtleText}`}>Receive push notifications</p>
+                    </div>
+                    <Switch />
+                  </div>
+                  <div className="flex items-center justify-between py-3">
+                    <div>
+                      <p className={`font-medium ${headingText}`}>SMS Notifications</p>
+                      <p className={`text-sm ${subtleText}`}>Receive text messages</p>
+                    </div>
+                    <Switch />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="ghost">Cancel</Button>
+                  <Button variant="primary">Save Changes</Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* User Profile Card Example */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar size="lg" src="https://i.pravatar.cc/150?img=5" alt="Sarah Johnson" />
+                  <div className="flex-1">
+                    <h4 className={`text-lg font-semibold ${headingText}`}>Sarah Johnson</h4>
+                    <p className={subtleText}>Product Designer</p>
+                  </div>
+                  <Badge variant="success">Active</Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-4 py-4 border-y" style={{ borderColor: isDark ? '#2d3748' : '#e8ecef' }}>
+                  <div className="text-center">
+                    <p className={`text-2xl font-bold ${headingText}`}>24</p>
+                    <p className={`text-sm ${subtleText}`}>Projects</p>
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-2xl font-bold ${headingText}`}>1.2k</p>
+                    <p className={`text-sm ${subtleText}`}>Followers</p>
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-2xl font-bold ${headingText}`}>89</p>
+                    <p className={`text-sm ${subtleText}`}>Following</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="primary" fullWidth>Message</Button>
+                  <Button variant="secondary" icon="mdi:account-plus" iconPosition="only" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Data Table Row Example */}
+            <Card className={`${cardBg} border ${borderColor}`}>
+              <div className="space-y-4">
+                <h3 className={`text-xl font-semibold ${headingText}`}>Lead Analysis Results</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: isDark ? '#1F2937' : '#f4f6f8' }}>
+                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=10" alt="Lead" />
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium truncate ${headingText}`}>@techfounder</p>
+                      <p className={`text-sm truncate ${subtleText}`}>Technology Startup CEO</p>
+                    </div>
+                    <Badge variant="success">Hot Lead</Badge>
+                    <span className={`text-lg font-bold ${isDark ? 'text-primary-400' : 'text-primary-600'}`}>94</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: isDark ? '#1F2937' : '#f4f6f8' }}>
+                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=11" alt="Lead" />
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium truncate ${headingText}`}>@designagency</p>
+                      <p className={`text-sm truncate ${subtleText}`}>Creative Agency Owner</p>
+                    </div>
+                    <Badge variant="warning">Warm</Badge>
+                    <span className={`text-lg font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>67</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: isDark ? '#1F2937' : '#f4f6f8' }}>
+                    <Avatar size="sm" src="https://i.pravatar.cc/150?img=12" alt="Lead" />
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium truncate ${headingText}`}>@marketingpro</p>
+                      <p className={`text-sm truncate ${subtleText}`}>Marketing Consultant</p>
+                    </div>
+                    <Badge variant="info">Cold</Badge>
+                    <span className={`text-lg font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>42</span>
+                  </div>
+                </div>
+              </div>
             </Card>
           </div>
         </section>
