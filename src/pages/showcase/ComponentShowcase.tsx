@@ -364,8 +364,9 @@ export default function ComponentShowcase() {
                     <Checkbox
                       checked={checkboxChecked}
                       onChange={(e) => setCheckboxChecked(e.target.checked)}
-                      label="I agree to the terms and conditions"
-                    />
+                    >
+                      I agree to the terms and conditions
+                    </Checkbox>
                   </div>
 
                   {/* Radio Buttons */}
@@ -375,21 +376,24 @@ export default function ComponentShowcase() {
                       <Radio
                         checked={radioValue === 'option1'}
                         onChange={() => setRadioValue('option1')}
-                        label="Option 1"
                         name="radio-demo"
-                      />
+                      >
+                        Option 1
+                      </Radio>
                       <Radio
                         checked={radioValue === 'option2'}
                         onChange={() => setRadioValue('option2')}
-                        label="Option 2"
                         name="radio-demo"
-                      />
+                      >
+                        Option 2
+                      </Radio>
                       <Radio
                         checked={radioValue === 'option3'}
                         onChange={() => setRadioValue('option3')}
-                        label="Option 3"
                         name="radio-demo"
-                      />
+                      >
+                        Option 3
+                      </Radio>
                     </div>
                   </div>
                 </div>
@@ -401,8 +405,9 @@ export default function ComponentShowcase() {
                 <Switch
                   checked={switchChecked}
                   onChange={(e) => setSwitchChecked(e.target.checked)}
-                  label="Enable notifications"
-                />
+                >
+                  Enable notifications
+                </Switch>
               </div>
             </Card>
           </section>
@@ -613,22 +618,24 @@ export default function ComponentShowcase() {
           ===================================================================== */}
       
       <Modal
-        isOpen={modalOpen}
+        open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Example Modal"
       >
-        <p className="text-neutral-700 dark:text-neutral-300 mb-4">
-          This is a modal dialog with proper dark mode support. It demonstrates the overlay pattern
-          and content containment.
-        </p>
-        <div className="flex justify-end gap-3">
+        <Modal.Header>Example Modal</Modal.Header>
+        <Modal.Body>
+          <p className="text-neutral-700 dark:text-neutral-300">
+            This is a modal dialog with proper dark mode support. It demonstrates the overlay pattern
+            and content containment.
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
           <Button variant="secondary" onClick={() => setModalOpen(false)}>
             Cancel
           </Button>
           <Button variant="primary" onClick={() => setModalOpen(false)}>
             Confirm
           </Button>
-        </div>
+        </Modal.Footer>
       </Modal>
 
     </div>
