@@ -1,7 +1,19 @@
 /**
- * @file Benefits Section
- * @description Why copywriters choose Oslira - Elegant Professional Design
- * Path: src/features/homepage/components/BenefitsSection.tsx
+ * ============================================================================
+ * BENEFITS SECTION - OSLIRA PROFESSIONAL V2.0
+ * ============================================================================
+ * 
+ * DESIGN PRINCIPLES:
+ * - Clean 3-column grid (professional, scannable)
+ * - Data-driven benefits from copy intelligence
+ * - Minimal animation (fade-in only, purposeful)
+ * - Proper color usage (blue icons, neutral foundation)
+ * 
+ * COPY STRATEGY (From Intelligence File):
+ * - Time savings: "20 minutes → 60 seconds"
+ * - Rejection shield: "Emotional distance from failures"
+ * - Strategic authority: "Sound like insider consultant"
+ * ============================================================================
  */
 
 import { useRef } from 'react';
@@ -9,51 +21,51 @@ import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
 // =============================================================================
-// DATA
+// DATA - REAL OSLIRA BENEFITS
 // =============================================================================
 
 const benefits = [
   {
-    icon: 'mdi:lightning-bolt-outline',
+    icon: 'mdi:clock-fast',
     title: '10x Faster Prospecting',
-    description: 'Analyze 50+ Instagram profiles in the time it used to take for 5. Oslira instantly evaluates engagement, content quality, and business fit.',
-    gradient: 'from-yellow-500 to-orange-600',
-    iconColor: 'text-yellow-500'
+    description: 'Analyze 50+ Instagram profiles in the time it used to take for 5. Oslira instantly evaluates engagement, content quality, and business fit — turning 20 minutes of research into 60 seconds.',
+    stat: '20 min → 60 sec',
+    statLabel: 'per prospect'
   },
   {
     icon: 'mdi:target-variant',
     title: 'Smart Lead Scoring',
-    description: 'AI grades each profile and highlights decision-makers who actually need your services. No more guessing who\'s a good fit.',
-    gradient: 'from-green-500 to-emerald-600',
-    iconColor: 'text-green-500'
+    description: 'AI grades each profile on engagement rate, posting consistency, and commercial signals. Skip dead accounts and focus on prospects who actually need your services.',
+    stat: '43%',
+    statLabel: 'response rate'
   },
   {
     icon: 'mdi:message-text-outline',
     title: 'Personalized Outreach',
-    description: 'Get tailored message templates for each lead. Oslira crafts opening lines based on their recent posts and business needs.',
-    gradient: 'from-blue-500 to-cyan-600',
-    iconColor: 'text-blue-500'
+    description: 'Get tailored message templates for each lead based on their content, industry, and pain points. Sound like an insider consultant, not a cold caller.',
+    stat: '3x',
+    statLabel: 'more replies'
   },
   {
-    icon: 'mdi:reload',
-    title: 'Automated Follow-Ups',
-    description: 'Never lose a warm lead again. Oslira tracks your outreach and reminds you when to follow up for maximum conversion.',
-    gradient: 'from-purple-500 to-pink-600',
-    iconColor: 'text-purple-500'
+    icon: 'mdi:brain',
+    title: 'Psychographic Profiling',
+    description: 'Understand how each prospect makes decisions — data-driven or emotion-driven, cautious or aggressive. Customize your pitch to match their communication style.',
+    stat: 'AI-Powered',
+    statLabel: 'analysis'
   },
   {
-    icon: 'mdi:chart-line-variant',
-    title: 'Track What Works',
-    description: 'See which profiles convert best and refine your targeting. Built-in analytics show you exactly where to focus your efforts.',
-    gradient: 'from-red-500 to-rose-600',
-    iconColor: 'text-red-500'
+    icon: 'mdi:shield-check',
+    title: 'Partnership Viability',
+    description: 'See budget concerns, team stability, and growth trajectory before investing time. Avoid "leech clients" and protect your energy for good-fit prospects.',
+    stat: '5+',
+    statLabel: 'data signals'
   },
   {
-    icon: 'mdi:rocket-launch-outline',
-    title: 'Scale Without Burnout',
-    description: 'Handle 3x more clients without sacrificing quality. Oslira handles the tedious research so you can focus on high-value work.',
-    gradient: 'from-indigo-500 to-violet-600',
-    iconColor: 'text-indigo-500'
+    icon: 'mdi:database-outline',
+    title: 'Built-In CRM',
+    description: 'All your prospect intelligence in one searchable place. Tag leads, track analysis history, export to CSV. No more spreadsheets or scattered notes.',
+    stat: 'Zero',
+    statLabel: 'spreadsheets'
   }
 ];
 
@@ -66,7 +78,7 @@ const fadeIn = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
 };
 
@@ -80,45 +92,40 @@ const stagger = {
   }
 };
 
-const cardHover = {
-  rest: { y: 0 },
-  hover: { 
-    y: -8,
-    transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
-  }
-};
-
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function BenefitsSection() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section ref={ref} className="relative py-32 px-6 bg-white">
-      <div className="relative max-w-7xl mx-auto">
+    <section ref={ref} className="py-24 px-6 bg-background">
+      <div className="max-w-7xl mx-auto">
         
-        {/* Section Header */}
+        {/* =====================================================================
+            SECTION HEADER
+            ===================================================================== */}
+        
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={fadeIn}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-            Why Copywriters{' '}
-            <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
-              Choose Oslira
-            </span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            Why Copywriters Choose Oslira
           </h2>
-          <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto font-light">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Stop wasting time on manual research. Let AI do the heavy lifting.
           </p>
         </motion.div>
 
-        {/* Benefits Grid */}
+        {/* =====================================================================
+            BENEFITS GRID
+            ===================================================================== */}
+        
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -129,46 +136,53 @@ export function BenefitsSection() {
             <motion.div
               key={index}
               variants={fadeIn}
-              initial="rest"
-              whileHover="hover"
-              className="group"
+              className="group bg-card border border-border rounded-xl p-8 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
             >
-              <motion.div
-                variants={cardHover}
-                className="h-full p-8 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl 
-                hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500 group-hover:bg-gradient-to-br group-hover:from-white group-hover:to-blue-50/30"
-              >
-                {/* Icon */}
-                <motion.div 
-                  whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-                  transition={{ duration: 0.5 }}
-                  className={`w-14 h-14 bg-gradient-to-br ${benefit.gradient} rounded-xl flex items-center justify-center mb-6 
-                  shadow-lg shadow-${benefit.iconColor.split('-')[1]}-500/30 group-hover:shadow-xl group-hover:shadow-${benefit.iconColor.split('-')[1]}-500/40 transition-shadow duration-500`}
-                >
-                  <Icon icon={benefit.icon} className="text-3xl text-white" />
-                </motion.div>
+              {/* Icon + Stat */}
+              <div className="flex items-start justify-between mb-6">
+                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Icon icon={benefit.icon} className="text-2xl text-primary" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-primary">{benefit.stat}</div>
+                  <div className="text-xs text-muted-foreground">{benefit.statLabel}</div>
+                </div>
+              </div>
 
-                {/* Title */}
-                <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">
-                  {benefit.title}
-                </h3>
+              {/* Title */}
+              <h3 className="text-xl font-semibold text-foreground mb-3">
+                {benefit.title}
+              </h3>
 
-                {/* Description */}
-                <p className="text-slate-600 leading-relaxed">
-                  {benefit.description}
-                </p>
-
-                {/* Subtle hover indicator */}
-                <motion.div 
-                  className={`mt-6 h-1 bg-gradient-to-r ${benefit.gradient} rounded-full origin-left`}
-                  initial={{ scaleX: 0 }}
-                  whileHover={{ scaleX: 1 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                />
-              </motion.div>
+              {/* Description */}
+              <p className="text-muted-foreground leading-relaxed">
+                {benefit.description}
+              </p>
             </motion.div>
           ))}
         </motion.div>
+
+        {/* =====================================================================
+            BOTTOM CTA
+            ===================================================================== */}
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="mt-16 text-center"
+        >
+          <p className="text-muted-foreground mb-6">
+            Ready to see the difference?
+          </p>
+          <button
+            onClick={() => window.location.href = '/auth/signup'}
+            className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-md"
+          >
+            Get Started Free
+          </button>
+        </motion.div>
+
       </div>
     </section>
   );
