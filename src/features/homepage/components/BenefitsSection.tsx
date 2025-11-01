@@ -27,43 +27,43 @@ import { Icon } from '@iconify/react';
 const benefits = [
   {
     icon: 'mdi:clock-fast',
-    title: '10x Faster Prospecting',
-    description: 'Analyze 50+ Instagram profiles in the time it used to take for 5. Oslira instantly evaluates engagement, content quality, and business fit — turning 20 minutes of research into 60 seconds.',
-    stat: '20 min → 60 sec',
+    title: '20x Faster Prospecting',
+    description: 'Analyze 100+ Instagram profiles in parallel – in the time manual research takes for one. Oslira processes engagement patterns, content quality, and business fit in 30 seconds per lead.',
+    stat: '30 sec',
     statLabel: 'per prospect'
   },
   {
     icon: 'mdi:target-variant',
-    title: 'Smart Lead Scoring',
-    description: 'AI grades each profile on engagement rate, posting consistency, and commercial signals. Skip dead accounts and focus on prospects who actually need your services.',
-    stat: '43%',
-    statLabel: 'response rate'
+    title: 'Comprehensive Lead Scoring',
+    description: 'AI evaluates every aspect: engagement patterns, content themes, audience quality, posting consistency, and business signals. Then scores partnership fit against your ideal customer profile.',
+    stat: '20+',
+    statLabel: 'data points'
   },
   {
     icon: 'mdi:message-text-outline',
     title: 'Personalized Outreach',
-    description: 'Get tailored message templates for each lead based on their content, industry, and pain points. Sound like an insider consultant, not a cold caller.',
-    stat: '3x',
-    statLabel: 'more replies'
+    description: 'Get tailored message templates based on each lead\'s content, industry, and pain points. Sound like an insider consultant, not a cold caller.',
+    stat: '+43%',
+    statLabel: 'reply rate'
   },
   {
     icon: 'mdi:brain',
     title: 'Psychographic Profiling',
-    description: 'Understand how each prospect makes decisions — data-driven or emotion-driven, cautious or aggressive. Customize your pitch to match their communication style.',
-    stat: 'AI-Powered',
-    statLabel: 'analysis'
+    description: 'X-Ray analysis reveals how prospects make decisions – data-driven or emotion-driven, cautious or aggressive. Customize your pitch to match their communication style.',
+    stat: 'X-Ray',
+    statLabel: 'exclusive'
   },
   {
     icon: 'mdi:shield-check',
     title: 'Partnership Viability',
-    description: 'See budget concerns, team stability, and growth trajectory before investing time. Avoid "leech clients" and protect your energy for good-fit prospects.',
+    description: 'See budget signals, team stability, and growth trajectory before investing time. Filter out poor-fit prospects and focus on qualified leads.',
     stat: '5+',
-    statLabel: 'data signals'
+    statLabel: 'signals'
   },
   {
     icon: 'mdi:database-outline',
     title: 'Built-In CRM',
-    description: 'All your prospect intelligence in one searchable place. Tag leads, track analysis history, export to CSV. No more spreadsheets or scattered notes.',
+    description: 'All your prospect intelligence in one searchable place. Tag leads, track analysis history, export to CSV. No spreadsheets needed.',
     stat: 'Zero',
     statLabel: 'spreadsheets'
   }
@@ -101,7 +101,7 @@ export function BenefitsSection() {
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section ref={ref} className="py-24 px-6 bg-background">
+    <section ref={ref} className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         
         {/* =====================================================================
