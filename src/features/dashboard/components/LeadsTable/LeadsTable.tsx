@@ -1,36 +1,10 @@
 // src/features/dashboard/components/LeadsTable/LeadsTable.tsx
 
-/**
- * LEADS TABLE - OSLIRA PRODUCTION
- * 
- * Professional data table with Linear-style minimalism.
- * This IS the product. 85% of screen real estate.
- * 
- * SPECS:
- * - Row height: 44px (fixed, non-configurable)
- * - Font size: 14px
- * - Hover: Subtle background change
- * - Score colors: Green (80+), Blue (60-79), Amber (40-59), Red (<40)
- * - Analysis badges: Light/Deep/X-Ray with semantic colors
- * 
- * FEATURES:
- * - Bulk selection via checkboxes
- * - Sortable columns
- * - Proper hover states
- * - Score visualization
- * - Empty state
- * - Loading skeleton (TODO)
- */
-
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/shared/components/ui/Badge';
 import { useDashboardStore } from '../../store/dashboardStore';
-
-// =============================================================================
-// MOCK DATA (Replace with API)
-// =============================================================================
 
 const mockLeads = [
   {
@@ -43,6 +17,7 @@ const mockLeads = [
     analysis_type: 'deep' as const,
     analysis_status: 'complete' as const,
     followers_count: 285000000,
+    credits_charged: 1,
     created_at: '2025-01-15T10:30:00Z',
   },
   {
@@ -55,6 +30,7 @@ const mockLeads = [
     analysis_type: 'xray' as const,
     analysis_status: 'complete' as const,
     followers_count: 29400000,
+    credits_charged: 2,
     created_at: '2025-01-14T15:20:00Z',
   },
   {
@@ -67,6 +43,7 @@ const mockLeads = [
     analysis_type: 'light' as const,
     analysis_status: 'complete' as const,
     followers_count: 14200000,
+    credits_charged: 1,
     created_at: '2025-01-13T09:15:00Z',
   },
   {
@@ -79,25 +56,10 @@ const mockLeads = [
     analysis_type: null,
     analysis_status: 'pending' as const,
     followers_count: 9100000,
+    credits_charged: null,
     created_at: '2025-01-12T14:45:00Z',
   },
-  {
-    id: '5',
-    username: '@newbalance',
-    platform: 'instagram' as const,
-    full_name: 'New Balance',
-    avatar_url: null,
-    overall_score: 68,
-    analysis_type: 'light' as const,
-    analysis_status: 'complete' as const,
-    followers_count: 5800000,
-    created_at: '2025-01-11T11:00:00Z',
-  },
 ];
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
 
 function formatNumber(num: number): string {
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -112,17 +74,29 @@ function getScoreColor(score: number): string {
   return 'text-danger font-semibold';
 }
 
-function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
-  if (!type) return <span className="text-xs text-muted">—</span>;
+function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null, credits: number | null) {
+  if (!type) return <Badge variant="neutral" size="sm">Not Analyzed</Badge>;
   
   const badgeConfig = {
-    light: { variant: 'neutral' as const, label: 'Light' },
-    deep: { variant: 'primary' as const, label: 'Deep' },
-    xray: { variant: 'success' as const, label: 'X-Ray' },
+    light: { variant: 'neutral' as const, label: 'Light', icon: 'mdi:lightning-bolt-outline' },
+    deep: { variant: 'primary' as const, label: 'Deep', icon: 'mdi:brain' },
+    xray: { variant: 'success' as const, label: 'X-Ray', icon: 'mdi:telescope' },
   };
   
   const config = badgeConfig[type];
-  return <Badge variant={config.variant} size="sm">{config.label}</Badge>;
+  return (
+    <div className="flex items-center gap-2">
+      <Badge variant={config.variant} size="sm">
+        <Icon icon={config.icon} width={12} className="mr-1" />
+        {config.label}
+      </Badge>
+      {credits && (
+        <span className="text-xs text-muted">
+          {credits} {credits === 1 ? 'credit' : 'credits'}
+        </span>
+      )}
+    </div>
+  );
 }
 
 function formatDate(dateString: string): string {
@@ -131,18 +105,10 @@ function formatDate(dateString: string): string {
   const diffMs = now.getTime() - date.getTime();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   
-  if (diffHours < 24) {
-    return 'Today';
-  } else if (diffHours < 48) {
-    return 'Yesterday';
-  } else {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
+  if (diffHours < 24) return 'Today';
+  if (diffHours < 48) return 'Yesterday';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function LeadsTable() {
   const { selectedLeadIds, toggleLeadSelection, selectAllLeads, clearSelection } = useDashboardStore();
@@ -150,7 +116,6 @@ export function LeadsTable() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const leads = mockLeads;
-
   const allSelected = leads.length > 0 && selectedLeadIds.length === leads.length;
   const someSelected = selectedLeadIds.length > 0 && !allSelected;
 
@@ -171,7 +136,6 @@ export function LeadsTable() {
     }
   };
 
-  // Empty State
   if (leads.length === 0) {
     return (
       <div className="bg-surface-raised rounded-lg border border-border p-16 text-center">
@@ -180,8 +144,7 @@ export function LeadsTable() {
         </div>
         <h3 className="text-lg font-semibold text-text mb-2">No leads yet</h3>
         <p className="text-sm text-text-secondary mb-6 max-w-sm mx-auto">
-          Get started by analyzing your first Instagram profile. 
-          Enter a username and we'll analyze their potential as a business lead.
+          Start analyzing Instagram profiles to discover qualified leads.
         </p>
         <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors inline-flex items-center gap-2 font-medium text-sm">
           <Icon icon="mdi:plus" width={16} />
@@ -195,10 +158,8 @@ export function LeadsTable() {
     <div className="bg-surface-raised rounded-lg border border-border overflow-hidden">
       <div className="overflow-x-auto scrollbar-thin">
         <table className="w-full">
-          {/* ===== TABLE HEADER ===== */}
           <thead className="bg-surface-base border-b border-border">
             <tr className="h-11">
-              {/* Checkbox Column */}
               <th className="w-12 px-4 text-left">
                 <button
                   onClick={handleSelectAll}
@@ -217,7 +178,6 @@ export function LeadsTable() {
                 </button>
               </th>
 
-              {/* Lead Column */}
               <th className="px-4 text-left">
                 <button
                   onClick={() => handleSort('username')}
@@ -228,7 +188,6 @@ export function LeadsTable() {
                 </button>
               </th>
 
-              {/* Followers Column */}
               <th className="px-4 text-left">
                 <button
                   onClick={() => handleSort('followers_count')}
@@ -239,7 +198,6 @@ export function LeadsTable() {
                 </button>
               </th>
 
-              {/* Score Column */}
               <th className="px-4 text-left">
                 <button
                   onClick={() => handleSort('overall_score')}
@@ -250,14 +208,12 @@ export function LeadsTable() {
                 </button>
               </th>
 
-              {/* Analysis Column */}
               <th className="px-4 text-left">
                 <span className="font-semibold text-xs text-text uppercase tracking-wide">
                   Analysis
                 </span>
               </th>
 
-              {/* Date Column */}
               <th className="px-4 text-left">
                 <button
                   onClick={() => handleSort('created_at')}
@@ -268,7 +224,6 @@ export function LeadsTable() {
                 </button>
               </th>
 
-              {/* Actions Column */}
               <th className="px-4 text-right">
                 <span className="font-semibold text-xs text-text uppercase tracking-wide">
                   Actions
@@ -277,7 +232,6 @@ export function LeadsTable() {
             </tr>
           </thead>
 
-          {/* ===== TABLE BODY ===== */}
           <tbody>
             {leads.map((lead, index) => {
               const isSelected = selectedLeadIds.includes(lead.id);
@@ -293,7 +247,6 @@ export function LeadsTable() {
                     ${isSelected ? 'bg-primary-light/30' : 'hover:bg-muted-light/50'}
                   `}
                 >
-                  {/* Checkbox */}
                   <td className="px-4">
                     <button
                       onClick={() => toggleLeadSelection(lead.id)}
@@ -311,7 +264,6 @@ export function LeadsTable() {
                     </button>
                   </td>
 
-                  {/* Lead Info */}
                   <td className="px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
@@ -332,14 +284,12 @@ export function LeadsTable() {
                     </div>
                   </td>
 
-                  {/* Followers */}
                   <td className="px-4">
                     <span className="text-sm text-text">
                       {lead.followers_count ? formatNumber(lead.followers_count) : '—'}
                     </span>
                   </td>
 
-                  {/* Score */}
                   <td className="px-4">
                     {lead.overall_score !== null ? (
                       <span className={`text-sm ${getScoreColor(lead.overall_score)}`}>
@@ -350,19 +300,16 @@ export function LeadsTable() {
                     )}
                   </td>
 
-                  {/* Analysis Type */}
                   <td className="px-4">
-                    {getAnalysisBadge(lead.analysis_type)}
+                    {getAnalysisBadge(lead.analysis_type, lead.credits_charged)}
                   </td>
 
-                  {/* Date */}
                   <td className="px-4">
                     <span className="text-sm text-text-secondary">
                       {formatDate(lead.created_at)}
                     </span>
                   </td>
 
-                  {/* Actions */}
                   <td className="px-4">
                     <div className="flex items-center justify-end gap-1">
                       <button 
@@ -386,11 +333,10 @@ export function LeadsTable() {
         </table>
       </div>
 
-      {/* ===== PAGINATION ===== */}
       <div className="px-4 py-3 border-t border-border flex items-center justify-between bg-surface-base">
         <p className="text-sm text-text-secondary">
-          Showing <span className="font-medium text-text">1-5</span> of{' '}
-          <span className="font-medium text-text">5</span> leads
+          Showing <span className="font-medium text-text">1-{leads.length}</span> of{' '}
+          <span className="font-medium text-text">{leads.length}</span> leads
         </p>
         <div className="flex items-center gap-1">
           <button 
