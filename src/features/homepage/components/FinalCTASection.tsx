@@ -55,18 +55,21 @@ export function FinalCTASection() {
   };
 
   return (
-    <section ref={ref} className="py-24 px-6 bg-muted">
+    <section ref={ref} className="py-24 px-6 bg-white">
       <div className="max-w-5xl mx-auto">
         
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={scaleIn}
-          className="relative bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-600 rounded-2xl p-12 lg:p-16 text-center overflow-hidden"
+          className="relative bg-gradient-to-br from-primary-500 via-secondary-500 to-secondary-600 rounded-2xl p-12 lg:p-16 text-center overflow-hidden"
         >
           
+          {/* Enhanced gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-secondary-400/20 to-secondary-500/30" />
+          
           {/* Subtle texture overlay */}
-          <div className="absolute inset-0 opacity-[0.015]" style={{
+          <div className="absolute inset-0 opacity-[0.02]" style={{
             backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")',
           }} />
 
@@ -118,9 +121,9 @@ export function FinalCTASection() {
             {/* Value Reinforcement */}
             <motion.div variants={fadeIn} className="pt-8 border-t border-white/20">
               <p className="text-white/80 text-sm max-w-2xl mx-auto">
-                <strong className="text-white">Time saved:</strong> 20 minutes → 60 seconds per prospect. {' '}
-                <strong className="text-white">Cost:</strong> $30/month Pro plan vs. $80/month LinkedIn Sales Navigator. {' '}
-                <strong className="text-white">Result:</strong> 15 hours saved every week.
+                <strong className="text-white">Speed:</strong> 30 seconds per prospect, 20x faster than manual research. {' '}
+                <strong className="text-white">Scale:</strong> Process 100+ profiles in parallel while competitors research one. {' '}
+                <strong className="text-white">Results:</strong> Users report +43% increase in reply rates.
               </p>
             </motion.div>
 
