@@ -28,21 +28,21 @@ const steps = [
   {
     number: '01',
     title: 'Paste Instagram URL',
-    description: 'Drop any Instagram business profile URL into Oslira. Our AI instantly begins analyzing engagement patterns, content themes, and commercial signals.',
+    description: 'Drop any Instagram business profile URL into Oslira. Our AI instantly begins analyzing engagement patterns, content themes, and commercial signals to assess partnership fit.',
     icon: 'mdi:link-variant',
     color: 'primary'
   },
   {
     number: '02',
-    title: 'Choose Analysis Tier',
-    description: 'Select Light ($0.10) to filter quickly, Deep ($0.30) for full psychographic profiling, or X-Ray ($0.50) for complete business intelligence with outreach messages.',
+    title: 'Choose Analysis Depth',
+    description: 'Select Light for quick filtering, Deep for comprehensive profiling, or X-Ray for complete business intelligence with psychographic analysis and personalized outreach messages.',
     icon: 'mdi:layers-triple',
     color: 'secondary'
   },
   {
     number: '03',
     title: 'Get Lead Intelligence',
-    description: 'Receive engagement scoring, partnership viability assessment, content analysis, and ready-to-send personalized outreach — all in 60 seconds.',
+    description: 'Receive engagement scoring, partnership viability assessment, content analysis, and ready-to-send personalized outreach – all in 30 seconds.',
     icon: 'mdi:sparkles',
     color: 'success'
   }
@@ -80,7 +80,7 @@ export function HowItWorksSection() {
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section ref={ref} className="py-24 px-6 bg-muted">
+    <section ref={ref} className="py-24 px-6 bg-neutral-50">
       <div className="max-w-7xl mx-auto">
         
         {/* =====================================================================
@@ -186,9 +186,9 @@ export function HowItWorksSection() {
             <h3 className="text-2xl font-bold text-foreground">Three-Tier Intelligence</h3>
           </div>
           <p className="text-muted-foreground max-w-3xl mx-auto mb-6">
-            Not every prospect deserves 20 minutes of research. Filter 100 prospects for $10 (Light), 
-            then spend $3 on the 10 that matter (Deep), then $1.50 on your top 3 (X-Ray). 
-            Total: $14.50 instead of 33 hours of manual work.
+            Not every prospect deserves deep research. Filter 100 profiles quickly with Light analysis, 
+            then invest time in comprehensive Deep analysis for strong prospects, 
+            then get complete X-Ray intelligence on your top candidates – complete with psychographic profiling and personalized outreach.
           </p>
           <button
             onClick={() => window.location.href = '/auth/signup'}
