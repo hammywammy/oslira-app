@@ -39,7 +39,7 @@ const NAV_SECTIONS: NavSection[] = [
 
 export function Sidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
-  const { user, account, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Mock data - replace with real API data
