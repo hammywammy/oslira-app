@@ -83,7 +83,7 @@ export function TestimonialsSection() {
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section ref={ref} className="py-24 px-6 bg-background">
+    <section ref={ref} className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
         
         {/* =====================================================================
@@ -157,10 +157,10 @@ export function TestimonialsSection() {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8"
         >
           {[
-            { number: '500+', label: 'Active Copywriters' },
-            { number: '15 hrs', label: 'Average Time Saved/Week' },
-            { number: '43%', label: 'Response Rate' },
-            { number: '3x', label: 'More Client Meetings' }
+            { number: '500+', label: 'Active Users' },
+            { number: '20x', label: 'Faster Than Manual' },
+            { number: '+43%', label: 'Reply Rate Increase' },
+            { number: '100+', label: 'Profiles Per Hour' }
           ].map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-4xl font-bold text-primary mb-2">{stat.number}</div>
