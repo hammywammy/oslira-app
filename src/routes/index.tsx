@@ -33,6 +33,7 @@ const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
 const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
 const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase'));
 const ComponentShowcase = lazy(() => import('@/pages/showcase/ComponentShowcase'));
+const ThemeTest = lazy(() => import('@/pages/showcase/ThemeTest'));
 
 // =============================================================================
 // DOMAIN GUARD
@@ -138,6 +139,14 @@ export const router = createBrowserRouter([
       </DomainGuard>
     ),
   },
+  {
+  path: '/showcase/theme-test',
+  element: (
+    <DomainGuard domain="marketing">
+      {withSuspense(ThemeTest)}
+    </DomainGuard>
+  ),
+},
 
   // ============================================================
   // APP DOMAIN (app.oslira.com) - Public Routes
