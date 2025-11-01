@@ -1,32 +1,11 @@
 // src/shared/components/layout/Sidebar.tsx
 
-/**
- * SIDEBAR - OSLIRA PRODUCTION
- * 
- * Linear-inspired minimalist sidebar.
- * Fixed 240px width, collapses to 64px.
- * 
- * FEATURES:
- * - Collapsible (240px → 64px)
- * - Active route highlighting
- * - Keyboard accessible
- * - Smooth transitions
- * - Logo + navigation + user section
- * 
- * USAGE:
- * <Sidebar />
- */
-
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface NavItem {
   label: string;
@@ -38,10 +17,6 @@ interface NavSection {
   title: string;
   items: NavItem[];
 }
-
-// =============================================================================
-// NAVIGATION CONFIGURATION
-// =============================================================================
 
 const NAV_SECTIONS: NavSection[] = [
   {
@@ -62,14 +37,23 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function Sidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
   const { user, account, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Mock data - replace with real API data
+  const subscription = {
+    plan_name: 'Pro',
+    credits_remaining: 847,
+    credits_total: 1000,
+    renewal_date: '2025-02-01',
+  };
+
+  const creditsPercentage = (subscription.credits_remaining / subscription.credits_total) * 100;
+  const daysUntilRenewal = Math.ceil(
+    (new Date(subscription.renewal_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -83,9 +67,8 @@ export function Sidebar() {
         ${isCollapsed ? 'w-16' : 'w-60'}
       `}
     >
-      {/* ===== HEADER ===== */}
+      {/* HEADER */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-border flex-shrink-0">
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-sm">O</span>
@@ -104,7 +87,6 @@ export function Sidebar() {
           </AnimatePresence>
         </div>
 
-        {/* Collapse Toggle */}
         {!isCollapsed && (
           <button
             onClick={toggleCollapse}
@@ -116,18 +98,16 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* ===== NAVIGATION ===== */}
+      {/* NAVIGATION */}
       <nav className="flex-1 px-2 py-4 overflow-y-auto scrollbar-thin">
         {NAV_SECTIONS.map((section, sectionIndex) => (
           <div key={sectionIndex} className="mb-6">
-            {/* Section Title */}
             {!isCollapsed && (
               <h3 className="px-3 mb-2 text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 {section.title}
               </h3>
             )}
 
-            {/* Section Items */}
             <div className="space-y-1">
               {section.items.map((item) => (
                 <NavLink
@@ -162,7 +142,6 @@ export function Sidebar() {
           </div>
         ))}
 
-        {/* Expand Button (when collapsed) */}
         {isCollapsed && (
           <button
             onClick={toggleCollapse}
@@ -174,23 +153,70 @@ export function Sidebar() {
         )}
       </nav>
 
-      {/* ===== FOOTER (User + Credits) ===== */}
-      <div className="flex-shrink-0 border-t border-border p-2">
-        {/* Credits Display */}
-        {!isCollapsed && account && (
-          <div className="mb-2 px-3 py-2 bg-primary-light rounded-lg">
-            <div className="flex items-center justify-between">
+      {/* FOOTER */}
+      <div className="flex-shrink-0 border-t border-border p-2 space-y-2">
+        {/* CREDIT BALANCE CARD */}
+        {!isCollapsed && (
+          <div className="px-3 py-3 bg-surface-raised rounded-lg border border-border">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Icon icon="mdi:lightning-bolt" width={14} className="text-primary" />
-                <span className="text-xs font-semibold text-primary">
-                  {account.credit_balance ?? 0} credits
+                <span className="text-xs font-semibold text-text">
+                  {subscription.plan_name} Plan
                 </span>
               </div>
+              <button 
+                className="text-xs text-primary hover:text-primary-600 font-medium"
+                onClick={() => {/* Navigate to upgrade */}}
+              >
+                Upgrade
+              </button>
+            </div>
+
+            {/* Credit Count */}
+            <div className="mb-2">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-text">
+                  {subscription.credits_remaining}
+                </span>
+                <span className="text-sm text-text-secondary">
+                  / {subscription.credits_total}
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary">credits remaining</p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-2">
+              <div className="h-1.5 bg-muted-light rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${creditsPercentage}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Renewal Date */}
+            <p className="text-xs text-text-secondary">
+              Resets in {daysUntilRenewal} days
+            </p>
+          </div>
+        )}
+
+        {/* Collapsed Credit Display */}
+        {isCollapsed && (
+          <div className="px-2 py-2 bg-primary-light rounded-lg">
+            <div className="flex flex-col items-center">
+              <Icon icon="mdi:lightning-bolt" width={16} className="text-primary mb-1" />
+              <span className="text-xs font-bold text-primary">
+                {subscription.credits_remaining}
+              </span>
             </div>
           </div>
         )}
 
-        {/* User Menu */}
+        {/* USER MENU */}
         <div className="relative">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
@@ -200,32 +226,28 @@ export function Sidebar() {
               ${isCollapsed ? 'justify-center' : ''}
             `}
           >
-            {/* Avatar */}
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-semibold text-white">
                 {user?.full_name?.charAt(0).toUpperCase() ?? 'U'}
               </span>
             </div>
 
-            {/* User Info */}
             {!isCollapsed && (
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium text-text truncate">
-                  {user?.full_name ?? 'User'}
-                </p>
-                <p className="text-xs text-text-secondary truncate">
-                  {user?.email}
-                </p>
-              </div>
-            )}
-
-            {/* Dropdown Icon */}
-            {!isCollapsed && (
-              <Icon icon="mdi:chevron-down" width={16} className="text-text-secondary flex-shrink-0" />
+              <>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium text-text truncate">
+                    {user?.full_name ?? 'User'}
+                  </p>
+                  <p className="text-xs text-text-secondary truncate">
+                    {user?.email}
+                  </p>
+                </div>
+                <Icon icon="mdi:chevron-down" width={16} className="text-text-secondary flex-shrink-0" />
+              </>
             )}
           </button>
 
-          {/* User Dropdown Menu */}
+          {/* DROPDOWN MENU */}
           <AnimatePresence>
             {showUserMenu && (
               <motion.div
@@ -239,24 +261,18 @@ export function Sidebar() {
                 `}
               >
                 <button
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    // Navigate to settings
-                  }}
+                  onClick={() => setShowUserMenu(false)}
                   className="w-full px-4 py-2 text-left text-sm text-text hover:bg-muted-light transition-colors flex items-center gap-2"
                 >
                   <Icon icon="mdi:cog-outline" width={16} />
                   Settings
                 </button>
                 <button
-                  onClick={() => {
-                    setShowUserMenu(false);
-                    // Navigate to billing
-                  }}
+                  onClick={() => setShowUserMenu(false)}
                   className="w-full px-4 py-2 text-left text-sm text-text hover:bg-muted-light transition-colors flex items-center gap-2"
                 >
                   <Icon icon="mdi:credit-card-outline" width={16} />
-                  Billing
+                  Usage & Billing
                 </button>
                 <div className="my-1 border-t border-border" />
                 <button
