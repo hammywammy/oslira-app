@@ -1,99 +1,154 @@
 /**
- * TAILWIND CSS V4 CONFIGURATION - FIXED
- * Colors now REPLACE defaults instead of extending them
+ * ============================================================================
+ * TAILWIND V4 CONFIGURATION - OSLIRA V3.0
+ * ============================================================================
+ * 
+ * ARCHITECTURE:
+ * - CSS variables defined in theme.css
+ * - Semantic tokens auto-flip via .dark class
+ * - Base palette available for special cases
+ * 
+ * PHILOSOPHY:
+ * "Components use semantic names, CSS handles the rest"
+ * ============================================================================
  */
 
-import tailwindcss from '@tailwindcss/vite';
-
 export default {
+  /**
+   * DARK MODE CONFIGURATION
+   * 
+   * Strategy: 'selector' (modern Tailwind approach)
+   * - Enables dark mode when .dark class is on <html> or any parent
+   * - Controlled by ThemeProvider via JavaScript
+   * - SSR-safe, localStorage-persistent
+   */
   darkMode: 'selector',
   
+  /**
+   * CONTENT PATHS
+   * Tell Tailwind where to find class names
+   */
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
+  
   theme: {
-    // CRITICAL: Define colors HERE, not in "extend"
-    colors: {
-      // Required by Tailwind
-      transparent: 'transparent',
-      current: 'currentColor',
-      white: '#ffffff',
-      black: '#000000',
-      
-      // Your custom colors (auto-flip via CSS vars)
-      neutral: {
-        0: 'var(--color-neutral-0)',
-        50: 'var(--color-neutral-50)',
-        100: 'var(--color-neutral-100)',
-        200: 'var(--color-neutral-200)',
-        300: 'var(--color-neutral-300)',
-        400: 'var(--color-neutral-400)',
-        500: 'var(--color-neutral-500)',
-        600: 'var(--color-neutral-600)',
-        700: 'var(--color-neutral-700)',
-        800: 'var(--color-neutral-800)',
-        900: 'var(--color-neutral-900)',
-      },
-      
-      primary: {
-        300: 'var(--color-primary-300)',
-        400: 'var(--color-primary-400)',
-        500: 'var(--color-primary-500)',
-        600: 'var(--color-primary-600)',
-        700: 'var(--color-primary-700)',
-        800: 'var(--color-primary-800)',
-      },
-      
-      secondary: {
-        300: 'var(--color-secondary-300)',
-        400: 'var(--color-secondary-400)',
-        500: 'var(--color-secondary-500)',
-        600: 'var(--color-secondary-600)',
-        700: 'var(--color-secondary-700)',
-      },
-      
-      success: {
-        100: 'var(--color-success-100)',
-        200: 'var(--color-success-200)',
-        400: 'var(--color-success-400)',
-        500: 'var(--color-success-500)',
-        600: 'var(--color-success-600)',
-        700: 'var(--color-success-700)',
-      },
-      
-      error: {
-        100: 'var(--color-error-100)',
-        200: 'var(--color-error-200)',
-        400: 'var(--color-error-400)',
-        500: 'var(--color-error-500)',
-        600: 'var(--color-error-600)',
-        700: 'var(--color-error-700)',
-      },
-      
-      warning: {
-        100: 'var(--color-warning-100)',
-        200: 'var(--color-warning-200)',
-        400: 'var(--color-warning-400)',
-        500: 'var(--color-warning-500)',
-        600: 'var(--color-warning-600)',
-        700: 'var(--color-warning-700)',
-      },
-      
-      info: {
-        100: 'var(--color-info-100)',
-        200: 'var(--color-info-200)',
-        400: 'var(--color-info-400)',
-        500: 'var(--color-info-500)',
-        600: 'var(--color-info-600)',
-        700: 'var(--color-info-700)',
-      },
-      
-      // Semantic aliases
-      background: 'var(--bg-primary)',
-      foreground: 'var(--text-primary)',
-      muted: 'var(--text-tertiary)',
-      border: 'var(--border-default)',
-    },
-    
-    // Everything else goes in extend
     extend: {
+      /**
+       * SEMANTIC COLORS
+       * These auto-flip between light/dark via CSS variables
+       * 
+       * Usage:
+       * - bg-background (white → dark gray)
+       * - text-foreground (black → white)
+       * - border-border (light gray → medium gray)
+       */
+      colors: {
+        // Semantic tokens (the main interface)
+        background: 'var(--color-background)',
+        foreground: 'var(--color-foreground)',
+        card: {
+          DEFAULT: 'var(--color-card)',
+          foreground: 'var(--color-card-foreground)',
+        },
+        popover: {
+          DEFAULT: 'var(--color-popover)',
+          foreground: 'var(--color-popover-foreground)',
+        },
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--color-muted)',
+          foreground: 'var(--color-muted-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--color-accent)',
+          foreground: 'var(--color-accent-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--color-destructive)',
+          foreground: 'var(--color-destructive-foreground)',
+        },
+        border: 'var(--color-border)',
+        input: 'var(--color-input)',
+        ring: 'var(--color-ring)',
+
+        // Base palette (for gradients, data viz, special cases)
+        neutral: {
+          0: 'var(--color-neutral-0)',
+          50: 'var(--color-neutral-50)',
+          100: 'var(--color-neutral-100)',
+          200: 'var(--color-neutral-200)',
+          300: 'var(--color-neutral-300)',
+          400: 'var(--color-neutral-400)',
+          500: 'var(--color-neutral-500)',
+          600: 'var(--color-neutral-600)',
+          700: 'var(--color-neutral-700)',
+          800: 'var(--color-neutral-800)',
+          900: 'var(--color-neutral-900)',
+        },
+        'primary-palette': {
+          300: 'var(--color-primary-300)',
+          400: 'var(--color-primary-400)',
+          500: 'var(--color-primary-500)',
+          600: 'var(--color-primary-600)',
+          700: 'var(--color-primary-700)',
+          800: 'var(--color-primary-800)',
+        },
+        'secondary-palette': {
+          300: 'var(--color-secondary-300)',
+          400: 'var(--color-secondary-400)',
+          500: 'var(--color-secondary-500)',
+          600: 'var(--color-secondary-600)',
+          700: 'var(--color-secondary-700)',
+        },
+        success: {
+          100: 'var(--color-success-100)',
+          500: 'var(--color-success-500)',
+          700: 'var(--color-success-700)',
+        },
+        error: {
+          100: 'var(--color-error-100)',
+          500: 'var(--color-error-500)',
+          700: 'var(--color-error-700)',
+        },
+        warning: {
+          100: 'var(--color-warning-100)',
+          500: 'var(--color-warning-500)',
+          700: 'var(--color-warning-700)',
+        },
+        info: {
+          100: 'var(--color-info-100)',
+          500: 'var(--color-info-500)',
+          700: 'var(--color-info-700)',
+        },
+      },
+
+      /**
+       * BORDER RADIUS
+       * Using CSS variables for consistency
+       */
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        DEFAULT: 'var(--radius-md)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
+        full: 'var(--radius-full)',
+      },
+
+      /**
+       * SPACING
+       * Consistent spacing scale
+       */
       spacing: {
         xs: 'var(--space-xs)',
         sm: 'var(--space-sm)',
@@ -104,68 +159,54 @@ export default {
         '3xl': 'var(--space-3xl)',
         '4xl': 'var(--space-4xl)',
       },
-      
-      borderRadius: {
-        sm: 'var(--radius-sm)',
-        DEFAULT: 'var(--radius-md)',
-        md: 'var(--radius-md)',
-        lg: 'var(--radius-lg)',
-        xl: 'var(--radius-xl)',
-        '2xl': 'var(--radius-2xl)',
-        full: 'var(--radius-full)',
-      },
-      
-      boxShadow: {
-        raised: 'var(--shadow-raised)',
-        elevated: 'var(--shadow-elevated)',
-        overlay: 'var(--shadow-overlay)',
-        modal: 'var(--shadow-modal)',
-      },
-      
+
+      /**
+       * FONT FAMILY
+       */
       fontFamily: {
         sans: 'var(--font-sans)',
+        mono: 'var(--font-mono)',
       },
-      
+
+      /**
+       * FONT SIZE
+       */
       fontSize: {
-        xs: ['var(--font-size-xs)', { lineHeight: '1.333' }],
-        sm: ['var(--font-size-sm)', { lineHeight: '1.385' }],
-        base: ['var(--font-size-base)', { lineHeight: '1.429' }],
-        md: ['var(--font-size-md)', { lineHeight: '1.5' }],
-        lg: ['var(--font-size-lg)', { lineHeight: '1.556' }],
-        xl: ['var(--font-size-xl)', { lineHeight: '1.4' }],
-        '2xl': ['var(--font-size-2xl)', { lineHeight: '1.333' }],
-        '3xl': ['var(--font-size-3xl)', { lineHeight: '1.25' }],
-        '4xl': ['var(--font-size-4xl)', { lineHeight: '1.167' }],
+        xs: 'var(--font-size-xs)',
+        sm: 'var(--font-size-sm)',
+        base: 'var(--font-size-base)',
+        lg: 'var(--font-size-lg)',
+        xl: 'var(--font-size-xl)',
+        '2xl': 'var(--font-size-2xl)',
+        '3xl': 'var(--font-size-3xl)',
+        '4xl': 'var(--font-size-4xl)',
       },
-      
-      fontWeight: {
-        normal: 'var(--font-weight-normal)',
-        medium: 'var(--font-weight-medium)',
-        semibold: 'var(--font-weight-semibold)',
-        bold: 'var(--font-weight-bold)',
+
+      /**
+       * BOX SHADOW
+       */
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        DEFAULT: 'var(--shadow-md)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+        xl: 'var(--shadow-xl)',
       },
-      
+
+      /**
+       * ANIMATION DURATION
+       */
       transitionDuration: {
+        instant: 'var(--duration-instant)',
         fast: 'var(--duration-fast)',
         normal: 'var(--duration-normal)',
-        medium: 'var(--duration-medium)',
         slow: 'var(--duration-slow)',
         slower: 'var(--duration-slower)',
       },
-      
-      transitionTimingFunction: {
-        default: 'var(--easing-default)',
-        out: 'var(--easing-out)',
-        in: 'var(--easing-in)',
-      },
-      
-      maxWidth: {
-        narrow: 'var(--container-narrow)',
-        default: 'var(--container-default)',
-        wide: 'var(--container-wide)',
-        full: 'var(--container-full)',
-      },
-      
+
+      /**
+       * Z-INDEX
+       */
       zIndex: {
         base: 'var(--z-base)',
         dropdown: 'var(--z-dropdown)',
@@ -178,5 +219,5 @@ export default {
     },
   },
   
-  plugins: [tailwindcss],
+  plugins: [],
 };
