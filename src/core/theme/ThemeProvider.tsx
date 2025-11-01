@@ -1,33 +1,21 @@
 // src/core/theme/ThemeProvider.tsx
 
 /**
- * THEME PROVIDER - PRODUCTION GRADE V1.0
+ * THEME PROVIDER - PRODUCTION GRADE V2.0 (SUBDOMAIN-AWARE)
+ * 
+ * CRITICAL UPDATE:
+ * ✅ Marketing pages (oslira.com) → ALWAYS light mode, unaffected by toggle
+ * ✅ App pages (app.oslira.com) → Full dark mode support
+ * ✅ Showcase pages → Can toggle for demo purposes
  * 
  * ARCHITECTURE:
- * ✅ Single source of truth for theme state
- * ✅ Automatic localStorage persistence
- * ✅ System preference detection (prefers-color-scheme)
- * ✅ SSR-safe initialization
- * ✅ Global theme context accessible anywhere
- * ✅ Bulletproof synchronization with document.documentElement
+ * - Detects subdomain/path to determine if dark mode should be enabled
+ * - Marketing pages ignore theme state entirely
+ * - App pages respect theme state and localStorage
+ * - Showcase pages can toggle but don't affect marketing
  * 
  * PHILOSOPHY:
- * "One Provider to rule them all"
- * - Define once at app root
- * - Access anywhere with useTheme()
- * - Zero duplication
- * - Enterprise pattern (Shadcn, Vercel, Linear)
- * 
- * USAGE:
- * 
- * // In App.tsx or main.tsx:
- * <ThemeProvider>
- *   <YourApp />
- * </ThemeProvider>
- * 
- * // In any component:
- * const { theme, setTheme, toggleTheme } = useTheme();
- * <button onClick={toggleTheme}>Toggle</button>
+ * "Marketing = Always Professional Light, App = User Choice"
  */
 
 import { 
@@ -53,6 +41,8 @@ interface ThemeContextValue {
   setTheme: (theme: Theme) => void;
   /** Toggle between light and dark */
   toggleTheme: () => void;
+  /** Whether dark mode is allowed on current page */
+  darkModeEnabled: boolean;
 }
 
 // =============================================================================
@@ -67,6 +57,70 @@ const THEME_CLASS = 'dark';
 // =============================================================================
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+// =============================================================================
+// HELPER: Check if dark mode should be enabled
+// =============================================================================
+
+function isDarkModeAllowed(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
+  
+  // Marketing domain → NEVER allow dark mode
+  const isMarketingDomain = 
+    hostname === 'oslira.com' ||
+    hostname === 'www.oslira.com' ||
+    hostname === 'staging.oslira.com' ||
+    hostname.includes('oslira-marketing') ||
+    hostname.includes('oslira.pages.dev') && !hostname.includes('app');
+  
+  // Marketing pages (even on localhost) → NEVER allow dark mode
+  const isMarketingPage = 
+    pathname === '/' ||
+    pathname.startsWith('/features') ||
+    pathname.startsWith('/pricing') ||
+    pathname.startsWith('/about');
+  
+  // If on marketing domain OR marketing page → disable dark mode
+  if (isMarketingDomain || isMarketingPage) {
+    return false;
+  }
+  
+  // App subdomain → ALWAYS allow dark mode
+  const isAppDomain = 
+    hostname === 'app.oslira.com' ||
+    hostname === 'staging-app.oslira.com' ||
+    hostname.includes('oslira-app-production') ||
+    hostname === 'app.localhost';
+  
+  if (isAppDomain) {
+    return true;
+  }
+  
+  // Showcase pages (for demo) → Allow dark mode
+  const isShowcasePage = pathname.startsWith('/showcase');
+  
+  if (isShowcasePage) {
+    return true;
+  }
+  
+  // App pages (auth, dashboard, onboarding) → Allow dark mode
+  const isAppPage = 
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/onboarding') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/leads');
+  
+  if (isAppPage) {
+    return true;
+  }
+  
+  // Default: disable dark mode for safety
+  return false;
+}
 
 // =============================================================================
 // PROVIDER
@@ -85,6 +139,13 @@ export function ThemeProvider({
   defaultTheme = 'system',
   enableSystem = true,
 }: ThemeProviderProps) {
+  
+  // ===========================================================================
+  // CHECK: Is dark mode allowed on current page?
+  // ===========================================================================
+  
+  const [darkModeEnabled] = useState(isDarkModeAllowed);
+  
   // ===========================================================================
   // STATE
   // ===========================================================================
@@ -92,6 +153,9 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<Theme>(() => {
     // SSR-safe initialization
     if (typeof window === 'undefined') return defaultTheme;
+    
+    // If dark mode disabled, always return 'light'
+    if (!darkModeEnabled) return 'light';
     
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as Theme;
@@ -119,6 +183,9 @@ export function ThemeProvider({
   // ===========================================================================
   
   const resolveTheme = (theme: Theme): 'light' | 'dark' => {
+    // CRITICAL: If dark mode disabled, always return 'light'
+    if (!darkModeEnabled) return 'light';
+    
     if (theme === 'system') {
       return enableSystem ? getSystemTheme() : 'light';
     }
@@ -138,25 +205,28 @@ export function ThemeProvider({
     // Remove existing theme class
     root.classList.remove(THEME_CLASS);
     
-    // Add dark class if dark mode
-    if (resolved === 'dark') {
+    // CRITICAL: Only add dark class if dark mode is enabled AND resolved to dark
+    if (darkModeEnabled && resolved === 'dark') {
       root.classList.add(THEME_CLASS);
     }
     
-    // Persist to localStorage
-    try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch {
-      // Fail silently if localStorage is blocked
+    // Persist to localStorage (only if dark mode enabled)
+    if (darkModeEnabled) {
+      try {
+        localStorage.setItem(STORAGE_KEY, theme);
+      } catch {
+        // Fail silently if localStorage is blocked
+      }
     }
-  }, [theme, enableSystem]);
+  }, [theme, enableSystem, darkModeEnabled]);
 
   // ===========================================================================
   // EFFECT: Listen to system preference changes
   // ===========================================================================
   
   useEffect(() => {
-    if (!enableSystem || theme !== 'system') return;
+    // Don't listen if dark mode disabled
+    if (!darkModeEnabled || !enableSystem || theme !== 'system') return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
@@ -173,17 +243,28 @@ export function ThemeProvider({
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, enableSystem]);
+  }, [theme, enableSystem, darkModeEnabled]);
 
   // ===========================================================================
   // ACTIONS
   // ===========================================================================
   
   const setTheme = (newTheme: Theme) => {
+    // Ignore if dark mode disabled
+    if (!darkModeEnabled) {
+      console.warn('[ThemeProvider] Dark mode disabled on this page. Theme change ignored.');
+      return;
+    }
     setThemeState(newTheme);
   };
 
   const toggleTheme = () => {
+    // Ignore if dark mode disabled
+    if (!darkModeEnabled) {
+      console.warn('[ThemeProvider] Dark mode disabled on this page. Toggle ignored.');
+      return;
+    }
+    
     // If currently system, toggle to opposite of resolved
     if (theme === 'system') {
       const resolved = resolveTheme('system');
@@ -198,10 +279,11 @@ export function ThemeProvider({
   // ===========================================================================
   
   const value: ThemeContextValue = {
-    theme,
-    resolvedTheme,
+    theme: darkModeEnabled ? theme : 'light',
+    resolvedTheme: darkModeEnabled ? resolvedTheme : 'light',
     setTheme,
     toggleTheme,
+    darkModeEnabled,
   };
 
   return (
