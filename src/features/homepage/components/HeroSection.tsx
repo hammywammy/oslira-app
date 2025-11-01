@@ -1,39 +1,48 @@
 /**
- * @file Hero Section
- * @description Main hero with Instagram demo - Elegant Professional Design
- * Path: src/features/homepage/components/HeroSection.tsx
+ * ============================================================================
+ * HERO SECTION - OSLIRA PROFESSIONAL V2.0
+ * ============================================================================
+ * 
+ * DESIGN PRINCIPLES:
+ * - Static gradient (no scroll fade-out)
+ * - Professional polish, zero gimmicks
+ * - Real product value prop from copy intelligence
+ * - Electric blue primary, subtle purple accents
+ * - Data-driven messaging, not hype
+ * 
+ * COPY STRATEGY:
+ * - Problem: "50% of time on sales vs. writing"
+ * - Solution: "20 minutes → 60 seconds per prospect"
+ * - Proof: Real metrics, not aspirational claims
+ * ============================================================================
  */
 
 import { useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
-interface AnalysisResult {
+interface AnalysisDemo {
   username: string;
   score: number;
   niche: string;
-  category: string;
   followers: string;
-  outreach: string;
+  signals: string[];
 }
 
 // =============================================================================
-// ANIMATION VARIANTS - Subtle & Smooth
+// ANIMATION VARIANTS - MINIMAL & PURPOSEFUL
 // =============================================================================
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { 
-      duration: 0.8, 
-      ease: [0.22, 1, 0.36, 1] // Smooth easing
-    }
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
   }
 };
 
@@ -42,8 +51,8 @@ const stagger = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.1
+      staggerChildren: 0.1,
+      delayChildren: 0.2
     }
   }
 };
@@ -55,82 +64,57 @@ const stagger = {
 export function HeroSection() {
   const [username, setUsername] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<AnalysisDemo | null>(null);
 
-  const { scrollYProgress } = useScroll();
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, 100]);
-
-  // =============================================================================
-  // HANDLERS
-  // =============================================================================
-
+  // ===========================================================================
+  // DEMO HANDLER (Simulated)
+  // ===========================================================================
+  
   const handleAnalysis = async () => {
     const cleanUsername = username.trim().replace('@', '');
     
-    if (!cleanUsername) {
-      setError('Please enter an Instagram username');
-      setTimeout(() => setError(null), 3000);
-      return;
-    }
+    if (!cleanUsername) return;
 
     setIsAnalyzing(true);
-    setError(null);
     setResult(null);
 
-    try {
-      // Simulate API call - replace with real endpoint
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const demoData: AnalysisResult = {
-        username: cleanUsername,
-        score: Math.floor(Math.random() * 25 + 70),
-        niche: 'Content Creator',
-        category: 'Business',
-        followers: `${(Math.random() * 50 + 5).toFixed(1)}K`,
-        outreach: `Hi ${cleanUsername}! Loved your recent content. I help creators like you scale their online presence...`
-      };
+    const demoData: AnalysisDemo = {
+      username: cleanUsername,
+      score: Math.floor(Math.random() * 25 + 70),
+      niche: 'Content Creator',
+      followers: `${(Math.random() * 50 + 5).toFixed(1)}K`,
+      signals: [
+        'High engagement rate',
+        'Business-focused content',
+        'Active in last 7 days'
+      ]
+    };
 
-      setResult(demoData);
-    } catch (err) {
-      setError('Unable to analyze profile. Please try again.');
-    } finally {
-      setIsAnalyzing(false);
-    }
+    setResult(demoData);
+    setIsAnalyzing(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isAnalyzing) {
       handleAnalysis();
     }
   };
 
-  // =============================================================================
+  const handleGetStarted = () => {
+    window.location.href = '/auth/signup';
+  };
+
+  // ===========================================================================
   // RENDER
-  // =============================================================================
+  // ===========================================================================
 
   return (
-    <motion.section 
-      style={{ opacity: heroOpacity, y: heroY }}
-      className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-700 overflow-hidden"
-    >
-      {/* Animated mesh gradient overlay */}
-      <div className="absolute inset-0">
-        <motion.div
-          animate={{
-            backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%)',
-            backgroundSize: '200% 200%'
-          }}
-        />
-      </div>
-
-      {/* Subtle noise texture for depth */}
+    <section className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-600">
+      
+      {/* Subtle texture overlay (OpenAI-style) */}
       <div className="absolute inset-0 opacity-[0.015]" style={{
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")',
       }} />
@@ -138,283 +122,203 @@ export function HeroSection() {
       <div className="relative max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           
-          {/* Left Column - Copy & Demo */}
+          {/* ===================================================================
+              LEFT COLUMN - VALUE PROPOSITION
+              =================================================================== */}
+          
           <motion.div
             initial="hidden"
             animate="visible"
             variants={stagger}
-            className="space-y-10"
+            className="space-y-8"
           >
-            {/* Headline */}
-            <motion.div variants={fadeIn} className="space-y-6">
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-                Turn Hours of Instagram{' '}
-                <span className="relative inline-block">
-                  <span className="text-white/95">
-                    Prospecting into Minutes
-                  </span>
-                  <motion.div
-                    className="absolute -bottom-2 left-0 right-0 h-1 bg-white/40 rounded-full"
-                    initial={{ scaleX: 0, opacity: 0 }}
-                    animate={{ scaleX: 1, opacity: 1 }}
-                    transition={{ duration: 1.2, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </span>
-              </h1>
-              
-              <p className="text-xl lg:text-2xl text-white/90 leading-relaxed font-light">
-                Paste an Instagram link and Oslira grades the profile, gives you a clear debrief, 
-                crafts personalized outreach, and suggests your next leads.
-              </p>
+            {/* Badge */}
+            <motion.div variants={fadeIn}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                <Icon icon="mdi:lightning-bolt" className="text-white text-lg" />
+                <span className="text-white/90 text-sm font-medium">AI-Powered Instagram Prospecting</span>
+              </div>
+            </motion.div>
 
-              <p className="text-lg text-white/80 font-medium">
-                Get 25 free credits — no card required.
+            {/* Headline */}
+            <motion.div variants={fadeIn}>
+              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
+                Stop Prospecting.
+                <br />
+                <span className="text-white/90">Start Writing.</span>
+              </h1>
+            </motion.div>
+
+            {/* Subheadline */}
+            <motion.div variants={fadeIn}>
+              <p className="text-xl lg:text-2xl text-white/80 leading-relaxed">
+                Oslira automates Instagram prospecting so copywriters spend{' '}
+                <span className="font-semibold text-white">90% of their time writing</span>, not selling.
               </p>
             </motion.div>
 
-            {/* Demo Input */}
+            {/* Value Props (Data-Driven) */}
             <motion.div variants={fadeIn} className="space-y-4">
-              <p className="text-sm font-semibold text-white/90 tracking-wide uppercase">
-                Try the AI Analysis
-              </p>
+              {[
+                { icon: 'mdi:clock-fast', text: '20 minutes → 60 seconds per prospect' },
+                { icon: 'mdi:chart-line-variant', text: 'AI engagement scoring, not just follower count' },
+                { icon: 'mdi:message-text', text: 'Personalized outreach messages generated' }
+              ].map((item, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <Icon icon={item.icon} className="text-white text-sm" />
+                  </div>
+                  <span className="text-white/90">{item.text}</span>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* CTA Buttons */}
+            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 pt-4">
+              <button
+                onClick={handleGetStarted}
+                className="px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-neutral-50 transition-colors shadow-lg"
+              >
+                Get 25 Free Credits
+              </button>
+              <button
+                onClick={() => {
+                  const demoEl = document.getElementById('demo-input');
+                  demoEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="px-8 py-4 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
+              >
+                See Demo
+              </button>
+            </motion.div>
+
+            {/* Social Proof */}
+            <motion.div variants={fadeIn} className="pt-6 border-t border-white/20">
+              <div className="flex items-center gap-6">
+                <div className="text-white/80 text-sm">
+                  <div className="font-semibold text-white text-lg">500+</div>
+                  <div>Copywriters</div>
+                </div>
+                <div className="text-white/80 text-sm">
+                  <div className="font-semibold text-white text-lg">15 hrs</div>
+                  <div>Saved/Week</div>
+                </div>
+                <div className="text-white/80 text-sm">
+                  <div className="font-semibold text-white text-lg">43%</div>
+                  <div>Response Rate</div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* ===================================================================
+              RIGHT COLUMN - INTERACTIVE DEMO
+              =================================================================== */}
+          
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            className="relative"
+          >
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
               
-              <div className="flex gap-3">
-                <div className="flex-1 relative group">
-                  <Icon 
-                    icon="mdi:instagram" 
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl transition-colors group-focus-within:text-blue-600"
-                  />
+              {/* Demo Header */}
+              <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-error-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-warning-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-success-500"></div>
+                  <div className="ml-4 text-sm text-neutral-600 font-mono">app.oslira.com</div>
+                </div>
+              </div>
+
+              {/* Demo Content */}
+              <div className="p-8 space-y-6">
+                
+                <div>
+                  <h3 className="text-xl font-bold text-neutral-900 mb-2">Try it yourself</h3>
+                  <p className="text-neutral-600 text-sm">Paste any Instagram username to see Oslira's analysis</p>
+                </div>
+
+                {/* Input */}
+                <div id="demo-input" className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
+                    <Icon icon="mdi:instagram" className="text-xl" />
+                  </div>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="@instagram_handle"
-                    className="w-full pl-12 pr-4 py-4 bg-white/95 backdrop-blur-sm border-2 border-white/20 rounded-xl text-slate-900 placeholder-slate-400 
-                    focus:border-white focus:ring-4 focus:ring-white/20 outline-none transition-all duration-300
-                    hover:bg-white"
-                    disabled={isAnalyzing}
+                    placeholder="@username"
+                    className="w-full pl-12 pr-4 py-3 border-2 border-neutral-300 rounded-lg focus:border-primary-500 focus:outline-none transition-colors text-neutral-900 placeholder-neutral-400"
                   />
                 </div>
-                
-                <motion.button
+
+                <button
                   onClick={handleAnalysis}
-                  disabled={isAnalyzing || !username.trim()}
-                  whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -12px rgba(0, 0, 0, 0.3)" }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl 
-                  disabled:opacity-40 disabled:cursor-not-allowed 
-                  transition-all duration-300 flex items-center gap-2 shadow-xl shadow-black/10
-                  hover:shadow-2xl hover:bg-blue-50"
+                  disabled={!username.trim() || isAnalyzing}
+                  className="w-full py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isAnalyzing ? (
-                    <>
-                      <Icon icon="mdi:loading" className="text-xl animate-spin" />
-                      <span className="hidden sm:inline">Analyzing</span>
-                    </>
+                    <span className="flex items-center justify-center gap-2">
+                      <Icon icon="mdi:loading" className="animate-spin" />
+                      Analyzing...
+                    </span>
                   ) : (
-                    <>
-                      <span>Analyze</span>
-                      <Icon icon="mdi:arrow-right" className="text-xl" />
-                    </>
+                    'Analyze Profile'
                   )}
-                </motion.button>
-              </div>
+                </button>
 
-              {/* Error Message */}
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3"
-                >
-                  <Icon icon="mdi:alert-circle-outline" className="text-red-500 text-xl flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{error}</p>
-                </motion.div>
-              )}
-
-              {/* Analysis Result */}
-              {result && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="p-6 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl shadow-2xl shadow-blue-500/20"
-                >
-                  <div className="space-y-5">
-                    {/* Header */}
-                    <div className="flex items-center justify-between pb-5 border-b border-blue-100">
-                      <div className="flex items-center gap-4">
-                        <motion.div 
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                          className="w-14 h-14 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30"
-                        >
-                          {result.username.charAt(0).toUpperCase()}
-                        </motion.div>
-                        <div>
-                          <h4 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            @{result.username}
-                          </h4>
-                          <p className="text-sm text-slate-600">{result.niche} • {result.category} • {result.followers} followers</p>
-                        </div>
-                      </div>
-                      <motion.div 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                        className="text-right"
-                      >
-                        <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{result.score}%</div>
-                        <div className="text-xs text-slate-500 font-medium">Match Score</div>
-                      </motion.div>
-                    </div>
-                    
-                    {/* Outreach Preview */}
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className="p-5 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-100"
-                    >
-                      <h5 className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">Suggested Outreach</h5>
-                      <p className="text-slate-700 leading-relaxed italic">"{result.outreach}"</p>
-                    </motion.div>
-                    
-                    {/* CTA */}
-                    <div className="pt-4 border-t border-blue-100">
-                      <p className="text-center text-sm text-slate-600 mb-4">
-                        See full analysis & 24 more leads like this with your free trial
-                      </p>
-                      <motion.button
-                        whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -12px rgba(59, 130, 246, 0.5)" }}
-                        whileTap={{ scale: 0.99 }}
-                        className="w-full py-4 bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 text-white font-semibold rounded-xl 
-                        transition-all duration-300 shadow-lg shadow-blue-500/30
-                        hover:shadow-2xl hover:shadow-blue-500/40"
-                      >
-                        Get Full Analysis Report →
-                      </motion.button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div 
-              variants={fadeIn} 
-              className="grid grid-cols-3 gap-6 pt-6 border-t border-white/20"
-            >
-              {[
-                { number: '1,200+', label: 'Copywriters' },
-                { number: '43%', label: 'Response Rate' },
-                { number: '5 hrs', label: 'Saved/Week' }
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl font-bold text-white mb-1">{stat.number}</div>
-                  <div className="text-sm text-white/70 font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Right Column - Visual Demo */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-            className="relative hidden lg:block"
-          >
-            <motion.div
-              animate={{ y: [0, -12, 0] }}
-              transition={{ 
-                duration: 6, 
-                repeat: Infinity, 
-                ease: "easeInOut",
-                repeatType: "reverse"
-              }}
-              className="relative"
-            >
-              <div className="bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden border border-white/20">
-                {/* Browser Chrome */}
-                <div className="bg-slate-100 px-4 py-3 flex items-center gap-3 border-b border-slate-200">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  </div>
-                  <div className="flex-1 px-3 py-1.5 bg-white rounded-md text-xs text-slate-600 font-medium text-center border border-slate-200">
-                    app.oslira.com/dashboard
-                  </div>
-                </div>
-                
-                {/* Dashboard Preview */}
-                <div className="p-8 space-y-5 bg-slate-50">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      AI Lead Analysis
-                    </h3>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    >
-                      <Icon icon="mdi:atom" className="text-2xl text-blue-500" />
-                    </motion.div>
-                  </div>
-                  
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="p-6 bg-white rounded-xl border border-blue-200 shadow-lg shadow-blue-500/10 space-y-4 cursor-pointer"
+                {/* Demo Result */}
+                {result && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-4 pt-4 border-t border-neutral-200"
                   >
+                    {/* Score */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-violet-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">
-                          JD
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900">@jane_designer</h4>
-                          <p className="text-xs text-slate-500">UI/UX Designer • 8.2K followers</p>
-                        </div>
+                      <div>
+                        <div className="text-sm text-neutral-600">Lead Score</div>
+                        <div className="font-bold text-neutral-900">@{result.username}</div>
                       </div>
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white border border-green-200 rounded-full text-sm font-semibold shadow-lg shadow-green-500/30"
-                      >
-                        92%
-                      </motion.div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold text-primary-600">{result.score}%</div>
+                        <div className="text-xs text-neutral-500">Partnership Fit</div>
+                      </div>
                     </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {['Needs copy help', 'High engagement', 'Business owner'].map((tag, i) => (
-                        <motion.span 
-                          key={tag}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.1 * i }}
-                          className="px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 border border-blue-200 rounded-full text-xs font-medium"
-                        >
-                          {tag}
-                        </motion.span>
+
+                    {/* Signals */}
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-neutral-700">Key Signals</div>
+                      {result.signals.map((signal, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-neutral-600">
+                          <Icon icon="mdi:check-circle" className="text-success-500" />
+                          {signal}
+                        </div>
                       ))}
                     </div>
-                    
-                    <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-lg">
-                      <p className="text-sm text-slate-700 italic leading-relaxed">
-                        "Hi Jane! Your portfolio caught my eye..."
-                      </p>
+
+                    {/* CTA */}
+                    <div className="pt-4">
+                      <button
+                        onClick={handleGetStarted}
+                        className="w-full py-3 bg-neutral-900 text-white font-semibold rounded-lg hover:bg-neutral-800 transition-colors"
+                      >
+                        See Full Analysis →
+                      </button>
                     </div>
                   </motion.div>
-                </div>
+                )}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
+
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
 
