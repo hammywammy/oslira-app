@@ -129,6 +129,32 @@ export default {
           500: 'var(--color-info-500)',
           700: 'var(--color-info-700)',
         },
+
+        // Data visualization palette
+        'data-blue': 'var(--color-data-blue)',
+        'data-teal': 'var(--color-data-teal)',
+        'data-purple': 'var(--color-data-purple)',
+        'data-green': 'var(--color-data-green)',
+        'data-orange': 'var(--color-data-orange)',
+        'data-red': 'var(--color-data-red)',
+        'data-gray': 'var(--color-data-gray)',
+
+        // Tier indicators
+        'tier-free': 'var(--color-tier-free)',
+        'tier-pro': 'var(--color-tier-pro)',
+        'tier-agency': 'var(--color-tier-agency)',
+        'tier-enterprise': 'var(--color-tier-enterprise)',
+
+        // Lead score heatmap
+        'lead-cold': 'var(--color-lead-cold)',
+        'lead-warm': 'var(--color-lead-warm)',
+        'lead-hot': 'var(--color-lead-hot)',
+        'lead-qualified': 'var(--color-lead-qualified)',
+
+        // Analysis type badges
+        'analysis-light': 'var(--color-analysis-light)',
+        'analysis-deep': 'var(--color-analysis-deep)',
+        'analysis-xray': 'var(--color-analysis-xray)',
       },
 
       /**
