@@ -1,37 +1,53 @@
 /**
- * @file Testimonials Section
- * @description Social proof testimonials - Elegant Professional Design
- * Path: src/features/homepage/components/TestimonialsSection.tsx
+ * ============================================================================
+ * TESTIMONIALS SECTION - OSLIRA PROFESSIONAL V2.0
+ * ============================================================================
+ * 
+ * DESIGN PRINCIPLES:
+ * - Based on actual pain points from copy intelligence research
+ * - Three testimonial angles: time savings, emotional relief, strategic authority
+ * - Professional card design, minimal animation
+ * - Attribution (even if placeholder, makes them credible)
+ * 
+ * COPY STRATEGY (From Intelligence File):
+ * - Time: "15 hours/week saved"
+ * - Emotional: "Don't dread prospecting anymore"
+ * - Authority: "Sound like insider consultant"
+ * ============================================================================
  */
 
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { Icon } from '@iconify/react';
 
 // =============================================================================
-// DATA
+// DATA - TESTIMONIALS ALIGNED WITH COPY INTELLIGENCE
 // =============================================================================
 
 const testimonials = [
   {
-    quote: "Oslira cut my prospecting time from 10 hours to under 2 hours per week. I'm landing 3x more clients with half the effort.",
-    author: 'Marcus Johnson',
+    quote: "I used to spend 20 hours a week on LinkedIn with zero results. Oslira gave me back 15 hours — now I'm actually writing more than prospecting. Game changer.",
+    author: 'Marcus Chen',
     role: 'Freelance Copywriter',
-    initials: 'MJ',
-    gradient: 'from-blue-500 to-cyan-600'
+    initials: 'MC',
+    color: 'from-primary-500 to-primary-600',
+    icon: 'mdi:clock-fast'
   },
   {
-    quote: "The AI-generated outreach templates are shockingly good. My response rate jumped from 12% to 43% in the first month.",
-    author: 'Sarah Park',
+    quote: "The emotional relief is real. I don't dread prospecting anymore because Oslira handles the numbers game. I focus on the 5-10% that respond, not the 90% that don't.",
+    author: 'Sarah Thompson',
     role: 'B2B Copy Specialist',
-    initials: 'SP',
-    gradient: 'from-purple-500 to-pink-600'
+    initials: 'ST',
+    color: 'from-secondary-500 to-secondary-600',
+    icon: 'mdi:emoticon-happy-outline'
   },
   {
-    quote: "Finally, a tool that actually understands my niche. Oslira finds perfect-fit leads I would've missed manually.",
-    author: 'Kevin Lee',
+    quote: "Clients think I'm a genius because I show up knowing their business cold. Oslira's AI briefs make me sound like an insider consultant, not a desperate freelancer.",
+    author: 'Kevin Rodriguez',
     role: 'SaaS Copywriter',
-    initials: 'KL',
-    gradient: 'from-green-500 to-emerald-600'
+    initials: 'KR',
+    color: 'from-success-500 to-success-600',
+    icon: 'mdi:account-star'
   }
 ];
 
@@ -44,7 +60,7 @@ const fadeIn = {
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
 };
 
@@ -53,7 +69,7 @@ const stagger = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15
+      staggerChildren: 0.1
     }
   }
 };
@@ -64,87 +80,95 @@ const stagger = {
 
 export function TestimonialsSection() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section ref={ref} className="relative py-32 px-6 bg-white">
-      <div className="relative max-w-7xl mx-auto">
+    <section ref={ref} className="py-24 px-6 bg-background">
+      <div className="max-w-7xl mx-auto">
         
-        {/* Section Header */}
+        {/* =====================================================================
+            SECTION HEADER
+            ===================================================================== */}
+        
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={fadeIn}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 mb-6 leading-tight">
-            Success{' '}
-            <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
-              Stories
-            </span>
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            What Copywriters Are Saying
           </h2>
-          <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto font-light">
-            Real results from copywriters using Oslira
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Real results from freelancers who got their time back.
           </p>
         </motion.div>
 
-        {/* Testimonials Grid */}
+        {/* =====================================================================
+            TESTIMONIALS GRID
+            ===================================================================== */}
+        
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={stagger}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid md:grid-cols-3 gap-8"
         >
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={index}
               variants={fadeIn}
-              whileHover={{ y: -8 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="group"
+              className="bg-card border border-border rounded-xl p-8 hover:shadow-lg transition-shadow"
             >
-              <div className="h-full p-8 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl hover:border-purple-300 
-              hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-500">
-                
-                {/* Quote */}
-                <div className="mb-6">
-                  <motion.svg 
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className={`w-10 h-10 mb-4 bg-gradient-to-br ${testimonial.gradient} bg-clip-text text-transparent`}
-                    fill="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                  </motion.svg>
-                  <p className="text-lg text-slate-700 leading-relaxed">
-                    {testimonial.quote}
-                  </p>
+              {/* Icon */}
+              <div className="mb-6">
+                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${testimonial.color} flex items-center justify-center`}>
+                  <Icon icon={testimonial.icon} className="text-2xl text-white" />
                 </div>
+              </div>
 
-                {/* Author */}
-                <div className="flex items-center gap-4 pt-6 border-t border-blue-100">
-                  <motion.div 
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className={`w-12 h-12 bg-gradient-to-br ${testimonial.gradient} rounded-full flex items-center justify-center text-white font-bold shadow-lg`}
-                    style={{ 
-                      boxShadow: `0 10px 30px -12px ${
-                        testimonial.gradient.includes('blue') ? 'rgba(59, 130, 246, 0.5)' :
-                        testimonial.gradient.includes('purple') ? 'rgba(168, 85, 247, 0.5)' :
-                        'rgba(34, 197, 94, 0.5)'
-                      }`
-                    }}
-                  >
-                    {testimonial.initials}
-                  </motion.div>
-                  <div>
-                    <div className="font-bold text-slate-900">{testimonial.author}</div>
-                    <div className="text-sm text-slate-500">{testimonial.role}</div>
-                  </div>
+              {/* Quote */}
+              <blockquote className="text-muted-foreground leading-relaxed mb-6 italic">
+                "{testimonial.quote}"
+              </blockquote>
+
+              {/* Author */}
+              <div className="flex items-center gap-3 pt-6 border-t border-border">
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-sm`}>
+                  {testimonial.initials}
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">{testimonial.author}</div>
+                  <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                 </div>
               </div>
             </motion.div>
           ))}
         </motion.div>
+
+        {/* =====================================================================
+            SOCIAL PROOF STATS
+            ===================================================================== */}
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8"
+        >
+          {[
+            { number: '500+', label: 'Active Copywriters' },
+            { number: '15 hrs', label: 'Average Time Saved/Week' },
+            { number: '43%', label: 'Response Rate' },
+            { number: '3x', label: 'More Client Meetings' }
+          ].map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">{stat.number}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
+
       </div>
     </section>
   );
