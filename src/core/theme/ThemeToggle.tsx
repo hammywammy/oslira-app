@@ -1,35 +1,13 @@
 // src/core/theme/ThemeToggle.tsx
 
 /**
- * THEME TOGGLE BUTTON - PRODUCTION GRADE V1.0
+ * THEME TOGGLE BUTTON - V2.0 (SUBDOMAIN-AWARE)
  * 
- * ARCHITECTURE:
- * ✅ Uses global ThemeProvider (no local state)
- * ✅ Works anywhere in the app
- * ✅ Professional animation (icon rotation/fade)
- * ✅ Accessible (aria-label, keyboard support)
- * ✅ Variants for different placements
- * 
- * PHILOSOPHY:
- * "One component, infinite placements"
- * - Fixed bottom-left (showcase pages)
- * - Inline (navbar, settings)
- * - Minimal (icon only)
- * - Full (icon + text)
- * 
- * USAGE:
- * 
- * // Fixed bottom-left (ComponentShowcase):
- * <ThemeToggle variant="fixed" />
- * 
- * // Inline in navbar:
- * <ThemeToggle variant="inline" />
- * 
- * // Icon only:
- * <ThemeToggle variant="minimal" />
- * 
- * // With text:
- * <ThemeToggle variant="full" />
+ * UPDATES:
+ * ✅ Respects darkModeEnabled from ThemeProvider
+ * ✅ Shows disabled state on marketing pages
+ * ✅ Tooltip explains why disabled (optional)
+ * ✅ Works normally on app pages
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,105 +23,100 @@ interface ThemeToggleProps {
   variant?: 'fixed' | 'inline' | 'minimal' | 'full';
   /** Additional CSS classes */
   className?: string;
+  /** Show tooltip when disabled */
+  showDisabledTooltip?: boolean;
 }
-
-// =============================================================================
-// VARIANT STYLES
-// =============================================================================
-
-const variantStyles = {
-  fixed: `
-    fixed bottom-8 left-8 z-50 
-    w-14 h-14 rounded-full 
-    shadow-elevated
-    bg-white dark:bg-neutral-800 
-    hover:bg-neutral-50 dark:hover:bg-neutral-700 
-    border border-neutral-300 dark:border-neutral-600
-  `,
-  inline: `
-    relative
-    w-10 h-10 rounded-lg
-    bg-white dark:bg-neutral-800 
-    hover:bg-neutral-50 dark:hover:bg-neutral-700 
-    border border-neutral-300 dark:border-neutral-600
-  `,
-  minimal: `
-    relative
-    w-9 h-9 rounded-lg
-    bg-transparent
-    hover:bg-neutral-100 dark:hover:bg-neutral-800
-  `,
-  full: `
-    relative
-    px-4 h-10 rounded-lg
-    flex items-center gap-2
-    bg-white dark:bg-neutral-800 
-    hover:bg-neutral-50 dark:hover:bg-neutral-700 
-    border border-neutral-300 dark:border-neutral-600
-  `,
-};
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function ThemeToggle({ 
-  variant = 'inline',
-  className = '' 
+  variant = 'fixed',
+  className = '',
+  showDisabledTooltip = false
 }: ThemeToggleProps) {
-  const { resolvedTheme, toggleTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
+  const { resolvedTheme, toggleTheme, darkModeEnabled } = useTheme();
+
+  // ===========================================================================
+  // VARIANT STYLES
+  // ===========================================================================
+  
+  const variantStyles = {
+    fixed: 'fixed bottom-6 left-6 z-50',
+    inline: 'relative',
+    minimal: 'relative',
+    full: 'relative',
+  };
+
+  const baseStyles = variant === 'fixed'
+    ? 'px-4 py-3 bg-card border-2 border-border rounded-xl shadow-lg hover:shadow-xl'
+    : 'px-3 py-2 bg-card border border-border rounded-lg hover:bg-accent';
+
+  // ===========================================================================
+  // DISABLED STATE
+  // ===========================================================================
+  
+  if (!darkModeEnabled) {
+    return (
+      <div className={`${variantStyles[variant]} ${className} group relative`}>
+        <button
+          disabled
+          className={`${baseStyles} opacity-50 cursor-not-allowed flex items-center gap-2`}
+          title="Dark mode disabled on marketing pages"
+        >
+          <Icon icon="mdi:theme-light-dark" className="text-xl text-muted-foreground" />
+          {(variant === 'full' || variant === 'fixed') && (
+            <span className="text-sm font-medium text-muted-foreground">Light Only</span>
+          )}
+        </button>
+        
+        {/* Optional tooltip */}
+        {showDisabledTooltip && (
+          <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-48 p-2 bg-neutral-900 text-white text-xs rounded shadow-lg">
+            Dark mode is disabled on marketing pages
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ===========================================================================
+  // ACTIVE STATE (Normal behavior)
+  // ===========================================================================
 
   return (
-    <motion.button
-      onClick={toggleTheme}
-      className={`
-        ${variantStyles[variant]}
-        ${className}
-        flex items-center justify-center 
-        transition-all duration-200
-        focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
-      `}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      <AnimatePresence mode="wait">
-        {isDark ? (
+    <div className={`${variantStyles[variant]} ${className}`}>
+      <motion.button
+        onClick={toggleTheme}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`${baseStyles} flex items-center gap-2 transition-all duration-300`}
+        aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+      >
+        {/* Icon with rotation animation */}
+        <AnimatePresence mode="wait">
           <motion.div
-            key="sun"
+            key={resolvedTheme}
             initial={{ rotate: -90, opacity: 0 }}
             animate={{ rotate: 0, opacity: 1 }}
             exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3 }}
           >
-            <Icon 
-              icon="ph:sun-bold" 
-              className="text-2xl text-yellow-400" 
+            <Icon
+              icon={resolvedTheme === 'dark' ? 'mdi:weather-night' : 'mdi:white-balance-sunny'}
+              className="text-xl text-foreground"
             />
           </motion.div>
-        ) : (
-          <motion.div
-            key="moon"
-            initial={{ rotate: 90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: -90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Icon 
-              icon="ph:moon-bold" 
-              className="text-2xl text-neutral-700 dark:text-neutral-300" 
-            />
-          </motion.div>
+        </AnimatePresence>
+
+        {/* Text (for full/fixed variants) */}
+        {(variant === 'full' || variant === 'fixed') && (
+          <span className="text-sm font-medium text-foreground">
+            {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
+          </span>
         )}
-      </AnimatePresence>
-      
-      {/* Show text only for 'full' variant */}
-      {variant === 'full' && (
-        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          {isDark ? 'Light' : 'Dark'}
-        </span>
-      )}
-    </motion.button>
+      </motion.button>
+    </div>
   );
 }
