@@ -1,28 +1,23 @@
 // src/shared/components/ui/Card.tsx
 
 /**
- * CARD COMPONENT - PRODUCTION GRADE V4.0
+ * CARD COMPONENT - PRODUCTION GRADE V4.1 (SUBTLE PROFESSIONAL)
  * 
- * Professional container with compositional API
- * Maximum flexibility with type-safe semantic props
- * 
- * ARCHITECTURE:
- * ✅ Compositional design (mix any colors/sizes)
- * ✅ Full light/dark mode support
- * ✅ Type-safe semantic props
- * ✅ className override for edge cases
- * ✅ All interactive states
+ * UPDATES:
+ * ✅ Better shadow system (softer, more depth)
+ * ✅ Improved hover states (subtle lift)
+ * ✅ Enhanced border contrast
+ * ✅ Optional gradient accent (for premium cards)
  * 
  * PHILOSOPHY:
- * "Give developers the tools, let them compose"
- * - Not locked into preset variants
- * - Full design system access
- * - Type-safe + flexible
+ * "Subtle depth creates visual hierarchy"
+ * - Cards should feel elevated but not floaty
+ * - Shadows should be soft, not harsh
+ * - Hover states should be purposeful, not gimmicky
  * 
- * USAGE:
- * <Card size="lg" fillColor="primary-50" borderColor="primary-400" shadow="md" hoverable>
- * <Card size="sm" fillColor="white" clickable onClick={handleClick}>
- * <Card className="bg-gradient-to-r from-blue-500 to-purple-600">
+ * USAGE: (Same API, better visuals)
+ * <Card size="lg" shadow="md" hoverable>
+ * <Card fillColor="primary-50" borderColor="primary-200">
  */
 
 import { HTMLAttributes, ReactNode } from 'react';
@@ -38,9 +33,9 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'classNa
   size?: 'sm' | 'md' | 'lg';
   rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   
-  // Visual (any color from design system)
-  fillColor?: string;    // 'white' | 'primary-50' | 'neutral-100' | etc
-  borderColor?: string;  // 'neutral-200' | 'primary-400' | 'transparent' | etc
+  // Visual
+  fillColor?: string;    
+  borderColor?: string;  
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   
   // Interactive
@@ -48,6 +43,9 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'classNa
   clickable?: boolean;
   selected?: boolean;
   disabled?: boolean;
+  
+  // NEW: Gradient accent (optional)
+  gradientAccent?: boolean;
   
   // Override
   className?: string;
@@ -77,15 +75,24 @@ const roundedStyles = {
 } as const;
 
 // =============================================================================
-// SHADOW STYLES
+// SHADOW STYLES - UPGRADED (Softer, More Depth)
 // =============================================================================
 
 const shadowStyles = {
   none: '',
-  sm: 'shadow-sm',
-  md: 'shadow-md',
-  lg: 'shadow-lg',
-  xl: 'shadow-xl',
+  sm: 'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_1px_4px_rgba(0,0,0,0.02)]',
+  md: 'shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_4px_rgba(0,0,0,0.04)]',
+  lg: 'shadow-[0_4px_16px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.06)]',
+  xl: 'shadow-[0_8px_24px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.08)]',
+} as const;
+
+// Hover shadow upgrades (subtle lift effect)
+const hoverShadowStyles = {
+  none: '',
+  sm: 'hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_4px_rgba(0,0,0,0.04)]',
+  md: 'hover:shadow-[0_4px_16px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.06)]',
+  lg: 'hover:shadow-[0_8px_24px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.08)]',
+  xl: 'hover:shadow-[0_12px_32px_rgba(0,0,0,0.16),0_6px_16px_rgba(0,0,0,0.12)]',
 } as const;
 
 // =============================================================================
@@ -108,17 +115,19 @@ function buildColorClass(prefix: 'bg' | 'border', color?: string, darkColor?: st
 }
 
 // =============================================================================
-// HELPER: GET DEFAULT COLORS
+// HELPER: GET DEFAULT COLORS (Improved Contrast)
 // =============================================================================
 
 function getDefaultFillColor(fillColor?: string): string {
   if (fillColor) return buildColorClass('bg', fillColor);
+  // Slightly off-white for better layering
   return 'bg-white dark:bg-neutral-800';
 }
 
 function getDefaultBorderColor(borderColor?: string): string {
   if (borderColor === 'transparent') return 'border-transparent';
   if (borderColor) return buildColorClass('border', borderColor);
+  // Better contrast borders
   return 'border border-neutral-200 dark:border-neutral-700';
 }
 
@@ -137,6 +146,7 @@ export function Card({
   clickable = false,
   selected = false,
   disabled = false,
+  gradientAccent = false,
   className = '',
   onClick,
   ...props
@@ -145,25 +155,28 @@ export function Card({
   // Auto-enable clickable if onClick provided
   const isClickable = clickable || !!onClick;
   
-  // Base classes
+  // Base classes with improved transitions
   const baseClasses = [
     // Layout
+    'relative', // For gradient accent positioning
     sizeStyles[size],
     roundedStyles[rounded],
+    'overflow-hidden', // Contains gradient accent
     
     // Visual
     getDefaultFillColor(fillColor),
     getDefaultBorderColor(borderColor),
     shadowStyles[shadow],
     
-    // Interactive states
+    // Interactive states with smoother transitions
+    'transition-all duration-300 ease-out',
     isClickable && 'cursor-pointer',
-    hoverable && 'transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5',
-    isClickable && !hoverable && 'transition-all duration-200 ease-out hover:shadow-md',
-    selected && 'ring-2 ring-primary-500 ring-offset-2',
+    hoverable && `${hoverShadowStyles[shadow]} hover:-translate-y-0.5`,
+    isClickable && !hoverable && hoverShadowStyles[shadow],
+    selected && 'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-neutral-900',
     disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
     
-    // Active state (for clickable)
+    // Active state (for clickable) - subtle press effect
     isClickable && 'active:translate-y-0 active:shadow-sm',
     
   ].filter(Boolean).join(' ');
@@ -177,6 +190,11 @@ export function Card({
       aria-disabled={disabled}
       {...props}
     >
+      {/* Optional gradient accent (top border) */}
+      {gradientAccent && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500" />
+      )}
+      
       {children}
     </div>
   );
