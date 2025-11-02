@@ -1,24 +1,17 @@
 // src/features/onboarding/components/NavigationBar.tsx
 
 /**
- * NAVIGATION BAR
+ * NAVIGATION BAR - LIGHT MODE REDESIGN
  * 
- * Fixed-position bottom navigation with:
- * - Back button (left) - only shows when canGoBack
- * - Step counter (center)
- * - Next button (right) - always in same position
- * - Subtle hover effects
+ * Clean navigation with:
+ * - Light background
+ * - Primary blue for main actions
+ * - Neutral styling for back button
+ * - Professional button designs
  */
 
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { ICONS } from '../constants/icons';
-import { buttonHover, buttonTap } from '../animations/variants';
-import { TOTAL_STEPS } from '../constants/steps';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface NavigationBarProps {
   currentStep: number;
@@ -27,12 +20,15 @@ interface NavigationBarProps {
   isLastStep: boolean;
   onBack: () => void;
   onNext: () => void;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
+const ICONS = {
+  arrowLeft: 'ph:arrow-left',
+  arrowRight: 'ph:arrow-right',
+  check: 'ph:check-circle',
+  loader: 'ph:circle-notch',
+};
 
 export function NavigationBar({
   currentStep,
@@ -41,50 +37,66 @@ export function NavigationBar({
   isLastStep,
   onBack,
   onNext,
-  isLoading = false,
+  isLoading,
 }: NavigationBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-950/80 backdrop-blur-md border-t border-slate-800/50 z-40">
-      <div className="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
-        {/* Back button */}
-        <div className="w-24">
-          {canGoBack && (
-            <motion.button
-              onClick={onBack}
-              className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
-              whileHover={buttonHover}
-              whileTap={buttonTap}
-              type="button"
-            >
-              <Icon icon={ICONS.arrowLeft} className="w-4 h-4" />
-              <span className="text-sm font-medium">Back</span>
-            </motion.button>
-          )}
-        </div>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-40">
+      <div className="max-w-2xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          {/* Back Button */}
+          <motion.button
+            onClick={onBack}
+            disabled={!canGoBack}
+            className={`
+              flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium
+              transition-all duration-200
+              ${canGoBack
+                ? 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                : 'bg-neutral-50 text-neutral-400 cursor-not-allowed'
+              }
+            `}
+            whileHover={canGoBack ? { scale: 1.02 } : {}}
+            whileTap={canGoBack ? { scale: 0.98 } : {}}
+            type="button"
+          >
+            <Icon icon={ICONS.arrowLeft} className="w-4 h-4" />
+            <span>Back</span>
+          </motion.button>
 
-        {/* Step counter */}
-        <div className="text-center">
-          <span className="text-xs text-slate-400 font-medium">
-            Step {currentStep} of {TOTAL_STEPS}
-          </span>
-        </div>
+          {/* Step Indicator */}
+          <div className="flex items-center gap-2">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div
+                key={i}
+                className={`
+                  w-2 h-2 rounded-full transition-all duration-200
+                  ${i < currentStep
+                    ? 'bg-secondary-500'
+                    : i === currentStep - 1
+                    ? 'bg-primary-500 w-8'
+                    : 'bg-neutral-300'
+                  }
+                `}
+              />
+            ))}
+          </div>
 
-        {/* Next button - always in same position */}
-        <div className="w-24 flex justify-end">
+          {/* Next/Complete Button */}
           <motion.button
             onClick={onNext}
             disabled={!canGoNext || isLoading}
             className={`
-              flex items-center gap-2 px-5 py-2 rounded-lg font-medium text-sm
+              flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium
               transition-all duration-200
-              ${
-                canGoNext && !isLoading
-                  ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600 shadow-lg shadow-violet-500/25'
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+              ${canGoNext && !isLoading
+                ? isLastStep
+                  ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white hover:from-primary-600 hover:to-secondary-600 shadow-lg shadow-primary-500/25'
+                  : 'bg-primary-500 text-white hover:bg-primary-600 shadow-lg shadow-primary-500/25'
+                : 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
               }
             `}
-            whileHover={canGoNext && !isLoading ? buttonHover : {}}
-            whileTap={canGoNext && !isLoading ? buttonTap : {}}
+            whileHover={canGoNext && !isLoading ? { scale: 1.02 } : {}}
+            whileTap={canGoNext && !isLoading ? { scale: 0.98 } : {}}
             type="button"
           >
             {isLoading ? (
@@ -94,8 +106,8 @@ export function NavigationBar({
               </>
             ) : (
               <>
-                <span>{isLastStep ? 'Complete' : 'Next'}</span>
-                <Icon icon={ICONS.arrowRight} className="w-4 h-4" />
+                <span>{isLastStep ? 'Complete Setup' : 'Next'}</span>
+                <Icon icon={isLastStep ? ICONS.check : ICONS.arrowRight} className="w-4 h-4" />
               </>
             )}
           </motion.button>
