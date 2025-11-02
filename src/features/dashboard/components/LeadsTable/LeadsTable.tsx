@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
-import { Badge } from '@/shared/components/ui/Badge';
 import { useDashboardStore } from '../../store/dashboardStore';
 
 const mockLeads = [
@@ -99,83 +98,102 @@ function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
   };
   
   const config = badgeConfig[type];
+  
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${config.bg} ${config.text}`}>
-      <Icon icon={config.icon} width={12} />
-      {config.label}
-    </span>
+    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${config.bg}`}>
+      <Icon icon={config.icon} width={14} className={config.text} />
+      <span className={`text-xs font-medium ${config.text}`}>{config.label}</span>
+    </div>
   );
 }
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  if (diffHours < 24) return 'Today';
-  if (diffHours < 48) return 'Yesterday';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+  });
 }
 
 export function LeadsTable() {
-  const { selectedLeadIds, toggleLeadSelection, selectAllLeads, clearSelection } = useDashboardStore();
-  const [sortColumn, setSortColumn] = useState<string>('created_at');
+  const { leads: storeLeads } = useDashboardStore();
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-
-  const leads = mockLeads;
-  const allSelected = leads.length > 0 && selectedLeadIds.length === leads.length;
-  const someSelected = selectedLeadIds.length > 0 && !allSelected;
+  
+  // Use store leads if available, otherwise use mock data
+  const leads = storeLeads.length > 0 ? storeLeads : mockLeads;
 
   const handleSelectAll = () => {
-    if (allSelected) {
-      clearSelection();
+    if (selectedLeads.size === leads.length) {
+      setSelectedLeads(new Set());
     } else {
-      selectAllLeads();
+      setSelectedLeads(new Set(leads.map(lead => lead.id)));
     }
   };
 
-  const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+  const handleSelectLead = (id: string) => {
+    const newSelected = new Set(selectedLeads);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
     } else {
-      setSortColumn(column);
+      newSelected.add(id);
+    }
+    setSelectedLeads(newSelected);
+  };
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
       setSortDirection('desc');
     }
   };
 
-  if (leads.length === 0) {
-    return (
-      <div className="bg-white rounded-lg p-16 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Icon icon="mdi:account-search" width={32} className="text-gray-400" />
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">No leads yet</h3>
-        <p className="text-sm text-gray-500 mb-6 max-w-sm mx-auto">
-          Start analyzing Instagram profiles to discover qualified leads.
-        </p>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2 font-medium text-sm">
-          <Icon icon="mdi:plus" width={16} />
-          Analyze Lead
-        </button>
-      </div>
-    );
-  }
+  const allSelected = selectedLeads.size === leads.length && leads.length > 0;
+  const someSelected = selectedLeads.size > 0 && selectedLeads.size < leads.length;
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      {/* TABLE HEADER BAR */}
+      <div className="px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">All Leads</h2>
+          {selectedLeads.size > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">
+                {selectedLeads.size} selected
+              </span>
+              <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                Bulk Actions
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          {/* HEADER */}
-          <thead>
-            <tr className="border-b border-gray-100">
-              <th className="w-12 px-6 py-3 text-left">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              {/* Checkbox Column */}
+              <th className="w-12 px-6 py-3">
                 <button
                   onClick={handleSelectAll}
                   className={`
-                    w-4 h-4 rounded border flex items-center justify-center
-                    transition-all duration-150
-                    ${allSelected || someSelected
+                    w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+                    ${allSelected || someSelected 
                       ? 'bg-blue-600 border-blue-600'
                       : 'border-gray-300 hover:border-blue-600'
                     }
@@ -241,30 +259,28 @@ export function LeadsTable() {
             </tr>
           </thead>
 
-          {/* BODY */}
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-100">
             {leads.map((lead, index) => {
-              const isSelected = selectedLeadIds.includes(lead.id);
-
+              const isSelected = selectedLeads.has(lead.id);
+              
               return (
                 <motion.tr
                   key={lead.id}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03, duration: 0.2 }}
+                  transition={{ delay: index * 0.05 }}
                   className={`
-                    transition-colors duration-150
-                    ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50/50'}
+                    hover:bg-gray-50 transition-colors
+                    ${isSelected ? 'bg-blue-50 hover:bg-blue-100' : ''}
                   `}
                 >
                   {/* Checkbox */}
                   <td className="px-6 py-4">
                     <button
-                      onClick={() => toggleLeadSelection(lead.id)}
+                      onClick={() => handleSelectLead(lead.id)}
                       className={`
-                        w-4 h-4 rounded border flex items-center justify-center
-                        transition-all duration-150
-                        ${isSelected
+                        w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+                        ${isSelected 
                           ? 'bg-blue-600 border-blue-600'
                           : 'border-gray-300 hover:border-blue-600'
                         }
@@ -278,20 +294,12 @@ export function LeadsTable() {
                   {/* Lead Info */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-semibold text-white">
-                          {lead.username.charAt(1).toUpperCase()}
-                        </span>
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                        {lead.username.charAt(1).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {lead.username}
-                        </p>
-                        {lead.full_name && (
-                          <p className="text-xs text-gray-500 truncate">
-                            {lead.full_name}
-                          </p>
-                        )}
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{lead.username}</p>
+                        <p className="text-xs text-gray-500">{lead.full_name}</p>
                       </div>
                     </div>
                   </td>
