@@ -93,7 +93,6 @@ export function DashboardPage() {
       <DashboardHotbar
         onBulkUpload={() => setShowBulkModal(true)}
         onAnalyzeLead={() => setShowAnalyzeModal(true)}
-        currentCredits={currentCredits}
       />
 
       {/* MAIN CONTENT */}
