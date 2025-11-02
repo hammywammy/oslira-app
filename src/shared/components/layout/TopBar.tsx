@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();
+  const { isCollapsed } = useSidebarStore();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -41,11 +43,15 @@ export function TopBar() {
 
   return (
     <>
-      {/* Top border line */}
+      {/* Top border line - spans full width */}
       <div className="fixed top-0 left-0 right-0 h-[1px] bg-border z-50" />
       
-      {/* Main TopBar */}
-      <header className="fixed top-[1px] left-0 right-0 h-14 bg-background border-b border-border z-40">
+      {/* Main TopBar - respects Sidebar width */}
+      <header className={`
+        fixed top-[1px] right-0 h-14 bg-background border-b border-border z-40
+        transition-[left] duration-200
+        ${isCollapsed ? 'left-16' : 'left-60'}
+      `}>
         <div className="h-full px-6 flex items-center justify-between">
           
           {/* Left: Search Bar */}
@@ -151,30 +157,18 @@ export function TopBar() {
                       className="absolute right-0 top-full mt-2 w-64 bg-background border border-border rounded-lg shadow-xl z-40"
                     >
                       <div className="p-2">
-                        <a href="#" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon icon="ph:book-open" className="w-4 h-4 text-muted-foreground" />
-                            Documentation
-                          </div>
+                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                          Documentation
                         </a>
-                        <a href="#" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon icon="ph:chat-circle" className="w-4 h-4 text-muted-foreground" />
-                            Contact Support
-                          </div>
+                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                          Keyboard Shortcuts
                         </a>
-                        <a href="#" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon icon="ph:keyboard" className="w-4 h-4 text-muted-foreground" />
-                            Keyboard Shortcuts
-                          </div>
+                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                          Support
                         </a>
-                        <div className="my-1 border-t border-border" />
-                        <a href="#" className="block px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors">
-                          <div className="flex items-center gap-3">
-                            <Icon icon="ph:sparkle" className="w-4 h-4 text-muted-foreground" />
-                            What's New
-                          </div>
+                        <div className="h-px bg-border my-2" />
+                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                          What's New
                         </a>
                       </div>
                     </motion.div>
@@ -194,7 +188,7 @@ export function TopBar() {
               >
                 <Icon icon="ph:bell" className="w-5 h-5 text-muted-foreground" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
                 )}
               </button>
 
@@ -217,41 +211,35 @@ export function TopBar() {
                         <div className="flex items-center justify-between">
                           <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                           {unreadCount > 0 && (
-                            <button className="text-xs text-primary hover:text-primary/80 transition-colors">
-                              Mark all as read
-                            </button>
+                            <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
                           )}
                         </div>
                       </div>
                       <div className="max-h-96 overflow-y-auto">
-                        {notifications.map((notification) => (
+                        {notifications.map(notif => (
                           <div
-                            key={notification.id}
+                            key={notif.id}
                             className={`
-                              px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer
-                              ${notification.unread ? 'bg-muted/20' : ''}
+                              px-4 py-3 border-b border-border last:border-b-0
+                              hover:bg-muted/50 transition-colors cursor-pointer
+                              ${notif.unread ? 'bg-muted/30' : ''}
                             `}
                           >
-                            <div className="flex items-start gap-3">
-                              <div className={`
-                                w-2 h-2 rounded-full mt-1.5 flex-shrink-0
-                                ${notification.unread ? 'bg-primary' : 'bg-transparent'}
-                              `} />
+                            <div className="flex items-start gap-2">
+                              {notif.unread && (
+                                <span className="mt-1.5 w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                              )}
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-foreground">
-                                  {notification.text}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {notification.time}
-                                </p>
+                                <p className="text-sm text-foreground">{notif.text}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                      <div className="p-3 border-t border-border">
-                        <button className="text-xs text-primary hover:text-primary/80 transition-colors">
-                          View all notifications
+                      <div className="p-2 border-t border-border">
+                        <button className="w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
+                          Mark all as read
                         </button>
                       </div>
                     </motion.div>
@@ -261,29 +249,23 @@ export function TopBar() {
             </div>
 
             {/* Settings Button */}
-            <button
-              onClick={() => {/* Navigate to settings */}}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-            >
+            <button className="p-2 hover:bg-muted rounded-lg transition-colors">
               <Icon icon="ph:gear" className="w-5 h-5 text-muted-foreground" />
             </button>
 
-            {/* Theme Toggle */}
+            {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
               className="p-2 hover:bg-muted rounded-lg transition-colors"
             >
-              <Icon 
-                icon={theme === 'dark' ? 'ph:sun' : 'ph:moon'} 
-                className="w-5 h-5 text-muted-foreground" 
+              <Icon
+                icon={theme === 'dark' ? 'ph:sun' : 'ph:moon'}
+                className="w-5 h-5 text-muted-foreground"
               />
             </button>
           </div>
         </div>
       </header>
-
-      {/* Spacer to push content down */}
-      <div className="h-[57px]" />
     </>
   );
 }
