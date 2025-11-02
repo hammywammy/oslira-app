@@ -233,7 +233,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
           ${isSelected ? 'bg-primary/5' : 'bg-background group-hover:bg-muted/30'}
           border-r border-border
         `}
-        style={{ width: `${COLUMN_WIDTHS.checkbox}px`, minWidth: `${COLUMN_WIDTHS.checkbox}px`, padding: '16px 0' }}
+        style={{ width: `${COLUMN_WIDTHS.checkbox}px`, minWidth: `${COLUMN_WIDTHS.checkbox}px`, padding: '12px 0' }}
       >
         <input
           type="checkbox"
@@ -244,7 +244,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
       </td>
 
       {/* Lead - 3 Lines Stacked */}
-      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px`, padding: '16px' }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px`, padding: '12px 16px' }}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-semibold text-primary">
@@ -262,7 +262,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
       </td>
 
       {/* Platform */}
-      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.platform}px`, padding: '16px' }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.platform}px`, padding: '12px 16px' }}>
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-pink-50 text-pink-700 border border-pink-200">
           <Icon icon="mdi:instagram" width={16} />
           <span className="text-xs font-medium">Instagram</span>
@@ -270,17 +270,17 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
       </td>
 
       {/* Score */}
-      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.score}px`, padding: '16px' }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.score}px`, padding: '12px 16px' }}>
         <ScoreBadge score={lead.overall_score} />
       </td>
 
       {/* Analysis */}
-      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.analysis}px`, padding: '16px' }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.analysis}px`, padding: '12px 16px' }}>
         <AnalysisTypeBadge type={lead.analysis_type} />
       </td>
 
       {/* Updated */}
-      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.updated}px`, padding: '16px' }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.updated}px`, padding: '12px 16px' }}>
         <span className="text-sm text-muted-foreground">{formatDate(lead.created_at)}</span>
       </td>
 
@@ -291,7 +291,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
           ${isSelected ? 'bg-primary/5' : 'bg-background group-hover:bg-muted/30'}
           border-l border-border
         `}
-        style={{ width: `${COLUMN_WIDTHS.actions}px`, minWidth: `${COLUMN_WIDTHS.actions}px`, padding: '16px 0' }}
+        style={{ width: `${COLUMN_WIDTHS.actions}px`, minWidth: `${COLUMN_WIDTHS.actions}px`, padding: '12px 0' }}
       >
         <button
           onClick={() => onViewLead(lead.id)}
