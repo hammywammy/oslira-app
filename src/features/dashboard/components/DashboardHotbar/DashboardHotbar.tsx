@@ -2,100 +2,110 @@
 
 /**
  * DASHBOARD HOTBAR - INLINE ACTION BAR
- * 
- * ARCHITECTURE:
- * ✅ Positioned below TopBar, respects Sidebar width
- * ✅ Fixed position with smooth sidebar transitions
- * ✅ "Leads" section on left with total count
- * ✅ "Bulk Upload" + "Analyze Lead" buttons on right
- * ✅ Matches TopBar height and styling patterns
- * ✅ Professional styling distinct from TopBar
- * 
- * LAYOUT:
- * - Height: 56px (same as TopBar for consistency)
- * - Left margin: Syncs with Sidebar (16px collapsed, 240px expanded)
- * - Background: Slight visual distinction from TopBar
- * - Border: Bottom border for separation
  */
 
 import { Icon } from '@iconify/react';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { Button } from '@/shared/components/ui/Button';
-
-// =============================================================================
-// TYPES
-// =============================================================================
+import { useState } from 'react';
 
 interface DashboardHotbarProps {
-  totalLeads: number;
   onBulkUpload: () => void;
   onAnalyzeLead: () => void;
   currentCredits?: number;
 }
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function DashboardHotbar({
-  totalLeads,
   onBulkUpload,
   onAnalyzeLead,
   currentCredits = 0,
 }: DashboardHotbarProps) {
   const { isCollapsed } = useSidebarStore();
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div className={`
-      fixed top-[57px] right-0 h-14 bg-background/95 backdrop-blur-sm border-b border-border z-30
+      fixed top-[57px] right-0 h-14 bg-background border-b border-border z-30
       transition-[left] duration-200
       ${isCollapsed ? 'left-16' : 'left-60'}
     `}>
-      <div className="h-full px-6 flex items-center justify-between">
+      <div className="h-full px-6 flex items-center justify-between gap-6">
         
-        {/* Left: Leads Section */}
+        {/* Left: Primary Actions */}
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-foreground">
-            Leads
-          </h1>
-          <span className="text-sm text-muted-foreground font-medium">
-            {totalLeads} total
-          </span>
-        </div>
-
-        {/* Right: Action Buttons */}
-        <div className="flex items-center gap-3">
-          {/* Credits Display (Optional - can be removed if redundant with TopBar) */}
           {currentCredits > 0 && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-md mr-2">
-              <Icon icon="mdi:lightning-bolt" width={14} className="text-primary" />
-              <span className="text-xs font-semibold text-muted-foreground">
-                {currentCredits} credits
-              </span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/5 rounded-md">
+              <Icon icon="mdi:lightning-bolt" width={16} className="text-primary" />
+              <span className="text-sm font-semibold text-foreground">{currentCredits} credits</span>
             </div>
           )}
 
-          {/* Bulk Upload Button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onBulkUpload}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-9"
           >
             <Icon icon="mdi:upload" width={18} />
-            <span>Bulk Upload</span>
+            <span className="font-medium">Bulk Upload</span>
           </Button>
 
-          {/* Analyze Lead Button - Primary Action */}
           <Button
             variant="primary"
             size="sm"
             onClick={onAnalyzeLead}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-9"
           >
-            <Icon icon="mdi:target-account" width={18} />
-            <span>Analyze Lead</span>
+            <Icon icon="mdi:magnify-plus-outline" width={18} />
+            <span className="font-medium">Analyze Lead</span>
           </Button>
+        </div>
+
+        {/* Right: Search, Filter, Sort Controls */}
+        <div className="flex items-center gap-3">
+          {/* Search Leads */}
+          <div className="relative">
+            <Icon 
+              icon="mdi:magnify" 
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" 
+            />
+            <input
+              type="text"
+              placeholder="Search leads..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="
+                h-9 pl-9 pr-3 w-64 text-sm
+                bg-muted/50 border border-border rounded-lg
+                placeholder:text-muted-foreground
+                focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+                transition-all
+              "
+            />
+          </div>
+
+          {/* Sort Button */}
+          <button className="
+            flex items-center gap-2 h-9 px-3
+            border border-border rounded-lg
+            text-sm font-medium text-foreground
+            hover:bg-muted/50 transition-colors
+          ">
+            <Icon icon="mdi:sort" width={18} />
+            <span>Sort</span>
+            <Icon icon="mdi:chevron-down" width={16} className="text-muted-foreground" />
+          </button>
+
+          {/* Filter Button */}
+          <button className="
+            flex items-center gap-2 h-9 px-3
+            border border-primary/30 rounded-lg
+            text-sm font-medium text-primary
+            hover:bg-primary/5 transition-colors
+          ">
+            <Icon icon="mdi:filter-outline" width={18} />
+            <span>Filter</span>
+          </button>
         </div>
       </div>
     </div>
