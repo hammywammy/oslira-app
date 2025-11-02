@@ -5,14 +5,6 @@ import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
-interface SearchResult {
-  id: string;
-  title: string;
-  description: string;
-  type: 'lead' | 'campaign' | 'message' | 'setting';
-  url: string;
-}
-
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
