@@ -66,7 +66,7 @@ export function OnboardingPage() {
       business_summary: '',
       communication_tone: 'professional',
       target_description: '',
-      icp_min_followers: 10000,
+      icp_min_followers: 0,
       icp_max_followers: 1000000,
       target_company_sizes: [],
     },
