@@ -127,7 +127,6 @@ function formatDate(dateString: string): string {
 export function LeadsTable() {
   const { leads: storeLeads } = useDashboardStore();
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
-  const [sortField, setSortField] = useState<string | null>(null);
   
   // Use store leads if available, otherwise use mock data
   const leads = storeLeads.length > 0 ? storeLeads : mockLeads;
@@ -151,9 +150,8 @@ export function LeadsTable() {
   };
 
   const handleSort = (field: string) => {
-    setSortField(field);
-    // TODO: Implement actual sorting logic here
-    // This would typically sort the leads array based on the field
+    // TODO: Implement sorting logic
+    console.log('Sort by:', field);
   };
 
   const allSelected = selectedLeads.size === leads.length && leads.length > 0;
