@@ -1,16 +1,16 @@
 // src/features/dashboard/components/LeadsTable/TablePagination.tsx
 
 /**
- * TABLE PAGINATION - SUPABASE STYLE
+ * TABLE PAGINATION - POSTGRES/SUPABASE STYLE
  * 
- * Bottom bar with:
- * - Rows per page selector
- * - Page info display
- * - Navigation controls
- * - Professional styling matching Supabase
+ * Design matches Postgres admin:
+ * - Left: Page navigation (arrow buttons + "Page 1 of 1")
+ * - Center: "100 rows" (editable inline) + "64 records"
+ * - Right: Refresh button + Data/Schema toggle (placeholder)
  */
 
 import { Icon } from '@iconify/react';
+import { useState } from 'react';
 
 // =============================================================================
 // TYPES
@@ -20,10 +20,12 @@ interface TablePaginationProps {
   currentPage: number;
   totalPages: number;
   pageSize: number;
-  pageSizeOptions: number[];
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  onRefresh?: () => void;
+  viewMode?: 'data' | 'export';
+  onViewModeChange?: (mode: 'data' | 'export') => void;
 }
 
 // =============================================================================
@@ -34,144 +36,204 @@ export function TablePagination({
   currentPage,
   totalPages,
   pageSize,
-  pageSizeOptions,
   totalItems,
   onPageChange,
   onPageSizeChange,
+  onRefresh,
+  viewMode = 'data',
+  onViewModeChange,
 }: TablePaginationProps) {
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const [isEditingRows, setIsEditingRows] = useState(false);
+  const [rowsInput, setRowsInput] = useState(String(pageSize));
 
-  // Generate page numbers with ellipsis
-  const getPageNumbers = () => {
-    const pages: (number | 'ellipsis')[] = [];
-    
-    if (totalPages <= 7) {
-      // Show all pages
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+  // Handle rows input submission
+  const handleRowsSubmit = () => {
+    const newSize = parseInt(rowsInput, 10);
+    if (newSize > 0 && newSize <= 1000) {
+      onPageSizeChange(newSize);
     } else {
-      // Always show first page
-      pages.push(1);
-      
-      if (currentPage > 3) {
-        pages.push('ellipsis');
-      }
-      
-      // Show pages around current
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      
-      if (currentPage < totalPages - 2) {
-        pages.push('ellipsis');
-      }
-      
-      // Always show last page
-      pages.push(totalPages);
+      setRowsInput(String(pageSize)); // Reset invalid input
     }
-    
-    return pages;
+    setIsEditingRows(false);
+  };
+
+  const handleRowsKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleRowsSubmit();
+    } else if (e.key === 'Escape') {
+      setRowsInput(String(pageSize));
+      setIsEditingRows(false);
+    }
   };
 
   return (
-    <div className="px-6 py-3.5 border-t border-gray-200 bg-white flex items-center justify-between">
-      {/* LEFT: Row count + page size selector */}
-      <div className="flex items-center gap-4">
-        <p className="text-sm text-gray-600">
-          Showing{' '}
-          <span className="font-semibold text-gray-900 tabular-nums">
-            {startIndex + 1}-{endIndex}
-          </span>{' '}
-          of{' '}
-          <span className="font-semibold text-gray-900 tabular-nums">{totalItems}</span>
-        </p>
-        
-        {/* Rows per page selector */}
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600 font-medium">Rows:</label>
-          <select
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="
-              h-9 px-3 pr-8 text-sm font-medium 
-              border border-gray-300 rounded-lg bg-white 
-              hover:border-blue-400 hover:bg-gray-50
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-              transition-all cursor-pointer
-            "
-          >
-            {pageSizeOptions.map(size => (
-              <option key={size} value={size}>{size}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* RIGHT: Pagination controls */}
-      <div className="flex items-center gap-1.5">
-        {/* Previous button */}
+    <div className="h-11 px-4 border-t border-border bg-background flex items-center justify-between text-xs font-medium">
+      
+      {/* ===================================================================
+          LEFT: Page navigation controls
+          =================================================================== */}
+      <div className="flex items-center gap-2">
+        {/* Previous page */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className="
-            p-2 rounded-lg text-gray-600 
-            hover:bg-gray-100 hover:text-gray-900
-            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent
-            transition-all
+            w-7 h-7 rounded flex items-center justify-center
+            text-muted-foreground hover:bg-accent hover:text-foreground
+            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+            transition-colors
           "
           aria-label="Previous page"
         >
-          <Icon icon="mdi:chevron-left" width={20} />
+          <Icon icon="ph:caret-left-bold" width={14} />
         </button>
-        
-        {/* Page numbers */}
-        <div className="flex items-center gap-1">
-          {getPageNumbers().map((page, index) => {
-            if (page === 'ellipsis') {
-              return (
-                <span key={`ellipsis-${index}`} className="px-2 text-gray-400 select-none">
-                  ...
-                </span>
-              );
-            }
-            
-            return (
-              <button
-                key={page}
-                onClick={() => onPageChange(page)}
-                className={`
-                  min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-all
-                  ${currentPage === page
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:bg-gray-100'
-                  }
-                `}
-              >
-                {page}
-              </button>
-            );
-          })}
+
+        {/* Page indicator with editable input */}
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <span>Page</span>
+          <input
+            type="number"
+            value={currentPage}
+            onChange={(e) => {
+              const page = parseInt(e.target.value, 10);
+              if (page >= 1 && page <= totalPages) {
+                onPageChange(page);
+              }
+            }}
+            min={1}
+            max={totalPages}
+            className="
+              w-10 h-6 px-1.5 text-center bg-accent rounded border border-border
+              text-foreground font-medium
+              focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary
+              [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+            "
+          />
+          <span>of</span>
+          <span className="text-foreground">{totalPages}</span>
         </div>
-        
-        {/* Next button */}
+
+        {/* Next page */}
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className="
-            p-2 rounded-lg text-gray-600 
-            hover:bg-gray-100 hover:text-gray-900
-            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent
-            transition-all
+            w-7 h-7 rounded flex items-center justify-center
+            text-muted-foreground hover:bg-accent hover:text-foreground
+            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+            transition-colors
           "
           aria-label="Next page"
         >
-          <Icon icon="mdi:chevron-right" width={20} />
+          <Icon icon="ph:caret-right-bold" width={14} />
         </button>
+      </div>
+
+      {/* ===================================================================
+          CENTER: Editable rows per page + total record count
+          =================================================================== */}
+      <div className="flex items-center gap-3 text-muted-foreground">
+        {/* Editable rows input */}
+        {isEditingRows ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={rowsInput}
+              onChange={(e) => setRowsInput(e.target.value)}
+              onBlur={handleRowsSubmit}
+              onKeyDown={handleRowsKeyDown}
+              autoFocus
+              min="1"
+              max="1000"
+              className="
+                w-16 h-6 px-2 text-center bg-accent rounded border border-primary
+                text-foreground font-medium
+                focus:outline-none focus:ring-1 focus:ring-primary
+                [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+              "
+            />
+            <span>rows</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              setIsEditingRows(true);
+              setRowsInput(String(pageSize));
+            }}
+            className="
+              flex items-center gap-1 px-2 py-1 rounded
+              hover:bg-accent hover:text-foreground transition-colors
+            "
+          >
+            <span className="text-foreground font-semibold">{pageSize}</span>
+            <span>rows</span>
+          </button>
+        )}
+
+        {/* Total record count */}
+        <div className="flex items-center gap-1">
+          <span className="text-foreground font-semibold">{totalItems}</span>
+          <span>records</span>
+        </div>
+      </div>
+
+      {/* ===================================================================
+          RIGHT: Refresh button + Data/Export toggle
+          =================================================================== */}
+      <div className="flex items-center gap-2">
+        {/* Refresh button */}
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="
+              w-7 h-7 rounded flex items-center justify-center
+              text-muted-foreground hover:bg-accent hover:text-foreground
+              transition-colors group
+            "
+            aria-label="Refresh table"
+            title="Refresh table data"
+          >
+            <Icon 
+              icon="ph:arrows-clockwise-bold" 
+              width={14}
+              className="group-active:rotate-180 transition-transform duration-300"
+            />
+          </button>
+        )}
+
+        {/* Data/Export Toggle - Segmented Control */}
+        <div className="flex items-center bg-muted/50 rounded-md p-0.5">
+          <button
+            onClick={() => onViewModeChange && onViewModeChange('data')}
+            disabled={!onViewModeChange}
+            className={`
+              px-2.5 py-1 rounded text-[10px] uppercase tracking-wider font-semibold
+              transition-colors
+              ${viewMode === 'data' 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+              }
+              ${!onViewModeChange ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+            `}
+          >
+            Data
+          </button>
+          <button
+            onClick={() => onViewModeChange && onViewModeChange('export')}
+            disabled={!onViewModeChange}
+            className={`
+              px-2.5 py-1 rounded text-[10px] uppercase tracking-wider font-semibold
+              transition-colors
+              ${viewMode === 'export' 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+              }
+              ${!onViewModeChange ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+            `}
+          >
+            Export
+          </button>
+        </div>
       </div>
     </div>
   );
