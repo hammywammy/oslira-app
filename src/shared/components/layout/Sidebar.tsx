@@ -83,11 +83,49 @@ export function Sidebar() {
         <div className="flex flex-col h-full">
           {/* LOGO SECTION */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-border relative">
-            {/* Toggle Button - Shows on hover when collapsed */}
+            {/* Logo and Text - Left side, clickable */}
+            {!isCollapsed ? (
+              // Expanded: Logo and text on left
+              <a 
+                href="https://oslira.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
+                  alt="Oslira"
+                  className="h-7 w-7"
+                />
+                <span className="text-lg font-semibold text-foreground">
+                  Oslira
+                </span>
+              </a>
+            ) : (
+              // Collapsed: Logo only on left, hidden on hover
+              <a
+                href="https://oslira.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`
+                  absolute left-4 top-1/2 -translate-y-1/2
+                  transition-opacity duration-200
+                  ${isHoveringSidebar ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+                `}
+              >
+                <img 
+                  src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
+                  alt="Oslira"
+                  className="h-7 w-7"
+                />
+              </a>
+            )}
+
+            {/* Toggle Button - Right side, shows on hover when collapsed */}
             <button
               onClick={toggleCollapse}
               className={`
-                p-1.5 rounded-lg transition-all duration-200 z-10
+                ml-auto p-1.5 rounded-lg transition-all duration-200 z-10
                 ${isCollapsed && !isHoveringSidebar ? 'opacity-0 pointer-events-none' : 'opacity-100'}
                 ${isHoveringSidebar || !isCollapsed ? 'hover:bg-muted' : ''}
               `}
@@ -110,34 +148,6 @@ export function Sidebar() {
                 style={{ backgroundColor: 'transparent' }}
               />
             </button>
-
-            {/* Logo and Text */}
-            {!isCollapsed ? (
-              // Expanded: Logo and text on right
-              <div className="flex items-center gap-2.5 ml-auto">
-                <img 
-                  src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
-                  alt="Oslira"
-                  className="h-7 w-7"
-                />
-                <span className="text-lg font-semibold text-foreground">
-                  Oslira
-                </span>
-              </div>
-            ) : (
-              // Collapsed: Logo centered, hidden on hover
-              <div className={`
-                absolute inset-0 flex items-center justify-center pointer-events-none
-                transition-opacity duration-200
-                ${isHoveringSidebar ? 'opacity-0' : 'opacity-100'}
-              `}>
-                <img 
-                  src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
-                  alt="Oslira"
-                  className="h-7 w-7"
-                />
-              </div>
-            )}
           </div>
 
           {/* NAVIGATION */}
