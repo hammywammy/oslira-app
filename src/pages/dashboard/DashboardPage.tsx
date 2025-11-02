@@ -1,19 +1,13 @@
 // src/pages/dashboard/DashboardPage.tsx
 
 /**
- * DASHBOARD PAGE - V5.0 WITH HOTBAR INTEGRATION
+ * DASHBOARD PAGE - V6.0 PRODUCTION
  * 
- * ARCHITECTURE:
- * ✅ DashboardHotbar positioned inline below TopBar
- * ✅ Native table fills entire viewport width
- * ✅ Bottom pagination bar (Supabase-style)
- * ✅ Selection state managed at page level
- * ✅ Professional CRM layout with consistent spacing
- * 
- * LAYOUT STRUCTURE:
- * - TopBar (fixed at top)
+ * LAYOUT:
+ * - TopBar (global, fixed)
  * - DashboardHotbar (fixed below TopBar)
- * - Main content area (table + pagination)
+ * - Table content (scrollable)
+ * - Pagination bar (fixed at bottom)
  */
 
 import { useState } from 'react';
@@ -28,12 +22,9 @@ import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
-// CONSTANTS
+// MOCK DATA
 // =============================================================================
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
-// Mock data for testing
 const MOCK_LEADS = [
   { id: '1', username: '@nike', full_name: 'Nike' },
   { id: '2', username: '@adidas', full_name: 'Adidas' },
@@ -75,19 +66,15 @@ export function DashboardPage() {
 
   const handleAnalyzeSuccess = (leadId: string) => {
     console.log('✅ Lead analysis started:', leadId);
-    // TODO: Show success toast
-    // TODO: Refresh leads table
   };
 
   const handleBulkSuccess = (jobId: string, count: number) => {
     console.log('✅ Bulk analysis started:', jobId, 'for', count, 'leads');
-    // TODO: Show success toast with message like: "Analyzing 25 leads..."
-    // TODO: Refresh leads table or show progress indicator
   };
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    setSelectedLeads(new Set()); // Clear selection on page change
+    setSelectedLeads(new Set());
   };
   
   const handlePageSizeChange = (size: number) => {
@@ -102,21 +89,17 @@ export function DashboardPage() {
 
   return (
     <>
-      {/* DASHBOARD HOTBAR - Fixed inline below TopBar */}
+      {/* DASHBOARD HOTBAR - Fixed below TopBar */}
       <DashboardHotbar
         onBulkUpload={() => setShowBulkModal(true)}
         onAnalyzeLead={() => setShowAnalyzeModal(true)}
         currentCredits={currentCredits}
       />
 
-      {/* MAIN CONTENT - Wrapped in AppShell */}
+      {/* MAIN CONTENT */}
       <AppShell>
-        {/* Add top padding to account for fixed hotbar (TopBar 56px + Hotbar 56px = 112px) */}
-        {/* Add bottom padding for fixed pagination bar */}
         <div className="pt-14 pb-20">
-          {/* FULL-WIDTH TABLE CONTAINER */}
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            {/* Table */}
             <LeadsTable
               selectedLeads={selectedLeads}
               onSelectionChange={setSelectedLeads}
@@ -125,23 +108,21 @@ export function DashboardPage() {
         </div>
       </AppShell>
 
-      {/* PAGINATION BAR - Fixed at bottom like Supabase */}
+      {/* PAGINATION BAR - Fixed at bottom */}
       {leads.length > 0 && (
         <div className={`
-          fixed bottom-0 right-0 h-14 bg-background border-t border-border z-30
+          fixed bottom-0 right-0 bg-background border-t border-border z-30
           transition-[left] duration-200
           ${isCollapsed ? 'left-16' : 'left-60'}
         `}>
-          <div className="h-full">
-            <TablePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              totalItems={leads.length}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-            />
-          </div>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={leads.length}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </div>
       )}
 
