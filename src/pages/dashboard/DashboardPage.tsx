@@ -15,7 +15,7 @@
  * The table IS the product. Everything else supports it.
  */
 
-import { DashboardShell } from '@/features/dashboard/layout/DashboardShell';
+import { AppShell } from '@/shared/components/layout/AppShell';
 import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTable';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
@@ -26,7 +26,7 @@ import { Input } from '@/shared/components/ui/Input';
 
 export function DashboardPage() {
   return (
-    <DashboardShell>
+    <AppShell>
       {/* ===== PAGE HEADER ===== */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
@@ -84,6 +84,6 @@ export function DashboardPage() {
 
       {/* ===== LEADS TABLE - THE STAR ===== */}
       <LeadsTable />
-    </DashboardShell>
+    </AppShell>
   );
 }
