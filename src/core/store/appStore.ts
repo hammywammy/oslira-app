@@ -37,13 +37,11 @@ interface Lead {
 
 interface UserSubscription {
   id: string;
-  user_id: string;
-  plan: 'free' | 'starter' | 'pro' | 'enterprise';
-  status: 'active' | 'canceled' | 'past_due' | 'trialing';
-  credits: number;
-  credits_used: number;
-  period_start: string;
-  period_end: string;
+  account_id: string;
+  plan_type: 'free' | 'growth' | 'pro' | 'agency' | 'enterprise';
+  status: 'active' | 'canceled' | 'past_due';
+  current_period_start: string;
+  current_period_end: string;
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
 }
