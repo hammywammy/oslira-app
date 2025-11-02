@@ -1,35 +1,36 @@
 // src/features/dashboard/components/LeadsTable/LeadsTable.tsx
 
 /**
- * LEADS TABLE - PRODUCTION GRADE V3.0
+ * LEADS TABLE - PRODUCTION GRADE V4.0
  * 
- * FIXES:
- * ✅ Checkboxes only visible on row hover
- * ✅ No resize handle on checkbox column (left edge)
- * ✅ No resize handle on actions column (right edge)
- * ✅ Professional analysis badges (refined styling)
- * ✅ Fixed score progress bar (proper gradient, smooth rendering)
- * ✅ Clean column resizing (only middle columns)
+ * ARCHITECTURAL IMPROVEMENTS:
+ * ✅ Checkboxes ALWAYS visible (no hover required)
+ * ✅ Fixed table layout - columns resize independently without shifting
+ * ✅ Horizontal scroll container - table doesn't expand vertically
+ * ✅ Checkbox column: thin, fixed, non-resizable
+ * ✅ Actions column: fixed, non-resizable
+ * ✅ Middle columns: resizable with visual feedback
+ * ✅ Proper resize handles that don't interfere with content
  * 
- * FEATURES:
- * ✅ Hover-based checkbox visibility (cleaner UI)
- * ✅ Column resizing (only resizable columns)
- * ✅ Rows per page selector (10/25/50/100)
- * ✅ Smart pagination with ellipsis
- * ✅ Visual polish (Stripe-inspired)
- * ✅ localStorage persistence for column widths
+ * DESIGN PHILOSOPHY:
+ * "Stripe meets personality" - Professional with tasteful blue accents
+ * - Electric blue (#2563eb) as 10% accent color
+ * - Subtle hover states and transitions
+ * - Clean typography hierarchy
+ * - Professional spacing and borders
+ * 
+ * FEATURES PRESERVED:
+ * ✅ Column resizing (localStorage persistence)
+ * ✅ Row selection (individual + select all)
+ * ✅ Sorting capability
+ * ✅ Pagination with configurable page sizes
  * ✅ Bulk selection toolbar
- * 
- * ARCHITECTURE:
- * - Checkbox visibility: CSS group-hover on <tr>
- * - Column widths: localStorage with fixed/flex mix
- * - Progress bar: Fixed gradient background-size
- * - Professional badges: Subtle shadows, proper contrast
+ * ✅ Visual polish (badges, progress bars, animations)
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Icon } from '@iconify/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDashboardStore } from '../../store/dashboardStore';
 
 // =============================================================================
@@ -89,6 +90,19 @@ const mockLeads = [
     credits_charged: null,
     created_at: '2025-01-12T14:45:00Z',
   },
+  {
+    id: '5',
+    username: '@newbalance',
+    platform: 'instagram' as const,
+    full_name: 'New Balance',
+    avatar_url: null,
+    overall_score: 91,
+    analysis_type: 'xray' as const,
+    analysis_status: 'complete' as const,
+    followers_count: 7800000,
+    credits_charged: 2,
+    created_at: '2025-01-11T16:20:00Z',
+  },
 ];
 
 // =============================================================================
@@ -112,17 +126,18 @@ type ResizableColumn = 'lead' | 'platform' | 'score' | 'analysis' | 'updated';
 // =============================================================================
 
 const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
-  checkbox: 48,
-  lead: 280,
-  platform: 120,
-  score: 180,
-  analysis: 140,
-  updated: 140,
-  actions: 100,
+  checkbox: 48,      // Fixed, non-resizable
+  lead: 280,         // Resizable
+  platform: 120,     // Resizable
+  score: 180,        // Resizable
+  analysis: 140,     // Resizable
+  updated: 140,      // Resizable
+  actions: 100,      // Fixed, non-resizable
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-const STORAGE_KEY_WIDTHS = 'oslira_table_column_widths';
+const STORAGE_KEY_WIDTHS = 'oslira_table_column_widths_v4';
+const MIN_COLUMN_WIDTH = 80;
 
 // =============================================================================
 // UTILITY FUNCTIONS
@@ -142,16 +157,16 @@ function getScoreColor(score: number): string {
 }
 
 function getScoreBgGradient(score: number): string {
-  if (score >= 80) return 'linear-gradient(90deg, #10b981, #059669)';
-  if (score >= 60) return 'linear-gradient(90deg, #3b82f6, #2563eb)';
-  if (score >= 40) return 'linear-gradient(90deg, #f59e0b, #d97706)';
-  return 'linear-gradient(90deg, #ef4444, #dc2626)';
+  if (score >= 80) return 'from-emerald-500 to-emerald-600';
+  if (score >= 60) return 'from-blue-500 to-blue-600';
+  if (score >= 40) return 'from-amber-500 to-amber-600';
+  return 'from-rose-500 to-rose-600';
 }
 
 function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
   if (!type) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-600 border border-gray-200">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-500 border border-gray-200">
         <Icon icon="mdi:minus-circle-outline" width={14} />
         Not Analyzed
       </span>
@@ -160,10 +175,11 @@ function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
   
   const badgeConfig = {
     light: { 
-      bg: 'bg-slate-100', 
+      bg: 'bg-slate-50', 
       text: 'text-slate-700',
       border: 'border-slate-200',
       icon: 'mdi:lightning-bolt',
+      iconColor: 'text-slate-500',
       label: 'Light'
     },
     deep: { 
@@ -171,6 +187,7 @@ function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
       text: 'text-blue-700',
       border: 'border-blue-200',
       icon: 'mdi:eye',
+      iconColor: 'text-blue-500',
       label: 'Deep'
     },
     xray: { 
@@ -178,6 +195,7 @@ function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
       text: 'text-emerald-700',
       border: 'border-emerald-200',
       icon: 'mdi:atom',
+      iconColor: 'text-emerald-500',
       label: 'X-Ray'
     },
   };
@@ -185,8 +203,8 @@ function getAnalysisBadge(type: 'light' | 'deep' | 'xray' | null) {
   const config = badgeConfig[type];
   
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${config.bg} ${config.text} border ${config.border} text-xs font-medium shadow-sm`}>
-      <Icon icon={config.icon} width={14} />
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${config.bg} ${config.text} border ${config.border} text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md`}>
+      <Icon icon={config.icon} width={14} className={config.iconColor} />
       {config.label}
     </span>
   );
@@ -225,6 +243,9 @@ export function LeadsTable() {
   const [startX, setStartX] = useState(0);
   const [startWidth, setStartWidth] = useState(0);
   
+  // Refs
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  
   // Use store leads if available, otherwise use mock data
   const leads = storeLeads.length > 0 ? storeLeads : mockLeads;
   
@@ -233,7 +254,8 @@ export function LeadsTable() {
     const saved = localStorage.getItem(STORAGE_KEY_WIDTHS);
     if (saved) {
       try {
-        setColumnWidths(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setColumnWidths({ ...DEFAULT_COLUMN_WIDTHS, ...parsed });
       } catch (e) {
         console.error('Failed to parse saved column widths:', e);
       }
@@ -242,8 +264,10 @@ export function LeadsTable() {
   
   // Save column widths to localStorage when changed
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_WIDTHS, JSON.stringify(columnWidths));
-  }, [columnWidths]);
+    if (resizingColumn === null) {
+      localStorage.setItem(STORAGE_KEY_WIDTHS, JSON.stringify(columnWidths));
+    }
+  }, [columnWidths, resizingColumn]);
   
   // Pagination logic
   const totalPages = Math.ceil(leads.length / pageSize);
@@ -287,275 +311,394 @@ export function LeadsTable() {
     setSelectedLeads(new Set());
   };
   
-  // Column resize handlers (only for resizable columns)
+  // Column resize handlers - FIXED: Only resizes the target column
   const handleResizeStart = (column: ResizableColumn, e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setResizingColumn(column);
     setStartX(e.clientX);
     setStartWidth(columnWidths[column]);
   };
   
   useEffect(() => {
+    if (!resizingColumn) return;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (resizingColumn) {
-        const delta = e.clientX - startX;
-        const newWidth = Math.max(80, startWidth + delta);
-        setColumnWidths(prev => ({
-          ...prev,
-          [resizingColumn]: newWidth,
-        }));
-      }
+      const delta = e.clientX - startX;
+      const newWidth = Math.max(MIN_COLUMN_WIDTH, startWidth + delta);
+      
+      setColumnWidths(prev => ({
+        ...prev,
+        [resizingColumn]: newWidth,
+      }));
     };
     
     const handleMouseUp = () => {
       setResizingColumn(null);
     };
     
-    if (resizingColumn) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // Prevent text selection during resize
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
     
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
   }, [resizingColumn, startX, startWidth]);
   
   const allSelected = selectedLeads.size === currentLeads.length && currentLeads.length > 0;
   const someSelected = selectedLeads.size > 0 && selectedLeads.size < currentLeads.length;
 
+  // Calculate total table width
+  const totalTableWidth = Object.values(columnWidths).reduce((sum, width) => sum + width, 0);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden"
-         style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.06), inset 0 -1px 0 0 rgba(0, 0, 0, 0.04)' }}>
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
       
       {/* TABLE HEADER BAR */}
-      <div className="px-6 py-4 border-b border-gray-100">
+      <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50/30">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">All Leads</h2>
-          {selectedLeads.size > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600 tabular-nums">
-                {selectedLeads.size} selected
-              </span>
-              <button className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500">
-                <Icon icon="mdi:delete-outline" width={16} className="inline mr-1.5" />
-                Delete Selected
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold text-gray-900">All Leads</h2>
+            <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 rounded-full border border-blue-100">
+              {leads.length}
+            </span>
+          </div>
+          
+          <AnimatePresence>
+            {selectedLeads.size > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="flex items-center gap-3"
+              >
+                <span className="text-sm text-gray-600 tabular-nums font-medium">
+                  {selectedLeads.size} selected
+                </span>
+                <button className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1">
+                  <Icon icon="mdi:delete-outline" width={16} className="inline mr-1.5" />
+                  Delete Selected
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="overflow-x-auto">
-        <table className="w-full" style={{ tableLayout: 'fixed' }}>
-          <thead className="bg-gradient-to-b from-gray-50 to-gray-50/80 border-b-2 border-gray-200/80">
+      {/* TABLE - FIXED LAYOUT WITH HORIZONTAL SCROLL */}
+      <div 
+        ref={tableContainerRef}
+        className="overflow-x-auto overflow-y-visible"
+        style={{ 
+          maxWidth: '100%',
+        }}
+      >
+        <table 
+          className="w-full border-collapse"
+          style={{ 
+            minWidth: `${totalTableWidth}px`,
+            tableLayout: 'fixed',
+          }}
+        >
+          <thead className="bg-gradient-to-b from-gray-50 to-gray-50/80 border-b-2 border-gray-200/80 sticky top-0 z-10">
             <tr>
-              {/* Checkbox Column - NO RESIZE HANDLE */}
-              <th className="px-4 py-3" style={{ width: `${columnWidths.checkbox}px` }}>
+              {/* CHECKBOX COLUMN - FIXED, NON-RESIZABLE, ALWAYS VISIBLE */}
+              <th 
+                className="px-4 py-3 bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.checkbox}px` }}
+              >
                 <button
                   onClick={handleSelectAll}
                   className={`
-                    w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+                    w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
                     ${allSelected || someSelected 
-                      ? 'bg-blue-600 border-blue-600'
-                      : 'border-gray-300 hover:border-blue-600'
+                      ? 'bg-blue-600 border-blue-600 shadow-sm' 
+                      : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
                     }
                   `}
                   aria-label="Select all leads"
                 >
-                  {allSelected && <Icon icon="mdi:check" width={12} className="text-white" />}
-                  {someSelected && <Icon icon="mdi:minus" width={12} className="text-white" />}
+                  {allSelected && <Icon icon="mdi:check" width={14} className="text-white" />}
+                  {someSelected && <Icon icon="mdi:minus" width={14} className="text-white" />}
                 </button>
               </th>
 
-              {/* Lead Column - RESIZABLE */}
-              <th className="px-4 py-3 text-left relative group" style={{ width: `${columnWidths.lead}px` }}>
+              {/* LEAD COLUMN - RESIZABLE */}
+              <th 
+                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.lead}px` }}
+              >
                 <button
                   onClick={() => handleSort('username')}
-                  className="flex items-center gap-1.5 font-medium text-xs text-gray-700 hover:text-gray-900 transition-colors uppercase tracking-wider"
-                  style={{ letterSpacing: '0.05em' }}
+                  className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
                 >
                   Lead
-                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400" />
+                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </button>
                 
+                {/* Resize Handle */}
                 <div
-                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 group-hover:bg-blue-200 transition-colors"
+                  className={`
+                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
+                    ${resizingColumn === 'lead' 
+                      ? 'bg-blue-500 shadow-lg' 
+                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                    }
+                  `}
                   onMouseDown={(e) => handleResizeStart('lead', e)}
                 />
               </th>
 
-              {/* Platform Column - RESIZABLE */}
-              <th className="px-4 py-3 text-left relative group" style={{ width: `${columnWidths.platform}px` }}>
-                <span className="font-medium text-xs text-gray-700 uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
+              {/* PLATFORM COLUMN - RESIZABLE */}
+              <th 
+                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.platform}px` }}
+              >
+                <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
                   Platform
                 </span>
                 
                 <div
-                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 group-hover:bg-blue-200 transition-colors"
+                  className={`
+                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
+                    ${resizingColumn === 'platform' 
+                      ? 'bg-blue-500 shadow-lg' 
+                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                    }
+                  `}
                   onMouseDown={(e) => handleResizeStart('platform', e)}
                 />
               </th>
 
-              {/* Score Column - RESIZABLE */}
-              <th className="px-4 py-3 text-left relative group" style={{ width: `${columnWidths.score}px` }}>
+              {/* SCORE COLUMN - RESIZABLE */}
+              <th 
+                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.score}px` }}
+              >
                 <button
                   onClick={() => handleSort('overall_score')}
-                  className="flex items-center gap-1.5 font-medium text-xs text-gray-700 hover:text-gray-900 transition-colors uppercase tracking-wider"
-                  style={{ letterSpacing: '0.05em' }}
+                  className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
                 >
                   Score
-                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400" />
+                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </button>
                 
                 <div
-                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 group-hover:bg-blue-200 transition-colors"
+                  className={`
+                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
+                    ${resizingColumn === 'score' 
+                      ? 'bg-blue-500 shadow-lg' 
+                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                    }
+                  `}
                   onMouseDown={(e) => handleResizeStart('score', e)}
                 />
               </th>
 
-              {/* Analysis Column - RESIZABLE */}
-              <th className="px-4 py-3 text-left relative group" style={{ width: `${columnWidths.analysis}px` }}>
-                <span className="font-medium text-xs text-gray-700 uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
+              {/* ANALYSIS COLUMN - RESIZABLE */}
+              <th 
+                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.analysis}px` }}
+              >
+                <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
                   Analysis
                 </span>
                 
                 <div
-                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 group-hover:bg-blue-200 transition-colors"
+                  className={`
+                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
+                    ${resizingColumn === 'analysis' 
+                      ? 'bg-blue-500 shadow-lg' 
+                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                    }
+                  `}
                   onMouseDown={(e) => handleResizeStart('analysis', e)}
                 />
               </th>
 
-              {/* Updated Column - RESIZABLE */}
-              <th className="px-4 py-3 text-left relative group" style={{ width: `${columnWidths.updated}px` }}>
+              {/* UPDATED COLUMN - RESIZABLE */}
+              <th 
+                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.updated}px` }}
+              >
                 <button
                   onClick={() => handleSort('created_at')}
-                  className="flex items-center gap-1.5 font-medium text-xs text-gray-700 hover:text-gray-900 transition-colors uppercase tracking-wider"
-                  style={{ letterSpacing: '0.05em' }}
+                  className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
                 >
                   Updated
-                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400" />
+                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </button>
                 
                 <div
-                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 group-hover:bg-blue-200 transition-colors"
+                  className={`
+                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
+                    ${resizingColumn === 'updated' 
+                      ? 'bg-blue-500 shadow-lg' 
+                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                    }
+                  `}
                   onMouseDown={(e) => handleResizeStart('updated', e)}
                 />
               </th>
 
-              {/* Actions Column - NO RESIZE HANDLE */}
-              <th className="px-4 py-3 text-right" style={{ width: `${columnWidths.actions}px` }}>
-                <span className="font-medium text-xs text-gray-700 uppercase tracking-wider" style={{ letterSpacing: '0.05em' }}>
+              {/* ACTIONS COLUMN - FIXED, NON-RESIZABLE */}
+              <th 
+                className="px-4 py-3 text-right bg-gray-50/95 backdrop-blur-sm" 
+                style={{ width: `${columnWidths.actions}px` }}
+              >
+                <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
                   Actions
                 </span>
               </th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 bg-white">
             {currentLeads.map((lead, index) => {
               const isSelected = selectedLeads.has(lead.id);
               
               return (
                 <motion.tr
                   key={lead.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * 0.03, duration: 0.2 }}
                   className={`
                     group
                     transition-all duration-150
                     ${isSelected 
-                      ? 'bg-blue-50/50 border-l-2 border-l-blue-600' 
-                      : 'hover:bg-gray-50 hover:shadow-sm'
+                      ? 'bg-blue-50/60 border-l-4 border-l-blue-600' 
+                      : 'hover:bg-gray-50/70 hover:shadow-sm'
                     }
                   `}
                 >
-                  {/* Checkbox - ONLY VISIBLE ON HOVER */}
-                  <td className="px-4 py-3" style={{ width: `${columnWidths.checkbox}px` }}>
+                  {/* CHECKBOX - ALWAYS VISIBLE */}
+                  <td 
+                    className="px-4 py-3" 
+                    style={{ width: `${columnWidths.checkbox}px` }}
+                  >
                     <button
                       onClick={() => handleSelectLead(lead.id)}
                       className={`
-                        w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+                        w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
                         ${isSelected 
-                          ? 'bg-blue-600 border-blue-600 opacity-100'
-                          : 'border-gray-300 hover:border-blue-600 opacity-0 group-hover:opacity-100'
+                          ? 'bg-blue-600 border-blue-600 shadow-sm' 
+                          : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
                         }
                       `}
                       aria-label={`Select ${lead.username}`}
                     >
-                      {isSelected && <Icon icon="mdi:check" width={12} className="text-white" />}
+                      {isSelected && <Icon icon="mdi:check" width={14} className="text-white" />}
                     </button>
                   </td>
 
-                  {/* Lead Info - Stacked */}
-                  <td className="px-4 py-3" style={{ width: `${columnWidths.lead}px` }}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                        {lead.username.charAt(1).toUpperCase()}
+                  {/* LEAD INFO */}
+                  <td 
+                    className="px-4 py-3" 
+                    style={{ 
+                      width: `${columnWidths.lead}px`,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                        {lead.full_name.charAt(0)}
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{lead.username}</p>
-                        <p className="text-xs text-gray-500 truncate">{lead.full_name}</p>
-                        <p className="text-xs text-gray-400 tabular-nums">
-                          {lead.followers_count ? formatNumber(lead.followers_count) : '—'} followers
-                        </p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900 truncate">{lead.full_name}</p>
+                        <p className="text-sm text-gray-500 truncate">{lead.username}</p>
                       </div>
                     </div>
                   </td>
 
-                  {/* Platform */}
-                  <td className="px-4 py-3" style={{ width: `${columnWidths.platform}px` }}>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-medium shadow-sm">
-                      <Icon icon="mdi:instagram" width={14} />
-                      Instagram
-                    </span>
+                  {/* PLATFORM */}
+                  <td 
+                    className="px-4 py-3" 
+                    style={{ 
+                      width: `${columnWidths.platform}px`,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon icon="mdi:instagram" width={18} className="text-pink-500" />
+                      <span className="text-sm text-gray-700 font-medium truncate">Instagram</span>
+                    </div>
                   </td>
 
-                  {/* Score with Progress Bar - FIXED GRADIENT */}
-                  <td className="px-4 py-3" style={{ width: `${columnWidths.score}px` }}>
+                  {/* SCORE */}
+                  <td 
+                    className="px-4 py-3" 
+                    style={{ 
+                      width: `${columnWidths.score}px`,
+                      overflow: 'hidden',
+                    }}
+                  >
                     {lead.overall_score !== null ? (
-                      <div className="flex flex-col gap-1.5">
+                      <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm font-semibold tabular-nums ${getScoreColor(lead.overall_score)}`}>
+                          <span className={`text-sm font-bold tabular-nums ${getScoreColor(lead.overall_score)}`}>
                             {lead.overall_score}
                           </span>
-                          <span className="text-xs text-gray-400 tabular-nums">/ 100</span>
+                          <span className="text-xs text-gray-400 font-medium">/ 100</span>
                         </div>
-                        {/* Progress Bar Container */}
-                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div 
-                            className="h-full transition-all duration-500 ease-out"
-                            style={{ 
-                              width: `${lead.overall_score}%`,
-                              background: getScoreBgGradient(lead.overall_score)
-                            }}
+                            className={`h-full bg-gradient-to-r ${getScoreBgGradient(lead.overall_score)} transition-all duration-500 rounded-full`}
+                            style={{ width: `${lead.overall_score}%` }}
                           />
                         </div>
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-400">—</span>
+                      <span className="text-sm text-gray-400 italic">Not scored</span>
                     )}
                   </td>
 
-                  {/* Analysis Type - PROFESSIONAL BADGES */}
-                  <td className="px-4 py-3" style={{ width: `${columnWidths.analysis}px` }}>
+                  {/* ANALYSIS TYPE */}
+                  <td 
+                    className="px-4 py-3" 
+                    style={{ 
+                      width: `${columnWidths.analysis}px`,
+                      overflow: 'hidden',
+                    }}
+                  >
                     {getAnalysisBadge(lead.analysis_type)}
                   </td>
 
-                  {/* Date Updated */}
-                  <td className="px-4 py-3" style={{ width: `${columnWidths.updated}px` }}>
+                  {/* UPDATED */}
+                  <td 
+                    className="px-4 py-3" 
+                    style={{ 
+                      width: `${columnWidths.updated}px`,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     <span className="text-sm text-gray-600 tabular-nums">
                       {formatDate(lead.created_at)}
                     </span>
                   </td>
 
-                  {/* Actions - Eye Only */}
-                  <td className="px-4 py-3 text-right" style={{ width: `${columnWidths.actions}px` }}>
+                  {/* ACTIONS */}
+                  <td 
+                    className="px-4 py-3 text-right" 
+                    style={{ 
+                      width: `${columnWidths.actions}px`,
+                    }}
+                  >
                     <button 
-                      className="p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                       aria-label="View details"
                       onClick={() => console.log('View lead:', lead.id)}
                     >
@@ -570,81 +713,103 @@ export function LeadsTable() {
       </div>
 
       {/* PAGINATION FOOTER */}
-      <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
-        {/* Left: Rows count + Rows per page selector */}
-        <div className="flex items-center gap-4">
-          <p className="text-sm text-gray-600">
-            Showing{' '}
-            <span className="font-medium text-gray-900 tabular-nums">
-              {startIndex + 1}-{Math.min(endIndex, leads.length)}
-            </span>{' '}
-            of{' '}
-            <span className="font-medium text-gray-900 tabular-nums">{leads.length}</span>
-          </p>
-          
-          {/* Rows Per Page Selector */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Rows:</label>
-            <select
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="h-8 px-2 pr-8 text-sm border border-gray-300 rounded-md bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer"
-            >
-              {PAGE_SIZE_OPTIONS.map(size => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Right: Pagination Controls */}
-        <div className="flex items-center gap-1">
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-          >
-            Previous
-          </button>
-          
-          {/* Page Numbers */}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-            const showPage = page === 1 || 
-                           page === totalPages || 
-                           Math.abs(page - currentPage) <= 1;
+      <div className="px-6 py-4 border-t border-gray-100 bg-gradient-to-r from-gray-50/30 to-white">
+        <div className="flex items-center justify-between">
+          {/* Left: Rows count + Rows per page selector */}
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-gray-600">
+              Showing{' '}
+              <span className="font-semibold text-gray-900 tabular-nums">
+                {startIndex + 1}-{Math.min(endIndex, leads.length)}
+              </span>{' '}
+              of{' '}
+              <span className="font-semibold text-gray-900 tabular-nums">{leads.length}</span>
+            </p>
             
-            if (!showPage && page === 2 && currentPage > 3) {
-              return <span key={page} className="px-2 text-gray-400">...</span>;
-            }
-            if (!showPage && page === totalPages - 1 && currentPage < totalPages - 2) {
-              return <span key={page} className="px-2 text-gray-400">...</span>;
-            }
-            if (!showPage) return null;
-            
-            return (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`
-                  px-3 py-1.5 text-sm font-medium rounded-md transition-colors
-                  ${page === currentPage
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-700 hover:bg-gray-50'
-                  }
-                `}
+            {/* Rows Per Page Selector */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600 font-medium">Rows:</label>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="h-9 px-3 pr-8 text-sm font-medium border border-gray-300 rounded-lg bg-white hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
               >
-                {page}
-              </button>
-            );
-          })}
-          
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-          >
-            Next
-          </button>
+                {PAGE_SIZE_OPTIONS.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Right: Pagination controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              aria-label="Previous page"
+            >
+              <Icon icon="mdi:chevron-left" width={20} />
+            </button>
+            
+            {/* Page numbers with ellipsis */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => {
+                  if (totalPages <= 7) return true;
+                  if (page === 1 || page === totalPages) return true;
+                  if (page >= currentPage - 1 && page <= currentPage + 1) return true;
+                  return false;
+                })
+                .map((page, index, array) => {
+                  // Add ellipsis
+                  if (index > 0 && page - array[index - 1] > 1) {
+                    return (
+                      <span key={`ellipsis-${page}`} className="flex items-center">
+                        <span className="px-2 text-gray-400">...</span>
+                        <button
+                          onClick={() => handlePageChange(page)}
+                          className={`
+                            min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-all
+                            ${currentPage === page
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'text-gray-700 hover:bg-gray-100'
+                            }
+                          `}
+                        >
+                          {page}
+                        </button>
+                      </span>
+                    );
+                  }
+                  
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`
+                        min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-all
+                        ${currentPage === page
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-gray-700 hover:bg-gray-100'
+                        }
+                      `}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              aria-label="Next page"
+            >
+              <Icon icon="mdi:chevron-right" width={20} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
