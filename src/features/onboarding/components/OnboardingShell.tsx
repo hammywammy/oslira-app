@@ -1,12 +1,10 @@
 // src/features/onboarding/components/OnboardingShell.tsx
 
 /**
- * ONBOARDING SHELL - LIGHT MODE REDESIGN
+ * ONBOARDING SHELL - MODERN PROFESSIONAL
  * 
- * Clean container with:
- * - White card background
- * - Subtle shadow for depth
- * - Professional spacing
+ * Clean container with subtle gradient background
+ * Modern card with better shadows
  */
 
 import { ReactNode } from 'react';
@@ -17,9 +15,16 @@ interface OnboardingShellProps {
 
 export function OnboardingShell({ children }: OnboardingShellProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 pt-24 pb-24">
+    <div className="min-h-screen flex items-center justify-center px-6 pt-28 pb-24">
+      {/* Background Pattern - Subtle */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-100 rounded-full blur-3xl opacity-20" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary-100 rounded-full blur-3xl opacity-20" />
+      </div>
+
+      {/* Main Card */}
       <div className="w-full max-w-2xl">
-        <div className="bg-white rounded-2xl shadow-xl shadow-neutral-200/50 border border-neutral-100 p-8 md:p-12">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl shadow-neutral-200/30 border border-neutral-100 p-8 md:p-12">
           {children}
         </div>
       </div>
