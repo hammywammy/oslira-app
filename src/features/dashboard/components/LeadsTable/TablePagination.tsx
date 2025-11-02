@@ -1,239 +1,139 @@
 // src/features/dashboard/components/LeadsTable/TablePagination.tsx
 
 /**
- * TABLE PAGINATION - POSTGRES/SUPABASE STYLE
- * 
- * Design matches Postgres admin:
- * - Left: Page navigation (arrow buttons + "Page 1 of 1")
- * - Center: "100 rows" (editable inline) + "64 records"
- * - Right: Refresh button + Data/Schema toggle (placeholder)
+ * TABLE PAGINATION - SUPABASE STYLE
  */
 
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface TablePaginationProps {
   currentPage: number;
   totalPages: number;
   pageSize: number;
+  pageSizeOptions: number[];
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  onRefresh?: () => void;
-  viewMode?: 'data' | 'export';
-  onViewModeChange?: (mode: 'data' | 'export') => void;
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function TablePagination({
   currentPage,
   totalPages,
   pageSize,
+  pageSizeOptions,
   totalItems,
   onPageChange,
   onPageSizeChange,
-  onRefresh,
-  viewMode = 'data',
-  onViewModeChange,
 }: TablePaginationProps) {
-  const [isEditingRows, setIsEditingRows] = useState(false);
-  const [rowsInput, setRowsInput] = useState(String(pageSize));
-
-  // Handle rows input submission
-  const handleRowsSubmit = () => {
-    const newSize = parseInt(rowsInput, 10);
-    if (newSize > 0 && newSize <= 1000) {
-      onPageSizeChange(newSize);
-    } else {
-      setRowsInput(String(pageSize)); // Reset invalid input
-    }
-    setIsEditingRows(false);
+  const handlePrevious = () => {
+    if (currentPage > 1) onPageChange(currentPage - 1);
   };
 
-  const handleRowsKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleRowsSubmit();
-    } else if (e.key === 'Escape') {
-      setRowsInput(String(pageSize));
-      setIsEditingRows(false);
+  const handleNext = () => {
+    if (currentPage < totalPages) onPageChange(currentPage + 1);
+  };
+
+  const handlePageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value >= 1 && value <= totalPages) {
+      onPageChange(value);
     }
   };
 
   return (
-    <div className="h-11 px-4 border-t border-border bg-background flex items-center justify-between text-xs font-medium">
-      
-      {/* ===================================================================
-          LEFT: Page navigation controls
-          =================================================================== */}
+    <div className="w-full flex items-center justify-between">
+      {/* Left: Navigation */}
       <div className="flex items-center gap-2">
-        {/* Previous page */}
         <button
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={handlePrevious}
           disabled={currentPage === 1}
           className="
-            w-7 h-7 rounded flex items-center justify-center
-            text-muted-foreground hover:bg-accent hover:text-foreground
-            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
-            transition-colors
+            p-1.5 rounded hover:bg-muted transition-colors
+            disabled:opacity-30 disabled:cursor-not-allowed
           "
           aria-label="Previous page"
         >
-          <Icon icon="ph:caret-left-bold" width={14} />
+          <Icon icon="mdi:chevron-left" width={20} />
         </button>
 
-        {/* Page indicator with editable input */}
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <span>Page</span>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Page</span>
           <input
             type="number"
             value={currentPage}
-            onChange={(e) => {
-              const page = parseInt(e.target.value, 10);
-              if (page >= 1 && page <= totalPages) {
-                onPageChange(page);
-              }
-            }}
+            onChange={handlePageInput}
             min={1}
             max={totalPages}
             className="
-              w-10 h-6 px-1.5 text-center bg-accent rounded border border-border
-              text-foreground font-medium
-              focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary
-              [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+              w-12 h-7 px-2 text-center text-sm
+              bg-background border border-border rounded
+              focus:outline-none focus:ring-1 focus:ring-primary/30
             "
           />
-          <span>of</span>
-          <span className="text-foreground">{totalPages}</span>
+          <span className="text-muted-foreground">of {totalPages}</span>
         </div>
 
-        {/* Next page */}
         <button
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={handleNext}
           disabled={currentPage === totalPages}
           className="
-            w-7 h-7 rounded flex items-center justify-center
-            text-muted-foreground hover:bg-accent hover:text-foreground
-            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
-            transition-colors
+            p-1.5 rounded hover:bg-muted transition-colors
+            disabled:opacity-30 disabled:cursor-not-allowed
           "
           aria-label="Next page"
         >
-          <Icon icon="ph:caret-right-bold" width={14} />
+          <Icon icon="mdi:chevron-right" width={20} />
         </button>
       </div>
 
-      {/* ===================================================================
-          CENTER: Editable rows per page + total record count
-          =================================================================== */}
-      <div className="flex items-center gap-3 text-muted-foreground">
-        {/* Editable rows input */}
-        {isEditingRows ? (
-          <div className="flex items-center gap-1">
-            <input
-              type="number"
-              value={rowsInput}
-              onChange={(e) => setRowsInput(e.target.value)}
-              onBlur={handleRowsSubmit}
-              onKeyDown={handleRowsKeyDown}
-              autoFocus
-              min="1"
-              max="1000"
-              className="
-                w-16 h-6 px-2 text-center bg-accent rounded border border-primary
-                text-foreground font-medium
-                focus:outline-none focus:ring-1 focus:ring-primary
-                [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-              "
-            />
-            <span>rows</span>
-          </div>
-        ) : (
-          <button
-            onClick={() => {
-              setIsEditingRows(true);
-              setRowsInput(String(pageSize));
-            }}
-            className="
-              flex items-center gap-1 px-2 py-1 rounded
-              hover:bg-accent hover:text-foreground transition-colors
-            "
-          >
-            <span className="text-foreground font-semibold">{pageSize}</span>
-            <span>rows</span>
-          </button>
-        )}
-
-        {/* Total record count */}
-        <div className="flex items-center gap-1">
-          <span className="text-foreground font-semibold">{totalItems}</span>
-          <span>records</span>
-        </div>
+      {/* Center: Row count selector */}
+      <div className="flex items-center gap-2">
+        <select
+          value={pageSize}
+          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          className="
+            h-7 px-2 pr-7 text-sm
+            bg-background border border-border rounded
+            appearance-none
+            focus:outline-none focus:ring-1 focus:ring-primary/30
+            cursor-pointer
+          "
+        >
+          {pageSizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size} rows
+            </option>
+          ))}
+        </select>
+        <span className="text-sm text-muted-foreground">
+          {totalItems} records
+        </span>
       </div>
 
-      {/* ===================================================================
-          RIGHT: Refresh button + Data/Export toggle
-          =================================================================== */}
-      <div className="flex items-center gap-2">
-        {/* Refresh button */}
-        {onRefresh && (
-          <button
-            onClick={onRefresh}
-            className="
-              w-7 h-7 rounded flex items-center justify-center
-              text-muted-foreground hover:bg-accent hover:text-foreground
-              transition-colors group
-            "
-            aria-label="Refresh table"
-            title="Refresh table data"
-          >
-            <Icon 
-              icon="ph:arrows-clockwise-bold" 
-              width={14}
-              className="group-active:rotate-180 transition-transform duration-300"
-            />
-          </button>
-        )}
-
-        {/* Data/Export Toggle - Segmented Control */}
-        <div className="flex items-center bg-muted/50 rounded-md p-0.5">
-          <button
-            onClick={() => onViewModeChange && onViewModeChange('data')}
-            disabled={!onViewModeChange}
-            className={`
-              px-2.5 py-1 rounded text-[10px] uppercase tracking-wider font-semibold
-              transition-colors
-              ${viewMode === 'data' 
-                ? 'bg-background text-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-              }
-              ${!onViewModeChange ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-            `}
-          >
-            Data
-          </button>
-          <button
-            onClick={() => onViewModeChange && onViewModeChange('export')}
-            disabled={!onViewModeChange}
-            className={`
-              px-2.5 py-1 rounded text-[10px] uppercase tracking-wider font-semibold
-              transition-colors
-              ${viewMode === 'export' 
-                ? 'bg-background text-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
-              }
-              ${!onViewModeChange ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-            `}
-          >
-            Export
-          </button>
-        </div>
+      {/* Right: View toggle */}
+      <div className="flex items-center gap-1">
+        <button
+          className="
+            inline-flex items-center gap-1.5 h-7 px-3
+            text-xs font-medium text-foreground
+            bg-muted/50 border border-border rounded-l
+            hover:bg-muted transition-colors
+          "
+        >
+          <Icon icon="mdi:table" width={14} />
+          <span>Data</span>
+        </button>
+        <button
+          className="
+            inline-flex items-center gap-1.5 h-7 px-3
+            text-xs font-medium text-muted-foreground
+            bg-background border border-border rounded-r
+            hover:bg-muted/50 transition-colors
+          "
+        >
+          <Icon icon="mdi:download" width={14} />
+          <span>Export</span>
+        </button>
       </div>
     </div>
   );
