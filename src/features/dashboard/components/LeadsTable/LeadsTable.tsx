@@ -1,7 +1,12 @@
 // src/features/dashboard/components/LeadsTable/LeadsTable.tsx
 
 /**
- * LEADS TABLE - SUPABASE STYLE PRODUCTION
+ * LEADS TABLE - SUPABASE STYLE PRODUCTION V2.0
+ * 
+ * CHANGES:
+ * - Removed wrapping div (overflow now handled by TableViewLayout)
+ * - Table renders directly for edge-to-edge integration
+ * - All business logic unchanged
  * 
  * Full-width table bounded by hotbar, sidebar, and pagination
  * Column resizing with localStorage persistence
@@ -398,92 +403,90 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
   }, []);
 
   return (
-    <div className="w-full h-full overflow-auto">
-      <table className="w-full border-collapse">
-        <thead className="sticky top-0 z-20 bg-muted/50 backdrop-blur-sm">
-          <tr className="border-b border-border">
-            {/* Checkbox Header - Frozen */}
-            <th
-              className="sticky left-0 z-30 px-4 py-3 bg-muted/80 backdrop-blur-sm border-r border-border"
-              style={{ width: `${columnWidths.checkbox}px`, minWidth: `${columnWidths.checkbox}px` }}
-            >
-              <input
-                type="checkbox"
-                checked={selectedLeads.size === leads.length && leads.length > 0}
-                onChange={handleSelectAll}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
-              />
-            </th>
-
-            {/* Lead */}
-            <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.lead}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
-              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Lead</span>
-              <div
-                className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'lead' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-                onMouseDown={(e) => handleResizeStart('lead', e)}
-              />
-            </th>
-
-            {/* Platform */}
-            <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.platform}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
-              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Platform</span>
-              <div
-                className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'platform' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-                onMouseDown={(e) => handleResizeStart('platform', e)}
-              />
-            </th>
-
-            {/* Score */}
-            <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.score}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
-              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Score</span>
-              <div
-                className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'score' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-                onMouseDown={(e) => handleResizeStart('score', e)}
-              />
-            </th>
-
-            {/* Analysis */}
-            <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.analysis}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
-              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Analysis</span>
-              <div
-                className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'analysis' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-                onMouseDown={(e) => handleResizeStart('analysis', e)}
-              />
-            </th>
-
-            {/* Updated */}
-            <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.updated}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
-              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Updated</span>
-              <div
-                className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'updated' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-                onMouseDown={(e) => handleResizeStart('updated', e)}
-              />
-            </th>
-
-            {/* Actions Header - Frozen */}
-            <th
-              className="sticky right-0 z-30 px-4 py-3 text-center bg-muted/80 backdrop-blur-sm border-l border-border"
-              style={{ width: `${columnWidths.actions}px`, minWidth: `${columnWidths.actions}px` }}
-            >
-              <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Actions</span>
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {leads.map((lead, index) => (
-            <TableRow
-              key={lead.id}
-              lead={lead}
-              isSelected={selectedLeads.has(lead.id)}
-              columnWidths={columnWidths}
-              onSelectLead={handleSelectLead}
-              onViewLead={handleViewLead}
-              index={index}
+    <table className="w-full border-collapse">
+      <thead className="sticky top-0 z-20 bg-muted/50 backdrop-blur-sm">
+        <tr className="border-b border-border">
+          {/* Checkbox Header - Frozen */}
+          <th
+            className="sticky left-0 z-30 px-4 py-3 bg-muted/80 backdrop-blur-sm border-r border-border"
+            style={{ width: `${columnWidths.checkbox}px`, minWidth: `${columnWidths.checkbox}px` }}
+          >
+            <input
+              type="checkbox"
+              checked={selectedLeads.size === leads.length && leads.length > 0}
+              onChange={handleSelectAll}
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
             />
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </th>
+
+          {/* Lead */}
+          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.lead}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Lead</span>
+            <div
+              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'lead' ? 'bg-primary' : 'hover:bg-primary/50'}`}
+              onMouseDown={(e) => handleResizeStart('lead', e)}
+            />
+          </th>
+
+          {/* Platform */}
+          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.platform}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Platform</span>
+            <div
+              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'platform' ? 'bg-primary' : 'hover:bg-primary/50'}`}
+              onMouseDown={(e) => handleResizeStart('platform', e)}
+            />
+          </th>
+
+          {/* Score */}
+          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.score}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Score</span>
+            <div
+              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'score' ? 'bg-primary' : 'hover:bg-primary/50'}`}
+              onMouseDown={(e) => handleResizeStart('score', e)}
+            />
+          </th>
+
+          {/* Analysis */}
+          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.analysis}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Analysis</span>
+            <div
+              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'analysis' ? 'bg-primary' : 'hover:bg-primary/50'}`}
+              onMouseDown={(e) => handleResizeStart('analysis', e)}
+            />
+          </th>
+
+          {/* Updated */}
+          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.updated}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Updated</span>
+            <div
+              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'updated' ? 'bg-primary' : 'hover:bg-primary/50'}`}
+              onMouseDown={(e) => handleResizeStart('updated', e)}
+            />
+          </th>
+
+          {/* Actions Header - Frozen */}
+          <th
+            className="sticky right-0 z-30 px-4 py-3 text-center bg-muted/80 backdrop-blur-sm border-l border-border"
+            style={{ width: `${columnWidths.actions}px`, minWidth: `${columnWidths.actions}px` }}
+          >
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Actions</span>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {leads.map((lead, index) => (
+          <TableRow
+            key={lead.id}
+            lead={lead}
+            isSelected={selectedLeads.has(lead.id)}
+            columnWidths={columnWidths}
+            onSelectLead={handleSelectLead}
+            onViewLead={handleViewLead}
+            index={index}
+          />
+        ))}
+      </tbody>
+    </table>
   );
 }
