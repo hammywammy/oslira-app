@@ -351,7 +351,7 @@ export function BulkUploadModal({
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={handleClose}
               disabled={isLoading}
             >
