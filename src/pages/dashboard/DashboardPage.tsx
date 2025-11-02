@@ -25,6 +25,7 @@ import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
+import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
 // CONSTANTS
@@ -48,6 +49,7 @@ const MOCK_LEADS = [
 export function DashboardPage() {
   const { account } = useAuth();
   const { leads: storeLeads } = useDashboardStore();
+  const { isCollapsed } = useSidebarStore();
   
   // Use store leads OR mock data
   const leads = storeLeads.length > 0 ? storeLeads : MOCK_LEADS;
@@ -110,7 +112,8 @@ export function DashboardPage() {
       {/* MAIN CONTENT - Wrapped in AppShell */}
       <AppShell>
         {/* Add top padding to account for fixed hotbar (TopBar 56px + Hotbar 56px = 112px) */}
-        <div className="pt-14">
+        {/* Add bottom padding for fixed pagination bar */}
+        <div className="pt-14 pb-20">
           {/* FULL-WIDTH TABLE CONTAINER */}
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             {/* Table */}
@@ -118,22 +121,30 @@ export function DashboardPage() {
               selectedLeads={selectedLeads}
               onSelectionChange={setSelectedLeads}
             />
-            
-            {/* Pagination Bar - Always show if we have any leads */}
-            {leads.length > 0 && (
-              <TablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                pageSize={pageSize}
-                pageSizeOptions={PAGE_SIZE_OPTIONS}
-                totalItems={leads.length}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            )}
           </div>
         </div>
       </AppShell>
+
+      {/* PAGINATION BAR - Fixed at bottom like Supabase */}
+      {leads.length > 0 && (
+        <div className={`
+          fixed bottom-0 right-0 h-14 bg-background border-t border-border z-30
+          transition-[left] duration-200
+          ${isCollapsed ? 'left-16' : 'left-60'}
+        `}>
+          <div className="h-full px-6 flex items-center">
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              totalItems={leads.length}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          </div>
+        </div>
+      )}
 
       {/* MODALS */}
       <AnalyzeLeadModal
