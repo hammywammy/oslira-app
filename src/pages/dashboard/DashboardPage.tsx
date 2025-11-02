@@ -29,6 +29,15 @@ import { Icon } from '@iconify/react';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
+// Mock data for testing
+const MOCK_LEADS = [
+  { id: '1', username: '@nike', full_name: 'Nike' },
+  { id: '2', username: '@adidas', full_name: 'Adidas' },
+  { id: '3', username: '@puma', full_name: 'PUMA' },
+  { id: '4', username: '@underarmour', full_name: 'Under Armour' },
+  { id: '5', username: '@newbalance', full_name: 'New Balance' },
+];
+
 // =============================================================================
 // COMPONENT
 // =============================================================================
@@ -36,7 +45,10 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 export function DashboardPage() {
   const { account } = useAuth();
   const selectedBusiness = useSelectedBusiness();
-  const { leads } = useDashboardStore();
+  const { leads: storeLeads } = useDashboardStore();
+  
+  // Use store leads OR mock data
+  const leads = storeLeads.length > 0 ? storeLeads : MOCK_LEADS;
   
   // Modal state
   const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
@@ -152,18 +164,16 @@ export function DashboardPage() {
           onSelectionChange={setSelectedLeads}
         />
         
-        {/* Pagination Bar */}
-        {leads.length > 0 && (
-          <TablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-            totalItems={leads.length}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        )}
+        {/* Pagination Bar - Always show if we have any leads */}
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          totalItems={leads.length}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
 
       {/* MODALS */}
