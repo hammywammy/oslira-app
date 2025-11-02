@@ -7,13 +7,11 @@ import { useState } from 'react';
 interface DashboardHotbarProps {
   onBulkUpload: () => void;
   onAnalyzeLead: () => void;
-  currentCredits?: number;
 }
 
 export function DashboardHotbar({
   onBulkUpload,
   onAnalyzeLead,
-  currentCredits = 0,
 }: DashboardHotbarProps) {
   const { isCollapsed } = useSidebarStore();
   const [searchQuery, setSearchQuery] = useState('');
