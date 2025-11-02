@@ -28,7 +28,7 @@
  * - Clean separation: render → handlers → state
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { useDashboardStore } from '../../store/dashboardStore';
