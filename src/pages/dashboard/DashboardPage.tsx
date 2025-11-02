@@ -24,7 +24,6 @@ import { TablePagination } from '@/features/dashboard/components/LeadsTable/Tabl
 import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-import { useSelectedBusiness } from '@/core/store/selectors';
 import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
 
 // =============================================================================
@@ -48,7 +47,6 @@ const MOCK_LEADS = [
 
 export function DashboardPage() {
   const { account } = useAuth();
-  const selectedBusiness = useSelectedBusiness();
   const { leads: storeLeads } = useDashboardStore();
   
   // Use store leads OR mock data
@@ -63,8 +61,7 @@ export function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // Get business profile ID and credits
-  const businessProfileId = selectedBusiness?.id;
+  // Get credits
   const currentCredits = account?.credit_balance || 0;
   
   // Pagination calculations
