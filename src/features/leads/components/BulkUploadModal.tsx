@@ -1,25 +1,21 @@
 // src/features/leads/components/BulkUploadModal.tsx
 
 /**
- * BULK UPLOAD MODAL - PRODUCTION GRADE
+ * BULK UPLOAD MODAL - REDESIGNED V2 WITH FULL INTELLIGENCE
  * 
- * CSV bulk upload for analyzing multiple leads at once
- * Follows Modal.tsx architecture patterns
+ * RESTORED FEATURES:
+ * ✅ Real-time credit calculation
+ * ✅ Duplicate detection and removal
+ * ✅ File preview with username list
+ * ✅ Comprehensive validation
+ * ✅ Insufficient credit warnings
+ * ✅ File stats display
+ * ✅ Smart error messaging
  * 
- * FEATURES:
- * - Drag & drop CSV upload
- * - Real-time file validation
- * - Duplicate detection and removal
- * - Analysis type selection
- * - Credit cost calculation
- * - Progress feedback
- * 
- * ARCHITECTURE:
- * ✅ Uses shared Modal component
- * ✅ File processing with Papa Parse
- * ✅ API integration with http-client
- * ✅ Comprehensive error handling
- * ✅ Accessible and keyboard-friendly
+ * DESIGN IMPROVEMENTS:
+ * ✅ Blue as accent, not primary
+ * ✅ Clean, professional layout
+ * ✅ Better visual hierarchy
  */
 
 import { useState, useRef } from 'react';
@@ -27,9 +23,6 @@ import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
 import { Label } from '@/shared/components/ui/Label';
-import { Radio } from '@/shared/components/ui/Radio';
-import { Badge } from '@/shared/components/ui/Badge';
-import { Alert } from '@/shared/components/ui/Alert';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import type { AnalysisType } from '@/shared/types/leads.types';
@@ -50,41 +43,38 @@ interface ParsedFile {
   filename: string;
   usernames: string[];
   duplicatesRemoved: number;
+  invalidRemoved: number;
 }
 
-interface AnalysisTypeOption {
+interface AnalysisOption {
   value: AnalysisType;
   label: string;
   description: string;
   credits: number;
-  badgeVariant: 'light-analysis' | 'deep-analysis' | 'xray-analysis';
 }
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
 
-const ANALYSIS_TYPES: AnalysisTypeOption[] = [
+const ANALYSIS_OPTIONS: AnalysisOption[] = [
   {
     value: 'light',
     label: 'Light Analysis',
     description: 'Basic profile insights',
     credits: 1,
-    badgeVariant: 'light-analysis',
   },
   {
     value: 'deep',
     label: 'Deep Analysis',
     description: 'Detailed behavioral profile',
     credits: 2,
-    badgeVariant: 'deep-analysis',
   },
   {
     value: 'xray',
     label: 'X-Ray Analysis',
     description: 'Complete psychological profile',
     credits: 3,
-    badgeVariant: 'xray-analysis',
   },
 ];
 
@@ -109,7 +99,7 @@ export function BulkUploadModal({
   const [isDragging, setIsDragging] = useState(false);
 
   // ===========================================================================
-  // FILE VALIDATION
+  // VALIDATION
   // ===========================================================================
 
   const validateUsername = (username: string): boolean => {
@@ -126,6 +116,10 @@ export function BulkUploadModal({
 
     return true;
   };
+
+  // ===========================================================================
+  // FILE PARSING
+  // ===========================================================================
 
   const parseCSVFile = (file: File) => {
     setError(null);
@@ -145,44 +139,63 @@ export function BulkUploadModal({
         });
 
         if (invalidLines.length > 0) {
-          setError('Invalid CSV format. File should contain only usernames, one per line.');
+          setError('Invalid CSV format. File should contain only usernames, one per line, no columns or separators.');
           return;
         }
 
-        // Clean and validate usernames
-        const usernames = lines.map((line) => line.replace(/^@/, '').trim());
+        // Clean usernames
+        const rawUsernames = lines.map((line) => line.replace(/^@/, '').trim());
 
-        const invalidUsernames = usernames.filter((username) => !validateUsername(username));
+        // Separate valid and invalid
+        const validUsernames: string[] = [];
+        const invalidUsernames: string[] = [];
+
+        rawUsernames.forEach((username) => {
+          if (validateUsername(username)) {
+            validUsernames.push(username);
+          } else {
+            invalidUsernames.push(username);
+          }
+        });
+
         if (invalidUsernames.length > 0) {
           setError(
-            `Invalid usernames detected: ${invalidUsernames.slice(0, 3).join(', ')}${
+            `Found ${invalidUsernames.length} invalid username${invalidUsernames.length !== 1 ? 's' : ''}: ${invalidUsernames.slice(0, 3).join(', ')}${
               invalidUsernames.length > 3 ? '...' : ''
             }`
           );
           return;
         }
 
+        if (validUsernames.length === 0) {
+          setError('No valid usernames found in file');
+          return;
+        }
+
         // Check max limit
-        if (usernames.length > MAX_LEADS) {
-          setError(`Maximum ${MAX_LEADS} leads allowed. Your file contains ${usernames.length}.`);
+        if (validUsernames.length > MAX_LEADS) {
+          setError(`Maximum ${MAX_LEADS} leads allowed. Your file contains ${validUsernames.length} valid usernames.`);
           return;
         }
 
         // Remove duplicates
-        const uniqueUsernames = [...new Set(usernames)];
-        const duplicatesRemoved = usernames.length - uniqueUsernames.length;
+        const uniqueUsernames = [...new Set(validUsernames)];
+        const duplicatesRemoved = validUsernames.length - uniqueUsernames.length;
 
         setParsedFile({
           filename: file.name,
           usernames: uniqueUsernames,
           duplicatesRemoved,
+          invalidRemoved: invalidUsernames.length,
         });
 
         logger.info('[BulkUploadModal] File parsed successfully', {
           filename: file.name,
-          totalUsernames: usernames.length,
+          totalLines: lines.length,
+          validUsernames: validUsernames.length,
           uniqueUsernames: uniqueUsernames.length,
           duplicatesRemoved,
+          invalidRemoved: invalidUsernames.length,
         });
       } catch (err) {
         logger.error('[BulkUploadModal] CSV parsing failed', err as Error);
@@ -256,7 +269,6 @@ export function BulkUploadModal({
         businessProfileId,
       });
 
-      // Call backend API
       const response = await httpClient.post<{ success: boolean; job_id: string }>(
         '/v1/leads/bulk-analyze',
         {
@@ -270,12 +282,10 @@ export function BulkUploadModal({
       if (response.success && response.job_id) {
         logger.info('[BulkUploadModal] Bulk analysis started', { jobId: response.job_id });
 
-        // Success callback
         if (onSuccess) {
           onSuccess(response.job_id, parsedFile.usernames.length);
         }
 
-        // Close modal
         handleClose();
       } else {
         throw new Error('Bulk analysis failed to start');
@@ -305,10 +315,12 @@ export function BulkUploadModal({
   // CALCULATIONS
   // ===========================================================================
 
-  const selectedAnalysis = ANALYSIS_TYPES.find((type) => type.value === analysisType);
-  const totalCost = parsedFile ? parsedFile.usernames.length * (selectedAnalysis?.credits || 1) : 0;
+  const selectedOption = ANALYSIS_OPTIONS.find((opt) => opt.value === analysisType);
+  const costPerLead = selectedOption?.credits || 1;
+  const totalCost = parsedFile ? parsedFile.usernames.length * costPerLead : 0;
   const creditsAfter = currentCredits - totalCost;
   const hasInsufficientCredits = creditsAfter < 0;
+  const canSubmit = parsedFile && !hasInsufficientCredits && !isLoading;
 
   // ===========================================================================
   // RENDER
@@ -321,17 +333,19 @@ export function BulkUploadModal({
       <Modal.Body>
         <div className="space-y-6">
           <p className="text-sm text-muted-foreground">
-            Upload a CSV file with Instagram usernames to analyze multiple leads at once
+            Upload a CSV with Instagram usernames to analyze multiple leads at once
           </p>
 
           {/* Error Display */}
           {error && (
-            <Alert variant="error">
-              <Icon icon="ph:warning-circle" className="w-5 h-5" />
-              <div>
-                <p className="font-medium">{error}</p>
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Icon icon="ph:warning-circle" className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 text-sm text-red-800 dark:text-red-200">
+                  <p className="font-medium">{error}</p>
+                </div>
               </div>
-            </Alert>
+            </div>
           )}
 
           {/* File Upload Zone */}
@@ -354,11 +368,11 @@ export function BulkUploadModal({
                 onDrop={handleDrop}
                 className={`
                   mt-2 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-                  transition-colors duration-200
+                  transition-all duration-200
                   ${
                     isDragging
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-muted-foreground/50 hover:bg-muted/30'
+                      ? 'border-foreground bg-muted/30'
+                      : 'border-border hover:border-muted-foreground/50 hover:bg-muted/10'
                   }
                   ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
                 `}
@@ -368,35 +382,65 @@ export function BulkUploadModal({
                   Drop your CSV here or click to browse
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Maximum {MAX_LEADS} leads per file
+                  Maximum {MAX_LEADS} leads per file • One username per line
                 </p>
               </div>
             ) : (
-              <div className="mt-2 p-4 bg-muted/30 border border-border rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Icon icon="ph:file-csv" className="w-5 h-5 text-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{parsedFile.filename}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {parsedFile.usernames.length} unique username
-                        {parsedFile.usernames.length !== 1 ? 's' : ''}
-                        {parsedFile.duplicatesRemoved > 0 &&
-                          ` (${parsedFile.duplicatesRemoved} duplicate${
-                            parsedFile.duplicatesRemoved !== 1 ? 's' : ''
-                          } removed)`}
-                      </p>
+              <div className="mt-2 space-y-3">
+                {/* File Info Card */}
+                <div className="p-4 bg-muted/20 border border-border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <Icon icon="ph:file-csv" className="w-5 h-5 text-foreground mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{parsedFile.filename}</p>
+                        <div className="mt-1 space-y-0.5">
+                          <p className="text-xs text-muted-foreground">
+                            ✓ {parsedFile.usernames.length} valid username{parsedFile.usernames.length !== 1 ? 's' : ''} found
+                          </p>
+                          {parsedFile.duplicatesRemoved > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              • {parsedFile.duplicatesRemoved} duplicate{parsedFile.duplicatesRemoved !== 1 ? 's' : ''} removed
+                            </p>
+                          )}
+                          {parsedFile.invalidRemoved > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              • {parsedFile.invalidRemoved} invalid username{parsedFile.invalidRemoved !== 1 ? 's' : ''} removed
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveFile}
+                      disabled={isLoading}
+                      className="ml-2 flex-shrink-0"
+                    >
+                      <Icon icon="ph:x" className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRemoveFile}
-                    disabled={isLoading}
-                    className="text-muted-foreground hover:text-red-600"
-                  >
-                    <Icon icon="ph:x" className="w-4 h-4" />
-                  </Button>
+                </div>
+
+                {/* Username Preview */}
+                <div className="p-4 bg-muted/10 border border-border rounded-lg">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Preview (first 10):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {parsedFile.usernames.slice(0, 10).map((username, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-1 text-xs font-medium bg-muted border border-border rounded text-foreground"
+                      >
+                        @{username}
+                      </span>
+                    ))}
+                    {parsedFile.usernames.length > 10 && (
+                      <span className="px-2 py-1 text-xs text-muted-foreground">
+                        +{parsedFile.usernames.length - 10} more
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -408,36 +452,37 @@ export function BulkUploadModal({
               <div>
                 <Label>Analysis Type</Label>
                 <div className="mt-3 space-y-2">
-                  {ANALYSIS_TYPES.map((type) => (
+                  {ANALYSIS_OPTIONS.map((option) => (
                     <label
-                      key={type.value}
+                      key={option.value}
                       className={`
-                        flex items-start gap-3 p-3 border-2 rounded-lg cursor-pointer
-                        transition-all duration-200
+                        flex items-start gap-3 p-3 border rounded-lg cursor-pointer
+                        transition-all duration-150
                         ${
-                          analysisType === type.value
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+                          analysisType === option.value
+                            ? 'border-foreground bg-muted/30'
+                            : 'border-border hover:border-muted-foreground/50 hover:bg-muted/10'
                         }
                         ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
                       `}
                     >
-                      <Radio
+                      <input
+                        type="radio"
                         name="bulkAnalysisType"
-                        value={type.value}
-                        checked={analysisType === type.value}
+                        value={option.value}
+                        checked={analysisType === option.value}
                         onChange={(e) => setAnalysisType(e.target.value as AnalysisType)}
                         disabled={isLoading}
-                        className="mt-0.5"
+                        className="mt-0.5 w-4 h-4 text-foreground border-border focus:ring-primary"
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-sm font-medium text-foreground">{type.label}</span>
-                          <Badge variant={type.badgeVariant} size="sm">
-                            {type.credits} credit{type.credits !== 1 ? 's' : ''}
-                          </Badge>
+                          <span className="text-sm font-medium text-foreground">{option.label}</span>
+                          <span className="text-xs px-2 py-0.5 bg-muted border border-border rounded-full text-muted-foreground">
+                            {option.credits} credit{option.credits !== 1 ? 's' : ''}
+                          </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">{type.description}</p>
+                        <p className="text-xs text-muted-foreground">{option.description}</p>
                       </div>
                     </label>
                   ))}
@@ -445,23 +490,25 @@ export function BulkUploadModal({
               </div>
 
               {/* Credit Calculation */}
-              <div className="p-4 bg-muted/30 rounded-lg border border-border space-y-2">
+              <div className="p-4 bg-muted/20 rounded-lg border border-border space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Leads to analyze:</span>
                   <span className="font-medium text-foreground">{parsedFile.usernames.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Cost per lead:</span>
+                  <span className="font-medium text-foreground">{costPerLead} credit{costPerLead !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Current credits:</span>
                   <span className="font-medium text-foreground">{currentCredits.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total cost:</span>
-                  <span className="font-medium text-orange-600 dark:text-orange-400">
-                    -{totalCost.toLocaleString()}
-                  </span>
-                </div>
                 <div className="pt-2 border-t border-border">
                   <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total cost:</span>
+                    <span className="font-semibold text-foreground">-{totalCost.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm mt-1">
                     <span className="font-medium text-foreground">Credits after:</span>
                     <span
                       className={`font-semibold ${
@@ -478,15 +525,17 @@ export function BulkUploadModal({
 
               {/* Insufficient Credits Warning */}
               {hasInsufficientCredits && (
-                <Alert variant="warning">
-                  <Icon icon="ph:warning" className="w-5 h-5" />
-                  <div>
-                    <p className="font-medium">Insufficient Credits</p>
-                    <p className="text-sm">
-                      You need {Math.abs(creditsAfter)} more credits to complete this analysis.
-                    </p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Icon icon="ph:warning" className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 text-sm">
+                      <p className="font-medium text-amber-800 dark:text-amber-200">Insufficient Credits</p>
+                      <p className="text-amber-700 dark:text-amber-300 mt-0.5">
+                        You need {Math.abs(creditsAfter)} more credits to complete this analysis.
+                      </p>
+                    </div>
                   </div>
-                </Alert>
+                </div>
               )}
             </>
           )}
@@ -500,7 +549,7 @@ export function BulkUploadModal({
         <Button
           variant="primary"
           onClick={handleSubmit}
-          disabled={isLoading || !parsedFile || hasInsufficientCredits}
+          disabled={!canSubmit}
           className="min-w-[160px]"
         >
           {isLoading ? (
@@ -509,15 +558,9 @@ export function BulkUploadModal({
               Processing...
             </>
           ) : parsedFile ? (
-            <>
-              <Icon icon="ph:upload" className="w-4 h-4" />
-              Analyze {parsedFile.usernames.length} Profile{parsedFile.usernames.length !== 1 ? 's' : ''}
-            </>
+            `Analyze ${parsedFile.usernames.length} Profile${parsedFile.usernames.length !== 1 ? 's' : ''}`
           ) : (
-            <>
-              <Icon icon="ph:upload" className="w-4 h-4" />
-              Upload File First
-            </>
+            'Upload File First'
           )}
         </Button>
       </Modal.Footer>
