@@ -72,7 +72,7 @@ export function Sidebar() {
     <>
       <aside
         className={`
-          fixed top-[57px] left-0 bottom-0 bg-background border-r border-border
+          fixed top-[1px] left-0 bottom-0 bg-background border-r border-border
           transition-all duration-200 flex flex-col z-30
           ${isCollapsed ? 'w-16' : 'w-60'}
           ${isCollapsed ? 'overflow-hidden' : 'overflow-visible'}
@@ -81,8 +81,8 @@ export function Sidebar() {
         onMouseLeave={() => setIsHoveringSidebar(false)}
       >
         <div className="flex flex-col h-full">
-          {/* LOGO SECTION */}
-          <div className="h-16 flex items-center justify-between px-4 border-b border-border relative">
+          {/* LOGO SECTION - SAME HEIGHT AS TOPBAR (56px) */}
+          <div className="h-14 flex items-center justify-between px-4 border-b border-border relative">
             {/* Logo and Text - Left side, clickable */}
             {!isCollapsed ? (
               // Expanded: Logo and text on left
