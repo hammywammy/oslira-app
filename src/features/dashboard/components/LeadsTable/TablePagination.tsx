@@ -53,65 +53,65 @@ export function TablePagination({
   return (
     <div className="h-11 px-4 border-t border-border bg-background flex items-center justify-between text-xs font-medium">
       
-      {/* LEFT: Page navigation */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="
-            w-7 h-7 rounded flex items-center justify-center
-            text-muted-foreground hover:bg-accent hover:text-foreground
-            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
-            transition-colors
-          "
-          aria-label="Previous page"
-        >
-          <Icon icon="ph:caret-left-bold" width={14} />
-        </button>
-
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <span>Page</span>
-          <input
-            type="number"
-            value={currentPage}
-            onChange={(e) => {
-              const page = parseInt(e.target.value, 10);
-              if (page >= 1 && page <= totalPages) {
-                onPageChange(page);
-              }
-            }}
-            min={1}
-            max={totalPages}
+      {/* LEFT: Page navigation + Row count + Record count */}
+      <div className="flex items-center gap-4">
+        {/* Page Navigation */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
             className="
-              w-10 h-6 px-1.5 text-center bg-accent rounded border border-border
-              text-foreground font-medium
-              focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary
-              [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+              w-7 h-7 rounded flex items-center justify-center
+              text-muted-foreground hover:bg-accent hover:text-foreground
+              disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+              transition-colors
             "
-          />
-          <span>of</span>
-          <span className="text-foreground">{totalPages}</span>
+            aria-label="Previous page"
+          >
+            <Icon icon="ph:caret-left-bold" width={14} />
+          </button>
+
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <span>Page</span>
+            <input
+              type="number"
+              value={currentPage}
+              onChange={(e) => {
+                const page = parseInt(e.target.value, 10);
+                if (page >= 1 && page <= totalPages) {
+                  onPageChange(page);
+                }
+              }}
+              min={1}
+              max={totalPages}
+              className="
+                w-10 h-6 px-1.5 text-center bg-accent rounded border border-border
+                text-foreground font-medium
+                focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary
+                [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+              "
+            />
+            <span>of {totalPages}</span>
+          </div>
+
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="
+              w-7 h-7 rounded flex items-center justify-center
+              text-muted-foreground hover:bg-accent hover:text-foreground
+              disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+              transition-colors
+            "
+            aria-label="Next page"
+          >
+            <Icon icon="ph:caret-right-bold" width={14} />
+          </button>
         </div>
 
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="
-            w-7 h-7 rounded flex items-center justify-center
-            text-muted-foreground hover:bg-accent hover:text-foreground
-            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
-            transition-colors
-          "
-          aria-label="Next page"
-        >
-          <Icon icon="ph:caret-right-bold" width={14} />
-        </button>
-      </div>
-
-      {/* CENTER: Editable rows + record count */}
-      <div className="flex items-center gap-3 text-muted-foreground">
-        {isEditingRows ? (
-          <div className="flex items-center gap-1">
+        {/* Editable rows */}
+        <div className="flex items-center gap-1 text-muted-foreground">
+          {isEditingRows ? (
             <input
               type="number"
               value={rowsInput}
@@ -122,31 +122,31 @@ export function TablePagination({
               min="1"
               max="1000"
               className="
-                w-16 h-6 px-2 text-center bg-accent rounded border border-primary
+                w-14 h-6 px-2 text-center bg-accent rounded border border-primary
                 text-foreground font-medium
                 focus:outline-none focus:ring-1 focus:ring-primary
                 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
               "
             />
-            <span>rows</span>
-          </div>
-        ) : (
-          <button
-            onClick={() => {
-              setIsEditingRows(true);
-              setRowsInput(String(pageSize));
-            }}
-            className="
-              flex items-center gap-1 px-2 py-1 rounded
-              hover:bg-accent hover:text-foreground transition-colors
-            "
-          >
-            <span className="text-foreground font-semibold">{pageSize}</span>
-            <span>rows</span>
-          </button>
-        )}
+          ) : (
+            <button
+              onClick={() => {
+                setIsEditingRows(true);
+                setRowsInput(String(pageSize));
+              }}
+              className="
+                flex items-center gap-1 px-2 py-0.5 rounded
+                hover:bg-accent hover:text-foreground transition-colors
+              "
+            >
+              <span className="text-foreground font-semibold">{pageSize}</span>
+            </button>
+          )}
+          <span>rows</span>
+        </div>
 
-        <div className="flex items-center gap-1">
+        {/* Record count */}
+        <div className="flex items-center gap-1 text-muted-foreground">
           <span className="text-foreground font-semibold">{totalItems}</span>
           <span>records</span>
         </div>
