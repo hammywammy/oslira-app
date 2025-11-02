@@ -53,9 +53,6 @@ export function DashboardPage() {
   
   // Pagination calculations
   const totalPages = Math.ceil(leads.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentLeads = leads.slice(startIndex, endIndex);
 
   // ===========================================================================
   // HANDLERS
@@ -128,7 +125,7 @@ export function DashboardPage() {
           {/* Right: Action buttons */}
           <div className="flex items-center gap-3">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setShowBulkModal(true)}
               disabled={!businessProfileId}
             >
@@ -170,25 +167,17 @@ export function DashboardPage() {
       </div>
 
       {/* MODALS */}
-      {showAnalyzeModal && businessProfileId && (
-        <AnalyzeLeadModal
-          isOpen={showAnalyzeModal}
-          onClose={() => setShowAnalyzeModal(false)}
-          onSuccess={handleAnalyzeSuccess}
-          businessProfileId={businessProfileId}
-          currentCredits={currentCredits}
-        />
-      )}
+      <AnalyzeLeadModal
+        isOpen={showAnalyzeModal}
+        onClose={() => setShowAnalyzeModal(false)}
+        onSuccess={handleAnalyzeSuccess}
+      />
 
-      {showBulkModal && businessProfileId && (
-        <BulkUploadModal
-          isOpen={showBulkModal}
-          onClose={() => setShowBulkModal(false)}
-          onSuccess={handleBulkSuccess}
-          businessProfileId={businessProfileId}
-          currentCredits={currentCredits}
-        />
-      )}
+      <BulkUploadModal
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        onSuccess={handleBulkSuccess}
+      />
     </AppShell>
   );
 }
