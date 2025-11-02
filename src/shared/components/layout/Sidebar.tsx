@@ -52,6 +52,9 @@ export function Sidebar() {
 
   // Get user initials for fallback avatar
   const getUserInitial = () => {
+    if (user?.profile?.full_name) {
+      return user.profile.full_name.charAt(0).toUpperCase();
+    }
     if (user?.full_name) {
       return user.full_name.charAt(0).toUpperCase();
     }
@@ -184,7 +187,7 @@ export function Sidebar() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Credits remaining</span>
                   <span className="text-sm font-semibold text-foreground">
-                    {user?.account?.credit_balance || 0}
+                    {user?.subscription?.credits || 0}
                   </span>
                 </div>
               </div>
@@ -196,7 +199,7 @@ export function Sidebar() {
                 <div className="text-center">
                   <Icon icon="ph:coins" className="w-4 h-4 text-muted-foreground mb-1" />
                   <span className="text-xs font-semibold text-foreground">
-                    {user?.account?.credit_balance || 0}
+                    {user?.subscription?.credits || 0}
                   </span>
                 </div>
               </div>
@@ -213,10 +216,10 @@ export function Sidebar() {
                 `}
               >
                 {/* Avatar with image or fallback */}
-                {user?.avatar_url ? (
+                {user?.profile?.avatar_url || user?.avatar_url ? (
                   <img 
-                    src={user.avatar_url} 
-                    alt={user.full_name || 'User'}
+                    src={user?.profile?.avatar_url || user?.avatar_url} 
+                    alt={user?.profile?.full_name || user?.full_name || 'User'}
                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
@@ -231,7 +234,7 @@ export function Sidebar() {
                   <>
                     <div className="flex-1 text-left">
                       <p className="text-sm font-medium text-foreground truncate">
-                        {user?.full_name || 'User'}
+                        {user?.profile?.full_name || user?.full_name || 'User'}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {user?.email || 'user@example.com'}
@@ -279,10 +282,12 @@ export function Sidebar() {
                 <div className="flex items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                      {user?.full_name || 'User'}
+                      {user?.profile?.full_name || user?.full_name || 'User'}
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {user?.subscription?.plan_type || 'Free Plan'}
+                      {user?.subscription?.plan ? 
+                        `${user.subscription.plan.charAt(0).toUpperCase()}${user.subscription.plan.slice(1)} Plan` : 
+                        'Free Plan'}
                     </p>
                   </div>
                 </div>
