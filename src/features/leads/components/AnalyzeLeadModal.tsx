@@ -108,12 +108,13 @@ export function AnalyzeLeadModal({
         data?: BusinessProfile[];
       }>('/api/business-profiles?page=1&pageSize=50');
 
-      if (response.success && response.data) {
+      if (response.success && response.data && Array.isArray(response.data)) {
         setBusinessProfiles(response.data);
         
         // Auto-select first profile
-        if (response.data.length > 0) {
-          setSelectedProfileId(response.data[0].id);
+        const firstProfile = response.data[0];
+        if (firstProfile) {
+          setSelectedProfileId(firstProfile.id);
         } else {
           setError('No business profile found. Please complete onboarding first.');
         }
@@ -222,23 +223,17 @@ export function AnalyzeLeadModal({
     <Modal open={isOpen} onClose={handleClose} size="md" closeable={!isSubmitting}>
       <div className="p-6">
         {/* Header */}
-        <div className="flex items-start gap-4 mb-6">
-          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Icon icon="ph:magnifying-glass-bold" className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-foreground">Research New Lead</h2>
-            <p className="text-sm text-muted-foreground">
-              Analyze an Instagram profile and get actionable insights
-            </p>
-          </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-foreground mb-1">Research New Lead</h2>
+          <p className="text-sm text-muted-foreground">
+            Analyze an Instagram profile and get actionable insights
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Error Display */}
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-              <Icon icon="ph:warning-circle-fill" className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
             </div>
           )}
@@ -250,12 +245,12 @@ export function AnalyzeLeadModal({
             </label>
             
             {isLoadingProfiles ? (
-              <div className="h-11 border-2 border-border rounded-lg flex items-center justify-center gap-2 text-muted-foreground">
+              <div className="h-10 border border-border rounded-lg flex items-center justify-center gap-2 text-muted-foreground bg-muted/20">
                 <Icon icon="ph:spinner" className="w-4 h-4 animate-spin" />
-                <span className="text-sm">Loading profiles...</span>
+                <span className="text-sm">Loading...</span>
               </div>
             ) : businessProfiles.length === 0 ? (
-              <div className="p-3 border-2 border-border rounded-lg bg-muted/30 text-sm text-muted-foreground">
+              <div className="p-3 border border-border rounded-lg bg-muted/20 text-sm text-muted-foreground">
                 No business profiles found
               </div>
             ) : (
@@ -263,27 +258,15 @@ export function AnalyzeLeadModal({
                 value={selectedProfileId}
                 onChange={(e) => setSelectedProfileId(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full h-11 px-3 border-2 border-border rounded-lg bg-background text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-10 px-3 border border-border rounded-lg bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:opacity-50"
               >
                 {businessProfiles.map((profile) => (
                   <option key={profile.id} value={profile.id}>
                     {profile.business_name}
-                    {profile.business_one_liner && ` • ${profile.business_one_liner}`}
                   </option>
                 ))}
               </select>
             )}
-          </div>
-
-          {/* Platform (Fixed to Instagram) */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Platform
-            </label>
-            <div className="h-11 px-4 border-2 border-border rounded-lg bg-muted/20 flex items-center gap-3">
-              <Icon icon="ph:instagram-logo" className="w-5 h-5 text-[#E4405F]" />
-              <span className="text-sm font-medium text-foreground">Instagram</span>
-            </div>
           </div>
 
           {/* Instagram Handle */}
@@ -292,51 +275,30 @@ export function AnalyzeLeadModal({
               Instagram Handle
             </label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <span className="text-base font-medium text-muted-foreground">@</span>
-              </div>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
               <input
                 type="text"
                 value={rawInput}
                 onChange={handleInputChange}
-                placeholder="hamzawilx"
+                placeholder="username"
                 disabled={isSubmitting}
-                className="w-full h-11 pl-9 pr-4 border-2 border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-10 pl-8 pr-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:opacity-50"
               />
-              {displayUsername && (
-                <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                  <a
-                    href={`https://instagram.com/${rawInput}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    {displayUsername}
-                  </a>
-                </div>
-              )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Enter the username without the @ symbol
-            </p>
           </div>
 
-          {/* Analysis Depth */}
+          {/* Analysis Type */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-3">
-              Choose Analysis Depth
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Analysis Type
             </label>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {ANALYSIS_OPTIONS.map((option) => (
                 <label
                   key={option.value}
                   className={`
-                    group relative flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all
-                    ${
-                      analysisType === option.value
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
-                    }
+                    flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors
+                    ${analysisType === option.value ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/30'}
                     ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
                 >
@@ -347,71 +309,21 @@ export function AnalyzeLeadModal({
                     checked={analysisType === option.value}
                     onChange={(e) => setAnalysisType(e.target.value as AnalysisType)}
                     disabled={isSubmitting}
-                    className="sr-only"
+                    className="w-4 h-4 text-primary"
                   />
-                  
-                  {/* Radio Circle */}
-                  <div className={`
-                    flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
-                    ${
-                      analysisType === option.value
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground/30'
-                    }
-                  `}>
-                    {analysisType === option.value && (
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    )}
-                  </div>
-
-                  {/* Icon */}
-                  <div className={`
-                    flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-md
-                  `}>
-                    <Icon icon={option.icon} className="w-5 h-5 text-white" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">
-                        {option.label}
-                      </span>
-                      <span className={`
-                        inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
-                        ${
-                          analysisType === option.value
-                            ? 'bg-primary/20 text-primary'
-                            : 'bg-muted text-muted-foreground'
-                        }
-                      `}>
-                        <Icon icon="ph:coin-fill" className="w-3 h-3" />
-                        {option.credits}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-sm font-medium text-foreground">{option.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {option.credits} {option.credits === 1 ? 'credit' : 'credits'}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {option.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{option.description}</p>
                   </div>
                 </label>
               ))}
             </div>
           </div>
-
-          {/* Cost Summary */}
-          {selectedOption && (
-            <div className="p-4 bg-muted/30 border border-border rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">Total Cost</span>
-                <div className="flex items-center gap-2">
-                  <Icon icon="ph:coin-fill" className="w-4 h-4 text-amber-500" />
-                  <span className="text-base font-bold text-foreground">
-                    {selectedOption.credits} {selectedOption.credits === 1 ? 'credit' : 'credits'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-2">
@@ -428,9 +340,7 @@ export function AnalyzeLeadModal({
               variant="primary"
               disabled={!canSubmit}
               isLoading={isSubmitting}
-              className="shadow-lg shadow-primary/20"
             >
-              <Icon icon="ph:magnifying-glass-bold" className="w-4 h-4" />
               {isSubmitting ? 'Starting...' : 'Start Research'}
             </Button>
           </div>
