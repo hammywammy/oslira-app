@@ -1,25 +1,32 @@
 // src/features/leads/components/AnalyzeLeadModal.tsx
 
 /**
- * ANALYZE LEAD MODAL - REDESIGNED V2
+ * ANALYZE LEAD MODAL - V3.0 REDESIGN
  * 
- * IMPROVEMENTS:
- * ✅ Blue as accent, not primary color
- * ✅ Auto @ prefix on username input
- * ✅ Clean, minimal design
- * ✅ Better visual hierarchy
- * ✅ Professional color scheme
+ * DESIGN PHILOSOPHY:
+ * ✅ Blue as 10% accent (hover states, icons, subtle highlights)
+ * ✅ Visual hierarchy with spacing and typography
+ * ✅ Styled analysis cards with colored left borders
+ * ✅ Prominent cost display
+ * ✅ Real-time validation feedback
+ * ✅ Instagram-only (no platform selector clutter)
+ * 
+ * FEATURES:
+ * ✅ Auto @ prefix display
+ * ✅ Instagram username validation
+ * ✅ Smart placeholder: @instagramhandle
+ * ✅ Analysis type cards with visual distinction
+ * ✅ Clean, professional layout
  */
 
 import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
-import { Input } from '@/shared/components/ui/Input';
 import { Label } from '@/shared/components/ui/Label';
-import { Select } from '@/shared/components/ui/Select';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
+import { validateInstagramUsername } from '@/shared/utils/validation';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -38,6 +45,8 @@ interface AnalysisOption {
   label: string;
   description: string;
   credits: number;
+  icon: string;
+  borderColor: string;
 }
 
 // =============================================================================
@@ -50,18 +59,24 @@ const ANALYSIS_OPTIONS: AnalysisOption[] = [
     label: 'Light Analysis',
     description: 'Basic profile metrics and engagement scoring',
     credits: 1,
+    icon: 'ph:lightning',
+    borderColor: 'border-l-amber-400',
   },
   {
     value: 'deep',
     label: 'Deep Analysis',
     description: 'Detailed insights + outreach template',
     credits: 2,
+    icon: 'ph:brain',
+    borderColor: 'border-l-purple-400',
   },
   {
     value: 'xray',
     label: 'X-Ray Analysis',
     description: 'Complete psychological profile + strategy',
     credits: 3,
+    icon: 'ph:target',
+    borderColor: 'border-l-primary-500',
   },
 ];
 
@@ -79,36 +94,7 @@ export function AnalyzeLeadModal({
   const [analysisType, setAnalysisType] = useState<AnalysisType>('light');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Auto-add @ prefix for display
-  const displayUsername = rawInput && !rawInput.startsWith('@') ? `@${rawInput}` : rawInput;
-
-  // ===========================================================================
-  // VALIDATION
-  // ===========================================================================
-
-  const validateUsername = (value: string): string | null => {
-    const cleaned = value.replace(/^@/, '').trim();
-
-    if (!cleaned) {
-      return 'Please enter a username';
-    }
-
-    if (cleaned.length < 1 || cleaned.length > 30) {
-      return 'Username must be 1-30 characters';
-    }
-
-    const validCharsRegex = /^[a-zA-Z0-9._]+$/;
-    if (!validCharsRegex.test(cleaned)) {
-      return 'Only letters, numbers, periods, and underscores allowed';
-    }
-
-    if (cleaned.startsWith('.') || cleaned.endsWith('.') || cleaned.includes('..')) {
-      return 'Invalid period placement';
-    }
-
-    return null;
-  };
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // ===========================================================================
   // HANDLERS
@@ -117,18 +103,31 @@ export function AnalyzeLeadModal({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/^@/, ''); // Strip @ if user types it
     setRawInput(value);
+    
+    // Clear errors on change
     if (error) setError(null);
+    if (validationError) setValidationError(null);
+
+    // Real-time validation feedback (only if they've typed something)
+    if (value.trim().length > 0) {
+      const validation = validateInstagramUsername(value);
+      if (!validation.valid) {
+        setValidationError(validation.error);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setValidationError(null);
 
     // Validate
     const cleanUsername = rawInput.replace(/^@/, '').trim();
-    const validationError = validateUsername(cleanUsername);
-    if (validationError) {
-      setError(validationError);
+    const validation = validateInstagramUsername(cleanUsername);
+    
+    if (!validation.valid) {
+      setValidationError(validation.error);
       return;
     }
 
@@ -181,6 +180,7 @@ export function AnalyzeLeadModal({
       setRawInput('');
       setAnalysisType('light');
       setError(null);
+      setValidationError(null);
       onClose();
     }
   };
@@ -191,7 +191,8 @@ export function AnalyzeLeadModal({
 
   const selectedOption = ANALYSIS_OPTIONS.find((opt) => opt.value === analysisType);
   const totalCost = selectedOption?.credits || 1;
-  const canSubmit = rawInput.trim().length > 0 && !isLoading;
+  const displayUsername = rawInput ? `@${rawInput}` : '';
+  const canSubmit = rawInput.trim().length > 0 && !validationError && !isLoading;
 
   // ===========================================================================
   // RENDER
@@ -199,7 +200,18 @@ export function AnalyzeLeadModal({
 
   return (
     <Modal open={isOpen} onClose={handleClose} size="md" closeable={!isLoading}>
-      <Modal.Header>Research New Lead</Modal.Header>
+      {/* Header */}
+      <Modal.Header>
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+            <Icon icon="ph:magnifying-glass-bold" className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Research New Lead</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Analyze an Instagram profile</p>
+          </div>
+        </div>
+      </Modal.Header>
 
       <Modal.Body>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -213,64 +225,79 @@ export function AnalyzeLeadModal({
             </div>
           )}
 
-          {/* Platform Selector */}
+          {/* Username Input */}
           <div>
-            <Label htmlFor="platform">Platform</Label>
-            <Select id="platform" value="instagram" disabled className="mt-2">
-              <option value="instagram">Instagram</option>
-            </Select>
-          </div>
-
-          {/* Username Input with @ Display */}
-          <div>
-            <Label htmlFor="username">Username or Profile URL</Label>
-            <div className="mt-2 relative">
-              <Input
+            <Label htmlFor="username" className="text-sm font-medium text-foreground mb-2">
+              Instagram Handle
+            </Label>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <span className="text-muted-foreground text-base font-medium">@</span>
+              </div>
+              <input
                 id="username"
                 type="text"
-                placeholder="hamzawilx"
+                placeholder="instagramhandle"
                 value={rawInput}
                 onChange={handleInputChange}
                 disabled={isLoading}
                 autoFocus
-                className={`${error ? 'border-red-500 focus:ring-red-500' : ''} ${rawInput ? 'pl-7' : ''}`}
+                className={`
+                  w-full h-11 pl-8 pr-4 
+                  bg-white dark:bg-neutral-900
+                  border rounded-lg
+                  text-base text-foreground placeholder:text-muted-foreground
+                  transition-all duration-150
+                  focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  ${
+                    validationError
+                      ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500'
+                      : 'border-border hover:border-muted-foreground/50'
+                  }
+                `}
               />
-              {/* @ Prefix Display */}
-              {rawInput && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <span className="text-foreground font-medium">@</span>
-                </div>
-              )}
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Type the handle without the @ symbol
-            </p>
-            {/* Preview what will be analyzed */}
-            {rawInput && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Will analyze: <span className="font-medium text-foreground">{displayUsername}</span>
+            
+            {/* Validation Feedback */}
+            {validationError ? (
+              <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                <Icon icon="ph:warning-circle" className="w-3 h-3" />
+                {validationError}
+              </p>
+            ) : rawInput ? (
+              <p className="mt-1.5 text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                <Icon icon="ph:check-circle" className="w-3 h-3" />
+                Will analyze: <span className="font-medium">{displayUsername}</span>
+              </p>
+            ) : (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Enter the username without the @ symbol
               </p>
             )}
           </div>
 
-          {/* Analysis Type */}
+          {/* Analysis Type Selection */}
           <div>
-            <Label>Analysis Type</Label>
-            <div className="mt-3 space-y-2">
+            <Label className="text-sm font-medium text-foreground mb-3">
+              Analysis Depth
+            </Label>
+            <div className="space-y-2">
               {ANALYSIS_OPTIONS.map((option) => (
                 <label
                   key={option.value}
                   className={`
-                    flex items-start gap-3 p-4 border rounded-lg cursor-pointer
-                    transition-all duration-150
+                    group relative flex items-start gap-3 p-4 pl-5 border-l-4 border-r border-t border-b
+                    rounded-lg cursor-pointer transition-all duration-150
                     ${
                       analysisType === option.value
-                        ? 'border-foreground bg-muted/30'
-                        : 'border-border hover:border-muted-foreground/50 hover:bg-muted/10'
+                        ? `${option.borderColor} bg-muted/30 border-r-foreground/20 border-t-foreground/20 border-b-foreground/20`
+                        : 'border-l-transparent border-r-border border-t-border border-b-border hover:border-l-muted-foreground/30 hover:bg-muted/10'
                     }
                     ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
                   `}
                 >
+                  {/* Radio Input */}
                   <input
                     type="radio"
                     name="analysisType"
@@ -278,42 +305,86 @@ export function AnalyzeLeadModal({
                     checked={analysisType === option.value}
                     onChange={(e) => setAnalysisType(e.target.value as AnalysisType)}
                     disabled={isLoading}
-                    className="mt-1 w-4 h-4 text-foreground border-border focus:ring-primary"
+                    className="mt-1 w-4 h-4 text-foreground border-border focus:ring-primary-500"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-medium text-foreground">{option.label}</span>
-                      <span className="text-xs px-2 py-0.5 bg-muted border border-border rounded-full text-muted-foreground">
-                        {option.credits} credit{option.credits !== 1 ? 's' : ''}
+
+                  {/* Icon */}
+                  <div className={`
+                    flex-shrink-0 p-1.5 rounded-lg transition-colors
+                    ${analysisType === option.value ? 'bg-background' : 'bg-transparent group-hover:bg-background'}
+                  `}>
+                    <Icon 
+                      icon={option.icon} 
+                      className={`
+                        w-5 h-5 transition-colors
+                        ${analysisType === option.value ? 'text-foreground' : 'text-muted-foreground'}
+                      `}
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-sm font-semibold text-foreground">
+                        {option.label}
+                      </span>
+                      <span className={`
+                        inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold
+                        ${
+                          analysisType === option.value
+                            ? 'bg-foreground text-background'
+                            : 'bg-muted border border-border text-foreground'
+                        }
+                      `}>
+                        <Icon icon="ph:coin" className="w-3 h-3" />
+                        {option.credits}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{option.description}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {option.description}
+                    </p>
                   </div>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* Cost Summary */}
-          <div className="p-4 bg-muted/20 rounded-lg border border-border">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Total cost:</span>
-              <span className="font-semibold text-foreground">
-                {totalCost} credit{totalCost !== 1 ? 's' : ''}
-              </span>
+          {/* Cost Summary - More Prominent */}
+          <div className="p-4 bg-gradient-to-br from-muted/30 to-muted/10 rounded-lg border border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Icon icon="ph:wallet" className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Total cost</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Icon icon="ph:coin" className="w-5 h-5 text-amber-500" />
+                <span className="text-lg font-bold text-foreground">
+                  {totalCost}
+                </span>
+                <span className="text-xs text-muted-foreground ml-0.5">
+                  credit{totalCost !== 1 ? 's' : ''}
+                </span>
+              </div>
             </div>
           </div>
         </form>
       </Modal.Body>
 
+      {/* Footer */}
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+        <Button 
+          variant="secondary" 
+          onClick={handleClose} 
+          disabled={isLoading}
+          className="min-w-[100px]"
+        >
           Cancel
         </Button>
         <Button
           variant="primary"
           onClick={handleSubmit}
           disabled={!canSubmit}
+          isLoading={isLoading}
           className="min-w-[140px]"
         >
           {isLoading ? (
@@ -322,7 +393,10 @@ export function AnalyzeLeadModal({
               Processing...
             </>
           ) : (
-            'Start Research'
+            <>
+              <Icon icon="ph:magnifying-glass-bold" className="w-4 h-4" />
+              Start Research
+            </>
           )}
         </Button>
       </Modal.Footer>
