@@ -16,7 +16,7 @@
  * Native table for browser optimization
  */
 
-import { useState, useCallback, memo } from 'react';
+import { useCallback, memo } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 
