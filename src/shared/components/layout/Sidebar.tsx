@@ -242,64 +242,42 @@ export function Sidebar() {
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
               }}
             >
-              {/* User Info Header */}
+              {/* Email Header - Claude style */}
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-base font-semibold text-white">
-                      {user?.full_name?.charAt(0).toUpperCase() || 'H'}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                      {user?.full_name || 'Hamza Williams'}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {user?.email || 'hamza.williamsbusiness@gmail.com'}
-                    </p>
-                  </div>
-                </div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {user?.email || 'hamza.williamsbusiness@gmail.com'}
+                </p>
               </div>
 
               {/* Menu Items */}
               <div className="py-2">
-                <button className="w-full px-4 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
+                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
                   <Icon icon="ph:gear" className="w-4 h-4 text-neutral-500" />
                   <span>Settings</span>
-                  <kbd className="ml-auto text-xs bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-neutral-500">
-                    ⌘+Ctrl+,
-                  </kbd>
-                </button>
-                
-                <button className="w-full px-4 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                  <Icon icon="ph:translate" className="w-4 h-4 text-neutral-500" />
-                  <span>Language</span>
-                  <Icon icon="ph:caret-right" className="w-3 h-3 ml-auto text-neutral-400" />
                 </button>
 
-                <button className="w-full px-4 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
+                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
                   <Icon icon="ph:question" className="w-4 h-4 text-neutral-500" />
                   <span>Get help</span>
                 </button>
 
-                <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
+                <div className="my-1.5 border-t border-neutral-200 dark:border-neutral-800" />
 
-                <button className="w-full px-4 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                  <Icon icon="ph:crown" className="w-4 h-4 text-secondary" />
+                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
+                  <Icon icon="ph:crown-simple" className="w-4 h-4 text-neutral-500" />
                   <span>Upgrade plan</span>
                 </button>
 
-                <button className="w-full px-4 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
+                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
                   <Icon icon="ph:book-open" className="w-4 h-4 text-neutral-500" />
                   <span>Learn more</span>
-                  <Icon icon="ph:caret-right" className="w-3 h-3 ml-auto text-neutral-400" />
                 </button>
 
-                <div className="my-1 border-t border-neutral-200 dark:border-neutral-800" />
+                <div className="my-1.5 border-t border-neutral-200 dark:border-neutral-800" />
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3"
+                  className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3"
                 >
                   <Icon icon="ph:sign-out" className="w-4 h-4 text-neutral-500" />
                   <span>Log out</span>
