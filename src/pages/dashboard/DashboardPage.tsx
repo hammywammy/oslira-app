@@ -1,24 +1,29 @@
 // src/pages/dashboard/DashboardPage.tsx
 
 /**
- * DASHBOARD PAGE - V6.0 PRODUCTION
+ * DASHBOARD PAGE - V7.0 SUPABASE-STYLE
  * 
- * LAYOUT:
- * - TopBar (global, fixed)
+ * LAYOUT: Full viewport table integration
+ * - TopBar (global, fixed top)
  * - DashboardHotbar (fixed below TopBar)
- * - Table content (scrollable)
- * - Pagination bar (fixed at bottom)
+ * - LeadsTable (fills viewport, edge-to-edge)
+ * - Pagination (fixed bottom)
+ * 
+ * CHANGES FROM V6.0:
+ * - Removed AppShell wrapper
+ * - Removed container padding/max-width
+ * - Using TableViewLayout for proper bounds
+ * - All business logic unchanged
  */
 
 import { useState } from 'react';
-import { AppShell } from '@/shared/components/layout/AppShell';
+import { TableViewLayout } from '@/features/dashboard/layout/TableViewLayout';
 import { DashboardHotbar } from '@/features/dashboard/components/DashboardHotbar/DashboardHotbar';
 import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTable';
 import { TablePagination } from '@/features/dashboard/components/LeadsTable/TablePagination';
 import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
-import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
 // MOCK DATA
@@ -38,7 +43,6 @@ const MOCK_LEADS = [
 
 export function DashboardPage() {
   const { leads: storeLeads } = useDashboardStore();
-  const { isCollapsed } = useSidebarStore();
   
   // Use store leads OR mock data
   const leads = storeLeads.length > 0 ? storeLeads : MOCK_LEADS;
@@ -56,7 +60,7 @@ export function DashboardPage() {
   const totalPages = Math.ceil(leads.length / pageSize);
 
   // ===========================================================================
-  // HANDLERS
+  // HANDLERS (UNCHANGED)
   // ===========================================================================
 
   const handleAnalyzeSuccess = (leadId: string) => {
@@ -84,43 +88,34 @@ export function DashboardPage() {
 
   return (
     <>
-      {/* DASHBOARD HOTBAR - Fixed below TopBar */}
-      <DashboardHotbar
-        onBulkUpload={() => setShowBulkModal(true)}
-        onAnalyzeLead={() => setShowAnalyzeModal(true)}
+      <TableViewLayout
+        hotbar={
+          <DashboardHotbar
+            onBulkUpload={() => setShowBulkModal(true)}
+            onAnalyzeLead={() => setShowAnalyzeModal(true)}
+          />
+        }
+        table={
+          <LeadsTable
+            selectedLeads={selectedLeads}
+            onSelectionChange={setSelectedLeads}
+          />
+        }
+        pagination={
+          leads.length > 0 ? (
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={leads.length}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          ) : null
+        }
       />
 
-      {/* MAIN CONTENT */}
-      <AppShell>
-        <div className="pt-14 pb-20">
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <LeadsTable
-              selectedLeads={selectedLeads}
-              onSelectionChange={setSelectedLeads}
-            />
-          </div>
-        </div>
-      </AppShell>
-
-      {/* PAGINATION BAR - Fixed at bottom */}
-      {leads.length > 0 && (
-        <div className={`
-          fixed bottom-0 right-0 bg-background border-t border-border z-30
-          transition-[left] duration-200
-          ${isCollapsed ? 'left-16' : 'left-60'}
-        `}>
-          <TablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            totalItems={leads.length}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </div>
-      )}
-
-      {/* MODALS */}
+      {/* MODALS (UNCHANGED) */}
       <AnalyzeLeadModal
         isOpen={showAnalyzeModal}
         onClose={() => setShowAnalyzeModal(false)}
