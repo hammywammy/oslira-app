@@ -113,7 +113,8 @@ export function Step3Target() {
             <Input
               type="number"
               min={0}
-              placeholder="10,000"
+              placeholder="0"
+              defaultValue={0}
               error={errors.icp_min_followers?.message}
               {...register('icp_min_followers', { valueAsNumber: true })}
               className="w-full"
@@ -127,17 +128,12 @@ export function Step3Target() {
               type="number"
               min={0}
               placeholder="1,000,000"
+              defaultValue={1000000}
               error={errors.icp_max_followers?.message}
               {...register('icp_max_followers', { valueAsNumber: true })}
               className="w-full"
             />
           </div>
-        </div>
-        <div className="bg-secondary-50 border border-secondary-200 rounded-lg p-3">
-          <p className="text-xs text-secondary-700">
-            <Icon icon="ph:lightbulb" className="inline mr-1" />
-            Tip: Focus on accounts with 10K-100K followers for best engagement
-          </p>
         </div>
       </div>
 
