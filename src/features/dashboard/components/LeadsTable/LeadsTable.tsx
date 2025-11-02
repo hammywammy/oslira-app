@@ -374,6 +374,7 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
         document.removeEventListener('mouseup', handleResizeEnd);
       };
     }
+    return undefined;
   }, [resizingColumn, handleResizeMove, handleResizeEnd]);
 
   // Selection handlers
