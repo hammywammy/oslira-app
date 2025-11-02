@@ -1,163 +1,223 @@
-// src/pages/dashboard/DashboardPage.tsx
+// src/features/dashboard/components/LeadsTable/TablePagination.tsx
 
 /**
- * DASHBOARD PAGE - V5.0 WITH HOTBAR INTEGRATION
+ * TABLE PAGINATION - POSTGRES/SUPABASE STYLE
  * 
- * ARCHITECTURE:
- * ✅ DashboardHotbar positioned inline below TopBar
- * ✅ Native table fills entire viewport width
- * ✅ Bottom pagination bar (Supabase-style)
- * ✅ Selection state managed at page level
- * ✅ Professional CRM layout with consistent spacing
- * 
- * LAYOUT STRUCTURE:
- * - TopBar (fixed at top)
- * - DashboardHotbar (fixed below TopBar)
- * - Main content area (table + pagination)
+ * Design matches Postgres admin:
+ * - Left: Page navigation (arrow buttons + "Page 1 of 1")
+ * - Center: "100 rows" (editable inline) + "64 records"
+ * - Right: Refresh button + Data/Schema toggle (placeholder)
  */
 
+import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import { AppShell } from '@/shared/components/layout/AppShell';
-import { DashboardHotbar } from '@/features/dashboard/components/DashboardHotbar/DashboardHotbar';
-import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTable';
-import { TablePagination } from '@/features/dashboard/components/LeadsTable/TablePagination';
-import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
-import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
-import { useAuth } from '@/features/auth/contexts/AuthProvider';
-import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
-import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
-// CONSTANTS
+// TYPES
 // =============================================================================
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
-// Mock data for testing
-const MOCK_LEADS = [
-  { id: '1', username: '@nike', full_name: 'Nike' },
-  { id: '2', username: '@adidas', full_name: 'Adidas' },
-  { id: '3', username: '@puma', full_name: 'PUMA' },
-  { id: '4', username: '@underarmour', full_name: 'Under Armour' },
-  { id: '5', username: '@newbalance', full_name: 'New Balance' },
-];
+interface TablePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  onRefresh?: () => void;
+  viewMode?: 'data' | 'analytics' | 'export';
+  onViewModeChange?: (mode: 'data' | 'analytics' | 'export') => void;
+}
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
-export function DashboardPage() {
-  const { account } = useAuth();
-  const { leads: storeLeads } = useDashboardStore();
-  const { isCollapsed } = useSidebarStore();
-  
-  // Use store leads OR mock data
-  const leads = storeLeads.length > 0 ? storeLeads : MOCK_LEADS;
-  
-  // Modal state
-  const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
-  const [showBulkModal, setShowBulkModal] = useState(false);
-  
-  // Table state
-  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+export function TablePagination({
+  currentPage,
+  totalPages,
+  pageSize,
+  totalItems,
+  onPageChange,
+  onPageSizeChange,
+  onRefresh,
+  viewMode = 'data',
+  onViewModeChange,
+}: TablePaginationProps) {
+  const [isEditingRows, setIsEditingRows] = useState(false);
+  const [rowsInput, setRowsInput] = useState(String(pageSize));
 
-  // Get credits
-  const currentCredits = account?.credit_balance || 0;
-  
-  // Pagination calculations
-  const totalPages = Math.ceil(leads.length / pageSize);
-
-  // ===========================================================================
-  // HANDLERS
-  // ===========================================================================
-
-  const handleAnalyzeSuccess = (leadId: string) => {
-    console.log('✅ Lead analysis started:', leadId);
-    // TODO: Show success toast
-    // TODO: Refresh leads table
+  // Handle rows input submission
+  const handleRowsSubmit = () => {
+    const newSize = parseInt(rowsInput, 10);
+    if (newSize > 0 && newSize <= 1000) {
+      onPageSizeChange(newSize);
+    } else {
+      setRowsInput(String(pageSize)); // Reset invalid input
+    }
+    setIsEditingRows(false);
   };
 
-  const handleBulkSuccess = (jobId: string, count: number) => {
-    console.log('✅ Bulk analysis started:', jobId, 'for', count, 'leads');
-    // TODO: Show success toast with message like: "Analyzing 25 leads..."
-    // TODO: Refresh leads table or show progress indicator
+  const handleRowsKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleRowsSubmit();
+    } else if (e.key === 'Escape') {
+      setRowsInput(String(pageSize));
+      setIsEditingRows(false);
+    }
   };
-  
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    setSelectedLeads(new Set()); // Clear selection on page change
-  };
-  
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
-    setSelectedLeads(new Set());
-  };
-
-  // ===========================================================================
-  // RENDER
-  // ===========================================================================
 
   return (
-    <>
-      {/* DASHBOARD HOTBAR - Fixed inline below TopBar */}
-      <DashboardHotbar
-        onBulkUpload={() => setShowBulkModal(true)}
-        onAnalyzeLead={() => setShowAnalyzeModal(true)}
-        currentCredits={currentCredits}
-      />
+    <div className="h-11 px-4 border-t border-border bg-background flex items-center justify-between text-xs font-medium">
+      
+      {/* ===================================================================
+          LEFT: Page navigation controls
+          =================================================================== */}
+      <div className="flex items-center gap-2">
+        {/* Previous page */}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="
+            w-7 h-7 rounded flex items-center justify-center
+            text-muted-foreground hover:bg-accent hover:text-foreground
+            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+            transition-colors
+          "
+          aria-label="Previous page"
+        >
+          <Icon icon="ph:caret-left-bold" width={14} />
+        </button>
 
-      {/* MAIN CONTENT - Wrapped in AppShell */}
-      <AppShell>
-        {/* Add top padding to account for fixed hotbar (TopBar 56px + Hotbar 56px = 112px) */}
-        {/* Add bottom padding for fixed pagination bar */}
-        <div className="pt-14 pb-20">
-          {/* FULL-WIDTH TABLE CONTAINER */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            {/* Table */}
-            <LeadsTable
-              selectedLeads={selectedLeads}
-              onSelectionChange={setSelectedLeads}
-            />
-          </div>
+        {/* Page indicator with editable input */}
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <span>Page</span>
+          <input
+            type="number"
+            value={currentPage}
+            onChange={(e) => {
+              const page = parseInt(e.target.value, 10);
+              if (page >= 1 && page <= totalPages) {
+                onPageChange(page);
+              }
+            }}
+            min={1}
+            max={totalPages}
+            className="
+              w-10 h-6 px-1.5 text-center bg-accent rounded border border-border
+              text-foreground font-medium
+              focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary
+              [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+            "
+          />
+          <span>of</span>
+          <span className="text-foreground">{totalPages}</span>
         </div>
-      </AppShell>
 
-      {/* PAGINATION BAR - Fixed at bottom like Supabase */}
-      {leads.length > 0 && (
-        <div className={`
-          fixed bottom-0 right-0 h-14 bg-background border-t border-border z-30
-          transition-[left] duration-200
-          ${isCollapsed ? 'left-16' : 'left-60'}
-        `}>
-          <div className="h-full px-6 flex items-center">
-            <TablePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              pageSizeOptions={PAGE_SIZE_OPTIONS}
-              totalItems={leads.length}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
+        {/* Next page */}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="
+            w-7 h-7 rounded flex items-center justify-center
+            text-muted-foreground hover:bg-accent hover:text-foreground
+            disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+            transition-colors
+          "
+          aria-label="Next page"
+        >
+          <Icon icon="ph:caret-right-bold" width={14} />
+        </button>
+      </div>
+
+      {/* ===================================================================
+          CENTER: Editable rows per page + total record count
+          =================================================================== */}
+      <div className="flex items-center gap-3 text-muted-foreground">
+        {/* Editable rows input */}
+        {isEditingRows ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={rowsInput}
+              onChange={(e) => setRowsInput(e.target.value)}
+              onBlur={handleRowsSubmit}
+              onKeyDown={handleRowsKeyDown}
+              autoFocus
+              min="1"
+              max="1000"
+              className="
+                w-16 h-6 px-2 text-center bg-accent rounded border border-primary
+                text-foreground font-medium
+                focus:outline-none focus:ring-1 focus:ring-primary
+                [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+              "
             />
+            <span>rows</span>
           </div>
+        ) : (
+          <button
+            onClick={() => {
+              setIsEditingRows(true);
+              setRowsInput(String(pageSize));
+            }}
+            className="
+              flex items-center gap-1 px-2 py-1 rounded
+              hover:bg-accent hover:text-foreground transition-colors
+            "
+          >
+            <span className="text-foreground font-semibold">{pageSize}</span>
+            <span>rows</span>
+          </button>
+        )}
+
+        {/* Total record count */}
+        <div className="flex items-center gap-1">
+          <span className="text-foreground font-semibold">{totalItems}</span>
+          <span>records</span>
         </div>
-      )}
+      </div>
 
-      {/* MODALS */}
-      <AnalyzeLeadModal
-        isOpen={showAnalyzeModal}
-        onClose={() => setShowAnalyzeModal(false)}
-        onSuccess={handleAnalyzeSuccess}
-      />
+      {/* ===================================================================
+          RIGHT: Refresh button + View mode toggle
+          =================================================================== */}
+      <div className="flex items-center gap-2">
+        {/* Refresh button */}
+        {onRefresh && (
+          <button
+            onClick={onRefresh}
+            className="
+              w-7 h-7 rounded flex items-center justify-center
+              text-muted-foreground hover:bg-accent hover:text-foreground
+              transition-colors group
+            "
+            aria-label="Refresh table"
+            title="Refresh table data"
+          >
+            <Icon 
+              icon="ph:arrows-clockwise-bold" 
+              width={14}
+              className="group-active:rotate-180 transition-transform duration-300"
+            />
+          </button>
+        )}
 
-      <BulkUploadModal
-        isOpen={showBulkModal}
-        onClose={() => setShowBulkModal(false)}
-        onSuccess={handleBulkSuccess}
-      />
-    </>
+        {/* View mode toggle */}
+        <div 
+          className={`
+            flex items-center gap-1 px-2.5 py-1 rounded 
+            ${onViewModeChange 
+              ? 'bg-muted text-muted-foreground cursor-pointer hover:bg-accent hover:text-foreground transition-colors' 
+              : 'bg-muted/50 text-muted-foreground/40 cursor-not-allowed'
+            }
+          `}
+          onClick={() => onViewModeChange && onViewModeChange(viewMode)}
+          title={onViewModeChange ? 'Switch view mode' : 'Coming soon'}
+        >
+          <span className="text-[10px] uppercase tracking-wider font-semibold">
+            {viewMode}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
