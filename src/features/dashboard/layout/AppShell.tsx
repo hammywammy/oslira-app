@@ -1,33 +1,33 @@
-// src/features/dashboard/layout/DashboardShell.tsx
+// src/shared/components/layout/AppShell.tsx
 
 /**
- * DASHBOARD SHELL WITH TOPBAR - UPDATED
+ * APP SHELL - MAIN APPLICATION LAYOUT
  * 
- * This is how you integrate the TopBar into your existing layout.
- * The TopBar will appear on all pages that use DashboardShell.
+ * Core layout wrapper for all authenticated application pages.
+ * Provides consistent navigation and layout structure.
+ * 
+ * COMPONENTS:
+ * - TopBar: Global search, notifications, settings
+ * - Sidebar: Main navigation
+ * - Main: Content area with responsive margins
  */
 
 import { ReactNode } from 'react';
-import { Sidebar } from '@/shared/components/layout/Sidebar';
-import { TopBar } from '@/shared/components/layout/TopBar'; // ADD THIS IMPORT
+import { Sidebar } from './Sidebar';
+import { TopBar } from './TopBar';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
-interface DashboardShellProps {
+interface AppShellProps {
   children: ReactNode;
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const { isCollapsed } = useSidebarStore();
 
   return (
     <div className="min-h-screen bg-background">
-      {/* TopBar - Fixed at top of screen */}
       <TopBar />
-      
-      {/* Sidebar - Fixed on left side */}
       <Sidebar />
-
-      {/* Main Content Area */}
       <main
         className={`
           min-h-screen transition-[margin] duration-200
