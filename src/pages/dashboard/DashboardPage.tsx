@@ -14,6 +14,7 @@ import { Input } from '@/shared/components/ui/Input';
 import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
+import { useSelectedBusiness } from '@/core/store/selectors';
 import { Icon } from '@iconify/react';
 
 // =============================================================================
@@ -21,14 +22,15 @@ import { Icon } from '@iconify/react';
 // =============================================================================
 
 export function DashboardPage() {
-  const { user, account } = useAuth();
+  const { account } = useAuth();
+  const selectedBusiness = useSelectedBusiness(); // Use selector from store
   
   // Modal state
   const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
 
-  // Get business profile ID and credits from auth context
-  const businessProfileId = user?.selected_business_id;
+  // Get business profile ID and credits
+  const businessProfileId = selectedBusiness?.id;
   const currentCredits = account?.credit_balance || 0;
 
   // ===========================================================================
