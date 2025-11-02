@@ -1,30 +1,57 @@
 // src/pages/dashboard/DashboardPage.tsx
 
 /**
- * DASHBOARD PAGE - OSLIRA PRODUCTION
+ * DASHBOARD PAGE - WITH MODAL INTEGRATION
  * 
- * Main dashboard view featuring table-first layout.
- * This is where users spend 80% of their time.
- * 
- * LAYOUT:
- * - Page header with title + action buttons
- * - Filter bar (search, filters, sort)
- * - LeadsTable (85% of screen real estate)
- * 
- * PHILOSOPHY:
- * The table IS the product. Everything else supports it.
+ * Main dashboard view with Analyze Lead and Bulk Upload modals
  */
 
+import { useState } from 'react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTable';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
+import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
+import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
+import { Icon } from '@iconify/react';
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function DashboardPage() {
+  const { user, account } = useAuth();
+  
+  // Modal state
+  const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+
+  // Get business profile ID and credits from auth context
+  const businessProfileId = user?.selected_business_id;
+  const currentCredits = account?.credit_balance || 0;
+
+  // ===========================================================================
+  // MODAL HANDLERS
+  // ===========================================================================
+
+  const handleAnalyzeSuccess = (leadId: string) => {
+    console.log('✅ Lead analysis started:', leadId);
+    // TODO: Show success toast
+    // TODO: Refresh leads table
+    // For now, just close modal - it's already closed by the modal itself
+  };
+
+  const handleBulkSuccess = (jobId: string, count: number) => {
+    console.log('✅ Bulk analysis started:', jobId, 'for', count, 'leads');
+    // TODO: Show success toast with message like: "Analyzing 25 leads..."
+    // TODO: Refresh leads table or show progress indicator
+  };
+
+  // ===========================================================================
+  // RENDER
+  // ===========================================================================
+
   return (
     <AppShell>
       {/* ===== PAGE HEADER ===== */}
@@ -32,8 +59,8 @@ export function DashboardPage() {
         <div className="flex items-center justify-between">
           {/* Title */}
           <div>
-            <h1 className="text-2xl font-semibold text-text mb-1">Leads</h1>
-            <p className="text-sm text-text-secondary">
+            <h1 className="text-2xl font-semibold text-foreground mb-1">Leads</h1>
+            <p className="text-sm text-muted-foreground">
               Manage and analyze your Instagram leads
             </p>
           </div>
@@ -42,16 +69,16 @@ export function DashboardPage() {
           <div className="flex items-center gap-3">
             <Button
               variant="secondary"
-              icon="mdi:upload"
-              iconPosition="left"
+              onClick={() => setShowBulkModal(true)}
             >
+              <Icon icon="ph:upload-simple" className="w-4 h-4" />
               Bulk Upload
             </Button>
             <Button
               variant="primary"
-              icon="mdi:plus"
-              iconPosition="left"
+              onClick={() => setShowAnalyzeModal(true)}
             >
+              <Icon icon="ph:plus" className="w-4 h-4" />
               Analyze Lead
             </Button>
           </div>
@@ -65,25 +92,41 @@ export function DashboardPage() {
           <Input
             type="text"
             placeholder="Search leads..."
-            icon="mdi:magnify"
-            iconPosition="left"
             fullWidth
           />
         </div>
 
         {/* Filter Button */}
-        <Button variant="secondary" icon="mdi:filter-outline" iconPosition="left">
+        <Button variant="secondary">
+          <Icon icon="ph:funnel" className="w-4 h-4" />
           Filters
         </Button>
 
         {/* Sort Button */}
-        <Button variant="ghost" icon="mdi:sort" iconPosition="left">
+        <Button variant="ghost">
+          <Icon icon="ph:sort-ascending" className="w-4 h-4" />
           Sort
         </Button>
       </div>
 
       {/* ===== LEADS TABLE - THE STAR ===== */}
       <LeadsTable />
+
+      {/* ===== MODALS ===== */}
+      <AnalyzeLeadModal
+        isOpen={showAnalyzeModal}
+        onClose={() => setShowAnalyzeModal(false)}
+        onSuccess={handleAnalyzeSuccess}
+        businessProfileId={businessProfileId}
+      />
+
+      <BulkUploadModal
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        onSuccess={handleBulkSuccess}
+        businessProfileId={businessProfileId}
+        currentCredits={currentCredits}
+      />
     </AppShell>
   );
 }
