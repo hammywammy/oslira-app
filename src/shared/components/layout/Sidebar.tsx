@@ -184,24 +184,25 @@ export function Sidebar() {
 
           {/* BOTTOM SECTION - Credits & User */}
           <div className="border-t border-border p-3 space-y-3">
-            {/* Simple Credits Display */}
+            {/* Simple Credits Display - Expanded */}
             {!isCollapsed && (
-              <div className="px-3 py-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Credits remaining</span>
-                  <span className="text-sm font-semibold text-foreground">
+              <div className="px-3 py-3 bg-muted/30 rounded-lg">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-muted-foreground">Credits</span>
+                  <span className="text-lg font-bold text-foreground">
                     {account?.credit_balance || 0}
                   </span>
                 </div>
+                <div className="text-xs text-muted-foreground">remaining this month</div>
               </div>
             )}
 
             {/* Collapsed Credits Display */}
             {isCollapsed && (
-              <div className="flex justify-center">
+              <div className="flex justify-center py-2">
                 <div className="text-center">
-                  <Icon icon="ph:coins" className="w-4 h-4 text-muted-foreground mx-auto mb-1" />
-                  <span className="text-xs font-semibold text-foreground">
+                  <Icon icon="ph:coins" className="w-4 h-4 text-primary mx-auto mb-1" />
+                  <span className="text-xs font-bold text-foreground">
                     {account?.credit_balance || 0}
                   </span>
                 </div>
@@ -218,22 +219,8 @@ export function Sidebar() {
                   ${isCollapsed ? 'justify-center' : ''}
                 `}
               >
-                {/* Avatar with image or fallback */}
-                {user?.avatar_url ? (
-                  <img 
-                    src={user.avatar_url} 
-                    alt={user?.full_name || 'User'}
-                    className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-neutral-200"
-                    onError={(e) => {
-                      // Fallback if image fails to load
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                ) : null}
-                
-                {/* Fallback initial avatar (hidden if image loads) */}
-                <div className={`w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 ${user?.avatar_url ? 'hidden' : ''}`}>
+                {/* Avatar - Always show initials, never broken image */}
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-semibold text-white">
                     {getUserInitial()}
                   </span>
@@ -246,7 +233,7 @@ export function Sidebar() {
                         {user?.full_name || 'User'}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {user?.email || 'user@example.com'}
+                        {getUserPlan()}
                       </p>
                     </div>
                     <Icon 
@@ -286,18 +273,11 @@ export function Sidebar() {
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
               }}
             >
-              {/* User Info Header - Shows name and plan */}
+              {/* Email Header - Shows only email */}
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center justify-between">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                      {user?.full_name || 'User'}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {getUserPlan()}
-                    </p>
-                  </div>
-                </div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {user?.email || 'user@example.com'}
+                </p>
               </div>
 
               {/* Menu Items */}
