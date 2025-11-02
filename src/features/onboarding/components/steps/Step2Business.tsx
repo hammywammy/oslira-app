@@ -64,6 +64,46 @@ export function Step2Business() {
         <p className="text-neutral-600">
           Help us understand what you do and how you communicate
         </p>
+</div>
+
+      {/* Business Name - NEW FIELD */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-neutral-700">
+          Business Name
+          <span className="text-red-500 ml-1">*</span>
+        </label>
+        <div className="relative">
+          <Icon 
+            icon="ph:buildings" 
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5 pointer-events-none z-10" 
+          />
+          <input
+            type="text"
+            placeholder="Acme Marketing Agency"
+            className={`
+              w-full pl-11 pr-4 py-2.5
+              bg-white border-2 rounded-xl
+              text-neutral-900 placeholder:text-neutral-400
+              transition-all duration-200
+              focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+              ${errors.business_name 
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' 
+                : 'border-neutral-200 hover:border-neutral-300'
+              }
+            `}
+            {...register('business_name')}
+          />
+        </div>
+        {errors.business_name?.message && (
+          <div className="flex items-center gap-2 text-sm text-red-600">
+            <Icon icon="ph:warning-circle" className="w-4 h-4" />
+            {errors.business_name.message}
+          </div>
+        )}
+        <p className="text-sm text-neutral-500 flex items-center gap-2">
+          <Icon icon="ph:info" className="w-4 h-4" />
+          Your company or business name
+        </p>
       </div>
 
       {/* Business Summary */}
