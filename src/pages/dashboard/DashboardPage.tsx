@@ -17,7 +17,6 @@ import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTabl
 import { TablePagination } from '@/features/dashboard/components/LeadsTable/TablePagination';
 import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
-import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
@@ -38,7 +37,6 @@ const MOCK_LEADS = [
 // =============================================================================
 
 export function DashboardPage() {
-  const { account } = useAuth();
   const { leads: storeLeads } = useDashboardStore();
   const { isCollapsed } = useSidebarStore();
   
