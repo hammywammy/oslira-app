@@ -1,13 +1,13 @@
 // src/shared/components/layout/TopBar.tsx
 
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '@/core/theme/ThemeProvider';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 export function TopBar() {
-  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const { isCollapsed } = useSidebarStore();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,12 +60,12 @@ export function TopBar() {
               relative group
               ${isSearchFocused ? 'w-full' : 'w-full'}
             `}>
-              {/* Search Input */}
+              {/* Search Input - ENHANCED CONTRAST */}
               <div className={`
                 relative flex items-center
                 ${isSearchFocused 
-                  ? 'ring-2 ring-primary/20 bg-muted/50' 
-                  : 'bg-muted/30 hover:bg-muted/50'
+                  ? 'ring-2 ring-primary/30 bg-muted border border-border' 
+                  : 'bg-muted border border-border hover:border-muted-foreground/20'
                 }
                 rounded-lg transition-all duration-200
               `}>
@@ -95,7 +95,7 @@ export function TopBar() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 p-1 hover:bg-muted rounded transition-colors"
+                    className="absolute right-3 p-1 hover:bg-background rounded transition-colors"
                   >
                     <Icon icon="ph:x" className="w-4 h-4 text-muted-foreground" />
                   </button>
@@ -248,20 +248,12 @@ export function TopBar() {
               </AnimatePresence>
             </div>
 
-            {/* Settings Button */}
-            <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-              <Icon icon="ph:gear" className="w-5 h-5 text-muted-foreground" />
-            </button>
-
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
+            {/* Settings Button - NAVIGATION ENABLED */}
+            <button 
+              onClick={() => navigate('/settings')}
               className="p-2 hover:bg-muted rounded-lg transition-colors"
             >
-              <Icon
-                icon={theme === 'dark' ? 'ph:sun' : 'ph:moon'}
-                className="w-5 h-5 text-muted-foreground"
-              />
+              <Icon icon="ph:gear" className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
         </div>
