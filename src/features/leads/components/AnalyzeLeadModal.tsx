@@ -11,7 +11,7 @@
  * ✅ Professional color scheme
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
@@ -233,7 +233,7 @@ export function AnalyzeLeadModal({
                 onChange={handleInputChange}
                 disabled={isLoading}
                 autoFocus
-                className={error ? 'border-red-500 focus:ring-red-500' : ''}
+                className={`${error ? 'border-red-500 focus:ring-red-500' : ''} ${rawInput ? 'pl-7' : ''}`}
               />
               {/* @ Prefix Display */}
               {rawInput && (
@@ -241,12 +241,6 @@ export function AnalyzeLeadModal({
                   <span className="text-foreground font-medium">@</span>
                 </div>
               )}
-              {/* Adjust input padding when @ is visible */}
-              <style jsx>{`
-                input {
-                  padding-left: ${rawInput ? '1.75rem' : '0.75rem'};
-                }
-              `}</style>
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
               Type the handle without the @ symbol
