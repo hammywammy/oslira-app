@@ -82,7 +82,7 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* LOGO SECTION - SAME HEIGHT AS TOPBAR (56px) */}
-          <div className="h-14 flex items-center justify-between px-4 border-b border-border relative">
+          <div className="h-14 flex items-center justify-between px-4 relative">
             {/* Logo and Text - Left side, clickable */}
             {!isCollapsed ? (
               // Expanded: Logo and text on left
