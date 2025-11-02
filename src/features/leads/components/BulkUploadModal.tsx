@@ -1,15 +1,15 @@
 // src/features/leads/components/BulkUploadModal.tsx
 
 /**
- * BULK UPLOAD MODAL - V4.0 CLEAN REDESIGN
+ * BULK UPLOAD MODAL - V5.0 WITH PERSONALITY
  * 
- * DESIGN INSPIRED BY CLEANER AESTHETIC:
- * ✅ Minimalist, clean layout
- * ✅ Simple file upload without heavy decoration
- * ✅ Radio buttons with simple labels
- * ✅ Professional color palette
- * ✅ Removed visual clutter
- * ✅ Focus on clarity and functionality
+ * IMPROVEMENTS:
+ * ✅ Larger modal size for better presence
+ * ✅ Colorful, engaging design with personality
+ * ✅ Gradient accents and modern styling
+ * ✅ Better visual hierarchy
+ * ✅ More engaging copy and icons
+ * ✅ Visual feedback and animations
  */
 
 import { useState, useRef } from 'react';
@@ -44,6 +44,8 @@ interface AnalysisOption {
   label: string;
   description: string;
   credits: number;
+  icon: string;
+  gradient: string;
 }
 
 // =============================================================================
@@ -54,20 +56,26 @@ const ANALYSIS_OPTIONS: AnalysisOption[] = [
   {
     value: 'light',
     label: 'Light Analysis',
-    description: 'Basic profile metrics (1 credit)',
+    description: 'Basic profile metrics and engagement scoring',
     credits: 1,
+    icon: 'ph:lightning-fill',
+    gradient: 'from-amber-500 to-orange-500',
   },
   {
     value: 'deep',
     label: 'Deep Analysis',
-    description: 'Detailed insights + outreach template (2 credits)',
+    description: 'Detailed insights + outreach template',
     credits: 2,
+    icon: 'ph:brain-fill',
+    gradient: 'from-blue-500 to-indigo-500',
   },
   {
     value: 'xray',
     label: 'X-Ray Analysis',
-    description: 'Complete psychological profile (3 credits)',
+    description: 'Complete psychological profile + strategy',
     credits: 3,
+    icon: 'ph:atom-fill',
+    gradient: 'from-emerald-500 to-teal-500',
   },
 ];
 
@@ -89,6 +97,7 @@ export function BulkUploadModal({
   const [analysisType, setAnalysisType] = useState<AnalysisType>('light');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // ===========================================================================
   // FILE PARSING
@@ -106,7 +115,6 @@ export function BulkUploadModal({
           .map((line) => line.trim())
           .filter((line) => line.length > 0);
 
-        // Clean and validate usernames
         const rawUsernames = lines.map((line) => line.replace(/^@/, '').trim());
         const validUsernames: string[] = [];
 
@@ -127,7 +135,6 @@ export function BulkUploadModal({
           return;
         }
 
-        // Remove duplicates
         const uniqueUsernames = [...new Set(validUsernames)];
         const duplicatesRemoved = validUsernames.length - uniqueUsernames.length;
 
@@ -155,6 +162,22 @@ export function BulkUploadModal({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (file) parseCSVFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
     if (file) parseCSVFile(file);
   };
 
@@ -208,6 +231,7 @@ export function BulkUploadModal({
       setParsedFile(null);
       setAnalysisType('light');
       setError(null);
+      setIsDragging(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -231,26 +255,32 @@ export function BulkUploadModal({
   // ===========================================================================
 
   return (
-    <Modal open={isOpen} onClose={handleClose} size="md" closeable={!isLoading}>
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Bulk Upload</h2>
-          <p className="text-sm text-muted-foreground mt-1">Upload a CSV file with Instagram usernames</p>
+    <Modal open={isOpen} onClose={handleClose} size="lg" closeable={!isLoading}>
+      <div className="p-8">
+        {/* Header with Icon */}
+        <div className="flex items-start gap-4 mb-8">
+          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+            <Icon icon="ph:upload-bold" className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-foreground mb-1">Bulk Upload</h2>
+            <p className="text-sm text-muted-foreground">Analyze multiple Instagram profiles at once</p>
+          </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Error Display */}
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200">
-              {error}
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
+              <Icon icon="ph:warning-circle-fill" className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
             </div>
           )}
 
-          {/* File Upload */}
+          {/* File Upload Zone */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              CSV File
+            <label className="block text-sm font-semibold text-foreground mb-3">
+              Upload CSV File
             </label>
             
             <input
@@ -264,36 +294,80 @@ export function BulkUploadModal({
 
             {!parsedFile ? (
               <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border rounded-md p-8 text-center cursor-pointer hover:border-muted-foreground/50 hover:bg-muted/5 transition-colors"
+                onClick={() => !isLoading && fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`
+                  relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all
+                  ${isDragging 
+                    ? 'border-primary bg-primary/10 scale-[1.02]' 
+                    : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                  }
+                  ${isLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}
+                `}
               >
-                <Icon icon="mdi:file-upload-outline" className="w-10 h-10 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-foreground font-medium mb-1">Click to upload CSV</p>
-                <p className="text-xs text-muted-foreground">Max {MAX_LEADS} usernames • One username per line</p>
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Icon icon="ph:file-csv-fill" className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {isDragging ? 'Drop your file here' : 'Drop CSV file or click to browse'}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-1">
+                  One Instagram username per line
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Maximum {MAX_LEADS} usernames • CSV format only
+                </p>
               </div>
             ) : (
-              <div className="border border-border rounded-md p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <Icon icon="mdi:file-delimited-outline" className="w-5 h-5 text-foreground flex-shrink-0" />
-                    <span className="text-sm font-medium text-foreground truncate">
-                      {parsedFile.filename}
-                    </span>
+              <div className="border-2 border-primary rounded-2xl p-6 bg-primary/5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
+                      <Icon icon="ph:file-csv-fill" className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{parsedFile.filename}</p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Icon icon="ph:check-circle-fill" className="w-3.5 h-3.5 text-emerald-500" />
+                          {parsedFile.usernames.length} valid
+                        </span>
+                        {parsedFile.duplicatesRemoved > 0 && (
+                          <span>{parsedFile.duplicatesRemoved} duplicates removed</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <button
                     onClick={handleRemoveFile}
                     disabled={isLoading}
-                    className="p-1 hover:bg-muted rounded transition-colors"
+                    className="p-2 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
                   >
-                    <Icon icon="mdi:close" className="w-4 h-4 text-muted-foreground" />
+                    <Icon icon="ph:x-bold" className="w-5 h-5 text-muted-foreground" />
                   </button>
                 </div>
-                
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{parsedFile.usernames.length} usernames</span>
-                  {parsedFile.duplicatesRemoved > 0 && (
-                    <span>{parsedFile.duplicatesRemoved} duplicates removed</span>
-                  )}
+
+                {/* Username Preview */}
+                <div className="p-3 bg-background rounded-xl border border-border">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Preview (first 10):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {parsedFile.usernames.slice(0, 10).map((username, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-muted border border-border rounded-lg text-foreground"
+                      >
+                        <span className="text-muted-foreground">@</span>
+                        {username}
+                      </span>
+                    ))}
+                    {parsedFile.usernames.length > 10 && (
+                      <span className="px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        +{parsedFile.usernames.length - 10} more
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -302,14 +376,22 @@ export function BulkUploadModal({
           {/* Analysis Type (only show if file uploaded) */}
           {parsedFile && (
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Analysis Type
+              <label className="block text-sm font-semibold text-foreground mb-3">
+                Choose Analysis Depth
               </label>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {ANALYSIS_OPTIONS.map((option) => (
                   <label
                     key={option.value}
-                    className="flex items-start gap-3 p-3 border border-border rounded-md cursor-pointer hover:bg-muted/30 transition-colors"
+                    className={`
+                      group relative flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all
+                      ${
+                        analysisType === option.value
+                          ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
+                          : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30'
+                      }
+                      ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}
                   >
                     <input
                       type="radio"
@@ -318,11 +400,22 @@ export function BulkUploadModal({
                       checked={analysisType === option.value}
                       onChange={(e) => setAnalysisType(e.target.value as AnalysisType)}
                       disabled={isLoading}
-                      className="mt-0.5 w-4 h-4 text-primary border-border focus:ring-primary"
+                      className="mt-1 w-5 h-5 text-primary border-2 border-border focus:ring-2 focus:ring-primary/20 cursor-pointer"
                     />
+                    
+                    <div className={`flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-md`}>
+                      <Icon icon={option.icon} className="w-5 h-5 text-white" />
+                    </div>
+
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-foreground">{option.label}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{option.description}</div>
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="text-base font-semibold text-foreground">{option.label}</h4>
+                        <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded-full text-xs font-bold text-foreground">
+                          <Icon icon="ph:lightning-fill" className="w-3 h-3" />
+                          {option.credits} each
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{option.description}</p>
                     </div>
                   </label>
                 ))}
@@ -330,19 +423,31 @@ export function BulkUploadModal({
             </div>
           )}
 
-          {/* Cost Summary (only show if file uploaded) */}
+          {/* Cost Summary */}
           {parsedFile && (
-            <div className="p-4 bg-muted/30 rounded-md">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-foreground font-medium">Total Cost</span>
-                <span className="text-foreground font-semibold">
-                  {totalCost} {totalCost === 1 ? 'credit' : 'credits'}
-                </span>
+            <div className="p-5 bg-gradient-to-br from-muted/50 to-muted/30 border-2 border-border rounded-xl">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-foreground">Total Cost</span>
+                <div className="flex items-center gap-2">
+                  <Icon icon="ph:coins-fill" className="w-6 h-6 text-amber-500" />
+                  <span className="text-2xl font-bold text-foreground">
+                    {totalCost}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {totalCost === 1 ? 'credit' : 'credits'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{parsedFile.usernames.length} leads × {costPerLead} {costPerLead === 1 ? 'credit' : 'credits'}</span>
+                <span>Balance after: {creditsAfter} credits</span>
               </div>
               {hasInsufficientCredits && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-2">
-                  Insufficient credits. You have {currentCredits} credits but need {totalCost}.
-                </p>
+                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-xs font-medium text-red-800 dark:text-red-200">
+                    ⚠️ Insufficient credits. You need {totalCost} credits but only have {currentCredits}.
+                  </p>
+                </div>
               )}
             </div>
           )}
@@ -354,6 +459,7 @@ export function BulkUploadModal({
               variant="ghost"
               onClick={handleClose}
               disabled={isLoading}
+              className="px-6"
             >
               Cancel
             </Button>
@@ -363,7 +469,9 @@ export function BulkUploadModal({
               onClick={handleSubmit}
               disabled={!canSubmit}
               isLoading={isLoading}
+              className="px-8 shadow-lg shadow-primary/20"
             >
+              <Icon icon="ph:upload-bold" className="w-4 h-4" />
               {isLoading ? 'Starting Analysis...' : 'Start Analysis'}
             </Button>
           </div>
