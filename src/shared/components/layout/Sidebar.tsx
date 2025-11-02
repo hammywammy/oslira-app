@@ -43,6 +43,7 @@ export function Sidebar() {
   const { user, logout } = useAuth();
   const { theme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isHoveringToggle, setIsHoveringToggle] = useState(false);
 
   // Mock subscription data - replace with real API data
   const subscription = {
@@ -83,40 +84,69 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* LOGO SECTION */}
-          <div className="h-16 flex items-center justify-between px-4 border-b border-border">
-            <div className="flex items-center gap-3">
+          <div className="h-16 flex items-center justify-between px-4 border-b border-border relative">
+            {/* Toggle Button - Left aligned */}
+            <button
+              onClick={toggleCollapse}
+              className="p-1.5 hover:bg-muted rounded-lg transition-all duration-200 group z-10"
+              onMouseEnter={() => setIsHoveringToggle(true)}
+              onMouseLeave={() => setIsHoveringToggle(false)}
+            >
+              {/* Toggle icon logic:
+                  - Open sidebar + hovering = show close icon (theme-specific)
+                  - Open sidebar + not hovering = show normal icon (theme-specific)
+                  - Closed sidebar = always show normal icon (theme-specific)
+              */}
               <img 
-                src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
-                alt="Oslira"
-                className="h-8 w-8"
+                src={
+                  !isCollapsed && isHoveringToggle 
+                    ? theme === 'dark' 
+                      ? '/sidebar-toggle-close-dark.svg' 
+                      : '/sidebar-toggle-close-light.svg'
+                    : theme === 'dark'
+                      ? '/sidebar-toggle-dark.svg'
+                      : '/sidebar-toggle-light.svg'
+                }
+                alt="Toggle sidebar"
+                className="w-5 h-5"
               />
-              {!isCollapsed && (
+            </button>
+
+            {/* Logo and Text */}
+            {!isCollapsed ? (
+              // Expanded: Logo and text on right
+              <div className="flex items-center gap-2.5 ml-auto">
+                <img 
+                  src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
+                  alt="Oslira"
+                  className="h-7 w-7"
+                />
                 <span className="text-lg font-semibold text-foreground">
                   Oslira
                 </span>
-              )}
-            </div>
-            <button
-              onClick={toggleCollapse}
-              className="p-1.5 hover:bg-muted rounded-lg transition-colors"
-            >
-              <Icon 
-                icon={isCollapsed ? 'ph:caret-right' : 'ph:caret-left'} 
-                className="w-4 h-4 text-muted-foreground"
-              />
-            </button>
+              </div>
+            ) : (
+              // Collapsed: Logo centered
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <img 
+                  src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
+                  alt="Oslira"
+                  className="h-7 w-7"
+                />
+              </div>
+            )}
           </div>
 
           {/* NAVIGATION */}
-          <div className="flex-1 overflow-y-auto py-4 px-3">
+          <div className="flex-1 overflow-y-auto py-4">
             {NAV_SECTIONS.map((section) => (
               <div key={section.title} className="mb-6">
                 {!isCollapsed && (
-                  <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-2 tracking-wider">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-2 px-6 tracking-wider">
                     {section.title}
                   </h3>
                 )}
-                <nav className="space-y-1">
+                <nav className="px-3 space-y-1">
                   {section.items.map((item) => (
                     <NavLink
                       key={item.path}
@@ -138,7 +168,7 @@ export function Sidebar() {
                       
                       {/* Tooltip for collapsed state */}
                       {isCollapsed && (
-                        <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs font-medium rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity">
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs font-medium rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
                           {item.label}
                         </div>
                       )}
