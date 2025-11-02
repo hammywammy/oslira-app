@@ -386,324 +386,260 @@ export function LeadsTable() {
         </div>
       </div>
 
-      {/* TABLE - FIXED LAYOUT WITH HORIZONTAL SCROLL */}
+      {/* TABLE - CSS GRID LAYOUT FOR TRUE FIXED POSITIONING */}
       <div 
         ref={tableContainerRef}
         className="overflow-x-auto overflow-y-visible"
-        style={{ 
-          maxWidth: '100%',
-        }}
       >
-        <table 
-          className="w-full border-collapse"
-          style={{ 
+        {/* HEADER */}
+        <div 
+          className="bg-gradient-to-b from-gray-50 to-gray-50/80 border-b-2 border-gray-200/80 sticky top-0 z-10"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `${columnWidths.checkbox}px ${columnWidths.lead}px ${columnWidths.platform}px ${columnWidths.score}px ${columnWidths.analysis}px ${columnWidths.updated}px ${columnWidths.actions}px`,
             minWidth: `${totalTableWidth}px`,
-            tableLayout: 'fixed',
           }}
         >
-          <thead className="bg-gradient-to-b from-gray-50 to-gray-50/80 border-b-2 border-gray-200/80 sticky top-0 z-10">
-            <tr>
-              {/* CHECKBOX COLUMN - FIXED, NON-RESIZABLE, ALWAYS VISIBLE */}
-              <th 
-                className="px-4 py-3 bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.checkbox}px` }}
-              >
-                <button
-                  onClick={handleSelectAll}
-                  className={`
-                    w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
-                    ${allSelected || someSelected 
-                      ? 'bg-blue-600 border-blue-600 shadow-sm' 
-                      : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                    }
-                  `}
-                  aria-label="Select all leads"
-                >
-                  {allSelected && <Icon icon="mdi:check" width={14} className="text-white" />}
-                  {someSelected && <Icon icon="mdi:minus" width={14} className="text-white" />}
-                </button>
-              </th>
+          {/* CHECKBOX COLUMN - FIXED, NON-RESIZABLE, ALWAYS VISIBLE */}
+          <div className="px-4 py-3 bg-gray-50/95 backdrop-blur-sm flex items-center justify-center">
+            <button
+              onClick={handleSelectAll}
+              className={`
+                w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
+                ${allSelected || someSelected 
+                  ? 'bg-blue-600 border-blue-600 shadow-sm' 
+                  : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                }
+              `}
+              aria-label="Select all leads"
+            >
+              {allSelected && <Icon icon="mdi:check" width={14} className="text-white" />}
+              {someSelected && <Icon icon="mdi:minus" width={14} className="text-white" />}
+            </button>
+          </div>
 
-              {/* LEAD COLUMN - RESIZABLE */}
-              <th 
-                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.lead}px` }}
-              >
-                <button
-                  onClick={() => handleSort('username')}
-                  className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
-                >
-                  Lead
-                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                </button>
-                
-                {/* Resize Handle */}
-                <div
-                  className={`
-                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
-                    ${resizingColumn === 'lead' 
-                      ? 'bg-blue-500 shadow-lg' 
-                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
-                    }
-                  `}
-                  onMouseDown={(e) => handleResizeStart('lead', e)}
-                />
-              </th>
+          {/* LEAD COLUMN - RESIZABLE */}
+          <div className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm">
+            <button
+              onClick={() => handleSort('username')}
+              className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Lead
+              <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+            </button>
+            
+            {/* Resize Handle */}
+            <div
+              className={`
+                absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all z-20
+                ${resizingColumn === 'lead' 
+                  ? 'bg-blue-500 shadow-lg' 
+                  : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                }
+              `}
+              onMouseDown={(e) => handleResizeStart('lead', e)}
+            />
+          </div>
 
-              {/* PLATFORM COLUMN - RESIZABLE */}
-              <th 
-                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.platform}px` }}
-              >
-                <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
-                  Platform
-                </span>
-                
-                <div
-                  className={`
-                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
-                    ${resizingColumn === 'platform' 
-                      ? 'bg-blue-500 shadow-lg' 
-                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
-                    }
-                  `}
-                  onMouseDown={(e) => handleResizeStart('platform', e)}
-                />
-              </th>
+          {/* PLATFORM COLUMN - RESIZABLE */}
+          <div className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm">
+            <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
+              Platform
+            </span>
+            
+            <div
+              className={`
+                absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all z-20
+                ${resizingColumn === 'platform' 
+                  ? 'bg-blue-500 shadow-lg' 
+                  : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                }
+              `}
+              onMouseDown={(e) => handleResizeStart('platform', e)}
+            />
+          </div>
 
-              {/* SCORE COLUMN - RESIZABLE */}
-              <th 
-                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.score}px` }}
-              >
-                <button
-                  onClick={() => handleSort('overall_score')}
-                  className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
-                >
-                  Score
-                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                </button>
-                
-                <div
-                  className={`
-                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
-                    ${resizingColumn === 'score' 
-                      ? 'bg-blue-500 shadow-lg' 
-                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
-                    }
-                  `}
-                  onMouseDown={(e) => handleResizeStart('score', e)}
-                />
-              </th>
+          {/* SCORE COLUMN - RESIZABLE */}
+          <div className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm">
+            <button
+              onClick={() => handleSort('overall_score')}
+              className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Score
+              <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+            </button>
+            
+            <div
+              className={`
+                absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all z-20
+                ${resizingColumn === 'score' 
+                  ? 'bg-blue-500 shadow-lg' 
+                  : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                }
+              `}
+              onMouseDown={(e) => handleResizeStart('score', e)}
+            />
+          </div>
 
-              {/* ANALYSIS COLUMN - RESIZABLE */}
-              <th 
-                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.analysis}px` }}
-              >
-                <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
-                  Analysis
-                </span>
-                
-                <div
-                  className={`
-                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
-                    ${resizingColumn === 'analysis' 
-                      ? 'bg-blue-500 shadow-lg' 
-                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
-                    }
-                  `}
-                  onMouseDown={(e) => handleResizeStart('analysis', e)}
-                />
-              </th>
+          {/* ANALYSIS COLUMN - RESIZABLE */}
+          <div className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm">
+            <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
+              Analysis
+            </span>
+            
+            <div
+              className={`
+                absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all z-20
+                ${resizingColumn === 'analysis' 
+                  ? 'bg-blue-500 shadow-lg' 
+                  : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                }
+              `}
+              onMouseDown={(e) => handleResizeStart('analysis', e)}
+            />
+          </div>
 
-              {/* UPDATED COLUMN - RESIZABLE */}
-              <th 
-                className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.updated}px` }}
-              >
-                <button
-                  onClick={() => handleSort('created_at')}
-                  className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
-                >
-                  Updated
-                  <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
-                </button>
-                
-                <div
-                  className={`
-                    absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all
-                    ${resizingColumn === 'updated' 
-                      ? 'bg-blue-500 shadow-lg' 
-                      : 'hover:bg-blue-400 group-hover:bg-blue-200'
-                    }
-                  `}
-                  onMouseDown={(e) => handleResizeStart('updated', e)}
-                />
-              </th>
+          {/* UPDATED COLUMN - RESIZABLE */}
+          <div className="px-4 py-3 text-left relative group bg-gray-50/95 backdrop-blur-sm">
+            <button
+              onClick={() => handleSort('created_at')}
+              className="flex items-center gap-1.5 font-semibold text-xs text-gray-700 hover:text-blue-600 transition-colors uppercase tracking-wider"
+            >
+              Updated
+              <Icon icon="mdi:unfold-more-horizontal" width={14} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+            </button>
+            
+            <div
+              className={`
+                absolute top-0 right-0 w-1 h-full cursor-col-resize transition-all z-20
+                ${resizingColumn === 'updated' 
+                  ? 'bg-blue-500 shadow-lg' 
+                  : 'hover:bg-blue-400 group-hover:bg-blue-200'
+                }
+              `}
+              onMouseDown={(e) => handleResizeStart('updated', e)}
+            />
+          </div>
 
-              {/* ACTIONS COLUMN - FIXED, NON-RESIZABLE */}
-              <th 
-                className="px-4 py-3 text-right bg-gray-50/95 backdrop-blur-sm" 
-                style={{ width: `${columnWidths.actions}px` }}
-              >
-                <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
-                  Actions
-                </span>
-              </th>
-            </tr>
-          </thead>
+          {/* ACTIONS COLUMN - FIXED, NON-RESIZABLE */}
+          <div className="px-4 py-3 text-right bg-gray-50/95 backdrop-blur-sm">
+            <span className="font-semibold text-xs text-gray-700 uppercase tracking-wider">
+              Actions
+            </span>
+          </div>
+        </div>
 
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {currentLeads.map((lead, index) => {
-              const isSelected = selectedLeads.has(lead.id);
-              
-              return (
-                <motion.tr
-                  key={lead.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03, duration: 0.2 }}
-                  className={`
-                    group
-                    transition-all duration-150
-                    ${isSelected 
-                      ? 'bg-blue-50/60 border-l-4 border-l-blue-600' 
-                      : 'hover:bg-gray-50/70 hover:shadow-sm'
-                    }
-                  `}
-                >
-                  {/* CHECKBOX - ALWAYS VISIBLE */}
-                  <td 
-                    className="px-4 py-3" 
-                    style={{ width: `${columnWidths.checkbox}px` }}
+        {/* BODY */}
+        <div className="divide-y divide-gray-100 bg-white">
+          {currentLeads.map((lead, index) => {
+            const isSelected = selectedLeads.has(lead.id);
+            
+            return (
+              <motion.div
+                key={lead.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03, duration: 0.2 }}
+                className={`
+                  group
+                  transition-all duration-150
+                  ${isSelected 
+                    ? 'bg-blue-50/60 border-l-4 border-l-blue-600' 
+                    : 'hover:bg-gray-50/70 hover:shadow-sm'
+                  }
+                `}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `${columnWidths.checkbox}px ${columnWidths.lead}px ${columnWidths.platform}px ${columnWidths.score}px ${columnWidths.analysis}px ${columnWidths.updated}px ${columnWidths.actions}px`,
+                  minWidth: `${totalTableWidth}px`,
+                }}
+              >
+                {/* CHECKBOX - ALWAYS VISIBLE */}
+                <div className="px-4 py-3 flex items-center justify-center">
+                  <button
+                    onClick={() => handleSelectLead(lead.id)}
+                    className={`
+                      w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
+                      ${isSelected 
+                        ? 'bg-blue-600 border-blue-600 shadow-sm' 
+                        : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                      }
+                    `}
+                    aria-label={`Select ${lead.username}`}
                   >
-                    <button
-                      onClick={() => handleSelectLead(lead.id)}
-                      className={`
-                        w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200
-                        ${isSelected 
-                          ? 'bg-blue-600 border-blue-600 shadow-sm' 
-                          : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                        }
-                      `}
-                      aria-label={`Select ${lead.username}`}
-                    >
-                      {isSelected && <Icon icon="mdi:check" width={14} className="text-white" />}
-                    </button>
-                  </td>
+                    {isSelected && <Icon icon="mdi:check" width={14} className="text-white" />}
+                  </button>
+                </div>
 
-                  {/* LEAD INFO */}
-                  <td 
-                    className="px-4 py-3" 
-                    style={{ 
-                      width: `${columnWidths.lead}px`,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                        {(lead.full_name || lead.username).charAt(0).toUpperCase()}
+                {/* LEAD INFO */}
+                <div className="px-4 py-3 overflow-hidden">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                      {(lead.full_name || lead.username).charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-gray-900 truncate">{lead.full_name || lead.username}</p>
+                      <p className="text-sm text-gray-500 truncate">{lead.username}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PLATFORM */}
+                <div className="px-4 py-3 overflow-hidden">
+                  <div className="flex items-center gap-2">
+                    <Icon icon="mdi:instagram" width={18} className="text-pink-500 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 font-medium truncate">Instagram</span>
+                  </div>
+                </div>
+
+                {/* SCORE */}
+                <div className="px-4 py-3 overflow-hidden">
+                  {lead.overall_score !== null ? (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-bold tabular-nums ${getScoreColor(lead.overall_score)}`}>
+                          {lead.overall_score}
+                        </span>
+                        <span className="text-xs text-gray-400 font-medium">/ 100</span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-gray-900 truncate">{lead.full_name || lead.username}</p>
-                        <p className="text-sm text-gray-500 truncate">{lead.username}</p>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full bg-gradient-to-r ${getScoreBgGradient(lead.overall_score)} transition-all duration-500 rounded-full`}
+                          style={{ width: `${lead.overall_score}%` }}
+                        />
                       </div>
                     </div>
-                  </td>
+                  ) : (
+                    <span className="text-sm text-gray-400 italic">Not scored</span>
+                  )}
+                </div>
 
-                  {/* PLATFORM */}
-                  <td 
-                    className="px-4 py-3" 
-                    style={{ 
-                      width: `${columnWidths.platform}px`,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon icon="mdi:instagram" width={18} className="text-pink-500" />
-                      <span className="text-sm text-gray-700 font-medium truncate">Instagram</span>
-                    </div>
-                  </td>
+                {/* ANALYSIS TYPE */}
+                <div className="px-4 py-3 overflow-hidden">
+                  {getAnalysisBadge(lead.analysis_type)}
+                </div>
 
-                  {/* SCORE */}
-                  <td 
-                    className="px-4 py-3" 
-                    style={{ 
-                      width: `${columnWidths.score}px`,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {lead.overall_score !== null ? (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className={`text-sm font-bold tabular-nums ${getScoreColor(lead.overall_score)}`}>
-                            {lead.overall_score}
-                          </span>
-                          <span className="text-xs text-gray-400 font-medium">/ 100</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full bg-gradient-to-r ${getScoreBgGradient(lead.overall_score)} transition-all duration-500 rounded-full`}
-                            style={{ width: `${lead.overall_score}%` }}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-gray-400 italic">Not scored</span>
-                    )}
-                  </td>
+                {/* UPDATED */}
+                <div className="px-4 py-3 overflow-hidden">
+                  <span className="text-sm text-gray-600 tabular-nums truncate block">
+                    {formatDate(lead.created_at)}
+                  </span>
+                </div>
 
-                  {/* ANALYSIS TYPE */}
-                  <td 
-                    className="px-4 py-3" 
-                    style={{ 
-                      width: `${columnWidths.analysis}px`,
-                      overflow: 'hidden',
-                    }}
+                {/* ACTIONS */}
+                <div className="px-4 py-3 text-right">
+                  <button 
+                    className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 inline-flex items-center justify-center"
+                    aria-label="View details"
+                    onClick={() => console.log('View lead:', lead.id)}
                   >
-                    {getAnalysisBadge(lead.analysis_type)}
-                  </td>
-
-                  {/* UPDATED */}
-                  <td 
-                    className="px-4 py-3" 
-                    style={{ 
-                      width: `${columnWidths.updated}px`,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <span className="text-sm text-gray-600 tabular-nums">
-                      {formatDate(lead.created_at)}
-                    </span>
-                  </td>
-
-                  {/* ACTIONS */}
-                  <td 
-                    className="px-4 py-3 text-right" 
-                    style={{ 
-                      width: `${columnWidths.actions}px`,
-                    }}
-                  >
-                    <button 
-                      className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-                      aria-label="View details"
-                      onClick={() => console.log('View lead:', lead.id)}
-                    >
-                      <Icon icon="mdi:eye-outline" width={18} />
-                    </button>
-                  </td>
-                </motion.tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    <Icon icon="mdi:eye-outline" width={18} />
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
       {/* PAGINATION FOOTER */}
