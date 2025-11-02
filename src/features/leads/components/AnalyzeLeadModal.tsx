@@ -51,7 +51,7 @@ interface AnalysisTypeOption {
   label: string;
   description: string;
   credits: number;
-  color: 'orange' | 'purple' | 'blue';
+  badgeVariant: 'light-analysis' | 'deep-analysis' | 'xray-analysis';
 }
 
 // =============================================================================
@@ -64,21 +64,21 @@ const ANALYSIS_TYPES: AnalysisTypeOption[] = [
     label: 'Light Analysis',
     description: 'Basic profile metrics and engagement scoring',
     credits: 1,
-    color: 'orange',
+    badgeVariant: 'light-analysis',
   },
   {
     value: 'deep',
     label: 'Deep Analysis',
     description: 'Detailed insights + outreach template',
     credits: 2,
-    color: 'purple',
+    badgeVariant: 'deep-analysis',
   },
   {
     value: 'xray',
     label: 'X-Ray Analysis',
     description: 'Complete psychological profile + strategy',
     credits: 3,
-    color: 'blue',
+    badgeVariant: 'xray-analysis',
   },
 ];
 
@@ -286,7 +286,7 @@ export function AnalyzeLeadModal({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium text-foreground">{type.label}</span>
-                      <Badge variant={type.color} size="sm">
+                      <Badge variant={type.badgeVariant} size="sm">
                         {type.credits} credit{type.credits !== 1 ? 's' : ''}
                       </Badge>
                     </div>
