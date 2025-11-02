@@ -43,7 +43,7 @@ interface Lead {
   analysis_type: 'light' | 'deep' | 'xray' | null;
   analysis_status: 'pending' | 'processing' | 'complete' | 'failed';
   followers_count: number;
-  credits_charged: number | null;
+  credits_charged?: number | null;
   created_at: string;
 }
 
