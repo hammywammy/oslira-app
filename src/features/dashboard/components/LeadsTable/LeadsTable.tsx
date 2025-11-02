@@ -76,6 +76,75 @@ const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
 const STORAGE_KEY_WIDTHS = 'oslira_leads_column_widths';
 const MIN_COLUMN_WIDTH = 80;
 
+// Mock data for development/testing
+const MOCK_LEADS: Lead[] = [
+  {
+    id: '1',
+    username: '@nike',
+    platform: 'instagram',
+    full_name: 'Nike',
+    avatar_url: null,
+    overall_score: 87,
+    analysis_type: 'deep',
+    analysis_status: 'complete',
+    followers_count: 285000000,
+    credits_charged: 1,
+    created_at: '2025-01-15T10:30:00Z',
+  },
+  {
+    id: '2',
+    username: '@adidas',
+    platform: 'instagram',
+    full_name: 'Adidas',
+    avatar_url: null,
+    overall_score: 82,
+    analysis_type: 'xray',
+    analysis_status: 'complete',
+    followers_count: 29400000,
+    credits_charged: 2,
+    created_at: '2025-01-14T15:20:00Z',
+  },
+  {
+    id: '3',
+    username: '@puma',
+    platform: 'instagram',
+    full_name: 'PUMA',
+    avatar_url: null,
+    overall_score: 75,
+    analysis_type: 'light',
+    analysis_status: 'complete',
+    followers_count: 14200000,
+    credits_charged: 1,
+    created_at: '2025-01-13T09:15:00Z',
+  },
+  {
+    id: '4',
+    username: '@underarmour',
+    platform: 'instagram',
+    full_name: 'Under Armour',
+    avatar_url: null,
+    overall_score: null,
+    analysis_type: null,
+    analysis_status: 'pending',
+    followers_count: 9100000,
+    credits_charged: null,
+    created_at: '2025-01-12T14:45:00Z',
+  },
+  {
+    id: '5',
+    username: '@newbalance',
+    platform: 'instagram',
+    full_name: 'New Balance',
+    avatar_url: null,
+    overall_score: 91,
+    analysis_type: 'xray',
+    analysis_status: 'complete',
+    followers_count: 7800000,
+    credits_charged: 2,
+    created_at: '2025-01-11T16:20:00Z',
+  },
+];
+
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
@@ -323,8 +392,8 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
   // Refs
   const rafRef = useRef<number | null>(null);
   
-  // Mock data fallback
-  const leads: Lead[] = storeLeads.length > 0 ? storeLeads : [];
+  // Use store leads OR mock data for testing
+  const leads: Lead[] = storeLeads.length > 0 ? storeLeads : MOCK_LEADS;
   
   // Load column widths from localStorage
   useEffect(() => {
