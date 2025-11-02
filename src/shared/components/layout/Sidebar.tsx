@@ -46,19 +46,6 @@ export function Sidebar() {
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
   const [isHoveringHeader, setIsHoveringHeader] = useState(false);
 
-  // Mock subscription data - replace with real API data
-  const subscription = {
-    plan_name: 'Pro Plan',
-    credits_remaining: 847,
-    credits_total: 1000,
-    renewal_date: '2025-02-01',
-  };
-
-  const creditsPercentage = (subscription.credits_remaining / subscription.credits_total) * 100;
-  const daysUntilRenewal = Math.ceil(
-    (new Date(subscription.renewal_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-  );
-
   const handleLogout = async () => {
     await logout();
   };
@@ -94,9 +81,11 @@ export function Sidebar() {
             <button
               onClick={toggleCollapse}
               className={`
-                p-1.5 hover:bg-muted rounded-lg transition-all duration-200 z-10
+                p-1.5 rounded-lg transition-all duration-200 z-10
                 ${isCollapsed && !isHoveringHeader ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+                ${isHoveringHeader || !isCollapsed ? 'hover:bg-muted' : ''}
               `}
+              style={{ backgroundColor: 'transparent' }}
               onMouseEnter={() => setIsHoveringToggle(true)}
               onMouseLeave={() => setIsHoveringToggle(false)}
             >
@@ -112,6 +101,7 @@ export function Sidebar() {
                 }
                 alt="Toggle sidebar"
                 className="w-5 h-5"
+                style={{ backgroundColor: 'transparent' }}
               />
             </button>
 
@@ -188,42 +178,27 @@ export function Sidebar() {
 
           {/* BOTTOM SECTION - Credits & User */}
           <div className="border-t border-border p-3 space-y-3">
-            {/* Credits Display */}
+            {/* Simple Credits Display */}
             {!isCollapsed && (
-              <div className="px-3 py-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-xs font-semibold text-foreground">
-                      {subscription.plan_name}
-                    </span>
-                  </div>
-                  <button className="text-xs text-primary hover:text-primary/80 font-medium">
-                    Upgrade
-                  </button>
+              <div className="px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Credits remaining</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {user?.account?.credit_balance || 0}
+                  </span>
                 </div>
+              </div>
+            )}
 
-                <div className="mb-2">
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="font-bold text-foreground">
-                      {subscription.credits_remaining}
-                      <span className="font-normal text-muted-foreground"> / {subscription.credits_total}</span>
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-300"
-                      style={{ width: `${creditsPercentage}%` }}
-                    />
-                  </div>
+            {/* Collapsed Credits Display */}
+            {isCollapsed && (
+              <div className="flex justify-center">
+                <div className="text-center">
+                  <Icon icon="ph:coins" className="w-4 h-4 text-muted-foreground mb-1" />
+                  <span className="text-xs font-semibold text-foreground">
+                    {user?.account?.credit_balance || 0}
+                  </span>
                 </div>
-
-                <p className="text-xs text-muted-foreground">
-                  credits remaining
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Resets in -{daysUntilRenewal} days
-                </p>
               </div>
             )}
 
@@ -299,11 +274,18 @@ export function Sidebar() {
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
               }}
             >
-              {/* Email Header - Claude style */}
+              {/* User Info Header - Shows name and plan */}
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {user?.email || 'user@example.com'}
-                </p>
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                      {user?.full_name || 'User'}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {user?.subscription?.plan_type || 'Free Plan'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Menu Items */}
