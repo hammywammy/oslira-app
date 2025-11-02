@@ -143,12 +143,6 @@ const MIN_COLUMN_WIDTH = 80;
 // UTILITY FUNCTIONS
 // =============================================================================
 
-function formatNumber(num: number): string {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-  return num.toString();
-}
-
 function getScoreColor(score: number): string {
   if (score >= 80) return 'text-emerald-600';
   if (score >= 60) return 'text-blue-600';
@@ -611,10 +605,10 @@ export function LeadsTable() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                        {lead.full_name.charAt(0)}
+                        {(lead.full_name || lead.username).charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-gray-900 truncate">{lead.full_name}</p>
+                        <p className="font-semibold text-gray-900 truncate">{lead.full_name || lead.username}</p>
                         <p className="text-sm text-gray-500 truncate">{lead.username}</p>
                       </div>
                     </div>
@@ -763,7 +757,8 @@ export function LeadsTable() {
                 })
                 .map((page, index, array) => {
                   // Add ellipsis
-                  if (index > 0 && page - array[index - 1] > 1) {
+                  const prevPage = array[index - 1];
+                  if (index > 0 && prevPage && page - prevPage > 1) {
                     return (
                       <span key={`ellipsis-${page}`} className="flex items-center">
                         <span className="px-2 text-gray-400">...</span>
