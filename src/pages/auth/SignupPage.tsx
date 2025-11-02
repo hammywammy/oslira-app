@@ -1,11 +1,11 @@
 // src/pages/auth/SignupPage.tsx
 /**
- * @file Signup Page (Get Started)
- * @description New user signup with 25 free credits messaging
+ * @file Signup Page - Stripe-inspired Professional Design
+ * @description Clean registration with 25 free credits messaging
  */
 
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { GoogleOAuthButton } from '@/features/auth/components/GoogleOAuthButton';
@@ -14,15 +14,15 @@ import { logger } from '@/core/utils/logger';
 import { Logo } from '@/shared/components/ui/Logo';
 
 // =============================================================================
-// ANIMATION VARIANTS
+// ANIMATION VARIANTS - Subtle and professional
 // =============================================================================
 
 const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 8 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }
   }
 };
 
@@ -31,8 +31,8 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
+      staggerChildren: 0.06,
+      delayChildren: 0.1
     }
   }
 };
@@ -53,93 +53,171 @@ export function SignupPage() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Don't render if loading or already authenticated
   if (isLoading || isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
-        />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-5 h-5 border-2 border-primary/60 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 flex items-center justify-center px-4">
-<motion.div
-  animate="visible"
-  variants={staggerContainer}
->
-        {/* Logo & Header */}
-        <motion.div variants={fadeIn} className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-6">
-<Logo size="lg" />
-            <span className="text-2xl font-bold text-slate-900">Oslira</span>
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Start your free trial
-          </h1>
-          <p className="text-slate-600">
-            Get 25 free credits for AI-powered lead analysis
-          </p>
-        </motion.div>
-
-        {/* Auth Card */}
-        <motion.div 
-          variants={fadeIn}
-          className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8"
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Minimal Header */}
+      <motion.header 
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="px-6 py-6 sm:px-8"
+      >
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2.5 text-foreground hover:opacity-70 transition-opacity duration-200"
         >
-          {/* Feature Highlights */}
-          <div className="mb-6 space-y-3">
-            {[
-              { icon: 'mdi:gift-outline', text: '25 free credits included' },
-              { icon: 'mdi:credit-card-off-outline', text: 'No credit card required' },
-              { icon: 'mdi:clock-fast', text: 'Start analyzing leads in 2 minutes' },
-            ].map((feature, index) => (
-              <div key={index} className="flex items-center gap-3 text-sm text-slate-600">
-                <Icon icon={feature.icon} className="text-green-600 text-lg flex-shrink-0" />
-                <span>{feature.text}</span>
-              </div>
-            ))}
-          </div>
+          <Logo size="sm" />
+          <span className="text-lg font-semibold tracking-tight">Oslira</span>
+        </Link>
+      </motion.header>
 
-          <GoogleOAuthButton label="Sign up with Google" />
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center px-6 sm:px-8 py-12">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="w-full max-w-[400px]"
+        >
+          {/* Promotional Badge */}
+          <motion.div 
+            variants={fadeIn}
+            className="mb-6 flex justify-center"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20">
+              <Icon icon="ph:sparkle" className="w-4 h-4" />
+              <span className="text-sm font-medium">25 free credits included</span>
+            </div>
+          </motion.div>
 
-          {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            <p className="text-center text-sm text-slate-500">
-              Already have an account?{' '}
-              <a 
-                href="/auth/login" 
-                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+          {/* Form Container */}
+          <div className="bg-card rounded-2xl border border-border shadow-sm">
+            <div className="p-8 sm:p-10">
+              {/* Title Section */}
+              <motion.div variants={fadeIn} className="text-center mb-8">
+                <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+                  Get started with Oslira
+                </h1>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Transform Instagram leads into revenue
+                </p>
+              </motion.div>
+
+              {/* OAuth Button */}
+              <motion.div variants={fadeIn}>
+                <GoogleOAuthButton 
+                  label="Sign up with Google"
+                  mode="signup"
+                />
+              </motion.div>
+
+              {/* Value Propositions */}
+              <motion.div 
+                variants={fadeIn}
+                className="mt-8 space-y-4"
               >
-                Sign in
-              </a>
-            </p>
-          </div>
-        </motion.div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon icon="ph:robot" className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      AI-Powered Analysis
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      GPT-5 analyzes profiles in seconds
+                    </p>
+                  </div>
+                </div>
 
-        {/* Footer Links */}
-        <motion.div variants={fadeIn} className="mt-6 text-center">
-          <p className="text-xs text-slate-500 mb-3">
-            By continuing, you agree to our{' '}
-            <a href="/legal/terms" className="underline hover:text-slate-700">Terms</a>
-            {' '}and{' '}
-            <a href="/legal/privacy" className="underline hover:text-slate-700">Privacy Policy</a>
-          </p>
-          <div className="flex items-center justify-center gap-4 text-xs">
-            <a href="/" className="text-slate-600 hover:text-slate-900 transition-colors">
-              ← Back to home
-            </a>
-            <span className="text-slate-300">|</span>
-            <a href="/contact" className="text-slate-600 hover:text-slate-900 transition-colors">
-              Need help?
-            </a>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon icon="ph:target" className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Partnership Scoring
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      0-100 viability scores instantly
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon icon="ph:envelope-simple" className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      Personalized Outreach
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Custom messages that convert
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Trust Indicators */}
+              <motion.div 
+                variants={fadeIn}
+                className="mt-8 pt-6 border-t border-border"
+              >
+                <div className="flex items-center justify-center gap-6">
+                  <div className="flex items-center gap-1.5">
+                    <Icon icon="ph:shield-check" className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">SOC 2 Compliant</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Icon icon="ph:lock" className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">256-bit SSL</span>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Footer Section */}
+            <div className="px-8 sm:px-10 py-5 bg-muted/30 border-t border-border rounded-b-2xl">
+              <motion.p 
+                variants={fadeIn}
+                className="text-center text-sm text-muted-foreground"
+              >
+                Already have an account?{' '}
+                <Link 
+                  to="/auth/login" 
+                  className="text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Sign in
+                </Link>
+              </motion.p>
+            </div>
           </div>
+
+          {/* Legal text */}
+          <motion.p 
+            variants={fadeIn}
+            className="mt-6 text-center text-xs text-muted-foreground px-4"
+          >
+            By signing up, you agree to our{' '}
+            <a href="/terms" className="text-foreground hover:text-primary transition-colors">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="/privacy" className="text-foreground hover:text-primary transition-colors">
+              Privacy Policy
+            </a>
+          </motion.p>
         </motion.div>
-      </motion.div>
+      </main>
     </div>
   );
 }
