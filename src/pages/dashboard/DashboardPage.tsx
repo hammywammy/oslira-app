@@ -1,19 +1,19 @@
 // src/pages/dashboard/DashboardPage.tsx
 
 /**
- * DASHBOARD PAGE - REDESIGNED BUTTONS
+ * DASHBOARD PAGE - V3.0 REDESIGN
  * 
- * Button styling fixes:
- * ✅ Proper gap between icon and text
- * ✅ Consistent sizing
- * ✅ Blue accent, not primary color
+ * IMPROVEMENTS:
+ * ✅ Properly styled action buttons with consistent spacing
+ * ✅ Blue as 10% accent (icons, subtle highlights)
+ * ✅ Clean visual hierarchy
+ * ✅ Modal integration with new designs
  */
 
 import { useState } from 'react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTable';
 import { Button } from '@/shared/components/ui/Button';
-import { Input } from '@/shared/components/ui/Input';
 import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
@@ -59,17 +59,17 @@ export function DashboardPage() {
   return (
     <AppShell>
       {/* ===== PAGE HEADER ===== */}
-      <div className="mb-6">
+      <div className="mb-8">
         <div className="flex items-center justify-between">
-          {/* Title */}
+          {/* Title Section */}
           <div>
-            <h1 className="text-2xl font-semibold text-foreground mb-1">Leads</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-1">Leads</h1>
             <p className="text-sm text-muted-foreground">
               Manage and analyze your Instagram leads
             </p>
           </div>
 
-          {/* Action Buttons - FIXED STYLING */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-3">
             <Button
               variant="secondary"
@@ -84,38 +84,14 @@ export function DashboardPage() {
               onClick={() => setShowAnalyzeModal(true)}
               className="flex items-center gap-2"
             >
-              <Icon icon="ph:plus" className="w-4 h-4" />
+              <Icon icon="ph:magnifying-glass-bold" className="w-4 h-4" />
               <span>Analyze Lead</span>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* ===== FILTER BAR ===== */}
-      <div className="mb-4 flex items-center gap-3">
-        {/* Search Input */}
-        <div className="flex-1">
-          <Input
-            type="text"
-            placeholder="Search leads..."
-            fullWidth
-          />
-        </div>
-
-        {/* Filter Button */}
-        <Button variant="secondary" className="flex items-center gap-2">
-          <Icon icon="ph:funnel" className="w-4 h-4" />
-          <span>Filters</span>
-        </Button>
-
-        {/* Sort Button */}
-        <Button variant="ghost" className="flex items-center gap-2">
-          <Icon icon="ph:sort-ascending" className="w-4 h-4" />
-          <span>Sort</span>
-        </Button>
-      </div>
-
-      {/* ===== LEADS TABLE - THE STAR ===== */}
+      {/* ===== LEADS TABLE ===== */}
       <LeadsTable />
 
       {/* ===== MODALS ===== */}
