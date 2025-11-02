@@ -40,16 +40,14 @@ export const step2Schema = z.object({
   business_name: z
     .string()
     .min(2, 'Business name must be at least 2 characters')
-    .max(100, 'Business name must be less than 100 characters')
-    .trim(),
-  
+    .max(20, 'Business name must be less than 20 characters'),
   business_summary: z
     .string()
     .min(50, 'Please provide at least 50 characters')
-    .max(750, 'Please keep it under 750 characters')
-    .trim(),
-  
-  communication_tone: z.enum(['professional', 'friendly', 'casual']),
+    .max(750, 'Maximum 750 characters'),
+  communication_tone: z.enum(['professional', 'friendly', 'casual'], {
+    required_error: 'Please select a communication tone',
+  }),
 });
 
 // =============================================================================
