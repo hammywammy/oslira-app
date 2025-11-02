@@ -102,7 +102,6 @@ export function DashboardPage() {
     <>
       {/* DASHBOARD HOTBAR - Fixed inline below TopBar */}
       <DashboardHotbar
-        totalLeads={leads.length}
         onBulkUpload={() => setShowBulkModal(true)}
         onAnalyzeLead={() => setShowAnalyzeModal(true)}
         currentCredits={currentCredits}
