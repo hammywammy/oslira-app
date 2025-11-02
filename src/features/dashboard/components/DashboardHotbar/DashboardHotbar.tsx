@@ -26,7 +26,7 @@ export function DashboardHotbar({
     `}>
       <div className="h-full px-6 flex items-center justify-between gap-6">
         
-        {/* Left: Primary Actions + Credits + Analysis Remaining */}
+        {/* Left: Primary Actions */}
         <div className="flex items-center gap-3">
           <button
             onClick={onAnalyzeLead}
@@ -56,23 +56,17 @@ export function DashboardHotbar({
             <span>Bulk Upload</span>
           </button>
 
-          {/* Credits Display */}
           {currentCredits > 0 && (
-            <>
-              <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                <Icon icon="ph:coin" width={16} className="text-amber-600 shrink-0" />
-                <span className="text-sm font-semibold text-amber-700 whitespace-nowrap">{currentCredits}</span>
-                <span className="text-xs text-amber-600/70 whitespace-nowrap">credits</span>
-              </div>
-
-              {/* Analysis Remaining Display */}
-              <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                <Icon icon="ph:sparkle" width={16} className="text-blue-600 shrink-0" />
-                <span className="text-sm font-semibold text-blue-700 whitespace-nowrap">10/10</span>
-                <span className="text-xs text-blue-600/70 whitespace-nowrap">light</span>
-              </div>
-            </>
+            <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-primary/5 rounded-md">
+              <Icon icon="mdi:lightning-bolt" width={16} className="text-primary shrink-0" />
+              <span className="text-sm font-semibold text-foreground whitespace-nowrap">{currentCredits} credits</span>
+            </div>
           )}
+
+          <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-md">
+            <Icon icon="mdi:chart-line" width={16} className="text-muted-foreground shrink-0" />
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">10/10 light analysis</span>
+          </div>
         </div>
 
         {/* Right: Search, Filter, Sort Controls */}
@@ -98,24 +92,6 @@ export function DashboardHotbar({
             />
           </div>
 
-          {/* Refresh Button */}
-          <button 
-            className="
-              inline-flex items-center justify-center h-9 w-9
-              border border-border rounded-lg
-              text-muted-foreground
-              hover:bg-muted/50 hover:text-foreground transition-colors
-              group
-            "
-            title="Refresh table"
-          >
-            <Icon 
-              icon="ph:arrows-clockwise-bold" 
-              width={18}
-              className="group-active:rotate-180 transition-transform duration-300"
-            />
-          </button>
-
           {/* Sort Button */}
           <button className="
             inline-flex items-center gap-2 h-9 px-3
@@ -124,7 +100,7 @@ export function DashboardHotbar({
             hover:bg-muted/50 transition-colors
             whitespace-nowrap
           ">
-            <Icon icon="ph:arrows-down-up-bold" width={18} />
+            <Icon icon="mdi:sort-variant" width={18} />
             <span>Sort</span>
             <Icon icon="mdi:chevron-down" width={16} className="text-muted-foreground" />
           </button>
@@ -139,6 +115,19 @@ export function DashboardHotbar({
           ">
             <Icon icon="mdi:filter-outline" width={18} />
             <span>Filter</span>
+          </button>
+
+          {/* Refresh Button */}
+          <button 
+            className="
+              inline-flex items-center justify-center h-9 w-9
+              border border-border rounded-lg
+              text-foreground
+              hover:bg-muted/50 transition-colors
+            "
+            aria-label="Refresh"
+          >
+            <Icon icon="mdi:refresh" width={18} />
           </button>
         </div>
       </div>
