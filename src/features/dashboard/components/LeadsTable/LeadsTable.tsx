@@ -128,7 +128,6 @@ export function LeadsTable() {
   const { leads: storeLeads } = useDashboardStore();
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   
   // Use store leads if available, otherwise use mock data
   const leads = storeLeads.length > 0 ? storeLeads : mockLeads;
@@ -152,12 +151,9 @@ export function LeadsTable() {
   };
 
   const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
+    setSortField(field);
+    // TODO: Implement actual sorting logic here
+    // This would typically sort the leads array based on the field
   };
 
   const allSelected = selectedLeads.size === leads.length && leads.length > 0;
