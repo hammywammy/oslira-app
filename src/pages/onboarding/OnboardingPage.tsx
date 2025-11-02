@@ -1,14 +1,13 @@
 // src/pages/onboarding/OnboardingPage.tsx
 
 /**
- * ONBOARDING PAGE - NAVIGATION LOCK FIX
+ * ONBOARDING PAGE - LIGHT MODE REDESIGN
  * 
- * FIXES:
- * ✅ Navigation buttons always enabled (no waiting for form changes)
- * ✅ Lock/unlock happens BEFORE step change (prevents race condition)
- * ✅ Throttle still prevents rapid clicking
- * ✅ Validation still works on Next
- * ✅ Step 4 Complete button always enabled
+ * Updated color scheme:
+ * - Light mode backgrounds (white/neutral)
+ * - Primary blue (#00B8FF) for main actions
+ * - Secondary purple (#8B7FC7) for accents
+ * - Removed all pink colors
  */
 
 import { useState, useMemo, useRef, useCallback } from 'react';
@@ -40,87 +39,69 @@ const stepSchemas = {
   1: step1Schema,
   2: step2Schema,
   3: step3Schema,
-  4: fullFormSchema, // Step 4 is review - validation not enforced
+  4: fullFormSchema,
 };
 
 export function OnboardingPage() {
   const { currentStep, direction, nextStep, prevStep, goToStep } = useOnboardingForm();
   const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
-  
-  const lastNavigationTime = useRef(0);
   const [isValidating, setIsValidating] = useState(false);
+
+  const lastNavigationTime = useRef(0);
+  const isThrottled = useCallback(() => {
+    const now = Date.now();
+    const timeSinceLastNav = now - lastNavigationTime.current;
+    return timeSinceLastNav < ANIMATION_DURATION;
+  }, []);
+
+  const recordNavigation = useCallback(() => {
+    lastNavigationTime.current = Date.now();
+  }, []);
 
   const methods = useForm<FormData>({
     resolver: zodResolver(fullFormSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
+      full_name: '',
+      business_summary: '',
+      communication_tone: 'professional',
+      target_description: '',
+      icp_min_followers: 10000,
+      icp_max_followers: 1000000,
       target_company_sizes: [],
     },
   });
 
-  const { trigger, handleSubmit, getValues, setError, clearErrors } = methods;
+  const {
+    trigger,
+    clearErrors,
+    handleSubmit,
+  } = methods;
 
-  // Throttle system (prevents rapid clicking)
-  const isThrottled = useCallback(() => {
-    const now = Date.now();
-    return now - lastNavigationTime.current < ANIMATION_DURATION;
-  }, []);
-
-  const recordNavigation = () => {
-    lastNavigationTime.current = Date.now();
-  };
-
-  // Validation
-  const validateCurrentStep = async (): Promise<boolean> => {
-    if (currentStep === 4) return true; // Review step - no validation
-
-    setIsValidating(true);
-    
-    try {
-      const schema = stepSchemas[currentStep as keyof typeof stepSchemas];
-      const fields = Object.keys(schema.shape);
-      const isValid = await trigger(fields as any);
-      
-      if (!isValid) return false;
-
-      // Step 3 specific validation
-      if (currentStep === 3) {
-        const values = getValues();
-        if (values.icp_max_followers < values.icp_min_followers) {
-          setError('icp_max_followers', {
-            type: 'manual',
-            message: 'Maximum must be greater than or equal to minimum',
-          });
-          return false;
-        }
-      }
-
-      return true;
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
-  // Navigation handlers
   const handleNext = async () => {
-    if (isThrottled() || isPending) return;
+    if (isThrottled() || isPending || isValidating) return;
     recordNavigation();
 
     try {
-      // Validate before moving forward (except Step 4)
-      const isValid = await validateCurrentStep();
-      if (!isValid) return;
+      if (currentStep < TOTAL_STEPS) {
+        setIsValidating(true);
+        const currentSchema = stepSchemas[currentStep as keyof typeof stepSchemas];
+        const schemaKeys = Object.keys(currentSchema.shape);
+        const isValid = await trigger(schemaKeys as any);
+        setIsValidating(false);
 
-      // If on last step, submit form
+        if (!isValid) return;
+      }
+
       if (currentStep === TOTAL_STEPS) {
         handleSubmit(onSubmit)();
         return;
       }
 
-      // Move to next step
       nextStep();
     } catch (error) {
       console.error('[Onboarding] Navigation error:', error);
+      setIsValidating(false);
     }
   };
 
@@ -142,7 +123,6 @@ export function OnboardingPage() {
     completeOnboarding(data);
   };
 
-  // Step rendering
   const stepContent = useMemo(() => {
     if (isPending) return <LoadingState />;
 
@@ -160,7 +140,6 @@ export function OnboardingPage() {
     }
   }, [currentStep, isPending]);
 
-  // Navigation state
   const canGoBack = currentStep > 1 && !isPending && !isValidating;
   const canGoNext = !isPending && !isValidating;
   const isLastStep = currentStep === TOTAL_STEPS;
@@ -168,7 +147,8 @@ export function OnboardingPage() {
 
   return (
     <FormProvider {...methods}>
-      <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Light mode background with subtle gradient */}
+      <div className="relative min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100">
         <ProgressBar currentStep={currentStep} />
 
         <OnboardingShell>
