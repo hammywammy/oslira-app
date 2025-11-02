@@ -51,10 +51,6 @@ export function Step3Target() {
     setValue('target_company_sizes', newSizes, { shouldValidate: true });
   };
 
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('en-US').format(value);
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
