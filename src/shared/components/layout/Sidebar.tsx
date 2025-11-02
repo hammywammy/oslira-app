@@ -44,6 +44,7 @@ export function Sidebar() {
   const { theme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
+  const [isHoveringHeader, setIsHoveringHeader] = useState(false);
 
   // Mock subscription data - replace with real API data
   const subscription = {
@@ -84,19 +85,21 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* LOGO SECTION */}
-          <div className="h-16 flex items-center justify-between px-4 border-b border-border relative">
-            {/* Toggle Button - Left aligned */}
+          <div 
+            className="h-16 flex items-center justify-between px-4 border-b border-border relative group"
+            onMouseEnter={() => setIsHoveringHeader(true)}
+            onMouseLeave={() => setIsHoveringHeader(false)}
+          >
+            {/* Toggle Button - Always present but conditionally visible */}
             <button
               onClick={toggleCollapse}
-              className="p-1.5 hover:bg-muted rounded-lg transition-all duration-200 group z-10"
+              className={`
+                p-1.5 hover:bg-muted rounded-lg transition-all duration-200 z-10
+                ${isCollapsed && !isHoveringHeader ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+              `}
               onMouseEnter={() => setIsHoveringToggle(true)}
               onMouseLeave={() => setIsHoveringToggle(false)}
             >
-              {/* Toggle icon logic:
-                  - Open sidebar + hovering = show close icon (theme-specific)
-                  - Open sidebar + not hovering = show normal icon (theme-specific)
-                  - Closed sidebar = always show normal icon (theme-specific)
-              */}
               <img 
                 src={
                   !isCollapsed && isHoveringToggle 
@@ -126,8 +129,12 @@ export function Sidebar() {
                 </span>
               </div>
             ) : (
-              // Collapsed: Logo centered
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              // Collapsed: Logo centered, hidden on hover
+              <div className={`
+                absolute inset-0 flex items-center justify-center pointer-events-none
+                transition-opacity duration-200
+                ${isHoveringHeader ? 'opacity-0' : 'opacity-100'}
+              `}>
                 <img 
                   src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
                   alt="Oslira"
