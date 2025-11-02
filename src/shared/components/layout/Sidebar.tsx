@@ -40,11 +40,11 @@ const NAV_SECTIONS: NavSection[] = [
 
 export function Sidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
-  const { user, logout } = useAuth();
+  const { user, account, logout } = useAuth();
   const { theme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
-  const [isHoveringHeader, setIsHoveringHeader] = useState(false);
+  const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -52,9 +52,6 @@ export function Sidebar() {
 
   // Get user initials for fallback avatar
   const getUserInitial = () => {
-    if (user?.profile?.full_name) {
-      return user.profile.full_name.charAt(0).toUpperCase();
-    }
     if (user?.full_name) {
       return user.full_name.charAt(0).toUpperCase();
     }
@@ -64,6 +61,13 @@ export function Sidebar() {
     return 'U';
   };
 
+  // Get user's subscription plan
+  const getUserPlan = () => {
+    // This would come from your subscription data
+    // For now, defaulting to "Free Plan"
+    return 'Free Plan';
+  };
+
   return (
     <>
       <aside
@@ -71,22 +75,21 @@ export function Sidebar() {
           fixed top-0 left-0 h-screen bg-background border-r border-border
           transition-all duration-200 flex flex-col z-30
           ${isCollapsed ? 'w-16' : 'w-60'}
+          ${isCollapsed ? 'overflow-hidden' : 'overflow-visible'}
         `}
+        onMouseEnter={() => setIsHoveringSidebar(true)}
+        onMouseLeave={() => setIsHoveringSidebar(false)}
       >
         <div className="flex flex-col h-full">
           {/* LOGO SECTION */}
-          <div 
-            className="h-16 flex items-center justify-between px-4 border-b border-border relative group"
-            onMouseEnter={() => setIsHoveringHeader(true)}
-            onMouseLeave={() => setIsHoveringHeader(false)}
-          >
-            {/* Toggle Button - Always present but conditionally visible */}
+          <div className="h-16 flex items-center justify-between px-4 border-b border-border relative">
+            {/* Toggle Button - Shows on hover when collapsed */}
             <button
               onClick={toggleCollapse}
               className={`
                 p-1.5 rounded-lg transition-all duration-200 z-10
-                ${isCollapsed && !isHoveringHeader ? 'opacity-0 pointer-events-none' : 'opacity-100'}
-                ${isHoveringHeader || !isCollapsed ? 'hover:bg-muted' : ''}
+                ${isCollapsed && !isHoveringSidebar ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+                ${isHoveringSidebar || !isCollapsed ? 'hover:bg-muted' : ''}
               `}
               style={{ backgroundColor: 'transparent' }}
               onMouseEnter={() => setIsHoveringToggle(true)}
@@ -126,7 +129,7 @@ export function Sidebar() {
               <div className={`
                 absolute inset-0 flex items-center justify-center pointer-events-none
                 transition-opacity duration-200
-                ${isHoveringHeader ? 'opacity-0' : 'opacity-100'}
+                ${isHoveringSidebar ? 'opacity-0' : 'opacity-100'}
               `}>
                 <img 
                   src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
@@ -138,7 +141,7 @@ export function Sidebar() {
           </div>
 
           {/* NAVIGATION */}
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className={`flex-1 py-4 ${isCollapsed ? '' : 'overflow-y-auto'}`}>
             {NAV_SECTIONS.map((section) => (
               <div key={section.title} className="mb-6">
                 {!isCollapsed && (
@@ -187,7 +190,7 @@ export function Sidebar() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">Credits remaining</span>
                   <span className="text-sm font-semibold text-foreground">
-                    {user?.subscription?.credits || 0}
+                    {account?.credit_balance || 0}
                   </span>
                 </div>
               </div>
@@ -197,9 +200,9 @@ export function Sidebar() {
             {isCollapsed && (
               <div className="flex justify-center">
                 <div className="text-center">
-                  <Icon icon="ph:coins" className="w-4 h-4 text-muted-foreground mb-1" />
+                  <Icon icon="ph:coins" className="w-4 h-4 text-muted-foreground mx-auto mb-1" />
                   <span className="text-xs font-semibold text-foreground">
-                    {user?.subscription?.credits || 0}
+                    {account?.credit_balance || 0}
                   </span>
                 </div>
               </div>
@@ -216,25 +219,31 @@ export function Sidebar() {
                 `}
               >
                 {/* Avatar with image or fallback */}
-                {user?.profile?.avatar_url || user?.avatar_url ? (
+                {user?.avatar_url ? (
                   <img 
-                    src={user?.profile?.avatar_url || user?.avatar_url} 
-                    alt={user?.profile?.full_name || user?.full_name || 'User'}
-                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    src={user.avatar_url} 
+                    alt={user?.full_name || 'User'}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-neutral-200"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
                   />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-semibold text-white">
-                      {getUserInitial()}
-                    </span>
-                  </div>
-                )}
+                ) : null}
+                
+                {/* Fallback initial avatar (hidden if image loads) */}
+                <div className={`w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 ${user?.avatar_url ? 'hidden' : ''}`}>
+                  <span className="text-sm font-semibold text-white">
+                    {getUserInitial()}
+                  </span>
+                </div>
 
                 {!isCollapsed && (
                   <>
                     <div className="flex-1 text-left">
                       <p className="text-sm font-medium text-foreground truncate">
-                        {user?.profile?.full_name || user?.full_name || 'User'}
+                        {user?.full_name || 'User'}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {user?.email || 'user@example.com'}
@@ -282,12 +291,10 @@ export function Sidebar() {
                 <div className="flex items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                      {user?.profile?.full_name || user?.full_name || 'User'}
+                      {user?.full_name || 'User'}
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                      {user?.subscription?.plan ? 
-                        `${user.subscription.plan.charAt(0).toUpperCase()}${user.subscription.plan.slice(1)} Plan` : 
-                        'Free Plan'}
+                      {getUserPlan()}
                     </p>
                   </div>
                 </div>
