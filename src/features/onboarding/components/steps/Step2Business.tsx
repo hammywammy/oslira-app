@@ -1,48 +1,38 @@
 // src/features/onboarding/components/steps/Step2Business.tsx
-// SCHEMA FIX: Removed industry field (not in actual schema)
-// RING FIX: Changed purple to primary colors
+
+/**
+ * STEP 2: BUSINESS CONTEXT - LIGHT MODE REDESIGN
+ * 
+ * Clean business info collection
+ * Using primary blue and secondary purple accents
+ */
 
 import { useFormContext } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-import { FormTextarea } from '@/features/onboarding/components/FormInput';
+import { Textarea } from '@/shared/components/ui/Textarea';
 import type { FormData } from '@/features/onboarding/constants/validationSchemas';
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-const ICONS = {
-  briefcase: 'lucide:briefcase',
-  wand: 'lucide:wand-sparkles',
-  messageCircle: 'lucide:message-circle',
-  handshake: 'lucide:handshake',
-} as const;
 
 const toneOptions = [
   {
     value: 'professional',
     label: 'Professional',
     description: 'Formal and business-focused',
-    icon: ICONS.briefcase,
+    icon: 'ph:briefcase',
   },
   {
     value: 'friendly',
     label: 'Friendly',
     description: 'Warm and approachable',
-    icon: ICONS.messageCircle,
+    icon: 'ph:smiley',
   },
   {
     value: 'casual',
     label: 'Casual',
     description: 'Relaxed and conversational',
-    icon: ICONS.handshake,
+    icon: 'ph:chat-circle',
   },
 ];
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Step2Business() {
   const {
@@ -55,83 +45,60 @@ export function Step2Business() {
   const selectedTone = watch('communication_tone');
   const charCount = businessSummary.length;
 
-  // Character counter logic
-  const getCharCountColor = () => {
-    if (charCount < 100) return 'text-red-400';
-    if (charCount < 200) return 'text-yellow-400';
-    return 'text-green-400';
-  };
-
-  const getCharCountLabel = () => {
-    if (charCount < 100) return 'Add more detail';
-    if (charCount < 200) return 'Good start';
-    return 'Perfect!';
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0, x: 50 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3 }}
       className="space-y-8"
     >
-      {/* SECTION 1: Business Description */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="space-y-4"
-      >
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center mt-1">
-            <Icon icon={ICONS.briefcase} className="w-5 h-5 text-primary-400" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-white mb-2">
-              Tell us about your business
-            </h3>
-            <p className="text-sm text-slate-400">
-              Describe what you do, who you serve, and what makes you unique. This helps us
-              personalize your outreach messages.
-            </p>
-          </div>
+      {/* Header */}
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary-100 mb-4">
+          <Icon icon="ph:buildings" className="text-2xl text-primary-600" />
         </div>
+        <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
+          Tell us about your business
+        </h2>
+        <p className="text-neutral-600">
+          Help us understand what you do and how you communicate
+        </p>
+      </div>
 
-        <FormTextarea
-          label="Business Description"
-          placeholder="e.g., I'm a copywriter specializing in conversion-focused landing pages for SaaS companies. I help founders turn their product features into compelling benefits that drive sign-ups..."
-          icon={ICONS.briefcase}
-          rows={8}
-          maxLength={500}
-          error={errors.business_summary}
-          required
-          {...register('business_summary')}
-        />
-
-        {/* Character Counter */}
-        <div className="flex items-center justify-between text-sm">
-          <span className={`font-medium ${getCharCountColor()}`}>
-            {getCharCountLabel()}
-          </span>
-          <span className="text-slate-500">
-            {charCount} / 500
-          </span>
-        </div>
-      </motion.div>
-
-      {/* SECTION 2: Communication Tone */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-4"
-      >
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
-          <Icon icon={ICONS.wand} className="text-lg text-primary-400" />
-          Preferred Communication Tone
-          <span className="text-red-400">*</span>
+      {/* Business Summary */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-neutral-700">
+          Business Summary
         </label>
+        <Textarea
+          placeholder="Describe what you do, who you serve, and what makes you unique..."
+          rows={5}
+          error={errors.business_summary?.message}
+          {...register('business_summary')}
+          className="w-full"
+        />
+        <div className="flex items-center justify-between text-sm">
+          <span className={`font-medium ${
+            charCount < 50 ? 'text-red-500' :
+            charCount < 200 ? 'text-amber-500' :
+            'text-green-600'
+          }`}>
+            {charCount < 50 ? 'Add more detail' :
+             charCount < 200 ? 'Good start' :
+             'Perfect!'}
+          </span>
+          <span className="text-neutral-500">
+            {charCount} / 750
+          </span>
+        </div>
+      </div>
 
+      {/* Communication Tone */}
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-neutral-700">
+          Communication Tone
+        </label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {toneOptions.map((option) => {
             const isSelected = selectedTone === option.value;
@@ -140,41 +107,48 @@ export function Step2Business() {
               <label
                 key={option.value}
                 className={`
-                  block p-4 rounded-xl border-2 cursor-pointer
+                  relative p-4 rounded-xl border-2 cursor-pointer
                   transition-all duration-200
-                  ${
-                    isSelected
-                      ? 'bg-primary-500/10 border-primary-500'
-                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
+                  ${isSelected
+                    ? 'bg-primary-50 border-primary-500'
+                    : 'bg-white border-neutral-200 hover:border-neutral-300'
                   }
                 `}
               >
-                <div className="flex flex-col items-center text-center gap-2">
-                  <Icon icon={option.icon} className="text-2xl text-primary-400" />
-                  <div>
-                    <input
-                      type="radio"
-                      value={option.value}
-                      checked={isSelected}
-                      className="sr-only"
-                      {...register('communication_tone')}
-                    />
-                    <div className="font-semibold text-white mb-1">{option.label}</div>
-                    <div className="text-xs text-slate-400">{option.description}</div>
+                <input
+                  type="radio"
+                  value={option.value}
+                  checked={isSelected}
+                  className="sr-only"
+                  {...register('communication_tone')}
+                />
+                <div className="text-center space-y-2">
+                  <Icon 
+                    icon={option.icon} 
+                    className={`text-2xl mx-auto ${
+                      isSelected ? 'text-primary-600' : 'text-neutral-400'
+                    }`}
+                  />
+                  <div className={`font-medium ${
+                    isSelected ? 'text-neutral-900' : 'text-neutral-700'
+                  }`}>
+                    {option.label}
+                  </div>
+                  <div className="text-xs text-neutral-500">
+                    {option.description}
                   </div>
                 </div>
               </label>
             );
           })}
         </div>
-
         {errors.communication_tone?.message && (
-          <div className="flex items-center gap-2 text-sm text-red-400">
-            <Icon icon="lucide:alert-circle" />
+          <p className="text-sm text-red-600 flex items-center gap-1">
+            <Icon icon="ph:warning" />
             {errors.communication_tone.message}
-          </div>
+          </p>
         )}
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
