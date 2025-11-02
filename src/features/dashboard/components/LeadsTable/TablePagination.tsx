@@ -27,8 +27,6 @@ export function TablePagination({
   onPageChange,
   onPageSizeChange,
   onRefresh,
-  viewMode = 'data',
-  onViewModeChange,
 }: TablePaginationProps) {
   const [isEditingRows, setIsEditingRows] = useState(false);
   const [rowsInput, setRowsInput] = useState(String(pageSize));
