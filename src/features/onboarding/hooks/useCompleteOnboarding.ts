@@ -41,6 +41,7 @@ export function useCompleteOnboarding() {
         timestamp: new Date().toISOString(),
         formData: {
           full_name: formData.full_name,
+          business_name: formData.business_name,
           has_business_summary: !!formData.business_summary,
           has_target_description: !!formData.target_description,
           communication_tone: formData.communication_tone,
