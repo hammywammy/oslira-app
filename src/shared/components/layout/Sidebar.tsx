@@ -40,7 +40,7 @@ const NAV_SECTIONS: NavSection[] = [
 
 export function Sidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
-  const { user, account, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { theme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -59,6 +59,17 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  // Get user initials for fallback avatar
+  const getUserInitial = () => {
+    if (user?.full_name) {
+      return user.full_name.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
   };
 
   return (
@@ -189,20 +200,29 @@ export function Sidebar() {
                   ${isCollapsed ? 'justify-center' : ''}
                 `}
               >
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-semibold text-white">
-                    {user?.full_name?.charAt(0).toUpperCase() || 'H'}
-                  </span>
-                </div>
+                {/* Avatar with image or fallback */}
+                {user?.avatar_url ? (
+                  <img 
+                    src={user.avatar_url} 
+                    alt={user.full_name || 'User'}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-semibold text-white">
+                      {getUserInitial()}
+                    </span>
+                  </div>
+                )}
 
                 {!isCollapsed && (
                   <>
                     <div className="flex-1 text-left">
                       <p className="text-sm font-medium text-foreground truncate">
-                        {user?.full_name || 'Hamza Williams'}
+                        {user?.full_name || 'User'}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {user?.email || 'hamza.williamsbusiness@gmail.com'}
+                        {user?.email || 'user@example.com'}
                       </p>
                     </div>
                     <Icon 
@@ -245,7 +265,7 @@ export function Sidebar() {
               {/* Email Header - Claude style */}
               <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {user?.email || 'hamza.williamsbusiness@gmail.com'}
+                  {user?.email || 'user@example.com'}
                 </p>
               </div>
 
