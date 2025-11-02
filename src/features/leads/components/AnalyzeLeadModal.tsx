@@ -153,7 +153,6 @@ export function AnalyzeLeadModal({
   // DERIVED STATE
   // ===========================================================================
 
-  const selectedOption = ANALYSIS_OPTIONS.find((opt) => opt.value === analysisType);
   const canSubmit = rawInput.trim().length > 0 && !isLoading;
 
   // ===========================================================================
@@ -245,7 +244,7 @@ export function AnalyzeLeadModal({
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={handleClose}
               disabled={isLoading}
             >
