@@ -93,6 +93,8 @@ export function OAuthCallbackPage() {
     } else if (state === 'success') {
       setProgress(100);
     }
+    // Explicit return for other cases
+    return undefined;
   }, [state]);
 
   /**
