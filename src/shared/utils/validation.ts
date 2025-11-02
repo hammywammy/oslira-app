@@ -120,7 +120,12 @@ export function validateEmail(email: string): ValidationResult {
     return { valid: false, error: 'Invalid email format' };
   }
 
-  const [local, domain] = parts;
+  const local = parts[0];
+  const domain = parts[1];
+
+  if (!local || !domain) {
+    return { valid: false, error: 'Invalid email format' };
+  }
 
   if (local.length > 64) {
     return { valid: false, error: 'Email local part too long' };
