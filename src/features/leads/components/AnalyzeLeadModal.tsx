@@ -212,9 +212,6 @@ export function AnalyzeLeadModal({
     !isSubmitting && 
     !isLoadingProfiles;
 
-  const displayUsername = rawInput ? `@${rawInput}` : '';
-  const selectedOption = ANALYSIS_OPTIONS.find(opt => opt.value === analysisType);
-
   // ===========================================================================
   // RENDER
   // ===========================================================================
