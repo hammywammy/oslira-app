@@ -72,7 +72,7 @@ export function Sidebar() {
     <>
       <aside
         className={`
-          fixed top-0 left-0 h-screen bg-background border-r border-border
+          fixed top-[57px] left-0 bottom-0 bg-background border-r border-border
           transition-all duration-200 flex flex-col z-30
           ${isCollapsed ? 'w-16' : 'w-60'}
           ${isCollapsed ? 'overflow-hidden' : 'overflow-visible'}
@@ -276,52 +276,57 @@ export function Sidebar() {
               transition={{ duration: 0.15 }}
               className={`
                 fixed z-50 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800
-                ${isCollapsed ? 'left-20 bottom-6' : 'left-64 bottom-6'}
-                w-72
+                ${isCollapsed ? 'left-20 bottom-20' : 'left-64 bottom-20'}
+                w-64
               `}
-              style={{
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-              }}
             >
-              {/* Email Header - Shows only email */}
-              <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {user?.email || 'user@example.com'}
-                </p>
+              {/* User Info Header */}
+              <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <span className="text-base font-semibold text-white">
+                      {getUserInitial()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                      {user?.full_name || 'User'}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Menu Items */}
-              <div className="py-2">
-                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                  <Icon icon="ph:gear" className="w-4 h-4 text-neutral-500" />
-                  <span>Settings</span>
-                </button>
+              <div className="p-2">
+                <NavLink
+                  to="/settings"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
+                >
+                  <Icon icon="ph:gear" className="w-5 h-5" />
+                  <span className="text-sm font-medium">Settings</span>
+                </NavLink>
 
-                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                  <Icon icon="ph:question" className="w-4 h-4 text-neutral-500" />
-                  <span>Get help</span>
-                </button>
+                <NavLink
+                  to="/billing"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
+                >
+                  <Icon icon="ph:credit-card" className="w-5 h-5" />
+                  <span className="text-sm font-medium">Billing</span>
+                </NavLink>
 
-                <div className="my-1.5 border-t border-neutral-200 dark:border-neutral-800" />
-
-                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                  <Icon icon="ph:crown-simple" className="w-4 h-4 text-neutral-500" />
-                  <span>Upgrade plan</span>
-                </button>
-
-                <button className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                  <Icon icon="ph:book-open" className="w-4 h-4 text-neutral-500" />
-                  <span>Learn more</span>
-                </button>
-
-                <div className="my-1.5 border-t border-neutral-200 dark:border-neutral-800" />
+                <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-2" />
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-2.5 text-left text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-3"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400"
                 >
-                  <Icon icon="ph:sign-out" className="w-4 h-4 text-neutral-500" />
-                  <span>Log out</span>
+                  <Icon icon="ph:sign-out" className="w-5 h-5" />
+                  <span className="text-sm font-medium">Log out</span>
                 </button>
               </div>
             </motion.div>
