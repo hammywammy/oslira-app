@@ -55,18 +55,6 @@ export function DashboardHotbar({
             <Icon icon="mdi:upload" width={18} className="shrink-0" />
             <span>Bulk Upload</span>
           </button>
-
-          {currentCredits > 0 && (
-            <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-primary/5 rounded-md">
-              <Icon icon="mdi:lightning-bolt" width={16} className="text-primary shrink-0" />
-              <span className="text-sm font-semibold text-foreground whitespace-nowrap">{currentCredits} credits</span>
-            </div>
-          )}
-
-          <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-md">
-            <Icon icon="mdi:chart-line" width={16} className="text-muted-foreground shrink-0" />
-            <span className="text-sm font-medium text-foreground whitespace-nowrap">10/10 light analysis</span>
-          </div>
         </div>
 
         {/* Right: Search, Filter, Sort Controls */}
