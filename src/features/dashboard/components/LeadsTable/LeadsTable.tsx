@@ -1,20 +1,22 @@
 // src/features/dashboard/components/LeadsTable/LeadsTable.tsx
 
 /**
- * LEADS TABLE - SUPABASE STYLE PRODUCTION V2.0
+ * LEADS TABLE - SUPABASE STYLE V3.0
  * 
- * CHANGES:
- * - Removed wrapping div (overflow now handled by TableViewLayout)
- * - Table renders directly for edge-to-edge integration
- * - All business logic unchanged
+ * CHANGES IN V3.0:
+ * - Removed column resizing completely
+ * - Added follower count (3-line stacked lead info)
+ * - Adjusted column widths (checkbox/actions thinner, lead wider)
+ * - Fixed column dividers to extend into headers
+ * - Increased vertical padding for better readability
+ * - Centered checkbox and actions columns
  * 
  * Full-width table bounded by hotbar, sidebar, and pagination
- * Column resizing with localStorage persistence
  * Frozen columns (checkbox left, actions right)
  * Native table for browser optimization
  */
 
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 
@@ -34,39 +36,24 @@ interface Lead {
   created_at: string;
 }
 
-interface ColumnWidths {
-  checkbox: number;
-  lead: number;
-  platform: number;
-  score: number;
-  analysis: number;
-  updated: number;
-  actions: number;
-}
-
 interface LeadsTableProps {
   selectedLeads: Set<string>;
   onSelectionChange: (selectedIds: Set<string>) => void;
 }
 
-type ResizableColumn = Exclude<keyof ColumnWidths, 'checkbox' | 'actions'>;
-
 // =============================================================================
-// CONSTANTS
+// CONSTANTS - FIXED WIDTHS (NO RESIZING)
 // =============================================================================
 
-const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
-  checkbox: 48,
-  lead: 250,
-  platform: 140,
-  score: 180,
-  analysis: 150,
-  updated: 120,
+const COLUMN_WIDTHS = {
+  checkbox: 56,
+  lead: 280,
+  platform: 160,
+  score: 200,
+  analysis: 160,
+  updated: 140,
   actions: 80,
 };
-
-const MIN_COLUMN_WIDTH = 100;
-const STORAGE_KEY_WIDTHS = 'oslira_leads_table_widths';
 
 // =============================================================================
 // MOCK DATA
@@ -129,6 +116,25 @@ const MOCK_LEADS: Lead[] = [
     created_at: '2025-01-11T10:00:00Z',
   },
 ];
+
+// =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+function formatFollowers(count: number): string {
+  if (count >= 1000000) {
+    return `${(count / 1000000).toFixed(1)}M`;
+  }
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}K`;
+  }
+  return count.toString();
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 // =============================================================================
 // HELPER COMPONENTS
@@ -197,11 +203,6 @@ function AnalysisTypeBadge({ type }: { type: 'light' | 'deep' | 'xray' | null })
   );
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
 // =============================================================================
 // TABLE ROW COMPONENT
 // =============================================================================
@@ -209,13 +210,12 @@ function formatDate(dateString: string): string {
 interface TableRowProps {
   lead: Lead;
   isSelected: boolean;
-  columnWidths: ColumnWidths;
   onSelectLead: (id: string) => void;
   onViewLead: (id: string) => void;
   index: number;
 }
 
-const TableRow = memo(({ lead, isSelected, columnWidths, onSelectLead, onViewLead, index }: TableRowProps) => {
+const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: TableRowProps) => {
   return (
     <motion.tr
       initial={{ opacity: 0 }}
@@ -226,14 +226,14 @@ const TableRow = memo(({ lead, isSelected, columnWidths, onSelectLead, onViewLea
         ${isSelected ? 'bg-primary/5' : 'hover:bg-muted/30'}
       `}
     >
-      {/* Checkbox - Frozen Left */}
+      {/* Checkbox - Frozen Left, Centered */}
       <td
         className={`
-          sticky left-0 z-10 px-4 py-3
+          sticky left-0 z-10 text-center
           ${isSelected ? 'bg-primary/5' : 'bg-background group-hover:bg-muted/30'}
           border-r border-border
         `}
-        style={{ width: `${columnWidths.checkbox}px`, minWidth: `${columnWidths.checkbox}px` }}
+        style={{ width: `${COLUMN_WIDTHS.checkbox}px`, minWidth: `${COLUMN_WIDTHS.checkbox}px`, padding: '16px 0' }}
       >
         <input
           type="checkbox"
@@ -243,23 +243,26 @@ const TableRow = memo(({ lead, isSelected, columnWidths, onSelectLead, onViewLea
         />
       </td>
 
-      {/* Lead */}
-      <td className="px-4 py-3 border-r border-border" style={{ width: `${columnWidths.lead}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+      {/* Lead - 3 Lines Stacked */}
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px`, padding: '16px' }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-primary">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-semibold text-primary">
               {lead.full_name?.charAt(0) || lead.username.charAt(1)}
             </span>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="font-medium text-sm text-foreground truncate">{lead.full_name || lead.username}</div>
             <div className="text-xs text-muted-foreground truncate">{lead.username}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">
+              {lead.followers_count ? formatFollowers(lead.followers_count) : '0'} followers
+            </div>
           </div>
         </div>
       </td>
 
       {/* Platform */}
-      <td className="px-4 py-3 border-r border-border" style={{ width: `${columnWidths.platform}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.platform}px`, padding: '16px' }}>
         <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-pink-50 text-pink-700 border border-pink-200">
           <Icon icon="mdi:instagram" width={16} />
           <span className="text-xs font-medium">Instagram</span>
@@ -267,32 +270,32 @@ const TableRow = memo(({ lead, isSelected, columnWidths, onSelectLead, onViewLea
       </td>
 
       {/* Score */}
-      <td className="px-4 py-3 border-r border-border" style={{ width: `${columnWidths.score}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.score}px`, padding: '16px' }}>
         <ScoreBadge score={lead.overall_score} />
       </td>
 
       {/* Analysis */}
-      <td className="px-4 py-3 border-r border-border" style={{ width: `${columnWidths.analysis}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.analysis}px`, padding: '16px' }}>
         <AnalysisTypeBadge type={lead.analysis_type} />
       </td>
 
       {/* Updated */}
-      <td className="px-4 py-3 border-r border-border" style={{ width: `${columnWidths.updated}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.updated}px`, padding: '16px' }}>
         <span className="text-sm text-muted-foreground">{formatDate(lead.created_at)}</span>
       </td>
 
-      {/* Actions - Frozen Right */}
+      {/* Actions - Frozen Right, Centered */}
       <td
         className={`
-          sticky right-0 z-10 px-4 py-3
+          sticky right-0 z-10 text-center
           ${isSelected ? 'bg-primary/5' : 'bg-background group-hover:bg-muted/30'}
           border-l border-border
         `}
-        style={{ width: `${columnWidths.actions}px`, minWidth: `${columnWidths.actions}px` }}
+        style={{ width: `${COLUMN_WIDTHS.actions}px`, minWidth: `${COLUMN_WIDTHS.actions}px`, padding: '16px 0' }}
       >
         <button
           onClick={() => onViewLead(lead.id)}
-          className="p-1.5 rounded hover:bg-muted transition-colors"
+          className="inline-flex items-center justify-center p-1.5 rounded hover:bg-muted transition-colors"
           aria-label="View details"
         >
           <Icon icon="mdi:eye-outline" width={18} className="text-muted-foreground" />
@@ -309,73 +312,7 @@ TableRow.displayName = 'TableRow';
 // =============================================================================
 
 export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps) {
-  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(DEFAULT_COLUMN_WIDTHS);
-  const [resizingColumn, setResizingColumn] = useState<ResizableColumn | null>(null);
-  const [startX, setStartX] = useState(0);
-  const [startWidth, setStartWidth] = useState(0);
-  const rafRef = useRef<number | null>(null);
-
   const leads = MOCK_LEADS;
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY_WIDTHS);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setColumnWidths({ ...DEFAULT_COLUMN_WIDTHS, ...parsed });
-      } catch (e) {
-        console.error('Failed to parse saved column widths');
-      }
-    }
-  }, []);
-
-  // Save to localStorage
-  useEffect(() => {
-    if (resizingColumn === null) {
-      localStorage.setItem(STORAGE_KEY_WIDTHS, JSON.stringify(columnWidths));
-    }
-  }, [columnWidths, resizingColumn]);
-
-  // Resize handlers
-  const handleResizeStart = (column: ResizableColumn, e: React.MouseEvent) => {
-    e.preventDefault();
-    setResizingColumn(column);
-    setStartX(e.clientX);
-    setStartWidth(columnWidths[column]);
-  };
-
-  const handleResizeMove = useCallback(
-    (e: MouseEvent) => {
-      if (!resizingColumn) return;
-
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-
-      rafRef.current = requestAnimationFrame(() => {
-        const diff = e.clientX - startX;
-        const newWidth = Math.max(MIN_COLUMN_WIDTH, startWidth + diff);
-        setColumnWidths((prev) => ({ ...prev, [resizingColumn]: newWidth }));
-      });
-    },
-    [resizingColumn, startX, startWidth]
-  );
-
-  const handleResizeEnd = useCallback(() => {
-    setResizingColumn(null);
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-  }, []);
-
-  useEffect(() => {
-    if (resizingColumn) {
-      document.addEventListener('mousemove', handleResizeMove);
-      document.addEventListener('mouseup', handleResizeEnd);
-      return () => {
-        document.removeEventListener('mousemove', handleResizeMove);
-        document.removeEventListener('mouseup', handleResizeEnd);
-      };
-    }
-    return undefined;
-  }, [resizingColumn, handleResizeMove, handleResizeEnd]);
 
   // Selection handlers
   const handleSelectAll = () => {
@@ -405,12 +342,12 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
 
   return (
     <table className="w-full border-collapse">
-      <thead className="sticky top-0 z-20 bg-muted/50 backdrop-blur-sm">
+      <thead className="sticky top-0 z-20 bg-muted/80 backdrop-blur-sm">
         <tr className="border-b border-border">
-          {/* Checkbox Header - Frozen */}
+          {/* Checkbox Header - Frozen, Centered */}
           <th
-            className="sticky left-0 z-30 px-4 py-3 bg-muted/80 backdrop-blur-sm border-r border-border"
-            style={{ width: `${columnWidths.checkbox}px`, minWidth: `${columnWidths.checkbox}px` }}
+            className="sticky left-0 z-30 text-center bg-muted/80 backdrop-blur-sm border-r border-border"
+            style={{ width: `${COLUMN_WIDTHS.checkbox}px`, minWidth: `${COLUMN_WIDTHS.checkbox}px`, padding: '12px 0' }}
           >
             <input
               type="checkbox"
@@ -421,54 +358,34 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
           </th>
 
           {/* Lead */}
-          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.lead}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Lead</span>
-            <div
-              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'lead' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-              onMouseDown={(e) => handleResizeStart('lead', e)}
-            />
           </th>
 
           {/* Platform */}
-          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.platform}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.platform}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Platform</span>
-            <div
-              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'platform' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-              onMouseDown={(e) => handleResizeStart('platform', e)}
-            />
           </th>
 
           {/* Score */}
-          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.score}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.score}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Score</span>
-            <div
-              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'score' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-              onMouseDown={(e) => handleResizeStart('score', e)}
-            />
           </th>
 
           {/* Analysis */}
-          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.analysis}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.analysis}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Analysis</span>
-            <div
-              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'analysis' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-              onMouseDown={(e) => handleResizeStart('analysis', e)}
-            />
           </th>
 
           {/* Updated */}
-          <th className="px-4 py-3 text-left relative group bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${columnWidths.updated}px`, minWidth: `${MIN_COLUMN_WIDTH}px` }}>
+          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.updated}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Updated</span>
-            <div
-              className={`absolute top-0 right-0 w-1 h-full cursor-col-resize transition-colors ${resizingColumn === 'updated' ? 'bg-primary' : 'hover:bg-primary/50'}`}
-              onMouseDown={(e) => handleResizeStart('updated', e)}
-            />
           </th>
 
-          {/* Actions Header - Frozen */}
+          {/* Actions Header - Frozen, Centered */}
           <th
-            className="sticky right-0 z-30 px-4 py-3 text-center bg-muted/80 backdrop-blur-sm border-l border-border"
-            style={{ width: `${columnWidths.actions}px`, minWidth: `${columnWidths.actions}px` }}
+            className="sticky right-0 z-30 text-center bg-muted/80 backdrop-blur-sm border-l border-border"
+            style={{ width: `${COLUMN_WIDTHS.actions}px`, minWidth: `${COLUMN_WIDTHS.actions}px`, padding: '12px 0' }}
           >
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Actions</span>
           </th>
@@ -481,7 +398,6 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
             key={lead.id}
             lead={lead}
             isSelected={selectedLeads.has(lead.id)}
-            columnWidths={columnWidths}
             onSelectLead={handleSelectLead}
             onViewLead={handleViewLead}
             index={index}
