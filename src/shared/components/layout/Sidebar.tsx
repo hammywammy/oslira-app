@@ -192,28 +192,49 @@ export function Sidebar() {
             ))}
           </div>
 
-          {/* BOTTOM SECTION - Credits & User */}
-          <div className="border-t border-border p-3 space-y-3">
-            {/* Simple Credits Display - Expanded */}
+          {/* BOTTOM SECTION - Credits & Analysis & User */}
+          <div className="border-t border-border p-3 space-y-2">
+            {/* Credits Display */}
             {!isCollapsed && (
-              <div className="px-3 py-3 bg-muted/30 rounded-lg">
-                <div className="flex items-center justify-between mb-1">
+              <div className="px-3 py-2.5 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon icon="ph:lightning" className="w-4 h-4 text-primary flex-shrink-0" />
                   <span className="text-xs font-medium text-muted-foreground">Credits</span>
-                  <span className="text-lg font-bold text-foreground">
-                    {account?.credit_balance || 0}
-                  </span>
                 </div>
-                <div className="text-xs text-muted-foreground">remaining this month</div>
+                <div className="text-xl font-bold text-primary">
+                  {account?.credit_balance || 0}
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">remaining this month</div>
               </div>
             )}
 
-            {/* Collapsed Credits Display */}
+            {/* Light Analysis Display */}
+            {!isCollapsed && (
+              <div className="px-3 py-2.5 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon icon="ph:chart-line" className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <span className="text-xs font-medium text-muted-foreground">Light Analysis</span>
+                </div>
+                <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                  10/10
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">remaining this month</div>
+              </div>
+            )}
+
+            {/* Collapsed State */}
             {isCollapsed && (
-              <div className="flex justify-center py-2">
+              <div className="flex flex-col items-center gap-2 py-2">
                 <div className="text-center">
-                  <Icon icon="ph:coins" className="w-4 h-4 text-primary mx-auto mb-1" />
-                  <span className="text-xs font-bold text-foreground">
+                  <Icon icon="ph:lightning" className="w-4 h-4 text-primary mx-auto mb-1" />
+                  <span className="text-xs font-bold text-primary">
                     {account?.credit_balance || 0}
+                  </span>
+                </div>
+                <div className="text-center">
+                  <Icon icon="ph:chart-line" className="w-4 h-4 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
+                  <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                    10/10
                   </span>
                 </div>
               </div>
