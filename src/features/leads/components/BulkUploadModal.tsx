@@ -57,7 +57,7 @@ interface AnalysisTypeOption {
   label: string;
   description: string;
   credits: number;
-  color: 'orange' | 'purple' | 'blue';
+  badgeVariant: 'light-analysis' | 'deep-analysis' | 'xray-analysis';
 }
 
 // =============================================================================
@@ -70,21 +70,21 @@ const ANALYSIS_TYPES: AnalysisTypeOption[] = [
     label: 'Light Analysis',
     description: 'Basic profile insights',
     credits: 1,
-    color: 'orange',
+    badgeVariant: 'light-analysis',
   },
   {
     value: 'deep',
     label: 'Deep Analysis',
     description: 'Detailed behavioral profile',
     credits: 2,
-    color: 'purple',
+    badgeVariant: 'deep-analysis',
   },
   {
     value: 'xray',
     label: 'X-Ray Analysis',
     description: 'Complete psychological profile',
     credits: 3,
-    color: 'blue',
+    badgeVariant: 'xray-analysis',
   },
 ];
 
@@ -433,7 +433,7 @@ export function BulkUploadModal({
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className="text-sm font-medium text-foreground">{type.label}</span>
-                          <Badge variant={type.color} size="sm">
+                          <Badge variant={type.badgeVariant} size="sm">
                             {type.credits} credit{type.credits !== 1 ? 's' : ''}
                           </Badge>
                         </div>
