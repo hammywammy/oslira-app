@@ -103,9 +103,9 @@ export const useHasActiveFilters = () =>
 // =============================================================================
 
 export const useSubscription = () => useAppStore((state: AppState) => state.subscription);
-export const useSubscriptionPlan = () => useAppStore((state: AppState) => state.subscription?.plan);
+export const useSubscriptionPlan = () => useAppStore((state: AppState) => state.subscription?.plan_type);
 export const useCreditsRemaining = () => 
-  useAppStore((state: AppState) => state.subscription?.credits ?? 0);
+  useAppStore((state: AppState) => state.balances?.current_balance ?? 0);
 
 // =============================================================================
 // COMPLEX COMPUTED SELECTORS (from Selectors.js)
@@ -119,7 +119,6 @@ export const useDashboardSummary = () =>
   useAppStore((state: AppState) => {
     const leads = state.leads.all;
     const businesses = state.business.all;
-    const subscription = state.subscription;
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -127,7 +126,7 @@ export const useDashboardSummary = () =>
     return {
       totalLeads: leads.length,
       totalBusinesses: businesses.length,
-      creditsRemaining: subscription?.credits ?? 0,
+      creditsRemaining: state.balances?.current_balance ?? 0,
       highQualityLeads: leads.filter((l: Lead) => (l.score || 0) >= 70).length,
       leadsCreatedToday: leads.filter((l: Lead) => {
         const created = new Date(l.created_at);
