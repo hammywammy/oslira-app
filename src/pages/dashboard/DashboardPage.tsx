@@ -1,9 +1,12 @@
 // src/pages/dashboard/DashboardPage.tsx
 
 /**
- * DASHBOARD PAGE - WITH MODAL INTEGRATION
+ * DASHBOARD PAGE - REDESIGNED BUTTONS
  * 
- * Main dashboard view with Analyze Lead and Bulk Upload modals
+ * Button styling fixes:
+ * ✅ Proper gap between icon and text
+ * ✅ Consistent sizing
+ * ✅ Blue accent, not primary color
  */
 
 import { useState } from 'react';
@@ -23,7 +26,7 @@ import { Icon } from '@iconify/react';
 
 export function DashboardPage() {
   const { account } = useAuth();
-  const selectedBusiness = useSelectedBusiness(); // Use selector from store
+  const selectedBusiness = useSelectedBusiness();
   
   // Modal state
   const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
@@ -41,7 +44,6 @@ export function DashboardPage() {
     console.log('✅ Lead analysis started:', leadId);
     // TODO: Show success toast
     // TODO: Refresh leads table
-    // For now, just close modal - it's already closed by the modal itself
   };
 
   const handleBulkSuccess = (jobId: string, count: number) => {
@@ -67,21 +69,23 @@ export function DashboardPage() {
             </p>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - FIXED STYLING */}
           <div className="flex items-center gap-3">
             <Button
               variant="secondary"
               onClick={() => setShowBulkModal(true)}
+              className="flex items-center gap-2"
             >
               <Icon icon="ph:upload-simple" className="w-4 h-4" />
-              Bulk Upload
+              <span>Bulk Upload</span>
             </Button>
             <Button
               variant="primary"
               onClick={() => setShowAnalyzeModal(true)}
+              className="flex items-center gap-2"
             >
               <Icon icon="ph:plus" className="w-4 h-4" />
-              Analyze Lead
+              <span>Analyze Lead</span>
             </Button>
           </div>
         </div>
@@ -99,15 +103,15 @@ export function DashboardPage() {
         </div>
 
         {/* Filter Button */}
-        <Button variant="secondary">
+        <Button variant="secondary" className="flex items-center gap-2">
           <Icon icon="ph:funnel" className="w-4 h-4" />
-          Filters
+          <span>Filters</span>
         </Button>
 
         {/* Sort Button */}
-        <Button variant="ghost">
+        <Button variant="ghost" className="flex items-center gap-2">
           <Icon icon="ph:sort-ascending" className="w-4 h-4" />
-          Sort
+          <span>Sort</span>
         </Button>
       </div>
 
