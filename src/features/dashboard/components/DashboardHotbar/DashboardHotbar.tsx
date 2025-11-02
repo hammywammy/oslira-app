@@ -1,7 +1,14 @@
 // src/features/dashboard/components/DashboardHotbar/DashboardHotbar.tsx
 
+/**
+ * DASHBOARD HOTBAR - V2.0 LAYOUT AGNOSTIC
+ * 
+ * CHANGE: Removed fixed positioning classes
+ * Positioning now handled by TableViewLayout parent
+ * All business logic unchanged
+ */
+
 import { Icon } from '@iconify/react';
-import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useState } from 'react';
 
 interface DashboardHotbarProps {
@@ -13,15 +20,10 @@ export function DashboardHotbar({
   onBulkUpload,
   onAnalyzeLead,
 }: DashboardHotbarProps) {
-  const { isCollapsed } = useSidebarStore();
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <div className={`
-      fixed top-[57px] right-0 h-14 bg-background border-b border-border z-30
-      transition-[left] duration-200
-      ${isCollapsed ? 'left-16' : 'left-60'}
-    `}>
+    <div className="h-14 bg-background border-b border-border w-full">
       <div className="h-full px-6 flex items-center justify-between gap-6">
         
         {/* Left: Primary Actions */}
