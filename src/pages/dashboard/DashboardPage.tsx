@@ -53,9 +53,6 @@ export function DashboardPage() {
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-
-  // Get credits
-  const currentCredits = account?.credit_balance || 0;
   
   // Pagination calculations
   const totalPages = Math.ceil(leads.length / pageSize);
