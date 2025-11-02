@@ -2,7 +2,6 @@
 
 import { Icon } from '@iconify/react';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
-import { Button } from '@/shared/components/ui/Button';
 import { useState } from 'react';
 
 interface DashboardHotbarProps {
@@ -29,29 +28,37 @@ export function DashboardHotbar({
         
         {/* Left: Primary Actions */}
         <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            size="sm"
+          <button
             onClick={onAnalyzeLead}
-            className="inline-flex items-center gap-2 h-9 px-4"
+            className="
+              inline-flex flex-row items-center gap-2 h-9 px-4
+              bg-primary text-white rounded-lg
+              text-sm font-medium whitespace-nowrap
+              hover:bg-primary/90 transition-colors
+              border border-primary/10 shadow-sm
+            "
           >
-            <Icon icon="mdi:magnify-plus-outline" width={18} />
-            <span className="font-medium whitespace-nowrap">Analyze Lead</span>
-          </Button>
+            <Icon icon="mdi:magnify-plus-outline" width={18} className="shrink-0" />
+            <span>Analyze Lead</span>
+          </button>
 
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onBulkUpload}
-            className="inline-flex items-center gap-2 h-9 px-4"
+            className="
+              inline-flex flex-row items-center gap-2 h-9 px-4
+              bg-transparent text-foreground rounded-lg
+              text-sm font-medium whitespace-nowrap
+              hover:bg-muted/50 transition-colors
+              border border-border
+            "
           >
-            <Icon icon="mdi:upload" width={18} />
-            <span className="font-medium whitespace-nowrap">Bulk Upload</span>
-          </Button>
+            <Icon icon="mdi:upload" width={18} className="shrink-0" />
+            <span>Bulk Upload</span>
+          </button>
 
           {currentCredits > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/5 rounded-md">
-              <Icon icon="mdi:lightning-bolt" width={16} className="text-primary" />
+            <div className="inline-flex flex-row items-center gap-1.5 px-3 py-1.5 bg-primary/5 rounded-md">
+              <Icon icon="mdi:lightning-bolt" width={16} className="text-primary shrink-0" />
               <span className="text-sm font-semibold text-foreground whitespace-nowrap">{currentCredits} credits</span>
             </div>
           )}
