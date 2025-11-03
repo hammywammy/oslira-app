@@ -165,7 +165,7 @@ export function Step4Review({ onEditStep }: Step4ReviewProps) {
       <div className="text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary-100 text-secondary-700 rounded-full text-sm font-medium">
           <Icon icon="ph:sparkle" className="w-4 h-4" />
-          <span>You'll start with 25 free analysis credits</span>
+          <span>You'll start with 10 free analysis credits</span>
         </div>
       </div>
     </motion.div>
