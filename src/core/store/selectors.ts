@@ -10,6 +10,7 @@
  */
 
 import { useAppStore } from './appStore';
+import { useCurrentBalance } from '@/features/credits/store/creditsStore';
 
 // =============================================================================
 // TYPES
@@ -104,8 +105,7 @@ export const useHasActiveFilters = () =>
 
 export const useSubscription = () => useAppStore((state: AppState) => state.subscription);
 export const useSubscriptionPlan = () => useAppStore((state: AppState) => state.subscription?.plan_type);
-export const useCreditsRemaining = () => 
-  useAppStore((state: AppState) => state.balances?.current_balance ?? 0);
+export const useCreditsRemaining = useCurrentBalance;
 
 // =============================================================================
 // COMPLEX COMPUTED SELECTORS (from Selectors.js)
@@ -126,7 +126,6 @@ export const useDashboardSummary = () =>
     return {
       totalLeads: leads.length,
       totalBusinesses: businesses.length,
-      creditsRemaining: state.balances?.current_balance ?? 0,
       highQualityLeads: leads.filter((l: Lead) => (l.score || 0) >= 70).length,
       leadsCreatedToday: leads.filter((l: Lead) => {
         const created = new Date(l.created_at);
