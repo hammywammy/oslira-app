@@ -9,7 +9,16 @@
 
 import { useCallback } from 'react';
 import { useCreditsStore } from '../store/creditsStore';
-import { apiClient } from '@/shared/services/api-client';
+import { httpClient } from '@/core/auth/http-client';
+
+interface CreditBalance {
+  account_id: string;
+  current_balance: number;
+  light_analyses_balance: number;
+  last_transaction_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export function useCreditsService() {
   const { setBalance, setLoading, setError, clearBalance } = useCreditsStore();
@@ -22,13 +31,7 @@ export function useCreditsService() {
       setLoading(true);
       setError(null);
 
-      const response = await apiClient.get('/api/credits/balance');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch balance');
-      }
-
-      const data = await response.json();
+      const data = await httpClient.get<{ data: CreditBalance }>('/api/credits/balance');
       setBalance(data.data);
       
     } catch (error: any) {
