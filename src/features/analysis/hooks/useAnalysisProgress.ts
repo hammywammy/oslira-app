@@ -52,14 +52,18 @@ export function useAnalysisProgress({
     const maxAttempts = 180; // 3 minutes max
     let attempts = 0;
 
-    logger.info('[AnalysisProgress] Starting poll', { runId });
+    logger.info('[AnalysisProgress] Starting poll', new Error('Poll started'), { 
+      context: { runId } 
+    });
     setIsPolling(true);
     setError(null);
 
     const poll = async () => {
       if (attempts >= maxAttempts) {
         const timeoutError = 'Analysis timed out after 3 minutes';
-        logger.error('[AnalysisProgress] Timeout', { runId, attempts });
+        logger.error('[AnalysisProgress] Timeout', new Error(timeoutError), { 
+          context: { runId, attempts } 
+        });
         setError(timeoutError);
         setIsPolling(false);
         onError?.(timeoutError);
@@ -75,19 +79,23 @@ export function useAnalysisProgress({
 
         setProgress(response);
 
-        logger.info('[AnalysisProgress] Poll update', {
-          runId,
-          attempt: attempts,
-          status: response.status,
-          progress: response.progress,
-          step: response.current_step,
+        logger.info('[AnalysisProgress] Poll update', new Error('Poll update'), {
+          context: {
+            runId,
+            attempt: attempts,
+            status: response.status,
+            progress: response.progress,
+            step: response.current_step,
+          }
         });
 
         // Check completion
         if (response.status === 'complete') {
-          logger.info('[AnalysisProgress] Complete!', { 
-            runId, 
-            leadId: response.result?.lead_id 
+          logger.info('[AnalysisProgress] Complete!', new Error('Analysis complete'), { 
+            context: {
+              runId, 
+              leadId: response.result?.lead_id 
+            }
           });
           setIsPolling(false);
 
@@ -95,7 +103,9 @@ export function useAnalysisProgress({
             onComplete?.(response.result.lead_id);
           } else {
             const noLeadError = 'Analysis complete but no lead ID returned';
-            logger.error('[AnalysisProgress] Missing lead_id', response);
+            logger.error('[AnalysisProgress] Missing lead_id', new Error(noLeadError), {
+              context: { response }
+            });
             setError(noLeadError);
             onError?.(noLeadError);
           }
@@ -105,7 +115,9 @@ export function useAnalysisProgress({
         // Check failure
         if (response.status === 'failed') {
           const failureError = response.error_message || 'Analysis failed';
-          logger.error('[AnalysisProgress] Failed', { runId, error: failureError });
+          logger.error('[AnalysisProgress] Failed', new Error(failureError), { 
+            context: { runId, error: failureError } 
+          });
           setError(failureError);
           setIsPolling(false);
           onError?.(failureError);
@@ -114,7 +126,9 @@ export function useAnalysisProgress({
 
         // Check cancellation
         if (response.status === 'cancelled') {
-          logger.info('[AnalysisProgress] Cancelled', { runId });
+          logger.info('[AnalysisProgress] Cancelled', new Error('Analysis cancelled'), { 
+            context: { runId } 
+          });
           setError('Analysis was cancelled');
           setIsPolling(false);
           onError?.('Analysis was cancelled');
@@ -124,10 +138,11 @@ export function useAnalysisProgress({
         // Continue polling
         setTimeout(poll, 1000);
       } catch (err: any) {
-        logger.error('[AnalysisProgress] Poll error', err);
-        setError(err.message || 'Failed to fetch progress');
+        const errorMessage = err.message || 'Failed to fetch progress';
+        logger.error('[AnalysisProgress] Poll error', err instanceof Error ? err : new Error(errorMessage));
+        setError(errorMessage);
         setIsPolling(false);
-        onError?.(err.message || 'Failed to fetch progress');
+        onError?.(errorMessage);
       }
     };
 
