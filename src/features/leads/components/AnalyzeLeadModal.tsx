@@ -96,16 +96,20 @@ export function AnalyzeLeadModal({
   // Analysis tracking
   const [runId, setRunId] = useState<string | null>(null);
 
-  // Progress polling hook
+// Progress polling hook
   const { progress, isPolling, error: progressError } = useAnalysisProgress({
     runId,
     onComplete: (leadId) => {
-      logger.info('[AnalyzeLeadModal] Analysis complete', { leadId, runId });
+      logger.info('[AnalyzeLeadModal] Analysis complete', new Error('Analysis complete'), { 
+        context: { leadId, runId } 
+      });
       onSuccess?.(leadId);
       handleClose();
     },
     onError: (error) => {
-      logger.error('[AnalyzeLeadModal] Analysis failed', { error, runId });
+      logger.error('[AnalyzeLeadModal] Analysis failed', new Error(error), {
+        context: { errorMessage: error, runId }
+      });
       setError(error);
       setIsSubmitting(false);
       setRunId(null);
