@@ -100,15 +100,17 @@ export function AnalyzeLeadModal({
   const { progress, isPolling, error: progressError } = useAnalysisProgress({
     runId,
     onComplete: (leadId) => {
-      logger.info('[AnalyzeLeadModal] Analysis complete', new Error('Analysis complete'), { 
-        context: { leadId, runId } 
+      logger.info('[AnalyzeLeadModal] Analysis complete', {
+        leadId,
+        runId
       });
       onSuccess?.(leadId);
       handleClose();
     },
     onError: (error) => {
       logger.error('[AnalyzeLeadModal] Analysis failed', new Error(error), {
-        context: { errorMessage: error, runId }
+        errorMessage: error,
+        runId
       });
       setError(error);
       setIsSubmitting(false);
@@ -241,14 +243,15 @@ export function AnalyzeLeadModal({
   // DERIVED STATE
   // ===========================================================================
 
-  const canSubmit = 
-    rawInput.trim().length > 0 && 
-    selectedProfileId && 
-    !isSubmitting && 
+  const canSubmit =
+    rawInput.trim().length > 0 &&
+    selectedProfileId &&
+    !isSubmitting &&
     !isLoadingProfiles &&
     !isPolling;
 
-  const showProgressTracker = isPolling && progress;
+  // Show progress tracker when polling (even if progress is null during initialization)
+  const showProgressTracker = isPolling;
   const showForm = !showProgressTracker;
 
   // ===========================================================================
@@ -277,13 +280,35 @@ export function AnalyzeLeadModal({
         </div>
 
         {/* Progress Tracker */}
-        {showProgressTracker && progress && (
-          <AnalysisProgressTracker
-            progress={progress.progress}
-            currentStep={progress.current_step}
-            status={progress.status}
-            error={progressError}
-          />
+        {showProgressTracker && (
+          <>
+            {progress ? (
+              <AnalysisProgressTracker
+                progress={progress.progress}
+                currentStep={progress.current_step}
+                status={progress.status}
+                error={progressError}
+              />
+            ) : (
+              // Show loading state during workflow initialization (first 10s)
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Icon icon="ph:spinner" className="w-5 h-5 text-blue-600 animate-spin" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Starting analysis...
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Initializing workflow
+                    </p>
+                  </div>
+                </div>
+                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600 animate-pulse" style={{ width: '20%' }} />
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Form */}
