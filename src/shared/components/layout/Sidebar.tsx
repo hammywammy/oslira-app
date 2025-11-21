@@ -8,6 +8,7 @@ import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
+import { Portal } from '@/shared/components/ui/Portal';
 
 interface NavItem {
   label: string;
@@ -282,82 +283,83 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* USER DROPDOWN MENU - Outside sidebar for proper z-index */}
-      <AnimatePresence>
-        {showUserMenu && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-dropdownBackdrop"
-              onClick={() => setShowUserMenu(false)}
-            />
+      {/* USER DROPDOWN MENU - Portal for proper z-index layering */}
+      <Portal>
+        <AnimatePresence>
+          {showUserMenu && (
+            <>
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 z-dropdownBackdrop"
+                onClick={() => setShowUserMenu(false)}
+              />
 
-            {/* Claude-style Dropdown */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              transition={{ duration: 0.15 }}
-              onClick={(e) => e.stopPropagation()}
-              className={`
-                fixed z-dropdown bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800
-                ${isCollapsed ? 'left-20 bottom-20' : 'left-64 bottom-20'}
-                w-64
-              `}
-            >
-              {/* User Info Header */}
-              <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <span className="text-base font-semibold text-white">
-                      {getUserInitial()}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                      {user?.full_name || 'User'}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                      {user?.email}
-                    </p>
+              {/* Claude-style Dropdown */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.15 }}
+                className={`
+                  fixed z-dropdown bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800
+                  ${isCollapsed ? 'left-20 bottom-20' : 'left-64 bottom-20'}
+                  w-64
+                `}
+              >
+                {/* User Info Header */}
+                <div className="p-4 border-b border-neutral-200 dark:border-neutral-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                      <span className="text-base font-semibold text-white">
+                        {getUserInitial()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                        {user?.full_name || 'User'}
+                      </p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                        {user?.email}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Menu Items */}
-              <div className="p-2">
-                <NavLink
-                  to="/settings"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
-                >
-                  <Icon icon="ph:gear" className="w-5 h-5" />
-                  <span className="text-sm font-medium">Settings</span>
-                </NavLink>
+                {/* Menu Items */}
+                <div className="p-2">
+                  <NavLink
+                    to="/settings"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
+                  >
+                    <Icon icon="ph:gear" className="w-5 h-5" />
+                    <span className="text-sm font-medium">Settings</span>
+                  </NavLink>
 
-                <NavLink
-                  to="/upgrade"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
-                >
-                  <Icon icon="ph:arrow-up" className="w-5 h-5" />
-                  <span className="text-sm font-medium">Upgrade</span>
-                </NavLink>
+                  <NavLink
+                    to="/upgrade"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
+                  >
+                    <Icon icon="ph:arrow-up" className="w-5 h-5" />
+                    <span className="text-sm font-medium">Upgrade</span>
+                  </NavLink>
 
-                <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-2" />
+                  <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-2" />
 
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400"
-                >
-                  <Icon icon="ph:sign-out" className="w-5 h-5" />
-                  <span className="text-sm font-medium">Log out</span>
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400"
+                  >
+                    <Icon icon="ph:sign-out" className="w-5 h-5" />
+                    <span className="text-sm font-medium">Log out</span>
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   );
 }
