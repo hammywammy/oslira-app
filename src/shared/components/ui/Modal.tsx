@@ -44,7 +44,7 @@ export interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   /** Modal content */
   children: ReactNode;
   /** Size variant */
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
   /** Center modal vertically */
   centered?: boolean;
   /** Backdrop variant */
@@ -69,6 +69,8 @@ const sizeStyles = {
   md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-xl',
+  '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
   full: 'max-w-full mx-4',
 } as const;
 

@@ -1,23 +1,25 @@
 // src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
 
 /**
- * LEAD DETAIL MODAL - PRODUCTION GRADE V1.0
+ * LEAD DETAIL MODAL - PRODUCTION GRADE V2.0
  *
  * Beautiful modal for displaying complete lead information
  * Triggered by clicking the eye icon in the leads table
  *
  * FEATURES:
- * ✅ Header with profile pic, name, username, and key metrics
- * ✅ Body with organized sections (profile, scores, analysis, psychographics)
+ * ✅ Large modal that takes up significant screen space (3xl)
+ * ✅ Colored header with profile pic, name, username, and score
+ * ✅ Organized sections with clear visual hierarchy
  * ✅ Responsive design with natural dark mode support
  * ✅ TypeScript strict compliance
- * ✅ Clean visual hierarchy
+ * ✅ Full backdrop blur that covers sidebar and topbar
  *
  * DESIGN PHILOSOPHY:
  * "Concert hall, not arcade"
  * - Professional layout with clear sections
- * - Visual badges and indicators
- * - Smooth animations and hover states
+ * - Subtle use of color for emphasis
+ * - Clean typography and spacing
+ * - No excessive gradients
  */
 
 import type { ReactNode } from 'react';
@@ -57,57 +59,62 @@ function formatDate(dateString: string | null): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
 }
 
 function getScoreColor(score: number | null): string {
+  if (score === null) return 'bg-neutral-100 dark:bg-neutral-800';
+  if (score >= 80) return 'bg-emerald-500';
+  if (score >= 60) return 'bg-blue-500';
+  return 'bg-amber-500';
+}
+
+function getScoreTextColor(score: number | null): string {
   if (score === null) return 'text-muted-foreground';
-  if (score >= 80) return 'text-emerald-600';
-  if (score >= 60) return 'text-blue-600';
-  return 'text-amber-600';
-}
-
-function getScoreBgColor(score: number | null): string {
-  if (score === null) return 'bg-muted/30';
-  if (score >= 80) return 'bg-emerald-50 dark:bg-emerald-900/20';
-  if (score >= 60) return 'bg-blue-50 dark:bg-blue-900/20';
-  return 'bg-amber-50 dark:bg-amber-900/20';
-}
-
-function getScoreBorderColor(score: number | null): string {
-  if (score === null) return 'border-border';
-  if (score >= 80) return 'border-emerald-200 dark:border-emerald-800';
-  if (score >= 60) return 'border-blue-200 dark:border-blue-800';
-  return 'border-amber-200 dark:border-amber-800';
+  if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
+  if (score >= 60) return 'text-blue-600 dark:text-blue-400';
+  return 'text-amber-600 dark:text-amber-400';
 }
 
 // =============================================================================
 // SUB-COMPONENTS
 // =============================================================================
 
-function ScoreDisplay({
-  label,
-  score
-}: {
-  label: string;
-  score: number | null;
-}) {
+function SectionTitle({ children, icon }: { children: ReactNode; icon?: string }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
+      {icon && <Icon icon={icon} className="w-5 h-5 text-primary" />}
+      <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+        {children}
+      </h3>
+    </div>
+  );
+}
+
+function InfoCard({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function ScoreBar({ label, score }: { label: string; score: number | null }) {
+  const scoreColor = getScoreColor(score);
+  const textColor = getScoreTextColor(score);
+
+  return (
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-muted-foreground">{label}</span>
-        <span className={`text-lg font-bold ${getScoreColor(score)}`}>
+        <span className={`text-lg font-bold ${textColor}`}>
           {score !== null ? score : 'N/A'}
         </span>
       </div>
       {score !== null && (
         <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
           <div
-            className={`h-full transition-all ${
-              score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-amber-500'
-            }`}
+            className={`h-full transition-all ${scoreColor}`}
             style={{ width: `${score}%` }}
           />
         </div>
@@ -116,42 +123,10 @@ function ScoreDisplay({
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-  value
-}: {
-  icon: string;
-  label: string;
-  value: string | number | null;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon icon={icon} className="w-4 h-4 text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-xs font-medium text-muted-foreground mb-0.5">{label}</div>
-        <div className="text-sm text-foreground break-words">
-          {value !== null && value !== undefined ? value : 'N/A'}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionTitle({ children }: { children: ReactNode }) {
-  return (
-    <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
-      {children}
-    </h3>
-  );
-}
-
 function AnalysisTypeBadge({ type }: { type: 'light' | 'deep' | 'xray' | null }) {
   if (!type) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border bg-muted/30 text-muted-foreground border-border">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-muted/50 text-muted-foreground border border-border">
         <Icon icon="mdi:minus-circle-outline" width={14} />
         Not Analyzed
       </span>
@@ -160,27 +135,27 @@ function AnalysisTypeBadge({ type }: { type: 'light' | 'deep' | 'xray' | null })
 
   const config = {
     light: {
-      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
       text: 'text-amber-700 dark:text-amber-300',
-      border: 'border-amber-200 dark:border-amber-800',
+      border: 'border-amber-300 dark:border-amber-700',
       icon: 'mdi:lightning-bolt',
     },
     deep: {
-      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
       text: 'text-blue-700 dark:text-blue-300',
-      border: 'border-blue-200 dark:border-blue-800',
+      border: 'border-blue-300 dark:border-blue-700',
       icon: 'mdi:brain',
     },
     xray: {
-      bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+      bg: 'bg-emerald-100 dark:bg-emerald-900/30',
       text: 'text-emerald-700 dark:text-emerald-300',
-      border: 'border-emerald-200 dark:border-emerald-800',
+      border: 'border-emerald-300 dark:border-emerald-700',
       icon: 'mdi:atom',
     },
   }[type];
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium ${config.bg} ${config.text} ${config.border}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
       <Icon icon={config.icon} width={14} />
       {type.charAt(0).toUpperCase() + type.slice(1)}
     </span>
@@ -195,85 +170,112 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
   if (!lead) return null;
 
   const overallScore = lead.overall_score;
+  const scoreColor = getScoreColor(overallScore);
 
   return (
-    <Modal open={isOpen} onClose={onClose} size="xl" closeable>
+    <Modal open={isOpen} onClose={onClose} size="3xl" closeable>
       {/* ========================================================================
-          HEADER - LEAD PROFILE OVERVIEW
+          HEADER - PROFILE OVERVIEW WITH COLORED BACKGROUND
           ======================================================================== */}
 
-      <div className="px-6 py-5 border-b border-border bg-muted/30 dark:bg-muted/10">
-        <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0 text-white text-2xl font-bold shadow-lg">
-            {lead.avatar_url ? (
-              <img
-                src={lead.avatar_url}
-                alt={lead.full_name || lead.username}
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <span>{lead.full_name?.charAt(0) || lead.username.charAt(0).toUpperCase()}</span>
-            )}
-          </div>
-
-          {/* Name and Username */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-3 mb-2">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-foreground truncate mb-1">
-                  {lead.full_name || lead.username}
-                </h2>
-                <a
-                  href={lead.profile_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
-                >
-                  <Icon icon="mdi:instagram" width={16} />
-                  {lead.username}
-                  <Icon icon="mdi:open-in-new" width={14} />
-                </a>
+      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border">
+        <div className="px-8 py-6">
+          <div className="flex items-start gap-6">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white text-3xl font-bold shadow-lg overflow-hidden">
+                {lead.avatar_url ? (
+                  <img
+                    src={lead.avatar_url}
+                    alt={lead.full_name || lead.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{lead.full_name?.charAt(0) || lead.username.charAt(0).toUpperCase()}</span>
+                )}
               </div>
+              {/* Platform Badge */}
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center border-2 border-background">
+                <Icon icon="mdi:instagram" className="w-4 h-4 text-white" />
+              </div>
+            </div>
 
-              {/* Overall Score Badge */}
-              {overallScore !== null && (
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${getScoreBgColor(overallScore)} ${getScoreBorderColor(overallScore)}`}>
-                  <Icon icon="ph:star-fill" className={`w-5 h-5 ${getScoreColor(overallScore)}`} />
-                  <div className="text-right">
-                    <div className="text-xs font-medium text-muted-foreground">Overall Score</div>
-                    <div className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>
-                      {overallScore}
-                    </div>
+            {/* Profile Info */}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold text-foreground mb-1 truncate">
+                {lead.full_name || lead.username}
+              </h2>
+              <a
+                href={lead.profile_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors mb-3"
+              >
+                <span className="text-sm font-medium">{lead.username}</span>
+                <Icon icon="mdi:open-in-new" width={14} />
+              </a>
+
+              {/* Key Metrics */}
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Icon icon="mdi:account-group" className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    <span className="font-semibold text-foreground">{formatFollowers(lead.followers_count)}</span>
+                    <span className="text-muted-foreground ml-1">followers</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon icon="mdi:account-multiple" className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    <span className="font-semibold text-foreground">{formatFollowers(lead.following_count)}</span>
+                    <span className="text-muted-foreground ml-1">following</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon icon="mdi:grid" className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    <span className="font-semibold text-foreground">{lead.posts_count || 0}</span>
+                    <span className="text-muted-foreground ml-1">posts</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Score Circle Badge */}
+            {overallScore !== null && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative w-24 h-24">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      className="text-muted/30"
+                    />
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="6"
+                      fill="none"
+                      strokeDasharray={`${overallScore * 2.51} 251`}
+                      className={scoreColor.replace('bg-', 'text-')}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-3xl font-bold text-foreground">{overallScore}</span>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Key Metrics */}
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-1.5 text-sm">
-                <Icon icon="mdi:account-group" className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium text-foreground">
-                  {formatFollowers(lead.followers_count)}
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Overall Score
                 </span>
-                <span className="text-muted-foreground">followers</span>
               </div>
-              <div className="flex items-center gap-1.5 text-sm">
-                <Icon icon="mdi:account-multiple" className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium text-foreground">
-                  {formatFollowers(lead.following_count)}
-                </span>
-                <span className="text-muted-foreground">following</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-sm">
-                <Icon icon="mdi:grid" className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium text-foreground">
-                  {lead.posts_count || 0}
-                </span>
-                <span className="text-muted-foreground">posts</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -282,231 +284,203 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
           BODY - DETAILED INFORMATION
           ======================================================================== */}
 
-      <div className="px-6 py-5 max-h-[600px] overflow-y-auto">
-        <div className="space-y-6">
+      <div className="px-8 py-6 max-h-[60vh] overflow-y-auto">
+        <div className="grid grid-cols-2 gap-6">
 
-          {/* Bio Section */}
-          {lead.bio && (
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+
+            {/* Bio Section */}
+            {lead.bio && (
+              <div>
+                <SectionTitle icon="mdi:text">Bio</SectionTitle>
+                <InfoCard>
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                    {lead.bio}
+                  </p>
+                </InfoCard>
+              </div>
+            )}
+
+            {/* Analysis Info */}
             <div>
-              <SectionTitle>Bio</SectionTitle>
-              <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {lead.bio}
-                </p>
+              <SectionTitle icon="mdi:information">Analysis Details</SectionTitle>
+              <div className="space-y-3">
+                <InfoCard>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Type</span>
+                    <AnalysisTypeBadge type={lead.analysis_type} />
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Analyzed</span>
+                    <span className="text-sm text-foreground">{formatDate(lead.analysis_completed_at)}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Confidence</span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {lead.confidence_level !== null ? `${lead.confidence_level}%` : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Credits Used</span>
+                    <span className="text-sm font-semibold text-foreground">{lead.credits_charged}</span>
+                  </div>
+                </InfoCard>
               </div>
             </div>
-          )}
 
-          {/* Analysis Information */}
-          <div>
-            <SectionTitle>Analysis Information</SectionTitle>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <div className="flex items-center justify-between p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                  <span className="text-sm font-medium text-muted-foreground">Analysis Type</span>
-                  <AnalysisTypeBadge type={lead.analysis_type} />
+            {/* Scores Section */}
+            {(lead.overall_score !== null || lead.niche_fit_score !== null || lead.engagement_score !== null) && (
+              <div>
+                <SectionTitle icon="mdi:chart-bar">Performance Scores</SectionTitle>
+                <div className="space-y-4">
+                  <InfoCard>
+                    <ScoreBar label="Overall Score" score={lead.overall_score} />
+                  </InfoCard>
+                  <InfoCard>
+                    <ScoreBar label="Niche Fit" score={lead.niche_fit_score} />
+                  </InfoCard>
+                  <InfoCard>
+                    <ScoreBar label="Engagement" score={lead.engagement_score} />
+                  </InfoCard>
                 </div>
               </div>
+            )}
 
-              <InfoRow
-                icon="mdi:clock-outline"
-                label="Analyzed At"
-                value={formatDate(lead.analysis_completed_at)}
-              />
-
-              <InfoRow
-                icon="mdi:speedometer"
-                label="Confidence Level"
-                value={lead.confidence_level !== null ? `${lead.confidence_level}%` : null}
-              />
-
-              <InfoRow
-                icon="mdi:credit-card-outline"
-                label="Credits Charged"
-                value={lead.credits_charged}
-              />
-
-              <InfoRow
-                icon="mdi:cached"
-                label="Cache Hit"
-                value={lead.cache_hit ? 'Yes' : 'No'}
-              />
-            </div>
           </div>
 
-          {/* Scores Section */}
-          {(lead.overall_score !== null || lead.niche_fit_score !== null || lead.engagement_score !== null) && (
-            <div>
-              <SectionTitle>Detailed Scores</SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                  <ScoreDisplay label="Overall Score" score={lead.overall_score} />
-                </div>
-                <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                  <ScoreDisplay label="Niche Fit" score={lead.niche_fit_score} />
-                </div>
-                <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                  <ScoreDisplay label="Engagement" score={lead.engagement_score} />
-                </div>
+          {/* RIGHT COLUMN */}
+          <div className="space-y-6">
+
+            {/* Summary Section */}
+            {lead.summary_text && (
+              <div>
+                <SectionTitle icon="mdi:file-document">Analysis Summary</SectionTitle>
+                <InfoCard className="bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                    {lead.summary_text}
+                  </p>
+                </InfoCard>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Summary Section */}
-          {lead.summary_text && (
-            <div>
-              <SectionTitle>Analysis Summary</SectionTitle>
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {lead.summary_text}
-                </p>
+            {/* Outreach Message Section */}
+            {lead.outreach_message && (
+              <div>
+                <SectionTitle icon="mdi:message-text">Outreach Message</SectionTitle>
+                <InfoCard className="bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800">
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-medium">
+                    {lead.outreach_message}
+                  </p>
+                </InfoCard>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Outreach Message Section */}
-          {lead.outreach_message && (
-            <div>
-              <SectionTitle>Suggested Outreach Message</SectionTitle>
-              <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-medium">
-                  {lead.outreach_message}
-                </p>
-              </div>
-            </div>
-          )}
+            {/* Psychographics Section */}
+            {lead.psychographics && (
+              <div>
+                <SectionTitle icon="mdi:account-details">Psychographic Profile</SectionTitle>
+                <div className="space-y-4">
 
-          {/* Psychographics Section */}
-          {lead.psychographics && (
-            <div>
-              <SectionTitle>Psychographic Profile</SectionTitle>
-              <div className="space-y-4">
+                  {/* DISC Profile */}
+                  {lead.psychographics.disc_profile && (
+                    <InfoCard className="bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Icon icon="mdi:account-details" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <h4 className="text-sm font-semibold text-foreground">
+                          DISC: {lead.psychographics.disc_profile.primary_type} Type
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <ScoreBar
+                          label="Dominance"
+                          score={lead.psychographics.disc_profile.dominance}
+                        />
+                        <ScoreBar
+                          label="Influence"
+                          score={lead.psychographics.disc_profile.influence}
+                        />
+                        <ScoreBar
+                          label="Steadiness"
+                          score={lead.psychographics.disc_profile.steadiness}
+                        />
+                        <ScoreBar
+                          label="Conscientiousness"
+                          score={lead.psychographics.disc_profile.conscientiousness}
+                        />
+                      </div>
+                    </InfoCard>
+                  )}
 
-                {/* DISC Profile */}
-                {lead.psychographics.disc_profile && (
-                  <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Icon icon="mdi:account-details" className="w-5 h-5 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">
-                        DISC Profile - {lead.psychographics.disc_profile.primary_type} Type
-                      </h4>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <ScoreDisplay
-                        label="Dominance"
-                        score={lead.psychographics.disc_profile.dominance}
-                      />
-                      <ScoreDisplay
-                        label="Influence"
-                        score={lead.psychographics.disc_profile.influence}
-                      />
-                      <ScoreDisplay
-                        label="Steadiness"
-                        score={lead.psychographics.disc_profile.steadiness}
-                      />
-                      <ScoreDisplay
-                        label="Conscientiousness"
-                        score={lead.psychographics.disc_profile.conscientiousness}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Communication Style */}
-                {lead.psychographics.communication_style && (
-                  <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon icon="mdi:message-text" className="w-5 h-5 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">Communication Style</h4>
-                    </div>
-                    <p className="text-sm text-foreground">{lead.psychographics.communication_style}</p>
-                  </div>
-                )}
-
-                {/* Motivation Drivers */}
-                {lead.psychographics.motivation_drivers && lead.psychographics.motivation_drivers.length > 0 && (
-                  <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Icon icon="mdi:lightbulb-on" className="w-5 h-5 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">Motivation Drivers</h4>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {lead.psychographics.motivation_drivers.map((driver, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-medium"
-                        >
-                          {driver}
+                  {/* Communication Style */}
+                  {lead.psychographics.communication_style && (
+                    <InfoCard>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon icon="mdi:message-text" className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Communication Style
                         </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      </div>
+                      <p className="text-sm text-foreground">{lead.psychographics.communication_style}</p>
+                    </InfoCard>
+                  )}
 
-                {/* Outreach Strategy */}
-                {lead.psychographics.outreach_strategy && (
-                  <div className="p-4 bg-muted/30 dark:bg-muted/10 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon icon="mdi:strategy" className="w-5 h-5 text-primary" />
-                      <h4 className="text-sm font-semibold text-foreground">Outreach Strategy</h4>
-                    </div>
-                    <p className="text-sm text-foreground">{lead.psychographics.outreach_strategy}</p>
-                  </div>
-                )}
+                  {/* Motivation Drivers */}
+                  {lead.psychographics.motivation_drivers && lead.psychographics.motivation_drivers.length > 0 && (
+                    <InfoCard>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Icon icon="mdi:lightbulb-on" className="w-4 h-4 text-primary" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Motivation Drivers
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {lead.psychographics.motivation_drivers.map((driver, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium border border-primary/20"
+                          >
+                            {driver}
+                          </span>
+                        ))}
+                      </div>
+                    </InfoCard>
+                  )}
 
-                {/* Copywriter Profile */}
-                {lead.psychographics.copywriter_profile && lead.psychographics.copywriter_profile.is_copywriter && (
-                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon icon="mdi:pencil" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <h4 className="text-sm font-semibold text-foreground">Copywriter Profile</h4>
-                    </div>
-                    <div className="space-y-1 text-sm">
-                      {lead.psychographics.copywriter_profile.specialization && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Specialization:</span>
-                          <span className="text-foreground font-medium">
-                            {lead.psychographics.copywriter_profile.specialization}
-                          </span>
-                        </div>
-                      )}
-                      {lead.psychographics.copywriter_profile.experience_level && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Experience:</span>
-                          <span className="text-foreground font-medium capitalize">
-                            {lead.psychographics.copywriter_profile.experience_level}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                  {/* Copywriter Profile */}
+                  {lead.psychographics.copywriter_profile && lead.psychographics.copywriter_profile.is_copywriter && (
+                    <InfoCard className="bg-pink-50/50 dark:bg-pink-900/10 border-pink-200 dark:border-pink-800">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon icon="mdi:pencil" className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Copywriter Profile
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {lead.psychographics.copywriter_profile.specialization && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Specialization:</span>
+                            <span className="text-foreground font-medium">
+                              {lead.psychographics.copywriter_profile.specialization}
+                            </span>
+                          </div>
+                        )}
+                        {lead.psychographics.copywriter_profile.experience_level && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Experience:</span>
+                            <span className="text-foreground font-medium capitalize">
+                              {lead.psychographics.copywriter_profile.experience_level}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </InfoCard>
+                  )}
+
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Metadata Section */}
-          <div>
-            <SectionTitle>Metadata</SectionTitle>
-            <div className="grid grid-cols-2 gap-4">
-              <InfoRow
-                icon="mdi:calendar-plus"
-                label="Created At"
-                value={formatDate(lead.created_at)}
-              />
-              <InfoRow
-                icon="mdi:identifier"
-                label="Lead ID"
-                value={lead.id}
-              />
-              {lead.run_id && (
-                <InfoRow
-                  icon="mdi:run"
-                  label="Run ID"
-                  value={lead.run_id}
-                />
-              )}
-            </div>
           </div>
 
         </div>

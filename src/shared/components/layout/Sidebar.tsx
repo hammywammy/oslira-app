@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useLightBalance } from '@/features/credits/store/creditsStore';
+import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
 
 interface NavItem {
   label: string;
@@ -41,8 +41,9 @@ const NAV_SECTIONS: NavSection[] = [
 
 export function Sidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
-  const { user, account, logout } = useAuth();
+  const { user, logout } = useAuth();
   const { theme } = useTheme();
+  const creditBalance = useCurrentBalance();
   const lightBalance = useLightBalance();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
@@ -204,7 +205,7 @@ export function Sidebar() {
                   <span className="text-xs font-medium text-muted-foreground">Credits</span>
                 </div>
                 <div className="text-xl font-bold text-primary">
-                  {account?.credit_balance || 0}
+                  {creditBalance}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">remaining this month</div>
               </div>
@@ -230,7 +231,7 @@ export function Sidebar() {
                 <div className="text-center">
                   <Icon icon="ph:lightning" className="w-4 h-4 text-primary mx-auto mb-1" />
                   <span className="text-xs font-bold text-primary">
-                    {account?.credit_balance || 0}
+                    {creditBalance}
                   </span>
                 </div>
                 <div className="text-center">
