@@ -131,7 +131,7 @@ export function Modal({
   return (
     <div
       className={`
-        fixed inset-0 z-[100]
+        fixed inset-0 z-modal
         flex
         ${centered ? 'items-center' : 'items-start pt-20'}
         justify-center

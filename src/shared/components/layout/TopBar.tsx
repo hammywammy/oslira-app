@@ -44,11 +44,11 @@ export function TopBar() {
   return (
     <>
       {/* Top border line - spans full width */}
-      <div className="fixed top-0 left-0 right-0 h-[1px] bg-border z-50" />
-      
+      <div className="fixed top-0 left-0 right-0 h-[1px] bg-border z-topBarBorder" />
+
       {/* Main TopBar - respects Sidebar width */}
       <header className={`
-        fixed top-[1px] right-0 h-14 bg-background border-b border-border z-40
+        fixed top-[1px] right-0 h-14 bg-background border-b border-border z-topBar
         transition-[left] duration-200
         ${isCollapsed ? 'left-16' : 'left-60'}
       `}>
@@ -146,7 +146,7 @@ export function TopBar() {
                 {showHelp && (
                   <>
                     <div
-                      className="fixed inset-0 z-30"
+                      className="fixed inset-0 z-dropdownBackdrop"
                       onClick={() => setShowHelp(false)}
                     />
                     <motion.div
@@ -154,7 +154,7 @@ export function TopBar() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-background border border-border rounded-lg shadow-xl z-40"
+                      className="absolute right-0 top-full mt-2 w-64 bg-background border border-border rounded-lg shadow-xl z-dropdown"
                     >
                       <div className="p-2">
                         <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
@@ -197,7 +197,7 @@ export function TopBar() {
                 {showNotifications && (
                   <>
                     <div
-                      className="fixed inset-0 z-30"
+                      className="fixed inset-0 z-dropdownBackdrop"
                       onClick={() => setShowNotifications(false)}
                     />
                     <motion.div
@@ -205,7 +205,7 @@ export function TopBar() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-lg shadow-xl z-40"
+                      className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-lg shadow-xl z-dropdown"
                     >
                       <div className="p-4 border-b border-border">
                         <div className="flex items-center justify-between">

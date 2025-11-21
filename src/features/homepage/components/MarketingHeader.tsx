@@ -49,7 +49,7 @@ export function MarketingHeader() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200 shadow-sm"
+        className="fixed top-0 left-0 right-0 z-fixedNav bg-white/80 backdrop-blur-xl border-b border-slate-200 shadow-sm"
       >
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -130,7 +130,7 @@ export function MarketingHeader() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-[73px] left-0 right-0 z-40 bg-white border-b border-slate-200 shadow-lg md:hidden overflow-hidden"
+            className="fixed top-[73px] left-0 right-0 z-dropdown bg-white border-b border-slate-200 shadow-lg md:hidden overflow-hidden"
           >
             <div className="px-6 py-6 space-y-4">
               {[

@@ -2,17 +2,17 @@
 
 /**
  * TABLE VIEW LAYOUT - SUPABASE STYLE
- * 
+ *
  * Dedicated layout for database-style table views.
  * Zero padding, zero containers, full viewport integration.
- * 
+ *
  * STRUCTURE:
- * - TopBar (h-14, fixed top, z-50)
- * - Sidebar (w-60/w-16, fixed left, z-30)
- * - Hotbar (h-14, fixed below TopBar, z-40)
+ * - TopBar (h-14, fixed top, z-topBar: 320, z-topBarBorder: 321)
+ * - Sidebar (w-60/w-16, fixed left, z-sidebar: 310)
+ * - Hotbar (h-14, fixed below TopBar, z-hotbar: 330)
  * - Table (fills remaining viewport, scrollable)
- * - Pagination (h-11, fixed bottom, z-30)
- * 
+ * - Pagination (h-11, fixed bottom, z-pagination: 305)
+ *
  * This component ONLY handles layout positioning.
  * All business logic lives in child components.
  */
@@ -41,7 +41,7 @@ export function TableViewLayout({ hotbar, table, pagination }: TableViewLayoutPr
 
       {/* Hotbar - Fixed below TopBar, respects sidebar */}
       <div className={`
-        fixed top-14 right-0 z-40
+        fixed top-14 right-0 z-hotbar
         transition-[left] duration-200
         ${isCollapsed ? 'left-16' : 'left-60'}
       `}>
@@ -60,7 +60,7 @@ export function TableViewLayout({ hotbar, table, pagination }: TableViewLayoutPr
 
       {/* Pagination - Fixed bottom, respects sidebar */}
       <div className={`
-        fixed bottom-0 right-0 z-30
+        fixed bottom-0 right-0 z-pagination
         transition-[left] duration-200
         ${isCollapsed ? 'left-16' : 'left-60'}
       `}>

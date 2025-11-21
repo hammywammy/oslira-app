@@ -76,7 +76,7 @@ export function Sidebar() {
       <aside
         className={`
           fixed top-[1px] left-0 bottom-0 bg-background border-r border-border
-          transition-all duration-200 flex flex-col z-30
+          transition-all duration-200 flex flex-col z-sidebar
           ${isCollapsed ? 'w-16' : 'w-60'}
           ${isCollapsed ? 'overflow-hidden' : 'overflow-visible'}
         `}
@@ -184,7 +184,7 @@ export function Sidebar() {
                       
                       {/* Tooltip for collapsed state */}
                       {isCollapsed && (
-                        <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs font-medium rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs font-medium rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-tooltip">
                           {item.label}
                         </div>
                       )}
@@ -288,7 +288,7 @@ export function Sidebar() {
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-dropdownBackdrop"
               onClick={() => setShowUserMenu(false)}
             />
 
@@ -299,7 +299,7 @@ export function Sidebar() {
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
               className={`
-                fixed z-50 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800
+                fixed z-dropdown bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800
                 ${isCollapsed ? 'left-20 bottom-20' : 'left-64 bottom-20'}
                 w-64
               `}

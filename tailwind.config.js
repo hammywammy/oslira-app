@@ -231,16 +231,57 @@ export default {
       },
 
       /**
-       * Z-INDEX
+       * Z-INDEX - Centralized layering system
+       * Defined in src/styles/zIndex.ts
+       * Each layer has 100 points spacing for future additions
        */
       zIndex: {
+        // Background layer
+        background: 'var(--z-background)',
+
+        // Base layer
         base: 'var(--z-base)',
-        dropdown: 'var(--z-dropdown)',
+        content: 'var(--z-content)',
+        card: 'var(--z-card)',
+
+        // Sticky layer
         sticky: 'var(--z-sticky)',
-        fixed: 'var(--z-fixed)',
+        stickyTable: 'var(--z-sticky-table)',
+        stickyTableColumn: 'var(--z-sticky-table-column)',
+
+        // Fixed navigation layer
+        fixedNav: 'var(--z-fixed-nav)',
+        sidebar: 'var(--z-sidebar)',
+        topBar: 'var(--z-top-bar)',
+        topBarBorder: 'var(--z-top-bar-border)',
+        hotbar: 'var(--z-hotbar)',
+        pagination: 'var(--z-pagination)',
+
+        // Dropdown layer
+        dropdown: 'var(--z-dropdown)',
+        dropdownBackdrop: 'var(--z-dropdown-backdrop)',
+        popover: 'var(--z-popover)',
+        tooltip: 'var(--z-tooltip)',
+
+        // Overlay layer
         overlay: 'var(--z-overlay)',
+        modalBackdrop: 'var(--z-modal-backdrop)',
+        drawerBackdrop: 'var(--z-drawer-backdrop)',
+        loadingOverlay: 'var(--z-loading-overlay)',
+
+        // Modal layer
         modal: 'var(--z-modal)',
+        modalContent: 'var(--z-modal-content)',
+        drawer: 'var(--z-drawer)',
+        fullscreen: 'var(--z-fullscreen)',
+
+        // Toast layer (highest)
         toast: 'var(--z-toast)',
+        alert: 'var(--z-alert)',
+
+        // Showcase/dev tools
+        showcaseNav: 'var(--z-showcase-nav)',
+        showcaseBackdrop: 'var(--z-showcase-backdrop)',
       },
     },
   },

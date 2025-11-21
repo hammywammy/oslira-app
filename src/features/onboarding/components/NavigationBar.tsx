@@ -40,7 +40,7 @@ export function NavigationBar({
   isLoading,
 }: NavigationBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-40">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-fixedNav">
       <div className="max-w-2xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Back Button */}
