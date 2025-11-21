@@ -35,7 +35,7 @@ interface NotificationState {
   // Persisted state
   dismissedIds: Set<string>;
 
-  // Computed getters
+  // Derived state (computed on every state change)
   announcements: Announcement[];
   unreadCount: number;
 
@@ -63,32 +63,47 @@ const getVisibleAnnouncements = (dismissedIds: Set<string>): Announcement[] => {
 
 export const useNotificationStore = create<NotificationState>()(
   persist(
-    (set, get) => ({
-      // Persisted State
-      dismissedIds: new Set<string>(),
+    (set, get) => {
+      // Helper to recompute derived state
+      const computeDerivedState = (dismissedIds: Set<string>) => {
+        const announcements = getVisibleAnnouncements(dismissedIds);
+        return {
+          announcements,
+          unreadCount: announcements.length,
+        };
+      };
 
-      // Computed Getters
-      get announcements() {
-        return getVisibleAnnouncements(get().dismissedIds);
-      },
+      const initialDismissedIds = new Set<string>();
+      const initialDerived = computeDerivedState(initialDismissedIds);
 
-      get unreadCount() {
-        return getVisibleAnnouncements(get().dismissedIds).length;
-      },
+      return {
+        // Persisted State
+        dismissedIds: initialDismissedIds,
 
-      // Actions
-      dismissAnnouncement: (id: string) =>
-        set((state) => {
-          const newDismissedIds = new Set(state.dismissedIds);
-          newDismissedIds.add(id);
-          return { dismissedIds: newDismissedIds };
-        }),
+        // Derived State
+        announcements: initialDerived.announcements,
+        unreadCount: initialDerived.unreadCount,
 
-      clearAllDismissed: () =>
-        set({
-          dismissedIds: new Set<string>(),
-        }),
-    }),
+        // Actions
+        dismissAnnouncement: (id: string) =>
+          set((state) => {
+            const newDismissedIds = new Set(state.dismissedIds);
+            newDismissedIds.add(id);
+            return {
+              dismissedIds: newDismissedIds,
+              ...computeDerivedState(newDismissedIds),
+            };
+          }),
+
+        clearAllDismissed: () => {
+          const newDismissedIds = new Set<string>();
+          return set({
+            dismissedIds: newDismissedIds,
+            ...computeDerivedState(newDismissedIds),
+          });
+        },
+      };
+    },
     {
       name: 'oslira-notifications', // localStorage key
 
@@ -125,6 +140,15 @@ export const useNotificationStore = create<NotificationState>()(
       partialize: (state) => ({
         dismissedIds: state.dismissedIds,
       }),
+
+      // Recompute derived state after hydration
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const announcements = getVisibleAnnouncements(state.dismissedIds);
+          state.announcements = announcements;
+          state.unreadCount = announcements.length;
+        }
+      },
     }
   )
 );
