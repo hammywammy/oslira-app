@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useLightBalance } from '@/features/credits/store/creditsStore';
 
 interface NavItem {
   label: string;
@@ -42,6 +43,7 @@ export function Sidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore();
   const { user, account, logout } = useAuth();
   const { theme } = useTheme();
+  const lightBalance = useLightBalance();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
   const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
@@ -216,7 +218,7 @@ export function Sidebar() {
                   <span className="text-xs font-medium text-muted-foreground">Light Analysis</span>
                 </div>
                 <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  10/10
+                  {lightBalance}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">remaining this month</div>
               </div>
@@ -234,7 +236,7 @@ export function Sidebar() {
                 <div className="text-center">
                   <Icon icon="ph:chart-line" className="w-4 h-4 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
                   <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
-                    10/10
+                    {lightBalance}
                   </span>
                 </div>
               </div>
@@ -338,6 +340,15 @@ export function Sidebar() {
                 >
                   <Icon icon="ph:credit-card" className="w-5 h-5" />
                   <span className="text-sm font-medium">Billing</span>
+                </NavLink>
+
+                <NavLink
+                  to="/upgrade"
+                  onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
+                >
+                  <Icon icon="ph:arrow-up" className="w-5 h-5" />
+                  <span className="text-sm font-medium">Upgrade</span>
                 </NavLink>
 
                 <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-2" />
