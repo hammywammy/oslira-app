@@ -18,7 +18,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { httpClient } from '@/core/http/http-client';
+import { httpClient } from '@/core/auth/http-client';
 import { Subscription } from '../types/billing.types';
 
 // =============================================================================

@@ -63,29 +63,31 @@ export function UpgradePage() {
   /**
    * Handle tier selection
    */
-  function handleSelectTier(tierId: TierName) {
-    setSelectedTier(tierId);
-    upgradeMutation.mutate(tierId);
+  function handleSelectTier(tierId: string) {
+    setSelectedTier(tierId as TierName);
+    upgradeMutation.mutate(tierId as TierName);
   }
 
   /**
    * Clear URL params after showing notification
    */
   useEffect(() => {
-    if (success || error) {
-      // Refresh subscription data after successful upgrade
-      if (success) {
-        refetchSubscription();
-      }
-
-      // Clear params after 5 seconds
-      const timer = setTimeout(() => {
-        setSearchParams({});
-      }, 5000);
-
-      return () => clearTimeout(timer);
+    if (!success && !error) {
+      return;
     }
-  }, [success, error, searchParams, setSearchParams, refetchSubscription]);
+
+    // Refresh subscription data after successful upgrade
+    if (success) {
+      refetchSubscription();
+    }
+
+    // Clear params after 5 seconds
+    const timer = setTimeout(() => {
+      setSearchParams({});
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [success, error, setSearchParams, refetchSubscription]);
 
   // Loading state
   if (subscriptionLoading) {
@@ -101,24 +103,26 @@ export function UpgradePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <Alert variant="error">
-          <Alert.Title>Failed to load subscription</Alert.Title>
-          <Alert.Description>
-            {subscriptionError.message || 'Please try again later.'}
-          </Alert.Description>
+          <div>
+            <div className="font-semibold mb-1">Failed to load subscription</div>
+            <div className="text-sm opacity-90">
+              {subscriptionError.message || 'Please try again later.'}
+            </div>
+          </div>
         </Alert>
       </div>
     );
   }
 
-  const currentTier = subscription?.tier || 'free';
+  const currentTier = (subscription?.tier || 'free') as TierName;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-neutral-50 dark:to-neutral-900">
-      
+
       {/* =====================================================================
           SUCCESS/ERROR NOTIFICATIONS
           ===================================================================== */}
-      
+
       {success && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -126,10 +130,12 @@ export function UpgradePage() {
           className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
         >
           <Alert variant="success">
-            <Alert.Title>Upgrade successful!</Alert.Title>
-            <Alert.Description>
-              Your subscription has been updated. New features are now available.
-            </Alert.Description>
+            <div>
+              <div className="font-semibold mb-1">Upgrade successful!</div>
+              <div className="text-sm opacity-90">
+                Your subscription has been updated. New features are now available.
+              </div>
+            </div>
           </Alert>
         </motion.div>
       )}
@@ -141,10 +147,12 @@ export function UpgradePage() {
           className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
         >
           <Alert variant="error">
-            <Alert.Title>Upgrade failed</Alert.Title>
-            <Alert.Description>
-              {decodeURIComponent(error)}
-            </Alert.Description>
+            <div>
+              <div className="font-semibold mb-1">Upgrade failed</div>
+              <div className="text-sm opacity-90">
+                {decodeURIComponent(error)}
+              </div>
+            </div>
           </Alert>
         </motion.div>
       )}
@@ -152,7 +160,7 @@ export function UpgradePage() {
       {/* =====================================================================
           HERO SECTION
           ===================================================================== */}
-      
+
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -166,7 +174,7 @@ export function UpgradePage() {
           <p className="text-lg text-muted-foreground mb-2">
             Choose the plan that matches your prospecting volume
           </p>
-          
+
           {/* Current Tier Indicator */}
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary/10 rounded-full">
             <Icon icon="ph:check-circle-fill" className="w-5 h-5 text-primary" />
