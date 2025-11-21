@@ -123,7 +123,7 @@ export function Tooltip({
         <div
           role="tooltip"
           className={`
-            absolute z-50
+            absolute z-tooltip
             ${placementStyles[placement]}
             ${sizeStyles[size]}
             ${variantStyles[variant]}

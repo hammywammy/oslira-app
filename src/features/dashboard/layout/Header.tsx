@@ -26,7 +26,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-60 right-0 h-16 bg-surface-raised border-b border-border z-10">
+    <header className="fixed top-0 left-60 right-0 h-16 bg-surface-raised border-b border-border z-fixedNav">
       <div className="h-full flex items-center justify-between px-6">
         {/* Left: Business Selector (Placeholder) */}
         <div className="flex items-center gap-4">
@@ -66,7 +66,7 @@ export function Header() {
                 <>
                   {/* Backdrop */}
                   <div
-                    className="fixed inset-0 z-10"
+                    className="fixed inset-0 z-dropdownBackdrop"
                     onClick={() => setShowUserMenu(false)}
                   />
 
@@ -75,7 +75,7 @@ export function Header() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-full mt-2 w-56 bg-surface-raised border border-border rounded-lg shadow-lg z-20"
+                    className="absolute right-0 top-full mt-2 w-56 bg-surface-raised border border-border rounded-lg shadow-lg z-dropdown"
                   >
                     {/* User Info */}
                     <div className="p-4 border-b border-border">

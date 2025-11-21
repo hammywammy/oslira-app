@@ -19,7 +19,7 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
   const progress = ((currentStep - 1) / (TOTAL_STEPS - 1)) * 100;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-neutral-100">
+    <div className="fixed top-0 left-0 right-0 z-fixedNav bg-white/95 backdrop-blur-sm border-b border-neutral-100">
       <div className="max-w-4xl mx-auto px-6 py-6">
         {/* Step Counter */}
         <div className="flex items-center justify-between mb-3">

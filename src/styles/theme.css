@@ -361,13 +361,53 @@
   --space-3xl: 4rem;
   --space-4xl: 6rem;
 
+  /* Z-Index System - Centralized layering with 100pt spacing */
+  /* Background layer (-10 to -1) */
+  --z-background: -10;
+
+  /* Base layer (0 to 99) */
   --z-base: 0;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-overlay: 400;
-  --z-modal: 500;
-  --z-toast: 600;
+  --z-content: 10;
+  --z-card: 20;
+
+  /* Sticky layer (100 to 199) */
+  --z-sticky: 100;
+  --z-sticky-table: 110;
+  --z-sticky-table-column: 120;
+
+  /* Fixed navigation layer (300 to 399) */
+  --z-fixed-nav: 300;
+  --z-sidebar: 310;
+  --z-top-bar: 320;
+  --z-top-bar-border: 321;
+  --z-hotbar: 330;
+  --z-pagination: 305;
+
+  /* Dropdown layer (400 to 499) */
+  --z-dropdown: 400;
+  --z-dropdown-backdrop: 390;
+  --z-popover: 410;
+  --z-tooltip: 420;
+
+  /* Overlay layer (500 to 599) */
+  --z-overlay: 500;
+  --z-modal-backdrop: 510;
+  --z-drawer-backdrop: 520;
+  --z-loading-overlay: 530;
+
+  /* Modal layer (600 to 699) */
+  --z-modal: 600;
+  --z-modal-content: 610;
+  --z-drawer: 620;
+  --z-fullscreen: 630;
+
+  /* Toast layer (700 to 799) - Highest priority */
+  --z-toast: 700;
+  --z-alert: 710;
+
+  /* Showcase/dev tools (650 range) */
+  --z-showcase-backdrop: 640;
+  --z-showcase-nav: 650;
 }
 
 /* ============================================================================

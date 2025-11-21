@@ -44,7 +44,7 @@ export function ShowcaseNav() {
       {/* Toggle Button - Fixed in corner */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[100] w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full shadow-2xl flex items-center justify-center"
+        className="fixed bottom-6 right-6 z-showcaseNav w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full shadow-2xl flex items-center justify-center"
         whileHover={{ scale: 1.1, rotate: 180 }}
         whileTap={{ scale: 0.9 }}
         initial={{ opacity: 0, scale: 0 }}
@@ -65,7 +65,7 @@ export function ShowcaseNav() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-showcaseBackdrop"
           />
         )}
       </AnimatePresence>
@@ -78,7 +78,7 @@ export function ShowcaseNav() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl z-[95] overflow-hidden flex flex-col"
+            className="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 shadow-2xl z-showcaseNav overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/10">

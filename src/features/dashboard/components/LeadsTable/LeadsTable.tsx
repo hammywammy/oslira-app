@@ -159,7 +159,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
       {/* Checkbox - Frozen Left, Centered */}
       <td
         className={`
-          sticky left-0 z-10 text-center
+          sticky left-0 z-stickyTable text-center
           ${isSelected ? 'bg-primary/5' : 'bg-background group-hover:bg-muted/30'}
           border-r border-border
         `}
@@ -217,7 +217,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
       {/* Actions - Frozen Right, Centered */}
       <td
         className={`
-          sticky right-0 z-10 text-center
+          sticky right-0 z-stickyTable text-center
           ${isSelected ? 'bg-primary/5' : 'bg-background group-hover:bg-muted/30'}
           border-l border-border
         `}
@@ -318,11 +318,11 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
   return (
     <>
     <table className="w-full border-collapse">
-      <thead className="sticky top-0 z-20 bg-muted/80 backdrop-blur-sm">
+      <thead className="sticky top-0 z-stickyTable bg-muted/80 backdrop-blur-sm">
         <tr className="border-b border-border">
           {/* Checkbox Header - Frozen, Centered */}
           <th
-            className="sticky left-0 z-30 text-center bg-muted/80 backdrop-blur-sm border-r border-border"
+            className="sticky left-0 z-stickyTableColumn text-center bg-muted/80 backdrop-blur-sm border-r border-border"
             style={{ width: `${COLUMN_WIDTHS.checkbox}px`, minWidth: `${COLUMN_WIDTHS.checkbox}px`, padding: '12px 0' }}
           >
             <input
@@ -360,7 +360,7 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
 
           {/* Actions Header - Frozen, Centered */}
           <th
-            className="sticky right-0 z-30 text-center bg-muted/80 backdrop-blur-sm border-l border-border"
+            className="sticky right-0 z-stickyTableColumn text-center bg-muted/80 backdrop-blur-sm border-l border-border"
             style={{ width: `${COLUMN_WIDTHS.actions}px`, minWidth: `${COLUMN_WIDTHS.actions}px`, padding: '12px 0' }}
           >
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Actions</span>

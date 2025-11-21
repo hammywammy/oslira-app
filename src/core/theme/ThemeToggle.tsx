@@ -43,7 +43,7 @@ export function ThemeToggle({
   // ===========================================================================
   
   const variantStyles = {
-    fixed: 'fixed bottom-6 left-6 z-50',
+    fixed: 'fixed bottom-6 left-6 z-fixedNav',
     inline: 'relative',
     minimal: 'relative',
     full: 'relative',
