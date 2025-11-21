@@ -5,21 +5,22 @@
  * 
  * Pure routing with domain enforcement.
  * Domain Architecture:
- * - oslira.com → Marketing
- * - app.oslira.com → Application (auth + dashboard)
+ * - oslira.com → Marketing (including /pricing)
+ * - app.oslira.com → Application (auth + dashboard + upgrade)
  * 
- * CRITICAL UPDATE:
- * Dashboard route now properly connected to DashboardPage component.
+ * UPDATED: Added /pricing (marketing) and /upgrade (in-app) routes
  */
 
 import { createBrowserRouter } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { HomePage } from '@/pages/marketing/HomePage';
+import { PricingPage } from '@/pages/marketing/PricingPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { SignupPage } from '@/pages/auth/SignupPage';
 import { OAuthCallbackPage } from '@/pages/auth/OAuthCallbackPage';
 import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
-import { DashboardPage } from '@/pages/dashboard/DashboardPage'; // ← ADDED
+import { DashboardPage } from '@/pages/dashboard/DashboardPage';
+import { UpgradePage } from '@/pages/dashboard/UpgradePage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
 
@@ -47,38 +48,21 @@ function DomainGuard({
   children: JSX.Element 
 }) {
   const onCorrectDomain = domain === 'app' ? isAppDomain() : isMarketingDomain();
-  
+
   if (!onCorrectDomain) {
     const correctUrl = getUrlForDomain(domain);
     window.location.href = correctUrl + window.location.pathname;
     return <div>Redirecting...</div>;
   }
-  
+
   return children;
 }
 
 // =============================================================================
-// SUSPENSE WRAPPER
-// =============================================================================
-
-function withSuspense(Component: React.LazyExoticComponent<() => JSX.Element>) {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    }>
-      <Component />
-    </Suspense>
-  );
-}
-
-// =============================================================================
-// ROUTES
+// ROUTER
 // =============================================================================
 
 export const router = createBrowserRouter([
-
   // ============================================================
   // MARKETING DOMAIN (oslira.com)
   // ============================================================
@@ -91,43 +75,60 @@ export const router = createBrowserRouter([
       </DomainGuard>
     ),
   },
+
+  // ========================================
+  // PRICING PAGE - PUBLIC
+  // ========================================
+  {
+    path: '/pricing',
+    element: (
+      <DomainGuard domain="marketing">
+        <PricingPage />
+      </DomainGuard>
+    ),
+  },
+
+  // ============================================================
+  // MARKETING SHOWCASE PAGES (Development)
+  // ============================================================
+  
   {
     path: '/showcase/tailwind',
     element: (
       <DomainGuard domain="marketing">
-        {withSuspense(TailwindShowcase)}
+        <Suspense fallback={<div>Loading...</div>}>
+          <TailwindShowcase />
+        </Suspense>
       </DomainGuard>
     ),
   },
-  {
-  path: '/showcase/design-system',
-  element: (
-    <DomainGuard domain="marketing">
-      {withSuspense(ComponentShowcase)}
-    </DomainGuard>
-  ),
-},
   {
     path: '/showcase/framer',
     element: (
       <DomainGuard domain="marketing">
-        {withSuspense(FramerShowcase)}
+        <Suspense fallback={<div>Loading...</div>}>
+          <FramerShowcase />
+        </Suspense>
       </DomainGuard>
     ),
   },
   {
-    path: '/showcase/components',
+    path: '/showcase/component-lab',
     element: (
       <DomainGuard domain="marketing">
-        {withSuspense(ComponentLab)}
+        <Suspense fallback={<div>Loading...</div>}>
+          <ComponentLab />
+        </Suspense>
       </DomainGuard>
     ),
   },
   {
-    path: '/showcase/darkmode',
+    path: '/showcase/dark-mode',
     element: (
       <DomainGuard domain="marketing">
-        {withSuspense(DarkModeShowcase)}
+        <Suspense fallback={<div>Loading...</div>}>
+          <DarkModeShowcase />
+        </Suspense>
       </DomainGuard>
     ),
   },
@@ -135,21 +136,35 @@ export const router = createBrowserRouter([
     path: '/showcase/charts',
     element: (
       <DomainGuard domain="marketing">
-        {withSuspense(ChartsShowcase)}
+        <Suspense fallback={<div>Loading...</div>}>
+          <ChartsShowcase />
+        </Suspense>
       </DomainGuard>
     ),
   },
   {
-  path: '/showcase/theme-test',
-  element: (
-    <DomainGuard domain="marketing">
-      {withSuspense(ThemeTest)}
-    </DomainGuard>
-  ),
-},
+    path: '/showcase/components',
+    element: (
+      <DomainGuard domain="marketing">
+        <Suspense fallback={<div>Loading...</div>}>
+          <ComponentShowcase />
+        </Suspense>
+      </DomainGuard>
+    ),
+  },
+  {
+    path: '/showcase/theme-test',
+    element: (
+      <DomainGuard domain="marketing">
+        <Suspense fallback={<div>Loading...</div>}>
+          <ThemeTest />
+        </Suspense>
+      </DomainGuard>
+    ),
+  },
 
   // ============================================================
-  // APP DOMAIN (app.oslira.com) - Public Routes
+  // AUTH PAGES (app.oslira.com)
   // ============================================================
   
   {
@@ -201,6 +216,20 @@ export const router = createBrowserRouter([
       <DomainGuard domain="app">
         <ProtectedRoute>
           <DashboardPage />
+        </ProtectedRoute>
+      </DomainGuard>
+    ),
+  },
+
+  // ========================================
+  // UPGRADE PAGE - IN-APP BILLING
+  // ========================================
+  {
+    path: '/upgrade',
+    element: (
+      <DomainGuard domain="app">
+        <ProtectedRoute>
+          <UpgradePage />
         </ProtectedRoute>
       </DomainGuard>
     ),
