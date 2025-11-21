@@ -1,6 +1,6 @@
 // src/shared/components/ui/DropdownPortal.tsx
 
-import { ReactNode, RefObject, useEffect, useState } from 'react';
+import { ReactNode, RefObject, useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Portal } from './Portal';
 
@@ -24,6 +24,7 @@ export function DropdownPortal({
   offset = 8, // gap between trigger and dropdown
 }: DropdownPortalProps) {
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Calculate position when opening or on window resize
   useEffect(() => {
@@ -64,9 +65,19 @@ export function DropdownPortal({
     };
   }, [isOpen, triggerRef, width, alignment, offset]);
 
-  // Close on scroll, resize, or Escape key
+  // Close on external scroll, resize, or Escape key
   useEffect(() => {
     if (!isOpen) return;
+
+    const handleScroll = (e: Event) => {
+      // Don't close if scrolling inside the dropdown
+      if (dropdownRef.current && e.target instanceof Node) {
+        if (dropdownRef.current.contains(e.target)) {
+          return;
+        }
+      }
+      onClose();
+    };
 
     const handleClose = () => onClose();
 
@@ -76,13 +87,13 @@ export function DropdownPortal({
       }
     };
 
-    // Use capture phase to catch all scroll events
-    window.addEventListener('scroll', handleClose, true);
+    // Use capture phase to catch all scroll events, but filter internal scrolls
+    window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleClose);
     window.addEventListener('keydown', handleEscape);
 
     return () => {
-      window.removeEventListener('scroll', handleClose, true);
+      window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleClose);
       window.removeEventListener('keydown', handleEscape);
     };
@@ -103,6 +114,7 @@ export function DropdownPortal({
 
             {/* Dropdown content */}
             <motion.div
+              ref={dropdownRef}
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
