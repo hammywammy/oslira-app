@@ -37,7 +37,7 @@ export function UpgradePage() {
   /**
    * Handle tier selection (disabled - no endpoints)
    */
-  function handleSelectTier(tierId: string) {
+  function handleSelectTier(_tierId: string) {
     // No-op for now - just a display page
     console.log('Tier selection disabled - display only');
   }
@@ -89,8 +89,6 @@ export function UpgradePage() {
                 tier={tier}
                 isCurrentTier={isCurrentTier}
                 onSelect={handleSelectTier}
-                loading={false}
-                disabled={false}
               />
             );
           })}
