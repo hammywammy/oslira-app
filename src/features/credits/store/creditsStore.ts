@@ -22,7 +22,7 @@ import { devtools } from 'zustand/middleware';
 
 interface CreditBalance {
   account_id: string;
-  current_balance: number;
+  credit_balance: number;
   light_analyses_balance: number;
   last_transaction_at: string | null;
   created_at: string;
@@ -88,7 +88,7 @@ export const useCreditsStore = create<CreditsState>()(
         }),
 
       // Computed helpers
-      getCurrentBalance: () => get().balance?.current_balance ?? 0,
+      getCurrentBalance: () => get().balance?.credit_balance ?? 0,
       getLightBalance: () => get().balance?.light_analyses_balance ?? 0,
       getLastUpdated: () => get().balance?.last_transaction_at ?? null,
     }),
@@ -102,8 +102,8 @@ export const useCreditsStore = create<CreditsState>()(
 // SELECTORS (for component consumption)
 // =============================================================================
 
-export const useCurrentBalance = () => 
-  useCreditsStore((state) => state.balance?.current_balance ?? 0);
+export const useCurrentBalance = () =>
+  useCreditsStore((state) => state.balance?.credit_balance ?? 0);
 
 export const useLightBalance = () => 
   useCreditsStore((state) => state.balance?.light_analyses_balance ?? 0);

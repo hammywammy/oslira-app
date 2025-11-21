@@ -131,7 +131,7 @@ export function Modal({
   return (
     <div
       className={`
-        fixed inset-0 z-50
+        fixed inset-0 z-[100]
         flex
         ${centered ? 'items-center' : 'items-start pt-20'}
         justify-center
@@ -166,7 +166,7 @@ export function Modal({
             type="button"
             onClick={onClose}
             className="
-              absolute top-4 right-4
+              absolute top-4 right-4 z-10
               p-1
               text-neutral-600 hover:text-neutral-900
               dark:text-neutral-400 dark:hover:text-neutral-100

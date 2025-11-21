@@ -13,7 +13,7 @@ import { httpClient } from '@/core/auth/http-client';
 
 interface CreditBalance {
   account_id: string;
-  current_balance: number;
+  credit_balance: number;
   light_analyses_balance: number;
   last_transaction_at: string | null;
   created_at: string;
