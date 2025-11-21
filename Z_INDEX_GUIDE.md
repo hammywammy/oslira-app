@@ -43,9 +43,9 @@ Showcase Layer      640 to 650    Dev tools (between overlay & modal)
 - **`z-fixedNav` (300)**: Base fixed navigation (Header, MarketingHeader)
 - **`z-pagination` (305)**: Table pagination
 - **`z-sidebar` (310)**: Application sidebar
-- **`z-topBar` (320)**: Top navigation bar
-- **`z-topBarBorder` (321)**: Border line above TopBar
-- **`z-hotbar` (330)**: Dashboard hotbar / secondary toolbar
+- **`z-hotbar` (315)**: Dashboard hotbar / secondary toolbar
+- **`z-topBar` (330)**: Top navigation bar (HIGHEST - ensures dropdowns show above hotbar)
+- **`z-topBarBorder` (331)**: Border line above TopBar
 
 ### Dropdown Layer (400 to 499)
 - **`z-dropdownBackdrop` (390)**: Invisible backdrop for closing dropdowns
@@ -179,8 +179,8 @@ import { zIndex, getZIndexClass, getZIndexStyle } from '@/styles/zIndex';
 
 ### Core Layout
 - **TopBar** (src/shared/components/layout/TopBar.tsx)
-  - Border: `z-topBarBorder` (321)
-  - Main: `z-topBar` (320)
+  - Border: `z-topBarBorder` (331) - HIGHEST in fixed nav
+  - Main: `z-topBar` (330)
   - Dropdown backdrops: `z-dropdownBackdrop` (390)
   - Dropdown menus: `z-dropdown` (400)
 
@@ -192,7 +192,7 @@ import { zIndex, getZIndexClass, getZIndexStyle } from '@/styles/zIndex';
 
 ### Dashboard Components
 - **TableViewLayout** (src/features/dashboard/layout/TableViewLayout.tsx)
-  - Hotbar: `z-hotbar` (330)
+  - Hotbar: `z-hotbar` (315) - Below TopBar to prevent dropdown overlap
   - Pagination: `z-pagination` (305)
 
 - **LeadsTable** (src/features/dashboard/components/LeadsTable/LeadsTable.tsx)

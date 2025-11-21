@@ -377,11 +377,11 @@
 
   /* Fixed navigation layer (300 to 399) */
   --z-fixed-nav: 300;
-  --z-sidebar: 310;
-  --z-top-bar: 320;
-  --z-top-bar-border: 321;
-  --z-hotbar: 330;
   --z-pagination: 305;
+  --z-sidebar: 310;
+  --z-hotbar: 315;
+  --z-top-bar: 330;
+  --z-top-bar-border: 331;
 
   /* Dropdown layer (400 to 499) */
   --z-dropdown: 400;

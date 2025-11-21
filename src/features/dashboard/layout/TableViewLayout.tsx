@@ -7,12 +7,13 @@
  * Zero padding, zero containers, full viewport integration.
  *
  * STRUCTURE:
- * - TopBar (h-14, fixed top, z-topBar: 320, z-topBarBorder: 321)
+ * - TopBar (h-14, fixed top, z-topBar: 330, z-topBarBorder: 331) - HIGHEST
  * - Sidebar (w-60/w-16, fixed left, z-sidebar: 310)
- * - Hotbar (h-14, fixed below TopBar, z-hotbar: 330)
+ * - Hotbar (h-14, fixed below TopBar, z-hotbar: 315)
  * - Table (fills remaining viewport, scrollable)
  * - Pagination (h-11, fixed bottom, z-pagination: 305)
  *
+ * Z-index hierarchy ensures TopBar dropdowns appear above hotbar.
  * This component ONLY handles layout positioning.
  * All business logic lives in child components.
  */
