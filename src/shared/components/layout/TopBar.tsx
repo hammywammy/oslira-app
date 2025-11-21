@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
+import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';
 
 export function TopBar() {
   const navigate = useNavigate();
@@ -16,8 +17,6 @@ export function TopBar() {
   const searchRef = useRef<HTMLInputElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const notificationsButtonRef = useRef<HTMLButtonElement>(null);
-  const [helpDropdownPos, setHelpDropdownPos] = useState({ top: 0, right: 0 });
-  const [notifDropdownPos, setNotifDropdownPos] = useState({ top: 0, right: 0 });
 
   // Mock notifications - replace with real data
   const notifications = [
@@ -27,16 +26,6 @@ export function TopBar() {
   ];
 
   const unreadCount = notifications.filter(n => n.unread).length;
-
-  // Calculate dropdown position when opening
-  const calculateDropdownPosition = (buttonRef: React.RefObject<HTMLButtonElement>) => {
-    if (!buttonRef.current) return { top: 0, right: 0 };
-    const rect = buttonRef.current.getBoundingClientRect();
-    return {
-      top: rect.bottom + 8, // 8px gap (mt-2)
-      right: window.innerWidth - rect.right,
-    };
-  };
 
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {
@@ -148,12 +137,8 @@ export function TopBar() {
               <button
                 ref={helpButtonRef}
                 onClick={() => {
-                  const newShowHelp = !showHelp;
-                  setShowHelp(newShowHelp);
+                  setShowHelp(!showHelp);
                   setShowNotifications(false);
-                  if (newShowHelp) {
-                    setHelpDropdownPos(calculateDropdownPosition(helpButtonRef));
-                  }
                 }}
                 className="p-2 hover:bg-muted rounded-lg transition-colors relative"
               >
@@ -161,44 +146,29 @@ export function TopBar() {
               </button>
 
               {/* Help Dropdown */}
-              <AnimatePresence>
-                {showHelp && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-dropdownBackdrop"
-                      onClick={() => setShowHelp(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      transition={{ duration: 0.15 }}
-                      style={{
-                        position: 'fixed',
-                        top: `${helpDropdownPos.top}px`,
-                        right: `${helpDropdownPos.right}px`,
-                      }}
-                      className="w-64 bg-background border border-border rounded-lg shadow-xl z-dropdown"
-                    >
-                      <div className="p-2">
-                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
-                          Documentation
-                        </a>
-                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
-                          Keyboard Shortcuts
-                        </a>
-                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
-                          Support
-                        </a>
-                        <div className="h-px bg-border my-2" />
-                        <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
-                          What's New
-                        </a>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+              <DropdownPortal
+                isOpen={showHelp}
+                onClose={() => setShowHelp(false)}
+                triggerRef={helpButtonRef}
+                width={256}
+                alignment="right"
+              >
+                <div className="p-2">
+                  <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                    Documentation
+                  </a>
+                  <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                    Keyboard Shortcuts
+                  </a>
+                  <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                    Support
+                  </a>
+                  <div className="h-px bg-border my-2" />
+                  <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
+                    What's New
+                  </a>
+                </div>
+              </DropdownPortal>
             </div>
 
             {/* Notifications Button */}
@@ -206,12 +176,8 @@ export function TopBar() {
               <button
                 ref={notificationsButtonRef}
                 onClick={() => {
-                  const newShowNotifications = !showNotifications;
-                  setShowNotifications(newShowNotifications);
+                  setShowNotifications(!showNotifications);
                   setShowHelp(false);
-                  if (newShowNotifications) {
-                    setNotifDropdownPos(calculateDropdownPosition(notificationsButtonRef));
-                  }
                 }}
                 className="p-2 hover:bg-muted rounded-lg transition-colors relative"
               >
@@ -222,64 +188,49 @@ export function TopBar() {
               </button>
 
               {/* Notifications Dropdown */}
-              <AnimatePresence>
-                {showNotifications && (
-                  <>
+              <DropdownPortal
+                isOpen={showNotifications}
+                onClose={() => setShowNotifications(false)}
+                triggerRef={notificationsButtonRef}
+                width={320}
+                alignment="right"
+              >
+                <div className="p-4 border-b border-border">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
+                    )}
+                  </div>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.map(notif => (
                     <div
-                      className="fixed inset-0 z-dropdownBackdrop"
-                      onClick={() => setShowNotifications(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      transition={{ duration: 0.15 }}
-                      style={{
-                        position: 'fixed',
-                        top: `${notifDropdownPos.top}px`,
-                        right: `${notifDropdownPos.right}px`,
-                      }}
-                      className="w-80 bg-background border border-border rounded-lg shadow-xl z-dropdown"
+                      key={notif.id}
+                      className={`
+                        px-4 py-3 border-b border-border last:border-b-0
+                        hover:bg-muted/50 transition-colors cursor-pointer
+                        ${notif.unread ? 'bg-muted/30' : ''}
+                      `}
                     >
-                      <div className="p-4 border-b border-border">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
-                          {unreadCount > 0 && (
-                            <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
-                          )}
+                      <div className="flex items-start gap-2">
+                        {notif.unread && (
+                          <span className="mt-1.5 w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground">{notif.text}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
                         </div>
                       </div>
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.map(notif => (
-                          <div
-                            key={notif.id}
-                            className={`
-                              px-4 py-3 border-b border-border last:border-b-0
-                              hover:bg-muted/50 transition-colors cursor-pointer
-                              ${notif.unread ? 'bg-muted/30' : ''}
-                            `}
-                          >
-                            <div className="flex items-start gap-2">
-                              {notif.unread && (
-                                <span className="mt-1.5 w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-foreground">{notif.text}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="p-2 border-t border-border">
-                        <button className="w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-                          Mark all as read
-                        </button>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-2 border-t border-border">
+                  <button className="w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
+                    Mark all as read
+                  </button>
+                </div>
+              </DropdownPortal>
             </div>
 
             {/* Settings Button - NAVIGATION ENABLED */}
