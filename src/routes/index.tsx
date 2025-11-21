@@ -22,6 +22,14 @@ import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { UpgradePage } from '@/pages/dashboard/UpgradePage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
+
+import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { GeneralTab } from '@/pages/settings/tabs/GeneralTab';
+import { AccountTab } from '@/pages/settings/tabs/AccountTab';
+import { PrivacyTab } from '@/pages/settings/tabs/PrivacyTab';
+import { BillingTab } from '@/pages/settings/tabs/BillingTab';
+import { UsageTab } from '@/pages/settings/tabs/UsageTab';
+
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
 
 // =============================================================================
@@ -234,6 +242,42 @@ export const router = createBrowserRouter([
       </DomainGuard>
     ),
   },
+
+  // ========================================
+// SETTINGS PAGE - NESTED ROUTES
+// ========================================
+{
+  path: '/settings',
+  element: (
+    <DomainGuard domain="app">
+      <ProtectedRoute>
+        <SettingsPage />
+      </ProtectedRoute>
+    </DomainGuard>
+  ),
+  children: [
+    {
+      path: 'general',
+      element: <GeneralTab />,
+    },
+    {
+      path: 'account',
+      element: <AccountTab />,
+    },
+    {
+      path: 'privacy',
+      element: <PrivacyTab />,
+    },
+    {
+      path: 'billing',
+      element: <BillingTab />,
+    },
+    {
+      path: 'usage',
+      element: <UsageTab />,
+    },
+  ],
+},
 
   // ============================================================
   // 404 NOT FOUND
