@@ -6,26 +6,16 @@ import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';
+import { NotificationBell } from '@/features/notifications';
 
 export function TopBar() {
   const navigate = useNavigate();
   const { isCollapsed } = useSidebarStore();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
-  const notificationsButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Mock notifications - replace with real data
-  const notifications = [
-    { id: 1, text: 'New lead analyzed', time: '2 min ago', unread: true },
-    { id: 2, text: 'Campaign completed', time: '1 hour ago', unread: true },
-    { id: 3, text: 'Credits running low', time: '3 hours ago', unread: false },
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
 
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {
@@ -136,10 +126,7 @@ export function TopBar() {
             <div className="relative">
               <button
                 ref={helpButtonRef}
-                onClick={() => {
-                  setShowHelp(!showHelp);
-                  setShowNotifications(false);
-                }}
+                onClick={() => setShowHelp(!showHelp)}
                 className="p-2 hover:bg-muted rounded-lg transition-colors relative"
               >
                 <Icon icon="ph:question" className="w-5 h-5 text-muted-foreground" />
@@ -171,67 +158,8 @@ export function TopBar() {
               </DropdownPortal>
             </div>
 
-            {/* Notifications Button */}
-            <div className="relative">
-              <button
-                ref={notificationsButtonRef}
-                onClick={() => {
-                  setShowNotifications(!showNotifications);
-                  setShowHelp(false);
-                }}
-                className="p-2 hover:bg-muted rounded-lg transition-colors relative"
-              >
-                <Icon icon="ph:bell" className="w-5 h-5 text-muted-foreground" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-                )}
-              </button>
-
-              {/* Notifications Dropdown */}
-              <DropdownPortal
-                isOpen={showNotifications}
-                onClose={() => setShowNotifications(false)}
-                triggerRef={notificationsButtonRef}
-                width={320}
-                alignment="right"
-              >
-                <div className="p-4 border-b border-border">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
-                    {unreadCount > 0 && (
-                      <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
-                    )}
-                  </div>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.map(notif => (
-                    <div
-                      key={notif.id}
-                      className={`
-                        px-4 py-3 border-b border-border last:border-b-0
-                        hover:bg-muted/50 transition-colors cursor-pointer
-                        ${notif.unread ? 'bg-muted/30' : ''}
-                      `}
-                    >
-                      <div className="flex items-start gap-2">
-                        {notif.unread && (
-                          <span className="mt-1.5 w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground">{notif.text}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="p-2 border-t border-border">
-                  <button className="w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
-                    Mark all as read
-                  </button>
-                </div>
-              </DropdownPortal>
-            </div>
+            {/* Notifications */}
+            <NotificationBell />
 
             {/* Settings Button - NAVIGATION ENABLED */}
             <button 
