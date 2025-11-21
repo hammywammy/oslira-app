@@ -19,15 +19,24 @@ import { create } from 'zustand';
 
 interface Lead {
   id: string;
+  account_id: string;
+  business_profile_id: string | null;
   username: string;
-  platform: 'instagram';
-  overall_score: number | null;
-  analysis_type: 'light' | 'deep' | 'xray' | null;
-  analysis_status: 'pending' | 'processing' | 'complete' | 'failed';
-  full_name: string | null;
-  avatar_url: string | null;
-  followers_count: number | null;
+  display_name: string | null;
+  profile_pic_url: string | null;
+  profile_url: string | null;
+  follower_count: number | null;
+  following_count: number | null;
+  post_count: number | null;
+  platform: 'instagram' | null;
   created_at: string;
+  updated_at: string;
+  analysis_type: 'light' | 'deep' | 'xray' | null;
+  analysis_status: 'pending' | 'processing' | 'complete' | 'failed' | null;
+  analysis_completed_at: string | null;
+  overall_score: number | null;
+  summary: string | null;
+  confidence: number | null;
 }
 
 interface FilterState {

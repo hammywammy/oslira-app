@@ -184,14 +184,14 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
             {/* Avatar */}
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white text-3xl font-bold shadow-lg overflow-hidden">
-                {lead.avatar_url ? (
+                {lead.profile_pic_url ? (
                   <img
-                    src={lead.avatar_url}
-                    alt={lead.full_name || lead.username}
+                    src={lead.profile_pic_url}
+                    alt={lead.display_name || lead.username}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span>{lead.full_name?.charAt(0) || lead.username.charAt(0).toUpperCase()}</span>
+                  <span>{lead.display_name?.charAt(0) || lead.username.charAt(0).toUpperCase()}</span>
                 )}
               </div>
               {/* Platform Badge */}
@@ -203,10 +203,10 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
             {/* Profile Info */}
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold text-foreground mb-1 truncate">
-                {lead.full_name || lead.username}
+                {lead.display_name || lead.username}
               </h2>
               <a
-                href={lead.profile_url}
+                href={lead.profile_url || `https://instagram.com/${lead.username}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-primary hover:text-primary/80 transition-colors mb-3"
@@ -220,7 +220,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
                 <div className="flex items-center gap-2">
                   <Icon icon="mdi:account-group" className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">
-                    <span className="font-semibold text-foreground">{formatFollowers(lead.followers_count)}</span>
+                    <span className="font-semibold text-foreground">{formatFollowers(lead.follower_count)}</span>
                     <span className="text-muted-foreground ml-1">followers</span>
                   </span>
                 </div>
@@ -234,7 +234,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
                 <div className="flex items-center gap-2">
                   <Icon icon="mdi:grid" className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">
-                    <span className="font-semibold text-foreground">{lead.posts_count || 0}</span>
+                    <span className="font-semibold text-foreground">{lead.post_count || 0}</span>
                     <span className="text-muted-foreground ml-1">posts</span>
                   </span>
                 </div>
@@ -290,18 +290,6 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
           {/* LEFT COLUMN */}
           <div className="space-y-6">
 
-            {/* Bio Section */}
-            {lead.bio && (
-              <div>
-                <SectionTitle icon="mdi:text">Bio</SectionTitle>
-                <InfoCard>
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                    {lead.bio}
-                  </p>
-                </InfoCard>
-              </div>
-            )}
-
             {/* Analysis Info */}
             <div>
               <SectionTitle icon="mdi:information">Analysis Details</SectionTitle>
@@ -312,40 +300,51 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
                     <AnalysisTypeBadge type={lead.analysis_type} />
                   </div>
                   <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-muted-foreground">Status</span>
+                    <span className="text-sm text-foreground capitalize">
+                      {lead.analysis_status || 'Not Started'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-muted-foreground">Analyzed</span>
                     <span className="text-sm text-foreground">{formatDate(lead.analysis_completed_at)}</span>
                   </div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">Confidence</span>
                     <span className="text-sm font-semibold text-foreground">
-                      {lead.confidence_level !== null ? `${lead.confidence_level}%` : 'N/A'}
+                      {lead.confidence !== null ? `${lead.confidence}%` : 'N/A'}
                     </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Credits Used</span>
-                    <span className="text-sm font-semibold text-foreground">{lead.credits_charged}</span>
                   </div>
                 </InfoCard>
               </div>
             </div>
 
             {/* Scores Section */}
-            {(lead.overall_score !== null || lead.niche_fit_score !== null || lead.engagement_score !== null) && (
+            {lead.overall_score !== null && (
               <div>
                 <SectionTitle icon="mdi:chart-bar">Performance Scores</SectionTitle>
                 <div className="space-y-4">
                   <InfoCard>
                     <ScoreBar label="Overall Score" score={lead.overall_score} />
                   </InfoCard>
-                  <InfoCard>
-                    <ScoreBar label="Niche Fit" score={lead.niche_fit_score} />
-                  </InfoCard>
-                  <InfoCard>
-                    <ScoreBar label="Engagement" score={lead.engagement_score} />
-                  </InfoCard>
                 </div>
               </div>
             )}
+
+            {/* Profile Dates */}
+            <div>
+              <SectionTitle icon="mdi:calendar">Timeline</SectionTitle>
+              <InfoCard>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-muted-foreground">Added</span>
+                  <span className="text-sm text-foreground">{formatDate(lead.created_at)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">Last Updated</span>
+                  <span className="text-sm text-foreground">{formatDate(lead.updated_at)}</span>
+                </div>
+              </InfoCard>
+            </div>
 
           </div>
 
@@ -353,131 +352,27 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
           <div className="space-y-6">
 
             {/* Summary Section */}
-            {lead.summary_text && (
+            {lead.summary && (
               <div>
                 <SectionTitle icon="mdi:file-document">Analysis Summary</SectionTitle>
                 <InfoCard className="bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
                   <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                    {lead.summary_text}
+                    {lead.summary}
                   </p>
                 </InfoCard>
               </div>
             )}
 
-            {/* Outreach Message Section */}
-            {lead.outreach_message && (
+            {/* Empty State for Unanalyzed Leads */}
+            {!lead.analysis_type && (
               <div>
-                <SectionTitle icon="mdi:message-text">Outreach Message</SectionTitle>
-                <InfoCard className="bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800">
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap font-medium">
-                    {lead.outreach_message}
+                <InfoCard className="text-center py-8">
+                  <Icon icon="mdi:chart-line-variant" className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Not Analyzed Yet</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Run an analysis on this lead to see detailed insights and scores
                   </p>
                 </InfoCard>
-              </div>
-            )}
-
-            {/* Psychographics Section */}
-            {lead.psychographics && (
-              <div>
-                <SectionTitle icon="mdi:account-details">Psychographic Profile</SectionTitle>
-                <div className="space-y-4">
-
-                  {/* DISC Profile */}
-                  {lead.psychographics.disc_profile && (
-                    <InfoCard className="bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Icon icon="mdi:account-details" className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <h4 className="text-sm font-semibold text-foreground">
-                          DISC: {lead.psychographics.disc_profile.primary_type} Type
-                        </h4>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <ScoreBar
-                          label="Dominance"
-                          score={lead.psychographics.disc_profile.dominance}
-                        />
-                        <ScoreBar
-                          label="Influence"
-                          score={lead.psychographics.disc_profile.influence}
-                        />
-                        <ScoreBar
-                          label="Steadiness"
-                          score={lead.psychographics.disc_profile.steadiness}
-                        />
-                        <ScoreBar
-                          label="Conscientiousness"
-                          score={lead.psychographics.disc_profile.conscientiousness}
-                        />
-                      </div>
-                    </InfoCard>
-                  )}
-
-                  {/* Communication Style */}
-                  {lead.psychographics.communication_style && (
-                    <InfoCard>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon icon="mdi:message-text" className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          Communication Style
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground">{lead.psychographics.communication_style}</p>
-                    </InfoCard>
-                  )}
-
-                  {/* Motivation Drivers */}
-                  {lead.psychographics.motivation_drivers && lead.psychographics.motivation_drivers.length > 0 && (
-                    <InfoCard>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Icon icon="mdi:lightbulb-on" className="w-4 h-4 text-primary" />
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          Motivation Drivers
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {lead.psychographics.motivation_drivers.map((driver, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium border border-primary/20"
-                          >
-                            {driver}
-                          </span>
-                        ))}
-                      </div>
-                    </InfoCard>
-                  )}
-
-                  {/* Copywriter Profile */}
-                  {lead.psychographics.copywriter_profile && lead.psychographics.copywriter_profile.is_copywriter && (
-                    <InfoCard className="bg-pink-50/50 dark:bg-pink-900/10 border-pink-200 dark:border-pink-800">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon icon="mdi:pencil" className="w-4 h-4 text-pink-600 dark:text-pink-400" />
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                          Copywriter Profile
-                        </span>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        {lead.psychographics.copywriter_profile.specialization && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Specialization:</span>
-                            <span className="text-foreground font-medium">
-                              {lead.psychographics.copywriter_profile.specialization}
-                            </span>
-                          </div>
-                        )}
-                        {lead.psychographics.copywriter_profile.experience_level && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">Experience:</span>
-                            <span className="text-foreground font-medium capitalize">
-                              {lead.psychographics.copywriter_profile.experience_level}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </InfoCard>
-                  )}
-
-                </div>
               </div>
             )}
 
