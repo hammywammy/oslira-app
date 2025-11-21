@@ -14,6 +14,10 @@ export function TopBar() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const helpButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationsButtonRef = useRef<HTMLButtonElement>(null);
+  const [helpDropdownPos, setHelpDropdownPos] = useState({ top: 0, right: 0 });
+  const [notifDropdownPos, setNotifDropdownPos] = useState({ top: 0, right: 0 });
 
   // Mock notifications - replace with real data
   const notifications = [
@@ -23,6 +27,16 @@ export function TopBar() {
   ];
 
   const unreadCount = notifications.filter(n => n.unread).length;
+
+  // Calculate dropdown position when opening
+  const calculateDropdownPosition = (buttonRef: React.RefObject<HTMLButtonElement>) => {
+    if (!buttonRef.current) return { top: 0, right: 0 };
+    const rect = buttonRef.current.getBoundingClientRect();
+    return {
+      top: rect.bottom + 8, // 8px gap (mt-2)
+      right: window.innerWidth - rect.right,
+    };
+  };
 
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {
@@ -132,9 +146,14 @@ export function TopBar() {
             {/* Help Button */}
             <div className="relative">
               <button
+                ref={helpButtonRef}
                 onClick={() => {
-                  setShowHelp(!showHelp);
+                  const newShowHelp = !showHelp;
+                  setShowHelp(newShowHelp);
                   setShowNotifications(false);
+                  if (newShowHelp) {
+                    setHelpDropdownPos(calculateDropdownPosition(helpButtonRef));
+                  }
                 }}
                 className="p-2 hover:bg-muted rounded-lg transition-colors relative"
               >
@@ -154,7 +173,12 @@ export function TopBar() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-background border border-border rounded-lg shadow-xl z-dropdown"
+                      style={{
+                        position: 'fixed',
+                        top: `${helpDropdownPos.top}px`,
+                        right: `${helpDropdownPos.right}px`,
+                      }}
+                      className="w-64 bg-background border border-border rounded-lg shadow-xl z-dropdown"
                     >
                       <div className="p-2">
                         <a href="#" className="block px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
@@ -180,9 +204,14 @@ export function TopBar() {
             {/* Notifications Button */}
             <div className="relative">
               <button
+                ref={notificationsButtonRef}
                 onClick={() => {
-                  setShowNotifications(!showNotifications);
+                  const newShowNotifications = !showNotifications;
+                  setShowNotifications(newShowNotifications);
                   setShowHelp(false);
+                  if (newShowNotifications) {
+                    setNotifDropdownPos(calculateDropdownPosition(notificationsButtonRef));
+                  }
                 }}
                 className="p-2 hover:bg-muted rounded-lg transition-colors relative"
               >
@@ -205,7 +234,12 @@ export function TopBar() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-lg shadow-xl z-dropdown"
+                      style={{
+                        position: 'fixed',
+                        top: `${notifDropdownPos.top}px`,
+                        right: `${notifDropdownPos.right}px`,
+                      }}
+                      className="w-80 bg-background border border-border rounded-lg shadow-xl z-dropdown"
                     >
                       <div className="p-4 border-b border-border">
                         <div className="flex items-center justify-between">
