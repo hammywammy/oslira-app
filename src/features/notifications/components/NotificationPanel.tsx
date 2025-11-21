@@ -12,12 +12,18 @@ interface NotificationPanelProps {
  * Displays dismissible announcement cards with view actions
  */
 export function NotificationPanel({ onClose }: NotificationPanelProps) {
-  const { announcements, unreadCount } = useNotificationStore();
+  const announcements = useNotificationStore((state) => state.announcements);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const dismissAnnouncement = useNotificationStore((state) => state.dismissAnnouncement);
+
+  const handleDismissAll = () => {
+    announcements.forEach((announcement) => dismissAnnouncement(announcement.id));
+  };
 
   return (
-    <div className="flex flex-col max-h-[600px]">
+    <div className="flex flex-col max-h-[600px] overflow-hidden rounded-lg">
       {/* Header */}
-      <div className="p-4 border-b border-border bg-background">
+      <div className="p-4 border-b border-border bg-background rounded-t-lg">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-foreground">Activity</h3>
           {unreadCount > 0 && (
@@ -48,13 +54,11 @@ export function NotificationPanel({ onClose }: NotificationPanelProps) {
         )}
       </div>
 
-      {/* Footer - Clear All (for testing/debug) */}
+      {/* Footer - Dismiss All */}
       {announcements.length > 0 && (
-        <div className="p-2 border-t border-border bg-background">
+        <div className="p-2 border-t border-border bg-background rounded-b-lg">
           <button
-            onClick={() => {
-              announcements.forEach((a) => useNotificationStore.getState().dismissAnnouncement(a.id));
-            }}
+            onClick={handleDismissAll}
             className="w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
           >
             Dismiss all

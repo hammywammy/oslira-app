@@ -25,7 +25,8 @@ export function AnnouncementCard({ announcement, onClose }: AnnouncementCardProp
     }
   };
 
-  const handleDismiss = () => {
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.stopPropagation();
     dismissAnnouncement(announcement.id);
   };
 
@@ -68,6 +69,9 @@ export function AnnouncementCard({ announcement, onClose }: AnnouncementCardProp
   return (
     <div className="px-4 py-3 border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors">
       <div className="flex items-start gap-3">
+        {/* Unread indicator dot */}
+        <span className="mt-2 w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
+
         {/* Icon */}
         <div className={`mt-0.5 flex-shrink-0 ${color}`}>
           <Icon icon={icon} className="w-5 h-5" />
