@@ -1,0 +1,125 @@
+// src/shared/components/ui/DropdownPortal.tsx
+
+import { ReactNode, RefObject, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Portal } from './Portal';
+
+interface DropdownPortalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  triggerRef: RefObject<HTMLElement>;
+  children: ReactNode;
+  width?: number;
+  alignment?: 'left' | 'right';
+  offset?: number;
+}
+
+export function DropdownPortal({
+  isOpen,
+  onClose,
+  triggerRef,
+  children,
+  width = 256, // 64 * 4 = 256px (w-64 in Tailwind)
+  alignment = 'right',
+  offset = 8, // gap between trigger and dropdown
+}: DropdownPortalProps) {
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+
+  // Calculate position when opening or on window resize
+  useEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+
+    const calculatePosition = () => {
+      if (!triggerRef.current) return;
+
+      const rect = triggerRef.current.getBoundingClientRect();
+
+      const top = rect.bottom + offset;
+      let left: number;
+
+      if (alignment === 'right') {
+        // Right-aligned: align right edge of dropdown with right edge of trigger
+        left = rect.right - width;
+      } else {
+        // Left-aligned: align left edge of dropdown with left edge of trigger
+        left = rect.left;
+      }
+
+      // Ensure dropdown doesn't go off-screen
+      const maxLeft = window.innerWidth - width - 8; // 8px padding from edge
+      const minLeft = 8;
+      left = Math.max(minLeft, Math.min(left, maxLeft));
+
+      setPosition({ top, left });
+    };
+
+    // Calculate initial position
+    calculatePosition();
+
+    // Recalculate on resize
+    window.addEventListener('resize', calculatePosition);
+
+    return () => {
+      window.removeEventListener('resize', calculatePosition);
+    };
+  }, [isOpen, triggerRef, width, alignment, offset]);
+
+  // Close on scroll, resize, or Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClose = () => onClose();
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    // Use capture phase to catch all scroll events
+    window.addEventListener('scroll', handleClose, true);
+    window.addEventListener('resize', handleClose);
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      window.removeEventListener('scroll', handleClose, true);
+      window.removeEventListener('resize', handleClose);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <Portal>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop for outside click detection */}
+            <div
+              className="fixed inset-0 z-dropdownBackdrop"
+              onClick={onClose}
+            />
+
+            {/* Dropdown content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.15 }}
+              style={{
+                position: 'fixed',
+                top: `${position.top}px`,
+                left: `${position.left}px`,
+                width: `${width}px`,
+              }}
+              className="bg-background border border-border rounded-lg shadow-xl z-dropdown"
+            >
+              {children}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </Portal>
+  );
+}
