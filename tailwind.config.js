@@ -251,11 +251,11 @@ export default {
 
         // Fixed navigation layer
         fixedNav: 'var(--z-fixed-nav)',
+        pagination: 'var(--z-pagination)',
         sidebar: 'var(--z-sidebar)',
+        hotbar: 'var(--z-hotbar)',
         topBar: 'var(--z-top-bar)',
         topBarBorder: 'var(--z-top-bar-border)',
-        hotbar: 'var(--z-hotbar)',
-        pagination: 'var(--z-pagination)',
 
         // Dropdown layer
         dropdown: 'var(--z-dropdown)',

@@ -41,11 +41,11 @@ export const zIndex = {
   // FIXED NAVIGATION LAYER (300 to 399)
   // ============================================================================
   fixedNav: 300,          // Base fixed navigation
-  sidebar: 310,           // Application sidebar
-  topBar: 320,            // Top navigation bar
-  topBarBorder: 321,      // Border line above TopBar (needs to be on top of TopBar)
-  hotbar: 330,            // Dashboard hotbar / secondary toolbar
   pagination: 305,        // Table pagination (below other nav elements)
+  sidebar: 310,           // Application sidebar
+  hotbar: 315,            // Dashboard hotbar / secondary toolbar
+  topBar: 330,            // Top navigation bar (HIGHEST - dropdowns must show above hotbar)
+  topBarBorder: 331,      // Border line above TopBar (needs to be on top of TopBar)
 
   // ============================================================================
   // DROPDOWN LAYER (400 to 499)
