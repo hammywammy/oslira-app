@@ -25,12 +25,16 @@ import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { PricingCard } from '@/features/billing/components/PricingCard';
 import { PRICING_TIERS, PAID_TIERS, TierName } from '@/config/pricing.config';
+import { TopBar } from '@/shared/components/layout/TopBar';
+import { Sidebar } from '@/shared/components/layout/Sidebar';
+import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function UpgradePage() {
+  const { isCollapsed } = useSidebarStore();
   // Static current tier (no API calls)
   const currentTier: TierName = 'free';
 
@@ -43,7 +47,17 @@ export function UpgradePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-neutral-50 dark:to-neutral-900">
+    <>
+      {/* TopBar and Sidebar */}
+      <TopBar />
+      <Sidebar />
+
+      {/* Main Content - Respects sidebar width */}
+      <div className={`
+        min-h-screen pt-14 bg-gradient-to-b from-background via-background to-neutral-50 dark:to-neutral-900
+        transition-[margin] duration-200
+        ${isCollapsed ? 'ml-16' : 'ml-60'}
+      `}>
 
       {/* =====================================================================
           HERO SECTION
@@ -177,7 +191,8 @@ export function UpgradePage() {
           <span>Back to Dashboard</span>
         </a>
       </section>
-    </div>
+      </div>
+    </>
   );
 }
 
