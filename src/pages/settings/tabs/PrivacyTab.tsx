@@ -67,7 +67,7 @@ export function PrivacyTab() {
             </div>
             <Switch
               checked={analyticsEnabled}
-              onCheckedChange={setAnalyticsEnabled}
+              onChange={(e) => setAnalyticsEnabled(e.target.checked)}
               disabled
             />
           </div>
@@ -111,7 +111,7 @@ export function PrivacyTab() {
             </div>
             <Switch
               checked={marketingEmails}
-              onCheckedChange={setMarketingEmails}
+              onChange={(e) => setMarketingEmails(e.target.checked)}
               disabled
             />
           </div>
@@ -126,7 +126,7 @@ export function PrivacyTab() {
             </div>
             <Switch
               checked={productUpdates}
-              onCheckedChange={setProductUpdates}
+              onChange={(e) => setProductUpdates(e.target.checked)}
               disabled
             />
           </div>
