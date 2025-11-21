@@ -335,15 +335,6 @@ export function Sidebar() {
                 </NavLink>
 
                 <NavLink
-                  to="/billing"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
-                >
-                  <Icon icon="ph:credit-card" className="w-5 h-5" />
-                  <span className="text-sm font-medium">Billing</span>
-                </NavLink>
-
-                <NavLink
                   to="/upgrade"
                   onClick={() => setShowUserMenu(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
