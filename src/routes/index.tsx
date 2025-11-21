@@ -6,12 +6,12 @@
  * Pure routing with domain enforcement.
  * Domain Architecture:
  * - oslira.com → Marketing (including /pricing)
- * - app.oslira.com → Application (auth + dashboard + upgrade)
+ * - app.oslira.com → Application (auth + dashboard + upgrade + settings)
  * 
- * UPDATED: Added /pricing (marketing) and /upgrade (in-app) routes
+ * UPDATED: Added Settings routes and Coming Soon redirects
  */
 
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { HomePage } from '@/pages/marketing/HomePage';
 import { PricingPage } from '@/pages/marketing/PricingPage';
@@ -23,12 +23,16 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { UpgradePage } from '@/pages/dashboard/UpgradePage';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 
+// Settings Pages
 import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { GeneralTab } from '@/pages/settings/tabs/GeneralTab';
 import { AccountTab } from '@/pages/settings/tabs/AccountTab';
 import { PrivacyTab } from '@/pages/settings/tabs/PrivacyTab';
 import { BillingTab } from '@/pages/settings/tabs/BillingTab';
 import { UsageTab } from '@/pages/settings/tabs/UsageTab';
+
+// Coming Soon Page
+import { ComingSoonPage } from '@/pages/ComingSoonPage';
 
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
 
@@ -244,40 +248,78 @@ export const router = createBrowserRouter([
   },
 
   // ========================================
-// SETTINGS PAGE - NESTED ROUTES
-// ========================================
-{
-  path: '/settings',
-  element: (
-    <DomainGuard domain="app">
-      <ProtectedRoute>
-        <SettingsPage />
-      </ProtectedRoute>
-    </DomainGuard>
-  ),
-  children: [
-    {
-      path: 'general',
-      element: <GeneralTab />,
-    },
-    {
-      path: 'account',
-      element: <AccountTab />,
-    },
-    {
-      path: 'privacy',
-      element: <PrivacyTab />,
-    },
-    {
-      path: 'billing',
-      element: <BillingTab />,
-    },
-    {
-      path: 'usage',
-      element: <UsageTab />,
-    },
-  ],
-},
+  // SETTINGS PAGE - NESTED ROUTES
+  // ========================================
+  {
+    path: '/settings',
+    element: (
+      <DomainGuard domain="app">
+        <ProtectedRoute>
+          <SettingsPage />
+        </ProtectedRoute>
+      </DomainGuard>
+    ),
+    children: [
+      {
+        path: 'general',
+        element: <GeneralTab />,
+      },
+      {
+        path: 'account',
+        element: <AccountTab />,
+      },
+      {
+        path: 'privacy',
+        element: <PrivacyTab />,
+      },
+      {
+        path: 'billing',
+        element: <BillingTab />,
+      },
+      {
+        path: 'usage',
+        element: <UsageTab />,
+      },
+    ],
+  },
+
+  // ========================================
+  // COMING SOON PAGE
+  // ========================================
+  {
+    path: '/coming-soon',
+    element: (
+      <DomainGuard domain="app">
+        <ProtectedRoute>
+          <ComingSoonPage />
+        </ProtectedRoute>
+      </DomainGuard>
+    ),
+  },
+
+  // ========================================
+  // PLACEHOLDER REDIRECTS → COMING SOON
+  // ========================================
+  {
+    path: '/leads',
+    element: <Navigate to="/coming-soon" replace />,
+  },
+  {
+    path: '/analytics',
+    element: <Navigate to="/coming-soon" replace />,
+  },
+  {
+    path: '/campaigns',
+    element: <Navigate to="/coming-soon" replace />,
+  },
+  {
+    path: '/messages',
+    element: <Navigate to="/coming-soon" replace />,
+  },
+  {
+    path: '/integrations',
+    element: <Navigate to="/coming-soon" replace />,
+  },
 
   // ============================================================
   // 404 NOT FOUND
