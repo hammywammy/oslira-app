@@ -43,7 +43,8 @@ export function PricingPage() {
    * Handle tier selection
    * Navigates to signup with tier parameter
    */
-  function handleSelectTier(tierId: TierName) {
+  function handleSelectTier(tierId: string) {
+    setSelectedTier(tierId as TierName);
     if (tierId === 'free') {
       // Free tier → direct to signup
       navigate('/auth/signup');

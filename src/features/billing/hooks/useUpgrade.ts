@@ -20,7 +20,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { httpClient } from '@/core/http/http-client';
+import { httpClient } from '@/core/auth/http-client';
 import { UpgradeRequest, UpgradeResponse } from '../types/billing.types';
 import { TierName } from '@/config/pricing.config';
 import { logger } from '@/core/utils/logger';
@@ -61,7 +61,7 @@ export function useUpgrade() {
     },
 
     onError: (error: any) => {
-      logger.error('[Upgrade] Failed', { error: error.message });
+      logger.error('[Upgrade] Failed', error, { message: error.message });
     },
   });
 }
