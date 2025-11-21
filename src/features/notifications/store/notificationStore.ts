@@ -63,7 +63,7 @@ const getVisibleAnnouncements = (dismissedIds: Set<string>): Announcement[] => {
 
 export const useNotificationStore = create<NotificationState>()(
   persist(
-    (set, get) => {
+    (set) => {
       // Helper to recompute derived state
       const computeDerivedState = (dismissedIds: Set<string>) => {
         const announcements = getVisibleAnnouncements(dismissedIds);
