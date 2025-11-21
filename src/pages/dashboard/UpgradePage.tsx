@@ -26,136 +26,35 @@
  * 6. Shows success message, refreshes data
  */
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { PricingCard } from '@/features/billing/components/PricingCard';
-import { useSubscription } from '@/features/billing/hooks/useSubscription';
-import { useUpgrade } from '@/features/billing/hooks/useUpgrade';
 import { PRICING_TIERS, PAID_TIERS, TierName } from '@/config/pricing.config';
-import { Alert } from '@/shared/components/ui/Alert';
-import { Spinner } from '@/shared/components/ui/Spinner';
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function UpgradePage() {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTier, setSelectedTier] = useState<TierName | null>(null);
 
-  // Fetch current subscription
-  const { 
-    data: subscription, 
-    isLoading: subscriptionLoading,
-    error: subscriptionError,
-    refetch: refetchSubscription
-  } = useSubscription();
-
-  // Upgrade mutation
-  const upgradeMutation = useUpgrade();
-
-  // Check for success/error params
-  const success = searchParams.get('success');
-  const error = searchParams.get('error');
+  // TODO: Replace with actual subscription data from backend
+  // For now, using dummy data for visual demonstration
+  const currentTier: TierName = 'free';
 
   /**
    * Handle tier selection
+   * TODO: Implement actual upgrade logic with Stripe Checkout
    */
   function handleSelectTier(tierId: string) {
     setSelectedTier(tierId as TierName);
-    upgradeMutation.mutate(tierId as TierName);
+    console.log('Selected tier:', tierId);
+    // TODO: Integrate with backend upgrade endpoint
   }
-
-  /**
-   * Clear URL params after showing notification
-   */
-  useEffect(() => {
-    if (!success && !error) {
-      return;
-    }
-
-    // Refresh subscription data after successful upgrade
-    if (success) {
-      refetchSubscription();
-    }
-
-    // Clear params after 5 seconds
-    const timer = setTimeout(() => {
-      setSearchParams({});
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [success, error, setSearchParams, refetchSubscription]);
-
-  // Loading state
-  if (subscriptionLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  // Error state
-  if (subscriptionError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <Alert variant="error">
-          <div>
-            <div className="font-semibold mb-1">Failed to load subscription</div>
-            <div className="text-sm opacity-90">
-              {subscriptionError.message || 'Please try again later.'}
-            </div>
-          </div>
-        </Alert>
-      </div>
-    );
-  }
-
-  const currentTier = (subscription?.tier || 'free') as TierName;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-neutral-50 dark:to-neutral-900">
-
-      {/* =====================================================================
-          SUCCESS/ERROR NOTIFICATIONS
-          ===================================================================== */}
-
-      {success && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
-        >
-          <Alert variant="success">
-            <div>
-              <div className="font-semibold mb-1">Upgrade successful!</div>
-              <div className="text-sm opacity-90">
-                Your subscription has been updated. New features are now available.
-              </div>
-            </div>
-          </Alert>
-        </motion.div>
-      )}
-
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
-        >
-          <Alert variant="error">
-            <div>
-              <div className="font-semibold mb-1">Upgrade failed</div>
-              <div className="text-sm opacity-90">
-                {decodeURIComponent(error)}
-              </div>
-            </div>
-          </Alert>
-        </motion.div>
-      )}
 
       {/* =====================================================================
           HERO SECTION
@@ -201,8 +100,8 @@ export function UpgradePage() {
                 tier={tier}
                 isCurrentTier={isCurrentTier}
                 onSelect={handleSelectTier}
-                loading={selectedTier === tierId && upgradeMutation.isPending}
-                disabled={upgradeMutation.isPending}
+                loading={selectedTier === tierId}
+                disabled={false}
               />
             );
           })}
