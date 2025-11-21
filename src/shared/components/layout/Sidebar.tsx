@@ -298,6 +298,7 @@ export function Sidebar() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
+              onClick={(e) => e.stopPropagation()}
               className={`
                 fixed z-dropdown bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-800
                 ${isCollapsed ? 'left-20 bottom-20' : 'left-64 bottom-20'}
