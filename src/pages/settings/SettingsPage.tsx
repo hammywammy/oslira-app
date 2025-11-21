@@ -26,9 +26,8 @@
  * - Usage stats from analytics
  */
 
-import { Navigate, Outlet, useLocation, NavLink } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, NavLink, Link } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import { AppShell } from '@/shared/components/layout/AppShell';
 
 // =============================================================================
 // TAB CONFIGURATION
@@ -93,8 +92,18 @@ export function SettingsPage() {
   }
 
   return (
-    <AppShell>
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background">
+      {/* Back Arrow */}
+      <div className="fixed top-6 left-6 z-50">
+        <Link
+          to="/dashboard"
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
+        >
+          <Icon icon="ph:arrow-left" className="w-5 h-5 text-foreground" />
+        </Link>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6 pt-20">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
@@ -124,8 +133,8 @@ export function SettingsPage() {
                       }
                     `}
                   >
-                    <Icon 
-                      icon={tab.icon} 
+                    <Icon
+                      icon={tab.icon}
                       className={`w-5 h-5 shrink-0 mt-0.5 ${
                         isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                       }`}
@@ -150,7 +159,7 @@ export function SettingsPage() {
           </main>
         </div>
       </div>
-    </AppShell>
+    </div>
   );
 }
 

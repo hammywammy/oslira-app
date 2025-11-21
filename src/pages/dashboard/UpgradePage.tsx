@@ -23,18 +23,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import { Link } from 'react-router-dom';
 import { PricingCard } from '@/features/billing/components/PricingCard';
 import { PRICING_TIERS, PAID_TIERS, TierName } from '@/config/pricing.config';
-import { TopBar } from '@/shared/components/layout/TopBar';
-import { Sidebar } from '@/shared/components/layout/Sidebar';
-import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function UpgradePage() {
-  const { isCollapsed } = useSidebarStore();
   // Static current tier (no API calls)
   const currentTier: TierName = 'free';
 
@@ -47,17 +44,16 @@ export function UpgradePage() {
   }
 
   return (
-    <>
-      {/* TopBar and Sidebar */}
-      <TopBar />
-      <Sidebar />
-
-      {/* Main Content - Respects sidebar width */}
-      <div className={`
-        min-h-screen pt-14 bg-gradient-to-b from-background via-background to-neutral-50 dark:to-neutral-900
-        transition-[margin] duration-200
-        ${isCollapsed ? 'ml-16' : 'ml-60'}
-      `}>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-neutral-50 dark:to-neutral-900">
+      {/* Back Arrow */}
+      <div className="fixed top-6 left-6 z-50">
+        <Link
+          to="/dashboard"
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
+        >
+          <Icon icon="ph:arrow-left" className="w-5 h-5 text-foreground" />
+        </Link>
+      </div>
 
       {/* =====================================================================
           HERO SECTION
@@ -178,21 +174,7 @@ export function UpgradePage() {
         </div>
       </section>
 
-      {/* =====================================================================
-          BACK TO DASHBOARD
-          ===================================================================== */}
-      
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <a
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Icon icon="ph:arrow-left" className="w-5 h-5" />
-          <span>Back to Dashboard</span>
-        </a>
-      </section>
-      </div>
-    </>
+    </div>
   );
 }
 
