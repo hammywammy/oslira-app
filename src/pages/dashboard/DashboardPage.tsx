@@ -26,26 +26,12 @@ import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { useDashboardStore } from '@/features/dashboard/store/dashboardStore';
 
 // =============================================================================
-// MOCK DATA
-// =============================================================================
-
-const MOCK_LEADS = [
-  { id: '1', username: '@nike', full_name: 'Nike' },
-  { id: '2', username: '@adidas', full_name: 'Adidas' },
-  { id: '3', username: '@puma', full_name: 'PUMA' },
-  { id: '4', username: '@underarmour', full_name: 'Under Armour' },
-  { id: '5', username: '@newbalance', full_name: 'New Balance' },
-];
-
-// =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function DashboardPage() {
-  const { leads: storeLeads } = useDashboardStore();
-  
-  // Use store leads OR mock data
-  const leads = storeLeads.length > 0 ? storeLeads : MOCK_LEADS;
+  // Note: Leads are now fetched directly in LeadsTable component via useLeads hook
+  // This provides better data isolation and automatic refresh capabilities
   
   // Modal state
   const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
@@ -55,9 +41,10 @@ export function DashboardPage() {
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  
-  // Pagination calculations
-  const totalPages = Math.ceil(leads.length / pageSize);
+
+  // Note: Pagination will be handled server-side in future iterations
+  // For now, showing all leads without pagination
+  const totalPages = 1;
 
   // ===========================================================================
   // HANDLERS (UNCHANGED)
@@ -102,16 +89,14 @@ export function DashboardPage() {
           />
         }
         pagination={
-          leads.length > 0 ? (
-            <TablePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              totalItems={leads.length}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-            />
-          ) : null
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={0}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         }
       />
 

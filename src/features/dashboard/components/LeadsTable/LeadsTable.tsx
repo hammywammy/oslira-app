@@ -20,6 +20,7 @@ import { useCallback, memo, useState } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { LeadDetailModal } from './LeadDetailModal';
+import { useLeads } from '@/features/leads/hooks/useLeads';
 
 // =============================================================================
 // TYPES
@@ -45,189 +46,6 @@ const COLUMN_WIDTHS = {
   updated: 140,
   actions: 80,
 };
-
-// =============================================================================
-// MOCK DATA
-// =============================================================================
-
-const MOCK_LEADS: Lead[] = [
-  {
-    id: '1',
-    account_id: 'acc_1',
-    business_profile_id: 'bp_1',
-    username: '@nike',
-    full_name: 'Nike',
-    platform: 'instagram',
-    profile_url: 'https://instagram.com/nike',
-    avatar_url: null,
-    overall_score: 87,
-    niche_fit_score: 85,
-    engagement_score: 89,
-    confidence_level: 92,
-    analysis_type: 'deep',
-    analysis_status: 'complete',
-    analysis_completed_at: '2025-01-15T10:00:00Z',
-    followers_count: 250000000,
-    following_count: 150,
-    posts_count: 1200,
-    bio: 'Just Do It. The official Nike account. #nike',
-    summary_text: 'Nike is a globally recognized sports brand with exceptional engagement and brand authority. Perfect fit for sports and lifestyle partnerships.',
-    outreach_message: 'Hi Nike team! Love your latest campaign on sustainability. Would love to explore a partnership opportunity that aligns with your brand values.',
-    psychographics: null,
-    cache_hit: false,
-    credits_charged: 2,
-    run_id: 'run_1',
-    created_at: '2025-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    account_id: 'acc_1',
-    business_profile_id: 'bp_1',
-    username: '@adidas',
-    full_name: 'Adidas',
-    platform: 'instagram',
-    profile_url: 'https://instagram.com/adidas',
-    avatar_url: null,
-    overall_score: 82,
-    niche_fit_score: 80,
-    engagement_score: 84,
-    confidence_level: 88,
-    analysis_type: 'xray',
-    analysis_status: 'complete',
-    analysis_completed_at: '2025-01-14T10:00:00Z',
-    followers_count: 28000000,
-    following_count: 95,
-    posts_count: 980,
-    bio: 'Impossible is Nothing. Official Adidas account.',
-    summary_text: 'Adidas shows strong brand presence with consistent engagement across demographics. Great partner for athletic collaborations.',
-    outreach_message: null,
-    psychographics: {
-      disc_profile: {
-        dominance: 75,
-        influence: 85,
-        steadiness: 60,
-        conscientiousness: 70,
-        primary_type: 'I',
-      },
-      copywriter_profile: {
-        is_copywriter: false,
-        specialization: null,
-        experience_level: null,
-      },
-      motivation_drivers: ['Innovation', 'Athletic Excellence', 'Community'],
-      communication_style: 'Bold, inspirational, action-oriented',
-      recommended_proof_elements: ['Social proof', 'Testimonials', 'Performance stats'],
-      outreach_strategy: 'Lead with shared values and athletic achievement stories',
-      hook_style_suggestions: ['Challenge-based hooks', 'Achievement stories', 'Community impact'],
-    },
-    cache_hit: false,
-    credits_charged: 3,
-    run_id: 'run_2',
-    created_at: '2025-01-14T10:00:00Z',
-  },
-  {
-    id: '3',
-    account_id: 'acc_1',
-    business_profile_id: 'bp_1',
-    username: '@puma',
-    full_name: 'PUMA',
-    platform: 'instagram',
-    profile_url: 'https://instagram.com/puma',
-    avatar_url: null,
-    overall_score: 75,
-    niche_fit_score: 72,
-    engagement_score: 78,
-    confidence_level: 80,
-    analysis_type: 'light',
-    analysis_status: 'complete',
-    analysis_completed_at: '2025-01-13T10:00:00Z',
-    followers_count: 10000000,
-    following_count: 120,
-    posts_count: 750,
-    bio: 'Forever Faster. PUMA official.',
-    summary_text: null,
-    outreach_message: null,
-    psychographics: null,
-    cache_hit: true,
-    credits_charged: 1,
-    run_id: 'run_3',
-    created_at: '2025-01-13T10:00:00Z',
-  },
-  {
-    id: '4',
-    account_id: 'acc_1',
-    business_profile_id: 'bp_1',
-    username: '@underarmour',
-    full_name: 'Under Armour',
-    platform: 'instagram',
-    profile_url: 'https://instagram.com/underarmour',
-    avatar_url: null,
-    overall_score: null,
-    niche_fit_score: null,
-    engagement_score: null,
-    confidence_level: null,
-    analysis_type: null,
-    analysis_status: 'pending',
-    analysis_completed_at: null,
-    followers_count: 5000000,
-    following_count: 80,
-    posts_count: 650,
-    bio: 'The Only Way Is Through. Under Armour official.',
-    summary_text: null,
-    outreach_message: null,
-    psychographics: null,
-    cache_hit: false,
-    credits_charged: 0,
-    run_id: null,
-    created_at: '2025-01-12T10:00:00Z',
-  },
-  {
-    id: '5',
-    account_id: 'acc_1',
-    business_profile_id: 'bp_1',
-    username: '@newbalance',
-    full_name: 'New Balance',
-    platform: 'instagram',
-    profile_url: 'https://instagram.com/newbalance',
-    avatar_url: null,
-    overall_score: 91,
-    niche_fit_score: 88,
-    engagement_score: 94,
-    confidence_level: 95,
-    analysis_type: 'xray',
-    analysis_status: 'complete',
-    analysis_completed_at: '2025-01-11T10:00:00Z',
-    followers_count: 4000000,
-    following_count: 65,
-    posts_count: 820,
-    bio: 'Fearlessly Independent Since 1906. New Balance official account.',
-    summary_text: 'New Balance demonstrates exceptional niche fit with strong community engagement and authentic brand storytelling. Highly recommended for partnerships.',
-    outreach_message: 'Hey New Balance! Your commitment to craftsmanship and heritage really resonates. I think there\'s a great opportunity for us to collaborate on something meaningful.',
-    psychographics: {
-      disc_profile: {
-        dominance: 60,
-        influence: 70,
-        steadiness: 85,
-        conscientiousness: 90,
-        primary_type: 'C',
-      },
-      copywriter_profile: {
-        is_copywriter: true,
-        specialization: 'Brand storytelling and heritage marketing',
-        experience_level: 'expert',
-      },
-      motivation_drivers: ['Authenticity', 'Craftsmanship', 'Heritage', 'Quality'],
-      communication_style: 'Thoughtful, detailed, values-driven',
-      recommended_proof_elements: ['Heritage stories', 'Craftsmanship details', 'Quality guarantees'],
-      outreach_strategy: 'Emphasize shared values, attention to detail, and long-term partnership potential',
-      hook_style_suggestions: ['Heritage-based hooks', 'Quality-focused messaging', 'Authenticity stories'],
-    },
-    cache_hit: false,
-    credits_charged: 3,
-    run_id: 'run_5',
-    created_at: '2025-01-11T10:00:00Z',
-  },
-];
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -424,7 +242,12 @@ TableRow.displayName = 'TableRow';
 // =============================================================================
 
 export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps) {
-  const leads = MOCK_LEADS;
+  // Fetch real leads from API
+  const { leads, isLoading } = useLeads({
+    autoFetch: true,
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+  });
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -464,6 +287,33 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
     setIsModalOpen(false);
     setSelectedLead(null);
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Icon icon="mdi:loading" className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Loading your leads...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state
+  if (leads.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center max-w-md">
+          <Icon icon="mdi:account-search-outline" className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No leads yet</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Start by analyzing Instagram profiles to find potential leads for your business
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
