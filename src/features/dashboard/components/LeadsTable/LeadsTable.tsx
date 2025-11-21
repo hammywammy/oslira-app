@@ -178,14 +178,14 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-semibold text-primary">
-              {lead.full_name?.charAt(0) || lead.username.charAt(1)}
+              {lead.display_name?.charAt(0) || lead.username.charAt(1)}
             </span>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-medium text-sm text-foreground truncate">{lead.full_name || lead.username}</div>
+            <div className="font-medium text-sm text-foreground truncate">{lead.display_name || lead.username}</div>
             <div className="text-xs text-muted-foreground truncate">{lead.username}</div>
             <div className="text-xs text-muted-foreground mt-0.5">
-              {lead.followers_count ? formatFollowers(lead.followers_count) : '0'} followers
+              {lead.follower_count ? formatFollowers(lead.follower_count) : '0'} followers
             </div>
           </div>
         </div>

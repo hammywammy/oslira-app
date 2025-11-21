@@ -75,13 +75,12 @@ SELECT
   l.account_id,
   l.business_profile_id,
   l.username,
-  l.display_name as full_name,
-  l.profile_pic_url as avatar_url,
+  l.display_name,
+  l.profile_pic_url,
   l.profile_url,
-  l.follower_count as followers_count,
+  l.follower_count,
   l.following_count,
-  l.post_count as posts_count,
-  l.external_url,
+  l.post_count,
   l.platform,
   l.created_at,
   l.updated_at,
@@ -91,20 +90,10 @@ SELECT
   la.status as analysis_status,
   la.completed_at as analysis_completed_at,
   la.overall_score,
-  la.run_id,
 
   -- Extract from ai_response JSONB
-  la.ai_response->>'niche_fit_score' as niche_fit_score,
-  la.ai_response->>'engagement_score' as engagement_score,
-  la.ai_response->>'confidence_level' as confidence_level,
-  la.ai_response->>'bio' as bio,
-  la.ai_response->>'summary_text' as summary_text,
-  la.ai_response->>'outreach_message' as outreach_message,
-  la.ai_response->'psychographics' as psychographics,
-
-  -- Metadata
-  CASE WHEN la.id IS NOT NULL THEN 0 ELSE 0 END as credits_charged,
-  false as cache_hit
+  la.ai_response->>'summary' as summary,
+  (la.ai_response->>'confidence')::integer as confidence
 
 FROM leads l
 LEFT JOIN LATERAL (
@@ -131,60 +120,28 @@ LIMIT :pageSize OFFSET :offset;
   "data": {
     "leads": [
       {
+        // Primary lead data (from leads table)
         "id": "uuid",
         "account_id": "uuid",
-        "business_profile_id": "uuid",
+        "business_profile_id": "uuid" | null,
         "username": "@nike",
-        "full_name": "Nike",
-        "platform": "instagram",
-        "profile_url": "https://instagram.com/nike",
-        "avatar_url": "https://...",
+        "display_name": "Nike" | null,
+        "profile_pic_url": "https://..." | null,
+        "profile_url": "https://instagram.com/nike" | null,
+        "follower_count": 250000000 | null,
+        "following_count": 150 | null,
+        "post_count": 1200 | null,
+        "platform": "instagram" | null,
+        "created_at": "2025-01-15T10:00:00Z",
+        "updated_at": "2025-01-15T12:00:00Z",
 
-        // Analysis results (null if not analyzed yet)
+        // Analysis data (from lead_analyses table - null if not analyzed)
         "analysis_type": "deep" | "light" | "xray" | null,
-        "analysis_status": "pending" | "processing" | "complete" | "failed",
+        "analysis_status": "pending" | "processing" | "complete" | "failed" | null,
         "analysis_completed_at": "2025-01-15T10:00:00Z" | null,
-
-        // Scores (0-100, null if not analyzed)
         "overall_score": 87 | null,
-        "niche_fit_score": 85 | null,
-        "engagement_score": 89 | null,
-        "confidence_level": 92 | null,
-
-        // Profile data
-        "bio": "Just Do It. Official Nike account.",
-        "followers_count": 250000000,
-        "following_count": 150,
-        "posts_count": 1200,
-
-        // AI-generated content (null if not analyzed)
-        "summary_text": "Nike is a globally recognized..." | null,
-        "outreach_message": "Hi Nike team!..." | null,
-        "psychographics": {
-          "disc_profile": {
-            "dominance": 75,
-            "influence": 85,
-            "steadiness": 60,
-            "conscientiousness": 70,
-            "primary_type": "I"
-          },
-          "copywriter_profile": {
-            "is_copywriter": false,
-            "specialization": null,
-            "experience_level": null
-          },
-          "motivation_drivers": ["Innovation", "Excellence"],
-          "communication_style": "Bold, inspirational",
-          "recommended_proof_elements": ["Social proof"],
-          "outreach_strategy": "Lead with shared values",
-          "hook_style_suggestions": ["Challenge-based hooks"]
-        } | null,
-
-        // Metadata
-        "cache_hit": false,
-        "credits_charged": 2,
-        "run_id": "run_abc123" | null,
-        "created_at": "2025-01-15T10:00:00Z"
+        "summary": "Nike is a globally recognized sports brand..." | null,
+        "confidence": 92 | null
       }
     ],
     "total": 42,
@@ -205,20 +162,24 @@ LIMIT :pageSize OFFSET :offset;
 
 ## Data Mapping Notes
 
-1. **Field Name Mappings:**
-   - `display_name` (DB) → `full_name` (API)
-   - `profile_pic_url` (DB) → `avatar_url` (API)
-   - `follower_count` (DB) → `followers_count` (API)
-   - `post_count` (DB) → `posts_count` (API)
-   - `status` (DB) → `analysis_status` (API)
+1. **Field Names:**
+   - All fields are returned with their exact database column names (no renaming needed)
+   - Example: `display_name` (DB) → `display_name` (API)
+   - Example: `follower_count` (DB) → `follower_count` (API)
 
 2. **JSONB Extraction:**
-   - The `ai_response` field in `lead_analyses` contains nested JSON with scores, summary, and psychographics
-   - Extract these fields and flatten them in the API response
+   - The `ai_response` field in `lead_analyses` contains nested JSON
+   - Extract `summary` field: `ai_response->>'summary'`
+   - Extract `confidence` field: `(ai_response->>'confidence')::integer`
 
 3. **Default Values:**
-   - If no analysis exists for a lead, return `null` for all analysis-related fields
-   - `analysis_status` should be `"pending"` if no analysis record exists
+   - If no analysis exists for a lead, return `null` for all analysis-related fields:
+     - `analysis_type`: null
+     - `analysis_status`: null
+     - `analysis_completed_at`: null
+     - `overall_score`: null
+     - `summary`: null
+     - `confidence`: null
 
 4. **Authentication:**
    - Extract `account_id` from the JWT token
