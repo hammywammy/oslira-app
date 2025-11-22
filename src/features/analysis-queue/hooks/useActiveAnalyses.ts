@@ -56,7 +56,7 @@ interface FetchActiveAnalysesResponse {
  */
 async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
   try {
-    logger.info('[ActiveAnalyses] Fetching active analyses');
+    // logger.info('[ActiveAnalyses] Fetching active analyses');
 
     const response = await httpClient.get<FetchActiveAnalysesResponse>(
       '/api/analysis/active'
@@ -67,9 +67,9 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
       return [];
     }
 
-    logger.info('[ActiveAnalyses] Active analyses fetched', {
-      count: response.data?.analyses?.length ?? 0,
-    });
+    // logger.info('[ActiveAnalyses] Active analyses fetched', {
+    //   count: response.data?.analyses?.length ?? 0,
+    // });
 
     return response.data?.analyses ?? [];
   } catch (error) {
@@ -120,7 +120,7 @@ export function useActiveAnalyses() {
         });
       }
 
-      return shouldPoll ? 5000 : false;
+      return shouldPoll ? 2000 : false;
     },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -144,10 +144,10 @@ export function useActiveAnalyses() {
       pollingShouldStop: currentPollingShouldStop
     } = useAnalysisQueueStore.getState();
 
-    logger.info('[ActiveAnalyses] Data received from API', {
-      fetchedJobCount: data.length,
-      jobs: data.map(j => ({ runId: j.runId, username: j.username, status: j.status, progress: j.progress })),
-    });
+    // logger.info('[ActiveAnalyses] Data received from API', {
+    //   fetchedJobCount: data.length,
+    //   jobs: data.map(j => ({ runId: j.runId, username: j.username, status: j.status, progress: j.progress })),
+    // });
 
     syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted);
 
@@ -227,11 +227,11 @@ function syncAnalysesToStore(
       if (currentJob) {
         // If job doesn't have leadId or avatarUrl yet, confirm it with backend data
         if (!currentJob.leadId || !currentJob.avatarUrl) {
-          logger.info('[ActiveAnalyses] Confirming optimistic job', {
-            runId: fetchedJob.runId,
-            hasLeadId: !!fetchedJob.leadId,
-            hasAvatar: !!fetchedJob.avatarUrl,
-          });
+          // logger.info('[ActiveAnalyses] Confirming optimistic job', {
+          //   runId: fetchedJob.runId,
+          //   hasLeadId: !!fetchedJob.leadId,
+          //   hasAvatar: !!fetchedJob.avatarUrl,
+          // });
 
           confirmJobStarted(
             fetchedJob.runId,
@@ -257,17 +257,35 @@ function syncAnalysesToStore(
           return; // Early return since job is complete
         }
 
+        // Handle failed jobs from backend
+        if (fetchedJob.status === 'failed' && currentJob.status !== 'failed') {
+          logger.info('[ActiveAnalyses] Job failed, marking as failed', {
+            runId: fetchedJob.runId,
+          });
+
+          updateJob(fetchedJob.runId, {
+            status: 'failed',
+            step: fetchedJob.step,
+            avatarUrl: fetchedJob.avatarUrl,
+            leadId: fetchedJob.leadId,
+          });
+          return;
+        }
+
         // Update if data has changed
         if (
           currentJob.progress !== fetchedJob.progress ||
           currentJob.status !== fetchedJob.status ||
           currentJob.step.current !== fetchedJob.step.current
         ) {
-          logger.info('[ActiveAnalyses] Updating job in store', {
-            runId: fetchedJob.runId,
-            progress: fetchedJob.progress,
-            status: fetchedJob.status,
-          });
+          // Only log when status changes, not progress/step changes
+          if (currentJob.status !== fetchedJob.status) {
+            logger.info('[ActiveAnalyses] Updating job in store', {
+              runId: fetchedJob.runId,
+              progress: fetchedJob.progress,
+              status: fetchedJob.status,
+            });
+          }
 
           updateJob(fetchedJob.runId, {
             progress: fetchedJob.progress,
