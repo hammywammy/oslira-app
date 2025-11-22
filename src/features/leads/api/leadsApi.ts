@@ -23,12 +23,7 @@ import type { Lead } from '@/shared/types/leads.types';
 
 interface FetchLeadsResponse {
   success: boolean;
-  data: {
-    leads: Lead[];
-    total: number;
-    page: number;
-    pageSize: number;
-  };
+  data: Lead[];
 }
 
 interface FetchLeadsParams {
@@ -80,11 +75,10 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
     }
 
     logger.info('[LeadsApi] Leads fetched successfully', {
-      count: response.data.leads.length,
-      total: response.data.total
+      count: response.data.length
     });
 
-    return response.data.leads;
+    return response.data;
   } catch (error) {
     logger.error('[LeadsApi] Failed to fetch leads', error as Error);
     // Return empty array instead of throwing - graceful degradation
