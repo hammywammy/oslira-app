@@ -100,6 +100,9 @@ class AuthManager {
   private user: UserData | null = null;
   private account: AccountData | null = null;
 
+  // Auth ready state
+  private authReady: boolean = false;
+
   // Race-condition protection
   private refreshPromise: Promise<boolean> | null = null;
 
@@ -143,10 +146,16 @@ class AuthManager {
       const accountStr = localStorage.getItem(STORAGE_KEYS.ACCOUNT);
       this.account = accountStr ? JSON.parse(accountStr) : null;
 
+      // Set authReady if we have a valid refresh token
+      if (this.refreshToken) {
+        this.authReady = true;
+      }
+
       console.log('[AuthManager] Loaded from storage:', {
         hasAccessToken: !!this.accessToken,
         hasRefreshToken: !!this.refreshToken,
         hasUser: !!this.user,
+        authReady: this.authReady,
         expiresAt: this.expiresAt ? new Date(this.expiresAt).toISOString() : null
       });
     } catch (error) {
@@ -455,6 +464,24 @@ async forceRefresh(): Promise<string | null> {
   }
 
   /**
+   * Mark authentication as ready
+   * Called after successful login or token refresh to signal that auth is fully initialized
+   */
+  markAuthReady(): void {
+    console.log('[AuthManager] Marking auth as ready');
+    this.authReady = true;
+    this.notifyListeners();
+  }
+
+  /**
+   * Check if authentication is fully ready
+   * Returns true only if both authReady flag is set AND refresh token exists
+   */
+  isAuthReady(): boolean {
+    return this.authReady && !!this.refreshToken;
+  }
+
+  /**
    * Update onboarding status
    */
   updateOnboardingStatus(completed: boolean): void {
@@ -526,6 +553,7 @@ async forceRefresh(): Promise<string | null> {
     this.expiresAt = null;
     this.user = null;
     this.account = null;
+    this.authReady = false;
 
     // Clear localStorage (triggers storage event in other tabs)
     Object.values(STORAGE_KEYS).forEach(key => {

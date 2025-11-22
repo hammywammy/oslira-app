@@ -154,20 +154,10 @@ export function OAuthCallbackPage() {
         userId: response.data.user?.id
       });
 
-      // Step 3: Store in auth-manager
+      // Step 3: Store in auth-manager and update React state
       setMessage('Setting up your account');
 
-      // Store tokens FIRST
-      authManager.setTokens(
-        response.data.accessToken,
-        response.data.refreshToken,
-        response.data.expiresAt
-      );
-
-      // Then store user data
-      authManager.setUser(response.data.user, response.data.account);
-
-      // Call login() to update React state (this is for immediate UI updates)
+      // Call login() to store tokens, user data, mark auth ready, and update React state
       login(
         response.data.accessToken,
         response.data.refreshToken,
@@ -183,7 +173,10 @@ export function OAuthCallbackPage() {
         : 'Welcome back!';
       setMessage(welcomeMessage);
 
-      // Step 5: Navigate immediately - login() and setTokens() are synchronous
+      // Small delay to ensure React state has propagated
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Step 5: Navigate to appropriate page
       const redirectPath = response.data.user.onboarding_completed
         ? '/dashboard'
         : '/onboarding';

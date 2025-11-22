@@ -74,6 +74,7 @@ interface AuthContextValue {
   user: User | null;
   account: Account | null;
   isAuthenticated: boolean;
+  isAuthReady: boolean;
   isLoading: boolean;
   login: (accessToken: string, refreshToken: string, expiresAt: number, user: User, account: Account) => void;
   logout: () => Promise<void>;
@@ -101,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // ===========================================================================
@@ -189,6 +191,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // This is safe because we just got a fresh token from /refresh
       await fetchUserData();
 
+      // Mark auth as ready after successful initialization
+      authManager.markAuthReady();
+      setIsAuthReady(true);
+
     } catch (error) {
       logger.error('[AuthProvider] Initialization failed', error as Error);
       authManager.clear();
@@ -239,10 +245,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const authenticated = authManager.isAuthenticated();
     const currentUser = authManager.getUser();
     const currentAccount = authManager.getAccount();
+    const authReady = authManager.isAuthReady();
 
     setIsAuthenticated(authenticated);
     setUser(currentUser);
     setAccount(currentAccount);
+    setIsAuthReady(authReady);
 
     logger.debug('[AuthProvider] State synced with auth-manager');
   }
@@ -273,10 +281,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authManager.setTokens(accessToken, refreshToken, expiresAt);
     authManager.setUser(userData, accountData);
 
+    // Mark auth as ready
+    authManager.markAuthReady();
+
     // Update React state
     setUser(userData);
     setAccount(accountData);
     setIsAuthenticated(true);
+    setIsAuthReady(true);
   }
 
   /**
@@ -349,6 +361,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     account,
     isAuthenticated,
+    isAuthReady,
     isLoading,
     login,
     logout,
