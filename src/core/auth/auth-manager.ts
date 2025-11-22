@@ -495,7 +495,7 @@ async forceRefresh(): Promise<string | null> {
 
   /**
    * Clear all auth state (memory + localStorage)
-   * 
+   *
    * CROSS-TAB SYNC:
    * - Removing items from localStorage triggers 'storage' event in other tabs
    * - Other tabs detect the changes and clear their state automatically
@@ -514,6 +514,9 @@ async forceRefresh(): Promise<string | null> {
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
     });
+
+    // Also clear business profile selection
+    localStorage.removeItem('oslira-selected-business');
 
     console.log('[AuthManager] Auth state cleared, other tabs will sync automatically');
     this.notifyListeners();

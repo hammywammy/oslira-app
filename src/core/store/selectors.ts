@@ -11,19 +11,13 @@
 
 import { useAppStore } from './appStore';
 import { useCurrentBalance } from '@/features/credits/store/creditsStore';
+import type { BusinessProfile } from '@/shared/types/business.types';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 type AppState = ReturnType<typeof useAppStore.getState>;
-
-export interface Business {
-  id: string;
-  name: string;
-  industry?: string;
-  created_at: string;
-}
 
 export interface Lead {
   id: string;
@@ -51,13 +45,20 @@ export const useIsAuthenticated = () => useAppStore((state: AppState) => state.a
 
 export const useBusinesses = () => useAppStore((state: AppState) => state.business.all);
 export const useSelectedBusiness = () => useAppStore((state: AppState) => state.business.selected);
-export const useSelectedBusinessId = () => 
+export const useSelectedBusinessId = () =>
   useAppStore((state: AppState) => state.business.selected?.id ?? null);
-export const useHasBusinesses = () => 
+export const useHasBusinesses = () =>
+  useAppStore((state: AppState) => state.business.all.length > 0);
+
+// Alias for components that need profile list (e.g., dropdown selector)
+export const useBusinessProfiles = () => useAppStore((state: AppState) => state.business.all);
+
+// Check if profiles are loaded
+export const useHasBusinessProfiles = () =>
   useAppStore((state: AppState) => state.business.all.length > 0);
 
 export const useBusinessById = (businessId: string) =>
-  useAppStore((state: AppState) => state.business.all.find((b: Business) => b.id === businessId));
+  useAppStore((state: AppState) => state.business.all.find((b: BusinessProfile) => b.id === businessId));
 
 // =============================================================================
 // LEADS SELECTORS
@@ -178,7 +179,7 @@ export const useFilterStatus = () =>
  */
 export const useBusinessesWithLeadCount = () =>
   useAppStore((state: AppState) => {
-    return state.business.all.map((business: Business) => ({
+    return state.business.all.map((business: BusinessProfile) => ({
       ...business,
       leadCount: state.leads.all.filter((l: Lead) => l.business_id === business.id).length,
     }));

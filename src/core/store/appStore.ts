@@ -11,17 +11,11 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { User, Session } from '@supabase/supabase-js';
+import type { BusinessProfile } from '@/shared/types/business.types';
 
 // =============================================================================
 // TYPES
 // =============================================================================
-
-interface Business {
-  id: string;
-  name: string;
-  industry?: string;
-  created_at: string;
-}
 
 interface Lead {
   id: string;
@@ -60,8 +54,8 @@ interface AppState {
 
   // Business State
   business: {
-    all: Business[];
-    selected: Business | null;
+    all: BusinessProfile[];
+    selected: BusinessProfile | null;
   };
 
   // Leads State
@@ -87,10 +81,10 @@ interface AppState {
   setAuth: (user: User | null, session: Session | null) => void;
   clearAuth: () => void;
 
-  setBusinesses: (businesses: Business[]) => void;
-  selectBusiness: (business: Business | null) => void;
-  addBusiness: (business: Business) => void;
-  updateBusiness: (id: string, updates: Partial<Business>) => void;
+  setBusinesses: (businesses: BusinessProfile[]) => void;
+  selectBusiness: (business: BusinessProfile | null) => void;
+  addBusiness: (business: BusinessProfile) => void;
+  updateBusiness: (id: string, updates: Partial<BusinessProfile>) => void;
 
   setLeads: (leads: Lead[]) => void;
   addLead: (lead: Lead) => void;
@@ -169,7 +163,7 @@ export const useAppStore = create<AppState>()(
         }),
 
       // Business Actions
-      setBusinesses: (businesses: Business[]) =>
+      setBusinesses: (businesses: BusinessProfile[]) =>
         set((state: AppState) => ({
           business: {
             ...state.business,
@@ -177,7 +171,7 @@ export const useAppStore = create<AppState>()(
           },
         })),
 
-      selectBusiness: (business: Business | null) =>
+      selectBusiness: (business: BusinessProfile | null) =>
         set((state: AppState) => ({
           business: {
             ...state.business,
@@ -185,7 +179,7 @@ export const useAppStore = create<AppState>()(
           },
         })),
 
-      addBusiness: (business: Business) =>
+      addBusiness: (business: BusinessProfile) =>
         set((state: AppState) => ({
           business: {
             ...state.business,
@@ -193,11 +187,11 @@ export const useAppStore = create<AppState>()(
           },
         })),
 
-      updateBusiness: (id: string, updates: Partial<Business>) =>
+      updateBusiness: (id: string, updates: Partial<BusinessProfile>) =>
         set((state: AppState) => ({
           business: {
             ...state.business,
-            all: state.business.all.map((b: Business) =>
+            all: state.business.all.map((b: BusinessProfile) =>
               b.id === id ? { ...b, ...updates } : b
             ),
           },

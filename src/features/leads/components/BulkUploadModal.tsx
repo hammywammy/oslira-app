@@ -11,13 +11,15 @@
  * ✅ Better error handling and loading states
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { validateInstagramUsername } from '@/shared/utils/validation';
+import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
+import { useSelectedBusinessId, useBusinessProfiles } from '@/core/store/selectors';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -44,12 +46,6 @@ interface AnalysisOption {
   credits: number;
   icon: string;
   gradient: string;
-}
-
-interface BusinessProfile {
-  id: string;
-  business_name: string;
-  business_one_liner: string | null;
 }
 
 // =============================================================================
@@ -87,56 +83,18 @@ export function BulkUploadModal({
   onSuccess,
   currentCredits = 0,
 }: BulkUploadModalProps) {
+  // Global state - business profiles
+  const businessProfiles = useBusinessProfiles();
+  const selectedProfileId = useSelectedBusinessId();
+  const { isLoading: isLoadingProfiles, selectProfile } = useBusinessProfile();
+
+  // Local state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [parsedFile, setParsedFile] = useState<ParsedFile | null>(null);
   const [analysisType, setAnalysisType] = useState<AnalysisType>('light');
-  const [businessProfiles, setBusinessProfiles] = useState<BusinessProfile[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
-  const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-
-  // ===========================================================================
-  // FETCH BUSINESS PROFILES ON MOUNT
-  // ===========================================================================
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchBusinessProfiles();
-    }
-  }, [isOpen]);
-
-  const fetchBusinessProfiles = async () => {
-    setIsLoadingProfiles(true);
-    setError(null);
-
-    try {
-      const response = await httpClient.get<{
-        success: boolean;
-        data?: BusinessProfile[];
-      }>('/api/business-profiles?page=1&pageSize=50');
-
-      if (response.success && response.data && Array.isArray(response.data)) {
-        setBusinessProfiles(response.data);
-        
-        // Auto-select first profile
-        const firstProfile = response.data[0];
-        if (firstProfile) {
-          setSelectedProfileId(firstProfile.id);
-        } else {
-          setError('No business profile found. Please complete onboarding first.');
-        }
-      } else {
-        throw new Error('Failed to fetch business profiles');
-      }
-    } catch (err) {
-      logger.error('[BulkUploadModal] Failed to fetch profiles', err as Error);
-      setError('Unable to load business profiles. Please refresh and try again.');
-    } finally {
-      setIsLoadingProfiles(false);
-    }
-  };
 
   // ===========================================================================
   // FILE PARSING
@@ -336,8 +294,8 @@ export function BulkUploadModal({
               </div>
             ) : (
               <select
-                value={selectedProfileId}
-                onChange={(e) => setSelectedProfileId(e.target.value)}
+                value={selectedProfileId || ''}
+                onChange={(e) => selectProfile(e.target.value)}
                 disabled={isSubmitting}
                 className="w-full h-10 px-3 border border-border rounded-lg bg-background text-foreground focus:border-primary focus:ring-1 focus:ring-primary transition-colors disabled:opacity-50"
               >

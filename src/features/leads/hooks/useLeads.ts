@@ -83,6 +83,14 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
    * Fetch leads from API
    */
   const fetchLeadsData = useCallback(async () => {
+    // Don't fetch if no business profile selected
+    if (!businessProfileId) {
+      logger.warn('[useLeads] No businessProfileId, skipping fetch');
+      setLeads([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 

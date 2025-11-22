@@ -17,7 +17,8 @@ import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
-import { ShowcaseNav } from '@/shared/components/dev/ShowcaseNav'; 
+import { BusinessProfileProvider } from '@/features/business/providers/BusinessProfileProvider';
+import { ShowcaseNav } from '@/shared/components/dev/ShowcaseNav';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
 
@@ -86,8 +87,10 @@ function App() {
       <ThemeProvider defaultTheme="light" enableSystem={true}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <RouterProvider router={router} />
-            <ShowcaseNav />
+            <BusinessProfileProvider>
+              <RouterProvider router={router} />
+              <ShowcaseNav />
+            </BusinessProfileProvider>
           </AuthProvider>
         </QueryClientProvider>
       </ThemeProvider>
