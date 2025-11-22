@@ -13,7 +13,7 @@
  * - Auto-dismiss handled by store's existing logic
  *
  * BACKEND ENDPOINT:
- * GET /api/analysis-queue/active
+ * GET /api/analysis/active
  * Returns: { success: boolean, data: AnalysisJob[] }
  *
  * USAGE:
@@ -53,7 +53,7 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
     logger.info('[ActiveAnalyses] Fetching active analyses');
 
     const response = await httpClient.get<FetchActiveAnalysesResponse>(
-      '/api/analysis-queue/active'
+      '/api/analysis/active'
     );
 
     if (!response.success || !response.data) {
