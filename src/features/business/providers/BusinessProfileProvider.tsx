@@ -76,6 +76,13 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
   // ===========================================================================
 
   useEffect(() => {
+    // Don't fetch during OAuth callback - wait for navigation to complete
+    const isOAuthCallback = window.location.pathname === '/auth/callback';
+
+    if (isOAuthCallback) {
+      return; // OAuthCallbackPage will navigate away after login()
+    }
+
     if (isAuthenticated && !authLoading && profiles.length === 0 && !isLoading) {
       logger.info('[BusinessProfileProvider] User authenticated, fetching profiles');
       fetchProfiles();

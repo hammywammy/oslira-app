@@ -108,7 +108,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ===========================================================================
 
   useEffect(() => {
-    initializeAuth();
+    // CRITICAL: Skip initialization on OAuth callback page
+    // OAuthCallbackPage handles its own auth flow
+    const isOAuthCallback = window.location.pathname === '/auth/callback';
+
+    if (!isOAuthCallback) {
+      initializeAuth();
+    } else {
+      // On callback page, just set loading to false
+      // OAuthCallbackPage will call login() directly
+      setIsLoading(false);
+    }
 
     // Subscribe to auth changes from auth-manager
     const unsubscribe = authManager.subscribe(syncState);
