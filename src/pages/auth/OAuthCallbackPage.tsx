@@ -20,22 +20,25 @@ import { Logo } from '@/shared/components/ui/Logo';
 type CallbackState = 'processing' | 'success' | 'error';
 
 interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
-  user: {
-    id: string;
-    email: string;
-    full_name: string;
-    avatar_url: string | null;
-    onboarding_completed: boolean;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: number;
+    user: {
+      id: string;
+      email: string;
+      full_name: string;
+      avatar_url: string | null;
+      onboarding_completed: boolean;
+    };
+    account: {
+      id: string;
+      name: string;
+      credit_balance: number;
+      light_analyses_balance: number;
+    };
+    isNewUser: boolean;
   };
-  account: {
-    id: string;
-    name: string;
-    credit_balance: number;
-  };
-  isNewUser: boolean;
 }
 
 // =============================================================================
@@ -144,33 +147,33 @@ export function OAuthCallbackPage() {
         { code },
         { skipAuth: true }
       );
-      
+
       logger.info('[OAuthCallback] Token exchange successful', {
-        isNewUser: response.isNewUser,
-        userId: response.user?.id
+        isNewUser: response.data.isNewUser,
+        userId: response.data.user?.id
       });
 
       // Step 3: Store in auth-manager
       setMessage('Setting up your account');
       login(
-        response.accessToken,
-        response.refreshToken,
-        response.expiresAt,
-        response.user,
-        response.account
+        response.data.accessToken,
+        response.data.refreshToken,
+        response.data.expiresAt,
+        response.data.user,
+        response.data.account
       );
 
       // Step 4: Success state
       setState('success');
-      const welcomeMessage = response.isNewUser 
-        ? 'Welcome to Oslira!' 
+      const welcomeMessage = response.data.isNewUser
+        ? 'Welcome to Oslira!'
         : 'Welcome back!';
       setMessage(welcomeMessage);
 
       // Step 5: Redirect based on onboarding status
       setTimeout(() => {
-        const redirectPath = response.user.onboarding_completed 
-          ? '/dashboard' 
+        const redirectPath = response.data.user.onboarding_completed
+          ? '/dashboard'
           : '/onboarding';
         logger.info('[OAuthCallback] Redirecting', { path: redirectPath });
         navigate(redirectPath, { replace: true });

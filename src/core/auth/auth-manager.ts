@@ -62,6 +62,7 @@ interface AccountData {
   id: string;
   name: string;
   credit_balance: number;
+  light_analyses_balance: number;
 }
 
 
