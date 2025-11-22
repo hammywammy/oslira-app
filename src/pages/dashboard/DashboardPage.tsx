@@ -23,49 +23,115 @@ import { LeadsTable } from '@/features/dashboard/components/LeadsTable/LeadsTabl
 import { TablePagination } from '@/features/dashboard/components/LeadsTable/TablePagination';
 import { AnalyzeLeadModal } from '@/features/leads/components/AnalyzeLeadModal';
 import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
+import { bulkDeleteLeads } from '@/features/leads/api/leadsApi';
+import { logger } from '@/core/utils/logger';
+import type { AnalysisStatus } from '@/shared/types/leads.types';
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+export type SortField = 'created_at' | 'updated_at' | 'overall_score';
+export type SortOrder = 'asc' | 'desc';
+
+export interface TableFilters {
+  analysisStatus?: AnalysisStatus[];
+  scoreMin?: number;
+  scoreMax?: number;
+}
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function DashboardPage() {
-  // Note: Leads are now fetched directly in LeadsTable component via useLeads hook
-  // This provides better data isolation and automatic refresh capabilities
-  
   // Modal state
   const [showAnalyzeModal, setShowAnalyzeModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
-  
+
   // Table state
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  // Search, sort, filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [filters, setFilters] = useState<TableFilters>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Note: Pagination will be handled server-side in future iterations
   // For now, showing all leads without pagination
   const totalPages = 1;
 
   // ===========================================================================
-  // HANDLERS (UNCHANGED)
+  // HANDLERS
   // ===========================================================================
 
   const handleAnalyzeSuccess = (leadId: string) => {
     console.log('✅ Lead analysis started:', leadId);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleBulkSuccess = (jobId: string, count: number) => {
     console.log('✅ Bulk analysis started:', jobId, 'for', count, 'leads');
+    setRefreshTrigger((prev) => prev + 1);
   };
-  
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     setSelectedLeads(new Set());
   };
-  
+
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1);
     setSelectedLeads(new Set());
+  };
+
+  const handleRefresh = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleSort = (field: SortField, order: SortOrder) => {
+    setSortField(field);
+    setSortOrder(order);
+  };
+
+  const handleFilterChange = (newFilters: TableFilters) => {
+    setFilters(newFilters);
+  };
+
+  const handleDeleteSuccess = () => {
+    setSelectedLeads(new Set());
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleMassDelete = async () => {
+    if (selectedLeads.size === 0) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selectedLeads.size} lead${selectedLeads.size > 1 ? 's' : ''}? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      logger.info('[DashboardPage] Mass deleting leads', { count: selectedLeads.size });
+      const success = await bulkDeleteLeads(Array.from(selectedLeads));
+
+      if (success) {
+        logger.info('[DashboardPage] Mass delete completed successfully');
+        handleDeleteSuccess();
+      } else {
+        logger.warn('[DashboardPage] Mass delete failed');
+        alert('Failed to delete leads. Please try again.');
+      }
+    } catch (error) {
+      logger.error('[DashboardPage] Mass delete error', error as Error);
+      alert('An error occurred while deleting leads. Please try again.');
+    }
   };
 
   // ===========================================================================
@@ -79,12 +145,28 @@ export function DashboardPage() {
           <DashboardHotbar
             onBulkUpload={() => setShowBulkModal(true)}
             onAnalyzeLead={() => setShowAnalyzeModal(true)}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSortChange={handleSort}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onRefresh={handleRefresh}
+            selectedCount={selectedLeads.size}
+            onDeleteSelected={handleMassDelete}
           />
         }
         table={
           <LeadsTable
             selectedLeads={selectedLeads}
             onSelectionChange={setSelectedLeads}
+            searchQuery={searchQuery}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            filters={filters}
+            refreshTrigger={refreshTrigger}
+            onDeleteSuccess={handleDeleteSuccess}
           />
         }
         pagination={
@@ -99,7 +181,7 @@ export function DashboardPage() {
         }
       />
 
-      {/* MODALS (UNCHANGED) */}
+      {/* MODALS */}
       <AnalyzeLeadModal
         isOpen={showAnalyzeModal}
         onClose={() => setShowAnalyzeModal(false)}

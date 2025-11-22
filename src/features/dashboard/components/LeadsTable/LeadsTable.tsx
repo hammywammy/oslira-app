@@ -16,13 +16,16 @@
  * Native table for browser optimization
  */
 
-import { useCallback, memo, useState } from 'react';
+import { useCallback, memo, useState, useMemo, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { LeadDetailModal } from './LeadDetailModal';
 import { useLeads } from '@/features/leads/hooks/useLeads';
 import { useSelectedBusinessId } from '@/core/store/selectors';
 import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
+import { deleteLead } from '@/features/leads/api/leadsApi';
+import { logger } from '@/core/utils/logger';
+import type { SortField, SortOrder, TableFilters } from '@/pages/dashboard/DashboardPage';
 
 // =============================================================================
 // TYPES
@@ -33,6 +36,12 @@ import type { Lead } from '@/shared/types/leads.types';
 interface LeadsTableProps {
   selectedLeads: Set<string>;
   onSelectionChange: (selectedIds: Set<string>) => void;
+  searchQuery: string;
+  sortField: SortField;
+  sortOrder: SortOrder;
+  filters: TableFilters;
+  refreshTrigger: number;
+  onDeleteSuccess: () => void;
 }
 
 // =============================================================================
@@ -46,7 +55,7 @@ const COLUMN_WIDTHS = {
   score: 200,
   analysis: 160,
   updated: 140,
-  actions: 80,
+  actions: 100,
 };
 
 // =============================================================================
@@ -144,10 +153,11 @@ interface TableRowProps {
   isSelected: boolean;
   onSelectLead: (id: string) => void;
   onViewLead: (id: string) => void;
+  onDeleteLead: (id: string) => void;
   index: number;
 }
 
-const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: TableRowProps) => {
+const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLead, index }: TableRowProps) => {
   return (
     <motion.tr
       initial={{ opacity: 0 }}
@@ -225,13 +235,22 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, index }: Ta
         `}
         style={{ width: `${COLUMN_WIDTHS.actions}px`, minWidth: `${COLUMN_WIDTHS.actions}px`, padding: '12px 0' }}
       >
-        <button
-          onClick={() => onViewLead(lead.id)}
-          className="inline-flex items-center justify-center p-1.5 rounded hover:bg-muted transition-colors"
-          aria-label="View details"
-        >
-          <Icon icon="mdi:eye-outline" width={18} className="text-muted-foreground" />
-        </button>
+        <div className="flex items-center justify-center gap-1">
+          <button
+            onClick={() => onViewLead(lead.id)}
+            className="inline-flex items-center justify-center p-1.5 rounded hover:bg-muted transition-colors"
+            aria-label="View details"
+          >
+            <Icon icon="mdi:eye-outline" width={18} className="text-muted-foreground" />
+          </button>
+          <button
+            onClick={() => onDeleteLead(lead.id)}
+            className="inline-flex items-center justify-center p-1.5 rounded hover:bg-destructive/10 transition-colors"
+            aria-label="Delete lead"
+          >
+            <Icon icon="mdi:delete-outline" width={18} className="text-destructive" />
+          </button>
+        </div>
       </td>
     </motion.tr>
   );
@@ -243,22 +262,74 @@ TableRow.displayName = 'TableRow';
 // MAIN COMPONENT
 // =============================================================================
 
-export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps) {
+export function LeadsTable({
+  selectedLeads,
+  onSelectionChange,
+  searchQuery,
+  sortField,
+  sortOrder,
+  filters,
+  refreshTrigger,
+  onDeleteSuccess,
+}: LeadsTableProps) {
   // Get selected business ID and profile loading state
   const businessProfileId = useSelectedBusinessId();
   const { isLoading: isLoadingProfile } = useBusinessProfile();
 
   // Fetch real leads from API
-  const { leads, isLoading } = useLeads({
+  const { leads: rawLeads, isLoading, refresh } = useLeads({
     autoFetch: true,
-    sortBy: 'created_at',
-    sortOrder: 'desc',
+    sortBy: sortField,
+    sortOrder,
     businessProfileId,
   });
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Refresh when trigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refresh();
+    }
+  }, [refreshTrigger, refresh]);
+
+  // Filter and search leads
+  const leads = useMemo(() => {
+    let filtered = [...rawLeads];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (lead) =>
+          lead.username.toLowerCase().includes(query) ||
+          lead.display_name?.toLowerCase().includes(query) ||
+          false
+      );
+    }
+
+    // Apply analysis status filter
+    if (filters.analysisStatus && filters.analysisStatus.length > 0) {
+      filtered = filtered.filter(
+        (lead) => lead.analysis_status && filters.analysisStatus!.includes(lead.analysis_status)
+      );
+    }
+
+    // Apply score range filter
+    if (filters.scoreMin !== undefined || filters.scoreMax !== undefined) {
+      filtered = filtered.filter((lead) => {
+        if (lead.overall_score === null) return false;
+        const score = lead.overall_score;
+        const min = filters.scoreMin ?? 0;
+        const max = filters.scoreMax ?? 100;
+        return score >= min && score <= max;
+      });
+    }
+
+    return filtered;
+  }, [rawLeads, searchQuery, filters]);
 
   // Selection handlers
   const handleSelectAll = () => {
@@ -294,6 +365,37 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
     setIsModalOpen(false);
     setSelectedLead(null);
   };
+
+  const handleDeleteLead = useCallback(
+    async (id: string) => {
+      const lead = leads.find((l) => l.id === id);
+      const leadName = lead?.display_name || lead?.username || 'this lead';
+
+      const confirmed = window.confirm(
+        `Are you sure you want to delete ${leadName}? This action cannot be undone.`
+      );
+
+      if (!confirmed) return;
+
+      try {
+        logger.info('[LeadsTable] Deleting lead', { id });
+        const success = await deleteLead(id);
+
+        if (success) {
+          logger.info('[LeadsTable] Lead deleted successfully', { id });
+          onDeleteSuccess();
+          refresh();
+        } else {
+          logger.warn('[LeadsTable] Failed to delete lead', { id });
+          alert('Failed to delete lead. Please try again.');
+        }
+      } catch (error) {
+        logger.error('[LeadsTable] Error deleting lead', error as Error, { id });
+        alert('An error occurred while deleting the lead. Please try again.');
+      }
+    },
+    [leads, onDeleteSuccess, refresh]
+  );
 
   // Show loading state while profile is loading or businessProfileId is not yet set
   if (isLoadingProfile || !businessProfileId) {
@@ -395,6 +497,7 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
             isSelected={selectedLeads.has(lead.id)}
             onSelectLead={handleSelectLead}
             onViewLead={handleViewLead}
+            onDeleteLead={handleDeleteLead}
             index={index}
           />
         ))}
