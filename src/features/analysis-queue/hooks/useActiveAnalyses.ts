@@ -27,6 +27,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAnalysisQueueStore, type AnalysisJob } from '../stores/useAnalysisQueueStore';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
 
 // =============================================================================
 // TYPES
@@ -94,6 +95,7 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
  * - Confirms optimistic jobs when backend returns them
  */
 export function useActiveAnalyses() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     addJob,
     updateJob,
@@ -126,7 +128,7 @@ export function useActiveAnalyses() {
     refetchOnReconnect: true,
     staleTime: 0, // Always consider data stale to enable polling
     retry: 2, // Retry failed requests
-    enabled: true, // Always enabled for manual fetching, but interval controlled by refetchInterval
+    enabled: isAuthenticated && !authLoading, // Only fetch when authenticated and auth state is ready
   });
 
   // Fix 7: Removed unconditional mount-time refetch that caused polling to restart

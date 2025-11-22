@@ -286,19 +286,27 @@ getTokens(): {
   /**
  * Force token refresh (public method)
  * Used by HTTP client when it receives 401 response
- * 
+ *
  * Returns new access token if successful, null if failed
  * This is called when backend returns 401 despite having what appears to be a valid token
  */
 async forceRefresh(): Promise<string | null> {
   console.log('[AuthManager] Force refresh requested');
-  
+
+  // Re-read refresh token from localStorage to ensure memory state matches storage
+  // This prevents race conditions where setTokens() hasn't propagated to memory yet
+  const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+  if (storedRefreshToken && storedRefreshToken !== this.refreshToken) {
+    console.log('[AuthManager] Syncing refresh token from localStorage');
+    this.refreshToken = storedRefreshToken;
+  }
+
   // Clear existing refresh promise to force new refresh
   this.refreshPromise = null;
-  
+
   // Attempt refresh
   const success = await this.refresh();
-  
+
   // Return new access token if successful
   return success ? this.accessToken : null;
 }
@@ -436,6 +444,14 @@ async forceRefresh(): Promise<string | null> {
    */
   isAuthenticated(): boolean {
     return !!this.refreshToken && !!this.user;
+  }
+
+  /**
+   * Check if auth manager is ready (has refresh token in memory)
+   * Useful for components to check synchronously if tokens are loaded
+   */
+  isReady(): boolean {
+    return !!this.refreshToken;
   }
 
   /**
