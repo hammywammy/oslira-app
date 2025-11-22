@@ -682,10 +682,14 @@ async forceRefresh(): Promise<string | null> {
   clear(): void {
     const timestamp = Date.now();
 
+    // Capture token prefixes before clearing for logging
+    const memoryAccessTokenPrefix = this.accessToken?.substring(0, 8) || 'NULL';
+    const memoryRefreshTokenPrefix = this.refreshToken?.substring(0, 8) || 'NULL';
+
     // TRACE-022: BEFORE clearing
     console.log(`[AUTH-TRACE-022][${timestamp}] AuthManager.clear: BEFORE clearing`, {
-      memoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-      memoryRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
+      memoryAccessTokenPrefix,
+      memoryRefreshTokenPrefix,
       localStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
       localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
       timestamp
@@ -709,8 +713,8 @@ async forceRefresh(): Promise<string | null> {
 
     // TRACE-023: AFTER clearing
     console.log(`[AUTH-TRACE-023][${Date.now()}] AuthManager.clear: AFTER clearing`, {
-      memoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-      memoryRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
+      memoryAccessTokenPrefix: 'NULL',
+      memoryRefreshTokenPrefix: 'NULL',
       localStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
       localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
       timestamp: Date.now()
