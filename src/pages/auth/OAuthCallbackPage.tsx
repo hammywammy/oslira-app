@@ -165,6 +165,13 @@ export function OAuthCallbackPage() {
         response.data.account
       );
 
+      // DIAGNOSTIC: Confirm token storage
+      console.log('[OAuthCallback] DIAGNOSTIC: Token stored', {
+        refreshTokenPrefix: response.data.refreshToken.substring(0, 8),
+        localStorageToken: localStorage.getItem('oslira_refresh_token')?.substring(0, 8),
+        timestamp: Date.now()
+      });
+
       // Step 4: Success state
       setState('success');
       const welcomeMessage = response.data.isNewUser
