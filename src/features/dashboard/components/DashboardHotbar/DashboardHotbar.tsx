@@ -12,7 +12,7 @@
  */
 
 import { Icon } from '@iconify/react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import type { SortField, SortOrder, TableFilters } from '@/pages/dashboard/DashboardPage';
 import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';
 
