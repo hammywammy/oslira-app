@@ -11,7 +11,7 @@
  * ✅ Matches onboarding async pattern
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
@@ -20,6 +20,8 @@ import { logger } from '@/core/utils/logger';
 import { validateInstagramUsername } from '@/shared/utils/validation';
 import { useAnalysisProgress } from '@/features/analysis/hooks/useAnalysisProgress';
 import { AnalysisProgressTracker } from '@/features/analysis/components/AnalysisProgressTracker';
+import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
+import { useSelectedBusinessId, useBusinessProfiles } from '@/core/store/selectors';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -40,12 +42,6 @@ interface AnalysisOption {
   icon: string;
   color: string;
   gradient: string;
-}
-
-interface BusinessProfile {
-  id: string;
-  business_name: string;
-  business_one_liner: string | null;
 }
 
 // =============================================================================
@@ -82,17 +78,19 @@ export function AnalyzeLeadModal({
   onClose,
   onSuccess,
 }: AnalyzeLeadModalProps) {
+  // Global state - business profiles
+  const businessProfiles = useBusinessProfiles();
+  const selectedProfileId = useSelectedBusinessId();
+  const { isLoading: isLoadingProfiles, selectProfile } = useBusinessProfile();
+
   // Form state
   const [rawInput, setRawInput] = useState('');
   const [analysisType, setAnalysisType] = useState<AnalysisType>('light');
-  const [businessProfiles, setBusinessProfiles] = useState<BusinessProfile[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
-  
+
   // Loading states
-  const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Analysis tracking
   const [runId, setRunId] = useState<string | null>(null);
 
@@ -117,47 +115,6 @@ export function AnalyzeLeadModal({
       setRunId(null);
     },
   });
-
-  // ===========================================================================
-  // FETCH BUSINESS PROFILES ON MOUNT
-  // ===========================================================================
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchBusinessProfiles();
-    }
-  }, [isOpen]);
-
-  const fetchBusinessProfiles = async () => {
-    setIsLoadingProfiles(true);
-    setError(null);
-
-    try {
-      const response = await httpClient.get<{
-        success: boolean;
-        data?: BusinessProfile[];
-      }>('/api/business-profiles?page=1&pageSize=50');
-
-      if (response.success && response.data && Array.isArray(response.data)) {
-        setBusinessProfiles(response.data);
-        
-        // Auto-select first profile
-        const firstProfile = response.data[0];
-        if (firstProfile) {
-          setSelectedProfileId(firstProfile.id);
-        } else {
-          setError('No business profile found. Please complete onboarding first.');
-        }
-      } else {
-        throw new Error('Failed to fetch business profiles');
-      }
-    } catch (err) {
-      logger.error('[AnalyzeLeadModal] Failed to fetch profiles', err as Error);
-      setError('Unable to load business profiles. Please refresh and try again.');
-    } finally {
-      setIsLoadingProfiles(false);
-    }
-  };
 
   // ===========================================================================
   // HANDLERS
@@ -338,8 +295,8 @@ export function AnalyzeLeadModal({
                 </div>
               ) : (
                 <select
-                  value={selectedProfileId}
-                  onChange={(e) => setSelectedProfileId(e.target.value)}
+                  value={selectedProfileId || ''}
+                  onChange={(e) => selectProfile(e.target.value)}
                   className="w-full h-10 px-3 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {businessProfiles.map((profile) => (

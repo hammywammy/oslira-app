@@ -22,6 +22,7 @@ import { motion } from 'framer-motion';
 import { LeadDetailModal } from './LeadDetailModal';
 import { useLeads } from '@/features/leads/hooks/useLeads';
 import { useSelectedBusinessId } from '@/core/store/selectors';
+import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
 
 // =============================================================================
 // TYPES
@@ -243,8 +244,9 @@ TableRow.displayName = 'TableRow';
 // =============================================================================
 
 export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps) {
-  // Get selected business ID
+  // Get selected business ID and profile loading state
   const businessProfileId = useSelectedBusinessId();
+  const { isLoading: isLoadingProfile } = useBusinessProfile();
 
   // Fetch real leads from API
   const { leads, isLoading } = useLeads({
@@ -293,7 +295,19 @@ export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps
     setSelectedLead(null);
   };
 
-  // Show loading state
+  // Show loading state while profile is loading or businessProfileId is not yet set
+  if (isLoadingProfile || !businessProfileId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Icon icon="mdi:loading" className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Loading business profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while leads are loading
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
