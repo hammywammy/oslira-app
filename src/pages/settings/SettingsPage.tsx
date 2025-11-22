@@ -28,7 +28,6 @@
 
 import { Navigate, Outlet, useLocation, NavLink } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import { TopBar } from '@/shared/components/layout/TopBar';
 import { Sidebar } from '@/shared/components/layout/Sidebar';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
@@ -97,15 +96,12 @@ export function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Global TopBar - Fixed top, spans full width */}
-      <TopBar />
-
       {/* Sidebar - Fixed left */}
       <Sidebar />
 
       {/* Main Content - Respects sidebar width */}
       <div className={`
-        transition-[margin] duration-200 pt-20
+        transition-[margin] duration-200 pt-6
         ${isCollapsed ? 'ml-16' : 'ml-60'}
       `}>
         <div className="max-w-7xl mx-auto p-6">
