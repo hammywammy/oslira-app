@@ -61,7 +61,7 @@ const BusinessProfileContext = createContext<BusinessProfileContextValue | undef
 // =============================================================================
 
 export function BusinessProfileProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isAuthReady, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -83,11 +83,11 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
       return; // OAuthCallbackPage will navigate away after login()
     }
 
-    if (isAuthenticated && !authLoading && profiles.length === 0 && !isLoading) {
-      logger.info('[BusinessProfileProvider] User authenticated, fetching profiles');
+    if (isAuthReady && isAuthenticated && !authLoading && profiles.length === 0 && !isLoading) {
+      logger.info('[BusinessProfileProvider] User authenticated and auth ready, fetching profiles');
       fetchProfiles();
     }
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthReady, isAuthenticated, authLoading]);
 
   // ===========================================================================
   // API CALLS

@@ -95,7 +95,7 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
  * - Confirms optimistic jobs when backend returns them
  */
 export function useActiveAnalyses() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isAuthReady, isLoading: authLoading } = useAuth();
   const {
     addJob,
     updateJob,
@@ -128,7 +128,7 @@ export function useActiveAnalyses() {
     refetchOnReconnect: true,
     staleTime: 0, // Always consider data stale to enable polling
     retry: 2, // Retry failed requests
-    enabled: isAuthenticated && !authLoading, // Only fetch when authenticated and auth state is ready
+    enabled: isAuthenticated && !authLoading && isAuthReady, // Only fetch when authenticated, auth state is ready, and auth is fully initialized
   });
 
   // Fix 7: Removed unconditional mount-time refetch that caused polling to restart
