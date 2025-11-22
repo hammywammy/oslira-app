@@ -5,24 +5,12 @@
  *
  * The Prospecting Engine for Small Teams and Solo Operators
  * Professional, enterprise-grade, outcome-first positioning
+ * Clean, centered layout without interactive demo
  * ============================================================================
  */
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
-
-// =============================================================================
-// TYPES
-// =============================================================================
-
-interface AnalysisDemo {
-  username: string;
-  score: number;
-  niche: string;
-  followers: string;
-  signals: string[];
-}
 
 // =============================================================================
 // ANIMATION VARIANTS
@@ -53,53 +41,15 @@ const stagger = {
 // =============================================================================
 
 export function HeroSection() {
-  const [username, setUsername] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState<AnalysisDemo | null>(null);
-
-  // ===========================================================================
-  // HANDLERS
-  // ===========================================================================
-
-  const handleAnalysis = async () => {
-    const cleanUsername = username.trim().replace('@', '');
-
-    if (!cleanUsername) return;
-
-    setIsAnalyzing(true);
-    setResult(null);
-
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const demoData: AnalysisDemo = {
-      username: cleanUsername,
-      score: Math.floor(Math.random() * 25 + 70),
-      niche: 'B2B Services',
-      followers: `${(Math.random() * 50 + 5).toFixed(1)}K`,
-      signals: [
-        'Recent activity shows buying intent',
-        'ICP match: Strong alignment',
-        'Outreach angle: Posted about scaling challenges'
-      ]
-    };
-
-    setResult(demoData);
-    setIsAnalyzing(false);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !isAnalyzing) {
-      handleAnalysis();
-    }
-  };
-
   const handleGetStarted = () => {
     window.location.href = '/auth/signup';
   };
 
-  // ===========================================================================
-  // RENDER
-  // ===========================================================================
+  const handleWatchDemo = () => {
+    // Scroll to benefits section or open demo video
+    const benefitsSection = document.querySelector('[data-section="benefits"]');
+    benefitsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary-500 via-secondary-500 to-secondary-600">
@@ -127,208 +77,88 @@ export function HeroSection() {
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")',
       }} />
 
-      <div className="relative max-w-7xl mx-auto w-full">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className="relative max-w-5xl mx-auto w-full text-center">
 
-          {/* ===================================================================
-              LEFT COLUMN - VALUE PROPOSITION
-              =================================================================== */}
-
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={stagger}
-            className="space-y-8"
-          >
-            {/* Badge */}
-            <motion.div variants={fadeIn}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                <Icon icon="mdi:lightning-bolt" className="text-white text-lg" />
-                <span className="text-white/90 text-sm font-medium">The Prospecting Engine for Small Teams</span>
-              </div>
-            </motion.div>
-
-            {/* Headline */}
-            <motion.div variants={fadeIn}>
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
-                Turn Raw Leads Into Revenue With Intelligent Outbound
-              </h1>
-            </motion.div>
-
-            {/* Subheadline */}
-            <motion.div variants={fadeIn}>
-              <p className="text-xl lg:text-2xl text-white/80 leading-relaxed">
-                Oslira analyzes buyers, scores intent, and gives you the exact reason to reach out—so you never waste time on dead leads or miss a serious one again.
-              </p>
-            </motion.div>
-
-            {/* Value Props */}
-            <motion.div variants={fadeIn} className="space-y-4">
-              {[
-                { icon: 'mdi:clock-fast', text: 'Cuts research time from minutes to seconds' },
-                { icon: 'mdi:chart-line', text: 'Raises conversions by eliminating missed follow-ups' },
-                { icon: 'mdi:message-text-outline', text: 'Gives clear outreach angles pulled from real engagement data' },
-                { icon: 'mdi:account-group', text: 'Built for agencies, consultants, and founder-led sales teams' }
-              ].map((item, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                    <Icon icon={item.icon} className="text-white text-sm" />
-                  </div>
-                  <span className="text-white/90">{item.text}</span>
-                </div>
-              ))}
-            </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 pt-4">
-              <button
-                onClick={handleGetStarted}
-                className="px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-neutral-50 transition-colors shadow-lg"
-              >
-                Start Free
-              </button>
-              <button
-                onClick={() => {
-                  const demoEl = document.getElementById('demo-input');
-                  demoEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                className="px-8 py-4 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
-              >
-                Watch Demo
-              </button>
-            </motion.div>
-
-            {/* Social Proof */}
-            <motion.div variants={fadeIn} className="pt-6 border-t border-white/20">
-              <div className="flex items-center gap-6">
-                <div className="text-white/80 text-sm">
-                  <div className="font-semibold text-white text-lg">1,400</div>
-                  <div>Hours Saved/Year</div>
-                </div>
-                <div className="text-white/80 text-sm">
-                  <div className="font-semibold text-white text-lg">20%</div>
-                  <div>Conversion Lift</div>
-                </div>
-                <div className="text-white/80 text-sm">
-                  <div className="font-semibold text-white text-lg">Seconds</div>
-                  <div>Not Minutes</div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* ===================================================================
-              RIGHT COLUMN - DEMO CARD
-              =================================================================== */}
-
-          <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-            className="relative"
-          >
-            {/* Glow effect behind card */}
-            <div className="absolute -inset-4 bg-gradient-to-br from-white/40 via-secondary-300/40 to-primary-300/40 rounded-3xl blur-2xl opacity-60" />
-
-            <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/50">
-
-              {/* Demo Header */}
-              <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-error-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-warning-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-success-500"></div>
-                  </div>
-                  <div className="ml-4 text-sm text-neutral-600 font-mono">app.oslira.com</div>
-                </div>
-              </div>
-
-              {/* Demo Content */}
-              <div className="p-8 space-y-6 bg-gradient-to-br from-white to-neutral-50/30">
-
-                <div>
-                  <h3 className="text-xl font-bold text-neutral-900 mb-2">See Instant Lead Intelligence</h3>
-                  <p className="text-neutral-600 text-sm">Analyze any Instagram profile to see prospect scoring in action</p>
-                </div>
-
-                {/* Input */}
-                <div id="demo-input" className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500">
-                    <Icon icon="mdi:instagram" className="text-xl" />
-                  </div>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="@username"
-                    className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-neutral-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-100 focus:outline-none transition-all text-neutral-900 placeholder-neutral-400 shadow-sm"
-                  />
-                </div>
-
-                <button
-                  onClick={handleAnalysis}
-                  disabled={!username.trim() || isAnalyzing}
-                  className="w-full py-3.5 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30"
-                >
-                  {isAnalyzing ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Icon icon="mdi:loading" className="animate-spin" />
-                      Analyzing...
-                    </span>
-                  ) : (
-                    'Analyze Lead'
-                  )}
-                </button>
-
-                {/* Demo Result */}
-                {result && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-4 pt-4 border-t border-neutral-200"
-                  >
-                    {/* Score */}
-                    <div className="flex items-center justify-between p-4 bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg border border-primary-100">
-                      <div>
-                        <div className="text-sm text-neutral-600 mb-1">Intent Score</div>
-                        <div className="font-bold text-neutral-900">@{result.username}</div>
-                        <div className="text-xs text-neutral-500 mt-1">{result.niche} • {result.followers}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-4xl font-bold bg-gradient-to-br from-primary-600 to-secondary-600 bg-clip-text text-transparent">{result.score}%</div>
-                        <div className="text-xs text-neutral-500 font-medium">Quality Match</div>
-                      </div>
-                    </div>
-
-                    {/* Signals */}
-                    <div className="space-y-2">
-                      <div className="text-sm font-semibold text-neutral-700">Outreach Intelligence</div>
-                      {result.signals.map((signal, i) => (
-                        <div key={i} className="flex items-center gap-2 text-sm text-neutral-600 bg-white p-2 rounded border border-neutral-100">
-                          <Icon icon="mdi:check-circle" className="text-success-500 flex-shrink-0" />
-                          <span>{signal}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* CTA */}
-                    <div className="pt-4">
-                      <button
-                        onClick={handleGetStarted}
-                        className="w-full py-3 bg-gradient-to-r from-neutral-900 to-neutral-800 text-white font-semibold rounded-lg hover:from-neutral-800 hover:to-neutral-700 transition-all shadow-lg"
-                      >
-                        Start Prospecting →
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="space-y-8"
+        >
+          {/* Badge */}
+          <motion.div variants={fadeIn}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+              <Icon icon="mdi:lightning-bolt" className="text-white text-lg" />
+              <span className="text-white/90 text-sm font-medium">The Prospecting Engine for Small Teams</span>
             </div>
           </motion.div>
 
-        </div>
+          {/* Headline */}
+          <motion.div variants={fadeIn}>
+            <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-4xl mx-auto">
+              Turn Raw Leads Into Revenue With Intelligent Outbound
+            </h1>
+          </motion.div>
+
+          {/* Subheadline */}
+          <motion.div variants={fadeIn}>
+            <p className="text-xl lg:text-2xl text-white/80 leading-relaxed max-w-3xl mx-auto">
+              Oslira analyzes buyers, scores intent, and gives you the exact reason to reach out—so you never waste time on dead leads or miss a serious one again.
+            </p>
+          </motion.div>
+
+          {/* Value Props */}
+          <motion.div variants={fadeIn} className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto pt-8">
+            {[
+              { icon: 'mdi:clock-fast', text: 'Cuts research time from minutes to seconds' },
+              { icon: 'mdi:chart-line', text: 'Raises conversions by eliminating missed follow-ups' },
+              { icon: 'mdi:message-text-outline', text: 'Clear outreach angles from real engagement data' },
+              { icon: 'mdi:account-group', text: 'Built for agencies, consultants, and sales teams' }
+            ].map((item, index) => (
+              <div key={index} className="flex flex-col items-center gap-3 p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <Icon icon={item.icon} className="text-white text-xl" />
+                </div>
+                <span className="text-white/90 text-center text-sm leading-relaxed">{item.text}</span>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+            <button
+              onClick={handleGetStarted}
+              className="px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-neutral-50 transition-colors shadow-lg text-lg"
+            >
+              Start Free
+            </button>
+            <button
+              onClick={handleWatchDemo}
+              className="px-8 py-4 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20 text-lg"
+            >
+              See How It Works
+            </button>
+          </motion.div>
+
+          {/* Social Proof */}
+          <motion.div variants={fadeIn} className="pt-12 border-t border-white/20 max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 gap-8">
+              <div className="text-white/80 text-center">
+                <div className="font-semibold text-white text-2xl mb-1">1,400</div>
+                <div className="text-sm">Hours Saved/Year</div>
+              </div>
+              <div className="text-white/80 text-center">
+                <div className="font-semibold text-white text-2xl mb-1">20%</div>
+                <div className="text-sm">Conversion Lift</div>
+              </div>
+              <div className="text-white/80 text-center">
+                <div className="font-semibold text-white text-2xl mb-1">Seconds</div>
+                <div className="text-sm">Not Minutes</div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+
       </div>
     </section>
   );

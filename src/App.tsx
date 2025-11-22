@@ -18,7 +18,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
 import { BusinessProfileProvider } from '@/features/business/providers/BusinessProfileProvider';
-import { ShowcaseNav } from '@/shared/components/dev/ShowcaseNav';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
 import { CreditsInitializer } from '@/features/credits/components/CreditsInitializer';
@@ -91,7 +90,6 @@ function App() {
             <CreditsInitializer />
             <BusinessProfileProvider>
               <RouterProvider router={router} />
-              <ShowcaseNav />
             </BusinessProfileProvider>
           </AuthProvider>
         </QueryClientProvider>
