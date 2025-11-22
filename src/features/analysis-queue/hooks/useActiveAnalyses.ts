@@ -1,16 +1,17 @@
 // src/features/analysis-queue/hooks/useActiveAnalyses.ts
 
 /**
- * ACTIVE ANALYSES POLLING HOOK - V2.0 CONDITIONAL POLLING
+ * ACTIVE ANALYSES POLLING HOOK - V3.0 ADAPTIVE POLLING
  *
  * Uses React Query to poll the backend for active analysis jobs and syncs
  * them into the Zustand store for UI consumption.
  *
  * ARCHITECTURE:
- * - Conditional polling: Only polls when isPollingEnabled is true
- * - Flat 5s polling interval when enabled
+ * - Adaptive polling interval based on active job count:
+ *   • 0 active jobs: Stop polling completely
+ *   • 1-3 active jobs: Poll every 3 seconds
+ *   • 4+ active jobs: Poll every 5 seconds (bulk mode)
  * - Initialization fetch on mount to catch orphaned jobs
- * - Auto-stops polling when no active analyses
  * - Confirms optimistic jobs when backend returns them
  * - Auto-dismiss handled by store's existing logic
  *
@@ -94,8 +95,7 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
  * Polls the backend for active analyses and syncs them into the Zustand store
  *
  * Features:
- * - Conditional polling based on isPollingEnabled flag
- * - Flat 5s polling interval when enabled
+ * - Adaptive polling interval (0 jobs: stop, 1-3 jobs: 3s, 4+ jobs: 5s)
  * - Initialization fetch on mount
  * - Auto-stops polling when no active analyses
  * - Confirms optimistic jobs when backend returns them
@@ -105,30 +105,22 @@ export function useActiveAnalyses() {
   const {
     addJob,
     updateJob,
-    disablePolling,
-    enablePolling,
     confirmJobStarted,
   } = useAnalysisQueueStore();
 
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    // Fix 5: Function-based refetchInterval for conditional polling
-    // Stops polling when both backend returns 0 results AND no local active jobs
+    // Adaptive polling based on active job count
     refetchInterval: (query) => {
-      const hasBackendJobs = (query.state.data?.length ?? 0) > 0;
-      const { jobs } = useAnalysisQueueStore.getState();
-      const hasLocalActiveJobs = jobs.filter(j => j.status === 'pending' || j.status === 'analyzing').length > 0;
-      const shouldPoll = hasBackendJobs || hasLocalActiveJobs;
+      const data = query.state.data ?? [];
+      const activeCount = data.filter(
+        j => j.status === 'pending' || j.status === 'analyzing'
+      ).length;
 
-      if (!shouldPoll) {
-        logger.info('[ActiveAnalyses] Stopping polling - no active jobs', {
-          hasBackendJobs,
-          hasLocalActiveJobs,
-        });
-      }
-
-      return shouldPoll ? 2000 : false;
+      if (activeCount === 0) return false;        // Stop polling completely
+      if (activeCount <= 3) return 3000;          // 3 seconds for 1-3 jobs
+      return 5000;                                 // 5 seconds for bulk (4+ jobs)
     },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -137,46 +129,16 @@ export function useActiveAnalyses() {
     enabled: isAuthenticated && !authLoading && isAuthReady, // Only fetch when authenticated, auth state is ready, and auth is fully initialized
   });
 
-  // Fix 7: Removed unconditional mount-time refetch that caused polling to restart
-  // on every page navigation. React Query's enabled:true handles initial fetch,
-  // and function-based refetchInterval handles conditional polling based on job state.
-
   // Sync fetched data into Zustand store when data changes
+  // React Query's function-based refetchInterval handles conditional polling
   useEffect(() => {
     if (!data) return;
 
-    // Read current state from store inside effect to avoid dependency loop
-    const {
-      jobs: currentJobs,
-      isPollingEnabled: currentIsPollingEnabled,
-      pollingShouldStop: currentPollingShouldStop
-    } = useAnalysisQueueStore.getState();
-
-    // logger.info('[ActiveAnalyses] Data received from API', {
-    //   fetchedJobCount: data.length,
-    //   jobs: data.map(j => ({ runId: j.runId, username: j.username, status: j.status, progress: j.progress })),
-    // });
+    // Read current jobs from store to sync with fetched data
+    const { jobs: currentJobs } = useAnalysisQueueStore.getState();
 
     syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted);
-
-    const fetchedActiveCount = data.filter(
-      (job) => job.status === 'pending' || job.status === 'analyzing'
-    ).length;
-
-    const localActiveCount = currentJobs.filter(
-      (job) => job.status === 'pending' || job.status === 'analyzing'
-    ).length;
-
-    if (fetchedActiveCount === 0 && localActiveCount === 0) {
-      if (currentPollingShouldStop || currentIsPollingEnabled) {
-        logger.info('[ActiveAnalyses] No active analyses, disabling polling');
-        disablePolling();
-      }
-    } else if (fetchedActiveCount > 0 && !currentIsPollingEnabled) {
-      logger.info('[ActiveAnalyses] Found active analyses, enabling polling');
-      enablePolling();
-    }
-  }, [data, addJob, updateJob, confirmJobStarted, disablePolling, enablePolling]);
+  }, [data, addJob, updateJob, confirmJobStarted]);
 
   // Log errors
   if (error) {
