@@ -157,19 +157,15 @@ class EnvironmentManager {
 
   /**
    * Get the correct URL for a given domain type
-   * 
+   *
    * Accounts for environment (staging vs production)
    * Used for cross-domain redirects
    */
   getUrlForDomain(domainType: 'app' | 'marketing'): string {
     if (domainType === 'app') {
-      return this.config.isProduction
-        ? 'https://app.oslira.com'
-        : 'http://app.localhost:3000';
+      return this.config.appUrl;
     } else {
-      return this.config.isProduction
-        ? 'https://oslira.com'
-        : 'http://localhost:3000';
+      return this.config.marketingUrl;
     }
   }
 

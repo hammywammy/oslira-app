@@ -64,60 +64,60 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function isDarkModeAllowed(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   const hostname = window.location.hostname;
   const pathname = window.location.pathname;
-  
+
   // Marketing domain → NEVER allow dark mode
-  const isMarketingDomain = 
+  const isMarketingDomain =
     hostname === 'oslira.com' ||
     hostname === 'www.oslira.com' ||
     hostname === 'staging.oslira.com' ||
-    hostname.includes('oslira-marketing') ||
-    hostname.includes('oslira.pages.dev') && !hostname.includes('app');
-  
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1';
+
   // Marketing pages (even on localhost) → NEVER allow dark mode
-  const isMarketingPage = 
+  const isMarketingPage =
     pathname === '/' ||
     pathname.startsWith('/features') ||
     pathname.startsWith('/pricing') ||
     pathname.startsWith('/about');
-  
+
   // If on marketing domain OR marketing page → disable dark mode
   if (isMarketingDomain || isMarketingPage) {
     return false;
   }
-  
-  // App subdomain → ALWAYS allow dark mode
-  const isAppDomain = 
+
+  // App subdomain → ALWAYS allow dark mode (using same patterns as EnvironmentManager)
+  const isAppDomain =
     hostname === 'app.oslira.com' ||
     hostname === 'staging-app.oslira.com' ||
-    hostname.includes('oslira-app-production') ||
-    hostname === 'app.localhost';
-  
+    hostname === 'app.localhost' ||
+    hostname.startsWith('oslira-app'); // Cloudflare Pages preview URLs
+
   if (isAppDomain) {
     return true;
   }
-  
+
   // Showcase pages (for demo) → Allow dark mode
   const isShowcasePage = pathname.startsWith('/showcase');
-  
+
   if (isShowcasePage) {
     return true;
   }
-  
+
   // App pages (auth, dashboard, onboarding) → Allow dark mode
-  const isAppPage = 
+  const isAppPage =
     pathname.startsWith('/auth') ||
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/onboarding') ||
     pathname.startsWith('/settings') ||
     pathname.startsWith('/leads');
-  
+
   if (isAppPage) {
     return true;
   }
-  
+
   // Default: disable dark mode for safety
   return false;
 }

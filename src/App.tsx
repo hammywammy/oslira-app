@@ -47,12 +47,12 @@ function checkAndRedirectSubdomain() {
   const hostname = window.location.hostname;
   const pathname = window.location.pathname;
 
-  // Check if we're on app subdomain
-  const isAppSubdomain = 
+  // Check if we're on app subdomain using the same patterns as EnvironmentManager
+  const isAppSubdomain =
     hostname === 'app.oslira.com' ||
     hostname === 'staging-app.oslira.com' ||
-    hostname === 'app.localhost' || // Local dev with hosts file
-    hostname.startsWith('oslira-app-production.pages.dev'); // Direct Pages URL
+    hostname === 'app.localhost' ||
+    hostname.startsWith('oslira-app'); // Cloudflare Pages preview URLs
 
   // Only redirect if at root path
   const isRoot = pathname === '/';
