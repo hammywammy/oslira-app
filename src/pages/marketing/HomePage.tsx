@@ -11,6 +11,7 @@ import { BenefitsSection } from '@/features/homepage/components/BenefitsSection'
 import { HowItWorksSection } from '@/features/homepage/components/HowItWorksSection';
 import { TestimonialsSection } from '@/features/homepage/components/TestimonialsSection';
 import { FinalCTASection } from '@/features/homepage/components/FinalCTASection';
+import { env } from '@/core/auth/environment';
 
 // =============================================================================
 // COMPONENT
@@ -19,6 +20,11 @@ import { FinalCTASection } from '@/features/homepage/components/FinalCTASection'
 export function HomePage() {
   return (
     <div className="min-h-screen bg-white">
+      {env.isProduction && (
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-green-600 text-white text-center py-2 font-bold text-sm">
+          ✅ PRODUCTION SITE - LIVE
+        </div>
+      )}
       {/* Skip to main content (accessibility) */}
       <a
         href="#main-content"
