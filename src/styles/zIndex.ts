@@ -40,7 +40,7 @@ export const zIndex = {
   // ============================================================================
   // FIXED NAVIGATION LAYER (300 to 399)
   // ============================================================================
-  fixedNav: 300,          // Base fixed navigation
+  fixedNav: 350,          // Marketing/public page navigation (HIGHEST in fixed layer - must be above all page content)
   pagination: 305,        // Table pagination (below other nav elements)
   sidebar: 310,           // Application sidebar
   hotbar: 315,            // Dashboard hotbar / secondary toolbar
