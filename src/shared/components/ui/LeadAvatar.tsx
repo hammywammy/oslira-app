@@ -120,9 +120,6 @@ export function LeadAvatar({
             setImageError(true);
             setImageLoaded(false);
           }}
-          // Attempt to bypass some CORS issues (may help with old Instagram URLs)
-          referrerPolicy="no-referrer"
-          crossOrigin="anonymous"
         />
       )}
     </div>
