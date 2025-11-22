@@ -67,6 +67,7 @@ interface Account {
   id: string;
   name: string;
   credit_balance: number;
+  light_analyses_balance: number;
 }
 
 interface AuthContextValue {
@@ -201,20 +202,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logger.info('[AuthProvider] Fetching user data from /session');
 
     const response = await httpClient.get<{
-      user: User;
-      account: Account;
+      data: {
+        user: User;
+        account: Account;
+      };
     }>('/api/auth/session');
 
-    setUser(response.user);
-    setAccount(response.account);
+    setUser(response.data.user);
+    setAccount(response.data.account);
     setIsAuthenticated(true);
 
     // Update auth-manager cache
-    authManager.setUser(response.user, response.account);
+    authManager.setUser(response.data.user, response.data.account);
 
     logger.info('[AuthProvider] User data loaded', {
-      userId: response.user.id,
-      onboardingCompleted: response.user.onboarding_completed
+      userId: response.data.user.id,
+      onboardingCompleted: response.data.user.onboarding_completed
     });
   }
 
