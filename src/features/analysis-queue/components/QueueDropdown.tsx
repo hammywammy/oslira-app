@@ -13,6 +13,7 @@
  * - Keyboard navigable with Tab
  */
 
+import { Icon } from '@iconify/react';
 import { AnimatePresence } from 'framer-motion';
 import { useAnalysisQueueStore } from '../stores/useAnalysisQueueStore';
 import { QueueItem } from './QueueItem';
@@ -68,17 +69,18 @@ export function QueueDropdown() {
         }}
       >
         {jobs.length === 0 ? (
-          <div className="px-3 py-8 text-center">
-            <p className="text-sm text-muted-foreground">No active analyses</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Jobs will appear here when you start an analysis
+          <div className="px-3 py-12 text-center">
+            <Icon icon="ph:queue" className="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
+            <p className="text-sm font-medium text-foreground mb-1">No analyses in queue</p>
+            <p className="text-xs text-muted-foreground max-w-[200px] mx-auto">
+              Start analyzing a lead to track progress here
             </p>
           </div>
         ) : (
           <div className="py-1">
             <AnimatePresence mode="popLayout">
               {sortedJobs.map((job) => (
-                <QueueItem key={job.leadId} job={job} onRetry={retryJob} />
+                <QueueItem key={job.runId} job={job} onRetry={retryJob} />
               ))}
             </AnimatePresence>
           </div>

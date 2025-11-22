@@ -20,7 +20,7 @@ import { AnalysisJob } from '../stores/useAnalysisQueueStore';
 
 interface QueueItemProps {
   job: AnalysisJob;
-  onRetry?: (leadId: string) => void;
+  onRetry?: (runId: string) => void;
 }
 
 export function QueueItem({ job, onRetry }: QueueItemProps) {
@@ -123,7 +123,7 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
       {/* Retry button for failed jobs */}
       {status === 'failed' && onRetry && (
         <button
-          onClick={() => onRetry(job.leadId)}
+          onClick={() => onRetry(job.runId)}
           className="flex-shrink-0 p-1 hover:bg-muted rounded transition-colors opacity-0 group-hover:opacity-100"
           title="Retry analysis"
         >
