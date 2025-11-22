@@ -21,6 +21,7 @@ import { BusinessProfileProvider } from '@/features/business/providers/BusinessP
 import { ShowcaseNav } from '@/shared/components/dev/ShowcaseNav';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
+import { CreditsInitializer } from '@/features/credits/components/CreditsInitializer';
 
 // =============================================================================
 // QUERY CLIENT SETUP
@@ -87,6 +88,7 @@ function App() {
       <ThemeProvider defaultTheme="light" enableSystem={true}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
+            <CreditsInitializer />
             <BusinessProfileProvider>
               <RouterProvider router={router} />
               <ShowcaseNav />
