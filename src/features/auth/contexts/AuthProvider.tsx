@@ -50,6 +50,7 @@ import { authManager } from '@/core/auth/auth-manager';
 import { env } from '@/core/auth/environment';
 import { logger } from '@/core/utils/logger';
 import { httpClient } from '@/core/auth/http-client';
+import { useCreditsStore } from '@/features/credits/store/creditsStore';
 
 // =============================================================================
 // TYPES
@@ -366,16 +367,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * Logout
-   * 
+   *
    * FLOW:
    * 1. Call auth-manager logout (revokes refresh token on backend)
    * 2. Clear local state
-   * 3. Redirect to login page
+   * 3. Clear credits store
+   * 4. Redirect to login page
    */
   async function logout() {
     logger.info('[AuthProvider] Logout initiated');
 
     await authManager.logout();
+
+    // Clear credits store
+    useCreditsStore.getState().clearBalance();
 
     // Update React state
     setUser(null);

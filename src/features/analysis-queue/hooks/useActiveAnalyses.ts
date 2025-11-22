@@ -29,6 +29,7 @@ import { useAnalysisQueueStore, type AnalysisJob } from '../stores/useAnalysisQu
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
+import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
 
 // =============================================================================
 // TYPES
@@ -107,6 +108,7 @@ export function useActiveAnalyses() {
     updateJob,
     confirmJobStarted,
   } = useAnalysisQueueStore();
+  const { fetchBalance } = useCreditsService();
 
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
@@ -137,8 +139,8 @@ export function useActiveAnalyses() {
     // Read current jobs from store to sync with fetched data
     const { jobs: currentJobs } = useAnalysisQueueStore.getState();
 
-    syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted);
-  }, [data, addJob, updateJob, confirmJobStarted]);
+    syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance);
+  }, [data, addJob, updateJob, confirmJobStarted, fetchBalance]);
 
   // Log errors
   if (error) {
@@ -161,19 +163,22 @@ export function useActiveAnalyses() {
  * 5. Fix 6: Handle completed jobs from backend
  * 6. Fix 8: Clear orphaned optimistic jobs after timeout
  * 7. Store's auto-dismiss logic handles cleanup for completed jobs
+ * 8. Refresh credits balance after analysis completes
  *
  * @param fetchedJobs - Jobs from API
  * @param currentJobs - Current jobs in store
  * @param addJob - Store action to add new job
  * @param updateJob - Store action to update existing job
  * @param confirmJobStarted - Store action to confirm optimistic job
+ * @param fetchBalance - Function to refresh credits balance
  */
 function syncAnalysesToStore(
   fetchedJobs: AnalysisJob[],
   currentJobs: AnalysisJob[],
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void,
   updateJob: (runId: string, updates: Partial<AnalysisJob>) => void,
-  confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void
+  confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void,
+  fetchBalance: () => Promise<void>
 ) {
   // Create a Set of current job runIds for fast lookup
   const currentJobIds = new Set(currentJobs.map((job) => job.runId));
@@ -213,7 +218,7 @@ function syncAnalysesToStore(
         // Fix 6: Handle completed jobs from backend
         // When backend returns status 'complete', update the job to trigger auto-dismiss
         if (fetchedJob.status === 'complete' && currentJob.status !== 'complete') {
-          logger.info('[ActiveAnalyses] Job completed, marking as complete', {
+          logger.info('[ActiveAnalyses] Job completed, marking as complete and refreshing balance', {
             runId: fetchedJob.runId,
           });
 
@@ -224,6 +229,12 @@ function syncAnalysesToStore(
             avatarUrl: fetchedJob.avatarUrl,
             leadId: fetchedJob.leadId,
           });
+
+          // Refresh credits balance after analysis completion
+          fetchBalance().catch((error) => {
+            logger.error('[ActiveAnalyses] Failed to refresh balance after completion', error as Error);
+          });
+
           return; // Early return since job is complete
         }
 
