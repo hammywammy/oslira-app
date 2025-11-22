@@ -142,15 +142,29 @@ export function OAuthCallbackPage() {
       setMessage('Verifying with Google');
       logger.info('[OAuthCallback] Exchanging code for tokens');
 
+      const timestamp = Date.now();
+
       const response = await httpClient.post<AuthResponse>(
         '/api/auth/google/callback',
         { code },
         { skipAuth: true }
       );
 
-      logger.info('[OAuthCallback] Token exchange successful', {
+      // TRACE-024: Tokens received from backend
+      console.log(`[AUTH-TRACE-024][${Date.now()}] OAuthCallbackPage.processCallback: Tokens received from backend /api/auth/google/callback`, {
+        accessTokenPrefix: response.data.accessToken.substring(0, 8),
+        refreshTokenPrefix: response.data.refreshToken.substring(0, 8),
+        expiresAt: response.data.expiresAt,
         isNewUser: response.data.isNewUser,
-        userId: response.data.user?.id
+        userId: response.data.user?.id,
+        timestamp: Date.now()
+      });
+
+      // TRACE-025: BEFORE calling login()
+      console.log(`[AUTH-TRACE-025][${Date.now()}] OAuthCallbackPage.processCallback: BEFORE login() call`, {
+        localStorageAccessTokenPrefix: localStorage.getItem('oslira_access_token')?.substring(0, 8) || 'NULL',
+        localStorageRefreshTokenPrefix: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
+        timestamp: Date.now()
       });
 
       // Step 3: Store in auth-manager and update React state
@@ -165,10 +179,12 @@ export function OAuthCallbackPage() {
         response.data.account
       );
 
-      // DIAGNOSTIC: Confirm token storage
-      console.log('[OAuthCallback] DIAGNOSTIC: Token stored', {
-        refreshTokenPrefix: response.data.refreshToken.substring(0, 8),
-        localStorageToken: localStorage.getItem('oslira_refresh_token')?.substring(0, 8),
+      // TRACE-026: AFTER calling login()
+      console.log(`[AUTH-TRACE-026][${Date.now()}] OAuthCallbackPage.processCallback: AFTER login() call`, {
+        localStorageAccessTokenPrefix: localStorage.getItem('oslira_access_token')?.substring(0, 8) || 'NULL',
+        localStorageRefreshTokenPrefix: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
+        expectedRefreshTokenPrefix: response.data.refreshToken.substring(0, 8),
+        tokensMatch: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) === response.data.refreshToken.substring(0, 8),
         timestamp: Date.now()
       });
 
