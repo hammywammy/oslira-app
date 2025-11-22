@@ -202,7 +202,7 @@ export function DashboardHotbar({
             </button>
 
             {showSortMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-background border border-border rounded-lg shadow-lg z-dropdown">
                 <div className="p-2">
                   <div className="text-xs font-semibold text-muted-foreground px-2 py-1">Sort by</div>
                   {[
@@ -265,7 +265,7 @@ export function DashboardHotbar({
             </button>
 
             {showFilterMenu && (
-              <div className="absolute right-0 top-full mt-1 w-72 bg-background border border-border rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 top-full mt-1 w-72 bg-background border border-border rounded-lg shadow-lg z-dropdown">
                 <div className="p-4 space-y-4">
                   <div>
                     <div className="text-xs font-semibold text-foreground mb-2">Analysis Status</div>
