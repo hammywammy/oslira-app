@@ -53,7 +53,7 @@ const benefits = [
     icon: 'mdi:pipeline',
     title: 'Pipeline Intelligence',
     description: 'Centralizes signals, notes, and actions.',
-    outcome: 'See what's working, where deals stall, and where to focus.',
+    outcome: 'See what\'s working, where deals stall, and where to focus.',
     stat: 'Full',
     statLabel: 'visibility'
   }
