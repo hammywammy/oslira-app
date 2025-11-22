@@ -114,7 +114,7 @@ export function useActiveAnalyses() {
     });
   }, [isPollingEnabled, jobs]);
 
-  const { data, error, refetch } = useQuery({
+  const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
     // Fix 5: Function-based refetchInterval for conditional polling
