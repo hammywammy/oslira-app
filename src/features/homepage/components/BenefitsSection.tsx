@@ -91,7 +91,7 @@ export function BenefitsSection() {
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section ref={ref} className="py-24 px-6 bg-white">
+    <section ref={ref} data-section="benefits" className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
 
         {/* =====================================================================
