@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
+import { authManager } from '@/core/auth/auth-manager';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { Logo } from '@/shared/components/ui/Logo';
@@ -155,6 +156,18 @@ export function OAuthCallbackPage() {
 
       // Step 3: Store in auth-manager
       setMessage('Setting up your account');
+
+      // Store tokens FIRST
+      authManager.setTokens(
+        response.data.accessToken,
+        response.data.refreshToken,
+        response.data.expiresAt
+      );
+
+      // Then store user data
+      authManager.setUser(response.data.user, response.data.account);
+
+      // Call login() to update React state (this is for immediate UI updates)
       login(
         response.data.accessToken,
         response.data.refreshToken,
@@ -170,14 +183,14 @@ export function OAuthCallbackPage() {
         : 'Welcome back!';
       setMessage(welcomeMessage);
 
-      // Step 5: Redirect based on onboarding status
+      // Step 5: Navigate AFTER a tick to ensure state propagation
       setTimeout(() => {
         const redirectPath = response.data.user.onboarding_completed
           ? '/dashboard'
           : '/onboarding';
         logger.info('[OAuthCallback] Redirecting', { path: redirectPath });
         navigate(redirectPath, { replace: true });
-      }, 1500);
+      }, 100); // Small delay ensures React state + localStorage are synchronized
 
     } catch (error: any) {
       logger.error('[OAuthCallback] Processing failed', error);
