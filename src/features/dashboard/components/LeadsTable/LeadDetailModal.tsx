@@ -191,7 +191,9 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span>{lead.display_name?.charAt(0) || lead.username.charAt(0).toUpperCase()}</span>
+                  <span className="select-none">
+                    {(lead.display_name?.charAt(0) || lead.username.charAt(0)).toUpperCase()}
+                  </span>
                 )}
               </div>
               {/* Platform Badge */}
