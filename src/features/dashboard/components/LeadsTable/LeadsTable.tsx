@@ -20,6 +20,7 @@ import { useCallback, memo, useState, useMemo, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { LeadDetailModal } from './LeadDetailModal';
+import { LeadAvatar } from '@/shared/components/ui/LeadAvatar';
 import { useLeads } from '@/features/leads/hooks/useLeads';
 import { useSelectedBusinessId } from '@/core/store/selectors';
 import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
@@ -188,11 +189,12 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLea
       {/* Lead - 3 Lines Stacked */}
       <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px`, padding: '12px 16px' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-semibold text-primary">
-              {lead.display_name?.charAt(0) || lead.username.charAt(1)}
-            </span>
-          </div>
+          <LeadAvatar
+            url={lead.profile_pic_url}
+            username={lead.username}
+            displayName={lead.display_name}
+            size="md"
+          />
           <div className="min-w-0 flex-1">
             <div className="font-medium text-sm text-foreground truncate">{lead.display_name || lead.username}</div>
             <div className="text-xs text-muted-foreground truncate">{lead.username}</div>
