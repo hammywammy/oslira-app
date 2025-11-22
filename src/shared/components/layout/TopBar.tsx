@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';
 import { NotificationBell } from '@/features/notifications';
-import { QueueIndicator, useQueueSSE } from '@/features/analysis-queue';
+import { QueueIndicator, useActiveAnalyses } from '@/features/analysis-queue';
 
 export function TopBar() {
   const navigate = useNavigate();
@@ -18,8 +18,8 @@ export function TopBar() {
   const searchRef = useRef<HTMLInputElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Initialize SSE connection for analysis queue
-  useQueueSSE();
+  // Initialize polling for active analyses
+  useActiveAnalyses();
 
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {

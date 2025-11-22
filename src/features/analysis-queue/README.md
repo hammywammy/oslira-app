@@ -1,6 +1,6 @@
 # Analysis Queue Indicator
 
-Real-time analysis progress tracking widget for the topbar. Displays active/recent analyses with beautiful animations and live progress updates via Server-Sent Events (SSE).
+Real-time analysis progress tracking widget for the topbar. Displays active/recent analyses with beautiful animations and live progress updates via adaptive polling.
 
 ## Features
 
@@ -18,8 +18,8 @@ Real-time analysis progress tracking widget for the topbar. Displays active/rece
 - **Status indicators**: Checkmark (success), X (failed), spinner (analyzing)
 
 ### 🔄 Real-time Updates
-- **SSE connection** to Durable Objects backend
-- **Auto-reconnect** with exponential backoff
+- **Adaptive polling** via React Query (2s when active, 10s when idle)
+- **Automatic deduplication** and cache management
 - **Zustand state management** for reactive UI
 
 ### ♿ Accessibility
@@ -45,7 +45,7 @@ src/features/analysis-queue/
 ├── stores/
 │   └── useAnalysisQueueStore.ts  # Zustand state management
 ├── hooks/
-│   └── useQueueSSE.ts         # SSE connection hook
+│   └── useActiveAnalyses.ts   # React Query polling hook
 ├── utils/
 │   └── demoQueue.ts           # Demo/testing utility
 ├── index.ts                   # Public exports
@@ -59,11 +59,11 @@ src/features/analysis-queue/
 The queue indicator is integrated into the TopBar component:
 
 ```tsx
-import { QueueIndicator, useQueueSSE } from '@/features/analysis-queue';
+import { QueueIndicator, useActiveAnalyses } from '@/features/analysis-queue';
 
 export function TopBar() {
-  // Initialize SSE connection
-  useQueueSSE();
+  // Initialize polling for active analyses
+  useActiveAnalyses();
 
   return (
     <header>
@@ -76,7 +76,7 @@ export function TopBar() {
 
 ### Demo Mode
 
-For testing without backend SSE:
+For testing without backend:
 
 ```javascript
 // In browser console:
@@ -84,29 +84,40 @@ window.startDemoQueue();  // Start simulated analyses
 window.stopDemoQueue();   // Stop and clear
 ```
 
-### Backend SSE Endpoint
+### Backend API Endpoint
 
-Update the SSE endpoint in `hooks/useQueueSSE.ts`:
+The hook polls this endpoint:
 
-```typescript
-const SSE_ENDPOINT = '/api/analysis-queue/stream';
+```
+GET /api/analysis-queue/active
 ```
 
-### SSE Message Format
+**Response format:**
 
 ```json
 {
-  "type": "start" | "progress" | "complete" | "failed",
-  "leadId": "unique-lead-id",
-  "username": "johndoe",
-  "avatarUrl": "https://instagram.com/avatar.jpg",
-  "progress": 45,
-  "step": {
-    "current": 2,
-    "total": 4
-  }
+  "success": true,
+  "data": [
+    {
+      "leadId": "unique-lead-id",
+      "username": "johndoe",
+      "avatarUrl": "https://instagram.com/avatar.jpg",
+      "progress": 45,
+      "step": {
+        "current": 2,
+        "total": 4
+      },
+      "status": "analyzing",
+      "startedAt": 1234567890
+    }
+  ]
 }
 ```
+
+**Polling behavior:**
+- Polls every 2 seconds when analyses are active
+- Slows to every 10 seconds when queue is empty
+- Automatically syncs data into Zustand store
 
 ## State Management
 
@@ -172,14 +183,15 @@ window.startDemoQueue()
 
 ## Production Deployment
 
-1. Configure SSE endpoint in `hooks/useQueueSSE.ts`
-2. Ensure backend sends messages in correct format
+1. Ensure backend implements `/api/analysis-queue/active` endpoint
+2. Backend should return all active analyses for the authenticated user
 3. Test with real Durable Objects connection
-4. Monitor reconnection behavior in production
+4. Monitor polling performance in production
 
 ## Credits
 
 Built with:
+- **React Query** - Data fetching and polling
 - **Zustand** - State management
 - **Framer Motion** - Animations
 - **Iconify** - Icons

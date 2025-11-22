@@ -7,7 +7,7 @@
  */
 
 export { QueueIndicator } from './components/QueueIndicator';
-export { useQueueSSE } from './hooks/useQueueSSE';
+export { useActiveAnalyses } from './hooks/useActiveAnalyses';
 export { useAnalysisQueueStore } from './stores/useAnalysisQueueStore';
 export { startDemoQueue, stopDemoQueue } from './utils/demoQueue';
 export type { AnalysisJob, AnalysisStatus } from './stores/useAnalysisQueueStore';
