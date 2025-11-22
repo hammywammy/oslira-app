@@ -376,7 +376,7 @@
   --z-sticky-table-column: 120;
 
   /* Fixed navigation layer (300 to 399) */
-  --z-fixed-nav: 300;
+  --z-fixed-nav: 350;
   --z-pagination: 305;
   --z-sidebar: 310;
   --z-hotbar: 315;
