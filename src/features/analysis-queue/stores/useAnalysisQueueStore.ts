@@ -32,8 +32,10 @@ import { create } from 'zustand';
 export type AnalysisStatus = 'pending' | 'analyzing' | 'complete' | 'failed';
 
 export interface AnalysisJob {
-  leadId: string;
+  runId: string;
+  leadId?: string;
   username: string;
+  analysisType: string;
   avatarUrl?: string;
   progress: number; // 0-100
   step: {
@@ -49,13 +51,21 @@ interface AnalysisQueueState {
   // State
   jobs: AnalysisJob[];
   activeCount: number;
+  isPollingEnabled: boolean;
+  pollingShouldStop: boolean;
 
   // Actions
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void;
-  updateJob: (leadId: string, updates: Partial<AnalysisJob>) => void;
-  removeJob: (leadId: string) => void;
-  retryJob: (leadId: string) => void;
+  updateJob: (runId: string, updates: Partial<AnalysisJob>) => void;
+  removeJob: (runId: string) => void;
+  retryJob: (runId: string) => void;
   clearCompleted: () => void;
+
+  // New actions for optimistic jobs and polling control
+  addOptimisticJob: (runId: string, username: string, analysisType: string) => void;
+  enablePolling: () => void;
+  disablePolling: () => void;
+  confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void;
 }
 
 // =============================================================================
@@ -77,12 +87,14 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
   // State
   jobs: [],
   activeCount: 0,
+  isPollingEnabled: false,
+  pollingShouldStop: false,
 
   // Actions
   addJob: (job) =>
     set((state) => {
       // Don't add duplicate jobs
-      if (state.jobs.some((j) => j.leadId === job.leadId)) {
+      if (state.jobs.some((j) => j.runId === job.runId)) {
         return state;
       }
 
@@ -99,10 +111,10 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
       };
     }),
 
-  updateJob: (leadId, updates) =>
+  updateJob: (runId, updates) =>
     set((state) => {
       const newJobs = state.jobs.map((job) => {
-        if (job.leadId !== leadId) return job;
+        if (job.runId !== runId) return job;
 
         const updatedJob = { ...job, ...updates };
 
@@ -117,32 +129,42 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
         return updatedJob;
       });
 
+      const newActiveCount = getActiveCount(newJobs);
+
       // Auto-dismiss completed jobs after 3 seconds
       if (updates.status === 'complete') {
         setTimeout(() => {
-          get().removeJob(leadId);
+          get().removeJob(runId);
         }, 3000);
       }
 
+      // If activeCount becomes zero, signal polling can stop after next confirmatory fetch
+      const shouldStopPolling = state.activeCount > 0 && newActiveCount === 0;
+
       return {
         jobs: newJobs,
-        activeCount: getActiveCount(newJobs),
+        activeCount: newActiveCount,
+        pollingShouldStop: shouldStopPolling,
       };
     }),
 
-  removeJob: (leadId) =>
+  removeJob: (runId) =>
     set((state) => {
-      const newJobs = state.jobs.filter((job) => job.leadId !== leadId);
+      const newJobs = state.jobs.filter((job) => job.runId !== runId);
+      const newActiveCount = getActiveCount(newJobs);
+
       return {
         jobs: newJobs,
-        activeCount: getActiveCount(newJobs),
+        activeCount: newActiveCount,
+        // If no jobs left, disable polling
+        isPollingEnabled: newJobs.length > 0 ? state.isPollingEnabled : false,
       };
     }),
 
-  retryJob: (leadId) =>
+  retryJob: (runId) =>
     set((state) => {
       const newJobs = state.jobs.map((job) => {
-        if (job.leadId !== leadId) return job;
+        if (job.runId !== runId) return job;
 
         return {
           ...job,
@@ -165,9 +187,70 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
       const newJobs = state.jobs.filter(
         (job) => job.status !== 'complete' && job.status !== 'failed'
       );
+      const newActiveCount = getActiveCount(newJobs);
+
+      return {
+        jobs: newJobs,
+        activeCount: newActiveCount,
+        // If no jobs left, disable polling
+        isPollingEnabled: newJobs.length > 0 ? state.isPollingEnabled : false,
+      };
+    }),
+
+  // New actions for optimistic jobs and polling control
+  addOptimisticJob: (runId, username, analysisType) =>
+    set((state) => {
+      // Don't add duplicate jobs
+      if (state.jobs.some((j) => j.runId === runId)) {
+        return state;
+      }
+
+      const newJob: AnalysisJob = {
+        runId,
+        username,
+        analysisType,
+        progress: 0,
+        step: { current: 0, total: 4 },
+        status: 'pending',
+        startedAt: Date.now(),
+      };
+
+      const newJobs = [...state.jobs, newJob];
+
       return {
         jobs: newJobs,
         activeCount: getActiveCount(newJobs),
+        isPollingEnabled: true, // Enable polling when job is added
+        pollingShouldStop: false,
+      };
+    }),
+
+  enablePolling: () =>
+    set({
+      isPollingEnabled: true,
+      pollingShouldStop: false,
+    }),
+
+  disablePolling: () =>
+    set({
+      isPollingEnabled: false,
+      pollingShouldStop: false,
+    }),
+
+  confirmJobStarted: (runId, avatarUrl, leadId) =>
+    set((state) => {
+      const newJobs = state.jobs.map((job) => {
+        if (job.runId !== runId) return job;
+
+        return {
+          ...job,
+          ...(avatarUrl && { avatarUrl }),
+          ...(leadId && { leadId }),
+        };
+      });
+
+      return {
+        jobs: newJobs,
       };
     }),
 }));

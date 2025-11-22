@@ -31,29 +31,79 @@ export function QueueIndicator() {
   const { jobs, activeCount } = useAnalysisQueueStore();
 
   // Trigger pulse animation when a new job is added
-  const prevActiveCountRef = useRef(activeCount);
+  const prevJobsLengthRef = useRef(jobs.length);
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
 
-    if (activeCount > prevActiveCountRef.current) {
+    // Pulse when jobs are added
+    if (jobs.length > prevJobsLengthRef.current) {
       setShouldPulse(true);
       timer = setTimeout(() => setShouldPulse(false), 2000);
     }
 
-    prevActiveCountRef.current = activeCount;
+    prevJobsLengthRef.current = jobs.length;
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [activeCount]);
+  }, [jobs.length]);
 
-  // Hide when no jobs
+  // Empty state - always visible as a subtle pill
   if (jobs.length === 0) {
-    return null;
+    return (
+      <div className="relative">
+        <button
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-muted/50 border border-border/50 opacity-60 hover:opacity-100 transition-opacity cursor-default"
+        >
+          <Icon icon="ph:queue" className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground">Queue</span>
+        </button>
+      </div>
+    );
   }
 
   // Get active jobs (pending or analyzing)
   const activeJobs = jobs.filter((job) => job.status === 'pending' || job.status === 'analyzing');
+
+  // All complete state - show checkmark when all jobs are done
+  if (activeCount === 0 && jobs.length > 0) {
+    const completedCount = jobs.filter((job) => job.status === 'complete').length;
+
+    return (
+      <div className="relative">
+        <motion.button
+          ref={buttonRef}
+          onClick={() => setIsOpen(!isOpen)}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="relative flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 transition-colors"
+        >
+          <Icon icon="ph:check-circle-fill" className="w-4 h-4 text-green-600" />
+          <span className="text-xs font-medium text-green-600">
+            {completedCount} complete
+          </span>
+          <Icon
+            icon="ph:caret-down-fill"
+            className={`w-3 h-3 text-green-600 transition-transform ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          />
+        </motion.button>
+
+        {/* Dropdown */}
+        <DropdownPortal
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          triggerRef={buttonRef}
+          width={280}
+          alignment="right"
+        >
+          <QueueDropdown />
+        </DropdownPortal>
+      </div>
+    );
+  }
 
   // Single job display
   if (activeJobs.length === 1) {
@@ -170,7 +220,7 @@ export function QueueIndicator() {
               const firstLetter = job.username.charAt(0).toUpperCase();
               return (
                 <div
-                  key={job.leadId}
+                  key={job.runId}
                   className="relative"
                   style={{
                     marginLeft: index > 0 ? '-6px' : '0',
@@ -222,39 +272,6 @@ export function QueueIndicator() {
     );
   }
 
-  // Show pill even if only completed/failed jobs remain (until cleared)
-  return (
-    <div className="relative">
-      <motion.button
-        ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="relative flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-muted border border-border hover:bg-muted/80 transition-colors"
-      >
-        <Icon icon="ph:clock-countdown" className="w-4 h-4 text-muted-foreground" />
-        <span className="text-xs font-medium text-muted-foreground">
-          {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}
-        </span>
-        <Icon
-          icon="ph:caret-down-fill"
-          className={`w-3 h-3 text-muted-foreground transition-transform ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        />
-      </motion.button>
-
-      {/* Dropdown */}
-      <DropdownPortal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        triggerRef={buttonRef}
-        width={280}
-        alignment="right"
-      >
-        <QueueDropdown />
-      </DropdownPortal>
-    </div>
-  );
+  // Fallback - should not reach here
+  return null;
 }

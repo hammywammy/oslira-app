@@ -1,14 +1,13 @@
 // src/features/leads/components/AnalyzeLeadModal.tsx
 
 /**
- * ANALYZE LEAD MODAL - V7.0 ASYNC WITH PROGRESS
- * 
- * CHANGES FROM V6.0:
- * ✅ Returns run_id instead of lead_id
- * ✅ Shows real-time progress tracking
- * ✅ Polls analysis progress every 1 second
- * ✅ Calls onSuccess(lead_id) when complete
- * ✅ Matches onboarding async pattern
+ * ANALYZE LEAD MODAL - V8.0 PURE INPUT FORM
+ *
+ * CHANGES FROM V7.0:
+ * ✅ Removed all progress tracking (moved to global queue)
+ * ✅ Adds optimistic job to queue store immediately
+ * ✅ Closes modal immediately after successful API response
+ * ✅ Progress tracking handled globally by useActiveAnalyses hook
  */
 
 import { useState } from 'react';
@@ -18,10 +17,9 @@ import { Button } from '@/shared/components/ui/Button';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { validateInstagramUsername } from '@/shared/utils/validation';
-import { useAnalysisProgress } from '@/features/analysis/hooks/useAnalysisProgress';
-import { AnalysisProgressTracker } from '@/features/analysis/components/AnalysisProgressTracker';
 import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
 import { useSelectedBusinessId, useBusinessProfiles } from '@/core/store/selectors';
+import { useAnalysisQueueStore } from '@/features/analysis-queue/stores/useAnalysisQueueStore';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -83,6 +81,9 @@ export function AnalyzeLeadModal({
   const selectedProfileId = useSelectedBusinessId();
   const { isLoading: isLoadingProfiles, selectProfile } = useBusinessProfile();
 
+  // Queue store for optimistic updates
+  const { addOptimisticJob } = useAnalysisQueueStore();
+
   // Form state
   const [rawInput, setRawInput] = useState('');
   const [analysisType, setAnalysisType] = useState<AnalysisType>('light');
@@ -90,31 +91,6 @@ export function AnalyzeLeadModal({
   // Loading states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Analysis tracking
-  const [runId, setRunId] = useState<string | null>(null);
-
-// Progress polling hook
-  const { progress, isPolling, error: progressError } = useAnalysisProgress({
-    runId,
-    onComplete: (leadId) => {
-      logger.info('[AnalyzeLeadModal] Analysis complete', {
-        leadId,
-        runId
-      });
-      onSuccess?.(leadId);
-      handleClose();
-    },
-    onError: (error) => {
-      logger.error('[AnalyzeLeadModal] Analysis failed', new Error(error), {
-        errorMessage: error,
-        runId
-      });
-      setError(error);
-      setIsSubmitting(false);
-      setRunId(null);
-    },
-  });
 
   // ===========================================================================
   // HANDLERS
@@ -132,7 +108,7 @@ export function AnalyzeLeadModal({
 
     const cleanUsername = rawInput.replace(/^@/, '').trim();
     const validation = validateInstagramUsername(cleanUsername);
-    
+
     if (!validation.valid) {
       setError(validation.error || 'Invalid username');
       return;
@@ -147,9 +123,9 @@ export function AnalyzeLeadModal({
 
     try {
       // Request returns run_id, not lead_id
-      const response = await httpClient.post<{ 
-        success: boolean; 
-        data?: { 
+      const response = await httpClient.post<{
+        success: boolean;
+        data?: {
           run_id: string;
           status: string;
           message: string;
@@ -166,15 +142,19 @@ export function AnalyzeLeadModal({
       );
 
       if (response.success && response.data?.run_id) {
-        logger.info('[AnalyzeLeadModal] Analysis started', { 
+        logger.info('[AnalyzeLeadModal] Analysis started', {
           runId: response.data.run_id,
           username: cleanUsername,
         });
-        
-        // Trigger progress polling
-        setRunId(response.data.run_id);
-        
-        // Don't close modal - show progress tracker instead
+
+        // Add optimistic job to queue store
+        addOptimisticJob(response.data.run_id, cleanUsername, analysisType);
+
+        // Call onSuccess if provided
+        onSuccess?.(response.data.run_id);
+
+        // Close modal immediately
+        handleClose();
       } else {
         throw new Error('Analysis failed to start');
       }
@@ -187,11 +167,11 @@ export function AnalyzeLeadModal({
   };
 
   const handleClose = () => {
-    if (!isSubmitting && !isPolling) {
+    if (!isSubmitting) {
       setRawInput('');
       setAnalysisType('light');
       setError(null);
-      setRunId(null);
+      setIsSubmitting(false);
       onClose();
     }
   };
@@ -204,73 +184,32 @@ export function AnalyzeLeadModal({
     rawInput.trim().length > 0 &&
     selectedProfileId &&
     !isSubmitting &&
-    !isLoadingProfiles &&
-    !isPolling;
-
-  // Show progress tracker when polling (even if progress is null during initialization)
-  const showProgressTracker = isPolling;
-  const showForm = !showProgressTracker;
+    !isLoadingProfiles;
 
   // ===========================================================================
   // RENDER
   // ===========================================================================
 
   return (
-    <Modal 
-      open={isOpen} 
-      onClose={handleClose} 
-      size="md" 
-      closeable={!isSubmitting && !isPolling}
+    <Modal
+      open={isOpen}
+      onClose={handleClose}
+      size="md"
+      closeable={!isSubmitting}
     >
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-foreground mb-1">
-            {showProgressTracker ? 'Analyzing Lead' : 'Research New Lead'}
+            Research New Lead
           </h2>
           <p className="text-sm text-muted-foreground">
-            {showProgressTracker 
-              ? 'Please wait while we analyze this Instagram profile'
-              : 'Analyze an Instagram profile and get actionable insights'
-            }
+            Analyze an Instagram profile and get actionable insights
           </p>
         </div>
 
-        {/* Progress Tracker */}
-        {showProgressTracker && (
-          <>
-            {progress ? (
-              <AnalysisProgressTracker
-                progress={progress.progress}
-                currentStep={progress.current_step}
-                status={progress.status}
-                error={progressError}
-              />
-            ) : (
-              // Show loading state during workflow initialization (first 10s)
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Icon icon="ph:spinner" className="w-5 h-5 text-blue-600 animate-spin" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      Starting analysis...
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Initializing workflow
-                    </p>
-                  </div>
-                </div>
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 animate-pulse" style={{ width: '20%' }} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
         {/* Form */}
-        {showForm && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
             {/* Error Display */}
             {error && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -412,7 +351,6 @@ export function AnalyzeLeadModal({
               </Button>
             </div>
           </form>
-        )}
       </div>
     </Modal>
   );
