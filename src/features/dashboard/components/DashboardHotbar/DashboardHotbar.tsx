@@ -14,8 +14,6 @@
 import { Icon } from '@iconify/react';
 import { useState, useRef, useEffect } from 'react';
 import type { SortField, SortOrder, TableFilters } from '@/pages/dashboard/DashboardPage';
-import { bulkDeleteLeads } from '@/features/leads/api/leadsApi';
-import { logger } from '@/core/utils/logger';
 
 interface DashboardHotbarProps {
   onBulkUpload: () => void;
