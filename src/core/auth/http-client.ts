@@ -307,10 +307,8 @@ class HttpClient {
         const safeData = { ...data };
         if (safeData.accessToken) safeData.accessToken = '[REDACTED]';
         if (safeData.refreshToken) safeData.refreshToken = '[REDACTED]';
-        if (safeData.data?.accessToken) safeData.data.accessToken = '[REDACTED]';
-        if (safeData.data?.refreshToken) safeData.data.refreshToken = '[REDACTED]';
-        
-        logger.debug(`[HttpClient][${requestId}] Response data`, { 
+
+        logger.debug(`[HttpClient][${requestId}] Response data`, {
           success: data.success,
           hasData: !!data.data,
           hasError: !!data.error,
