@@ -105,23 +105,34 @@ export function useActiveAnalyses() {
     confirmJobStarted,
   } = useAnalysisQueueStore();
 
-  // Polling interval: 5s when enabled, false when disabled
-  const refetchInterval = isPollingEnabled ? 5000 : false;
-
   // Log polling state changes
   useEffect(() => {
     logger.info('[ActiveAnalyses] Polling state changed', {
       isPollingEnabled,
-      refetchInterval,
       jobCount: jobs.length,
       activeCount: jobs.filter(j => j.status === 'pending' || j.status === 'analyzing').length,
     });
-  }, [isPollingEnabled, refetchInterval, jobs]);
+  }, [isPollingEnabled, jobs]);
 
   const { data, error, refetch } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    refetchInterval,
+    // Fix 5: Function-based refetchInterval for conditional polling
+    // Stops polling when both backend returns 0 results AND no local active jobs
+    refetchInterval: (query) => {
+      const hasBackendJobs = (query.state.data?.length ?? 0) > 0;
+      const hasLocalActiveJobs = jobs.filter(j => j.status === 'pending' || j.status === 'analyzing').length > 0;
+      const shouldPoll = hasBackendJobs || hasLocalActiveJobs;
+
+      if (!shouldPoll) {
+        logger.info('[ActiveAnalyses] Stopping polling - no active jobs', {
+          hasBackendJobs,
+          hasLocalActiveJobs,
+        });
+      }
+
+      return shouldPoll ? 5000 : false;
+    },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     staleTime: 0, // Always consider data stale to enable polling
@@ -129,12 +140,9 @@ export function useActiveAnalyses() {
     enabled: true, // Always enabled for manual fetching, but interval controlled by refetchInterval
   });
 
-  // Initialization fetch on mount to catch orphaned jobs
-  useEffect(() => {
-    logger.info('[ActiveAnalyses] Initialization fetch on mount');
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  // Fix 7: Removed unconditional mount-time refetch that caused polling to restart
+  // on every page navigation. React Query's enabled:true handles initial fetch,
+  // and function-based refetchInterval handles conditional polling based on job state.
 
   // Sync fetched data into Zustand store when data changes
   useEffect(() => {
@@ -185,7 +193,9 @@ export function useActiveAnalyses() {
  * 2. If new, add it to store
  * 3. If exists and was optimistic, confirm it with backend data
  * 4. If exists and has updates, update it with latest data
- * 5. Store's auto-dismiss logic handles cleanup for completed jobs
+ * 5. Fix 6: Handle completed jobs from backend
+ * 6. Fix 8: Clear orphaned optimistic jobs after timeout
+ * 7. Store's auto-dismiss logic handles cleanup for completed jobs
  *
  * @param fetchedJobs - Jobs from API
  * @param currentJobs - Current jobs in store
@@ -202,7 +212,9 @@ function syncAnalysesToStore(
 ) {
   // Create a Set of current job runIds for fast lookup
   const currentJobIds = new Set(currentJobs.map((job) => job.runId));
+  const fetchedJobIds = new Set(fetchedJobs.map((job) => job.runId));
 
+  // Process fetched jobs from backend
   fetchedJobs.forEach((fetchedJob) => {
     if (!currentJobIds.has(fetchedJob.runId)) {
       // New job - add to store
@@ -233,6 +245,23 @@ function syncAnalysesToStore(
           );
         }
 
+        // Fix 6: Handle completed jobs from backend
+        // When backend returns status 'complete', update the job to trigger auto-dismiss
+        if (fetchedJob.status === 'complete' && currentJob.status !== 'complete') {
+          logger.info('[ActiveAnalyses] Job completed, marking as complete', {
+            runId: fetchedJob.runId,
+          });
+
+          updateJob(fetchedJob.runId, {
+            status: 'complete',
+            progress: 100,
+            step: fetchedJob.step,
+            avatarUrl: fetchedJob.avatarUrl,
+            leadId: fetchedJob.leadId,
+          });
+          return; // Early return since job is complete
+        }
+
         // Update if data has changed
         if (
           currentJob.progress !== fetchedJob.progress ||
@@ -254,6 +283,31 @@ function syncAnalysesToStore(
           });
         }
       }
+    }
+  });
+
+  // Fix 8: Clear orphaned optimistic jobs after timeout
+  // If a local job exists but backend returns 0 results (or doesn't include it),
+  // and enough time has passed (30 seconds), mark it as complete to trigger auto-dismiss
+  const ORPHAN_TIMEOUT_MS = 30000; // 30 seconds
+  const now = Date.now();
+
+  currentJobs.forEach((currentJob) => {
+    const isOrphaned = !fetchedJobIds.has(currentJob.runId);
+    const isActive = currentJob.status === 'pending' || currentJob.status === 'analyzing';
+    const hasTimedOut = now - currentJob.startedAt > ORPHAN_TIMEOUT_MS;
+
+    if (isOrphaned && isActive && hasTimedOut) {
+      logger.info('[ActiveAnalyses] Clearing orphaned optimistic job', {
+        runId: currentJob.runId,
+        age: now - currentJob.startedAt,
+      });
+
+      // Mark as complete to trigger auto-dismiss
+      updateJob(currentJob.runId, {
+        status: 'complete',
+        progress: 100,
+      });
     }
   });
 }
