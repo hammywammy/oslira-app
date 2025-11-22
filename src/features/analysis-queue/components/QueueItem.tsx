@@ -16,6 +16,7 @@
 
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
+import { LeadAvatar } from '@/shared/components/ui/LeadAvatar';
 import { AnalysisJob } from '../stores/useAnalysisQueueStore';
 
 interface QueueItemProps {
@@ -29,9 +30,6 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
   // Truncate username to max 12 chars
   const displayUsername = username.length > 12 ? `${username.slice(0, 12)}...` : username;
 
-  // Get first letter for avatar fallback
-  const firstLetter = username.charAt(0).toUpperCase();
-
   return (
     <motion.div
       layout
@@ -43,17 +41,11 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={username}
-            className="w-6 h-6 rounded-full object-cover ring-1 ring-border"
-          />
-        ) : (
-          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center ring-1 ring-primary/30">
-            <span className="text-[10px] font-semibold text-primary">{firstLetter}</span>
-          </div>
-        )}
+        <LeadAvatar
+          url={avatarUrl}
+          username={username}
+          size="xs"
+        />
 
         {/* Status indicator overlay */}
         {status === 'analyzing' && (

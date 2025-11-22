@@ -25,6 +25,7 @@
 import type { ReactNode } from 'react';
 import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
+import { LeadAvatar } from '@/shared/components/ui/LeadAvatar';
 import type { Lead } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -183,19 +184,13 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
           <div className="flex items-start gap-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white text-3xl font-bold shadow-lg overflow-hidden">
-                {lead.profile_pic_url ? (
-                  <img
-                    src={lead.profile_pic_url}
-                    alt={lead.display_name || lead.username}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="select-none">
-                    {(lead.display_name?.charAt(0) || lead.username.charAt(0)).toUpperCase()}
-                  </span>
-                )}
-              </div>
+              <LeadAvatar
+                url={lead.profile_pic_url}
+                username={lead.username}
+                displayName={lead.display_name}
+                size="xl"
+                className="shadow-lg"
+              />
               {/* Platform Badge */}
               <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center border-2 border-background">
                 <Icon icon="mdi:instagram" className="w-4 h-4 text-white" />
