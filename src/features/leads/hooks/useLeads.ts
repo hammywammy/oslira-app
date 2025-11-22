@@ -27,6 +27,7 @@ interface UseLeadsOptions {
   pageSize?: number;
   sortBy?: 'created_at' | 'updated_at' | 'overall_score';
   sortOrder?: 'asc' | 'desc';
+  businessProfileId?: string | null;
 }
 
 interface UseLeadsReturn {
@@ -71,6 +72,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     pageSize = 100,
     sortBy = 'created_at',
     sortOrder = 'desc',
+    businessProfileId,
   } = options;
 
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -85,13 +87,14 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     setError(null);
 
     try {
-      logger.info('[useLeads] Fetching leads', { page, pageSize, sortBy, sortOrder });
+      logger.info('[useLeads] Fetching leads', { page, pageSize, sortBy, sortOrder, businessProfileId });
 
       const data = await fetchLeads({
         page,
         pageSize,
         sortBy,
         sortOrder,
+        businessProfileId,
       });
 
       setLeads(data);
@@ -104,7 +107,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, sortBy, sortOrder]);
+  }, [page, pageSize, sortBy, sortOrder, businessProfileId]);
 
   /**
    * Refresh leads data

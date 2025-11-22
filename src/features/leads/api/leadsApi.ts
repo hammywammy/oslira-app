@@ -33,6 +33,7 @@ interface FetchLeadsParams {
   sortOrder?: 'asc' | 'desc';
   platform?: 'instagram';
   analysisStatus?: 'pending' | 'processing' | 'complete' | 'failed';
+  businessProfileId?: string | null;
 }
 
 // =============================================================================
@@ -63,6 +64,7 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
     if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
     if (params.platform) queryParams.append('platform', params.platform);
     if (params.analysisStatus) queryParams.append('analysisStatus', params.analysisStatus);
+    if (params.businessProfileId) queryParams.append('businessProfileId', params.businessProfileId);
 
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/api/leads?${queryString}` : '/api/leads';

@@ -21,6 +21,7 @@ import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import { LeadDetailModal } from './LeadDetailModal';
 import { useLeads } from '@/features/leads/hooks/useLeads';
+import { useSelectedBusinessId } from '@/core/store/selectors';
 
 // =============================================================================
 // TYPES
@@ -242,11 +243,15 @@ TableRow.displayName = 'TableRow';
 // =============================================================================
 
 export function LeadsTable({ selectedLeads, onSelectionChange }: LeadsTableProps) {
+  // Get selected business ID
+  const businessProfileId = useSelectedBusinessId();
+
   // Fetch real leads from API
   const { leads, isLoading } = useLeads({
     autoFetch: true,
     sortBy: 'created_at',
     sortOrder: 'desc',
+    businessProfileId,
   });
 
   // Modal state
