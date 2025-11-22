@@ -3,14 +3,14 @@
 /**
  * ANALYSIS QUEUE STORE - ZUSTAND STATE MANAGEMENT
  *
- * Real-time analysis progress tracking with SSE integration.
+ * Real-time analysis progress tracking synced with React Query polling.
  * Manages active/recent analyses and auto-dismisses completed items.
  *
  * ARCHITECTURE:
- * - Real-time updates from Durable Objects SSE stream
+ * - Job state management (no polling control - handled by React Query)
  * - Auto-dismiss completed items after 3 seconds
  * - Failed items persist with retry action
- * - Smart visibility (auto-hide when empty, auto-show on first job)
+ * - Optimistic job creation pattern
  *
  * USAGE:
  * const {
@@ -20,6 +20,8 @@
  *   updateJob,             // Update job progress/status
  *   removeJob,             // Remove job from queue
  *   retryJob,              // Retry failed job
+ *   addOptimisticJob,      // Add optimistic job before backend confirmation
+ *   confirmJobStarted,     // Confirm optimistic job with backend data
  * } = useAnalysisQueueStore();
  */
 
@@ -51,8 +53,6 @@ interface AnalysisQueueState {
   // State
   jobs: AnalysisJob[];
   activeCount: number;
-  isPollingEnabled: boolean;
-  pollingShouldStop: boolean;
 
   // Actions
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void;
@@ -61,10 +61,8 @@ interface AnalysisQueueState {
   retryJob: (runId: string) => void;
   clearCompleted: () => void;
 
-  // New actions for optimistic jobs and polling control
+  // Optimistic job actions
   addOptimisticJob: (runId: string, username: string, analysisType: string) => void;
-  enablePolling: () => void;
-  disablePolling: () => void;
   confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void;
 }
 
@@ -87,8 +85,6 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
   // State
   jobs: [],
   activeCount: 0,
-  isPollingEnabled: false,
-  pollingShouldStop: false,
 
   // Actions
   addJob: (job) =>
@@ -138,13 +134,9 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
         }, 3000);
       }
 
-      // If activeCount becomes zero, signal polling can stop after next confirmatory fetch
-      const shouldStopPolling = state.activeCount > 0 && newActiveCount === 0;
-
       return {
         jobs: newJobs,
         activeCount: newActiveCount,
-        pollingShouldStop: shouldStopPolling,
       };
     }),
 
@@ -156,8 +148,6 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
       return {
         jobs: newJobs,
         activeCount: newActiveCount,
-        // If no jobs left, disable polling
-        isPollingEnabled: newJobs.length > 0 ? state.isPollingEnabled : false,
       };
     }),
 
@@ -192,12 +182,10 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
       return {
         jobs: newJobs,
         activeCount: newActiveCount,
-        // If no jobs left, disable polling
-        isPollingEnabled: newJobs.length > 0 ? state.isPollingEnabled : false,
       };
     }),
 
-  // New actions for optimistic jobs and polling control
+  // Optimistic job actions
   addOptimisticJob: (runId, username, analysisType) =>
     set((state) => {
       // Don't add duplicate jobs
@@ -220,21 +208,7 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
       return {
         jobs: newJobs,
         activeCount: getActiveCount(newJobs),
-        isPollingEnabled: true, // Enable polling when job is added
-        pollingShouldStop: false,
       };
-    }),
-
-  enablePolling: () =>
-    set({
-      isPollingEnabled: true,
-      pollingShouldStop: false,
-    }),
-
-  disablePolling: () =>
-    set({
-      isPollingEnabled: false,
-      pollingShouldStop: false,
     }),
 
   confirmJobStarted: (runId, avatarUrl, leadId) =>
