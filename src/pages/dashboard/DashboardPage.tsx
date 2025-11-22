@@ -26,7 +26,6 @@ import { BulkUploadModal } from '@/features/leads/components/BulkUploadModal';
 import { bulkDeleteLeads } from '@/features/leads/api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { AnalysisStatus } from '@/shared/types/leads.types';
-import { env } from '@/core/auth/environment';
 
 // =============================================================================
 // TYPES
@@ -141,11 +140,6 @@ export function DashboardPage() {
 
   return (
     <>
-      {env.isProduction && (
-        <div className="fixed top-0 left-0 right-0 z-[9999] bg-green-600 text-white text-center py-2 font-bold text-sm">
-          ✅ PRODUCTION DASHBOARD - LIVE
-        </div>
-      )}
       <TableViewLayout
         hotbar={
           <DashboardHotbar
