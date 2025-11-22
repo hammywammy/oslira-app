@@ -59,14 +59,6 @@ interface FetchActiveAnalysesResponse {
  */
 async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
   try {
-    // DIAGNOSTIC: Log at start
-    console.log('[ActiveAnalyses] DIAGNOSTIC fetch firing', {
-      localStorageToken: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
-      timestamp: Date.now()
-    });
-
-    // logger.info('[ActiveAnalyses] Fetching active analyses');
-
     const response = await httpClient.get<FetchActiveAnalysesResponse>(
       '/api/analysis/active'
     );
