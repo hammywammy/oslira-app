@@ -1,11 +1,11 @@
 // src/shared/components/ui/Modal.tsx
 
 /**
- * MODAL COMPONENT - PRODUCTION GRADE V1.0
- * 
+ * MODAL COMPONENT - PRODUCTION GRADE V1.1
+ *
  * Professional modal dialog with natural dark mode support
  * Follows Card.tsx and Button.tsx architecture patterns
- * 
+ *
  * ARCHITECTURE:
  * ✅ Natural Tailwind dark: classes for automatic mode detection
  * ✅ Proper contrast in both light and dark modes
@@ -14,13 +14,19 @@
  * ✅ Centered positioning
  * ✅ Closeable with X button or backdrop click
  * ✅ Accessibility (focus trap, ESC key)
- * 
+ * ✅ Portal rendering for proper z-index stacking
+ *
+ * CHANGES IN V1.1:
+ * ✅ Added Portal to render modal at document body level
+ * ✅ Fixes z-index stacking issues with nested containers
+ * ✅ Ensures modal backdrop covers all UI elements consistently
+ *
  * DESIGN PHILOSOPHY:
  * "Concert hall, not arcade"
  * - Clean modal with professional backdrop
  * - Smooth animations
  * - Clear visual hierarchy
- * 
+ *
  * USAGE:
  * <Modal open={isOpen} onClose={handleClose}>
  *   <Modal.Header>Dialog Title</Modal.Header>
@@ -31,6 +37,7 @@
 
 import { Icon } from '@iconify/react';
 import { HTMLAttributes, ReactNode, useEffect } from 'react';
+import { Portal } from './Portal';
 
 // =============================================================================
 // TYPES
@@ -129,63 +136,65 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div
-      className={`
-        fixed inset-0 z-modal
-        flex
-        ${centered ? 'items-center' : 'items-start pt-20'}
-        justify-center
-        p-4
-        ${backdropStyles[backdrop]}
-      `}
-      onClick={closeable ? onClose : undefined}
-      role="dialog"
-      aria-modal="true"
-      {...props}
-    >
-      {/* Modal Content */}
+    <Portal>
       <div
         className={`
-          relative
-          ${sizeStyles[size]}
-          w-full
-          bg-white
-          dark:bg-neutral-900
-          rounded-xl
-          shadow-2xl
-          border border-neutral-200
-          dark:border-neutral-800
-          animate-in fade-in-0 zoom-in-95 duration-200
-          ${className}
-        `.trim().replace(/\s+/g, ' ')}
-        onClick={(e) => e.stopPropagation()}
+          fixed inset-0 z-modal
+          flex
+          ${centered ? 'items-center' : 'items-start pt-20'}
+          justify-center
+          p-4
+          ${backdropStyles[backdrop]}
+        `}
+        onClick={closeable ? onClose : undefined}
+        role="dialog"
+        aria-modal="true"
+        {...props}
       >
-        {/* Close Button */}
-        {closeable && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="
-              absolute top-4 right-4 z-10
-              p-1
-              text-neutral-600 hover:text-neutral-900
-              dark:text-neutral-400 dark:hover:text-neutral-100
-              transition-colors duration-150
-              rounded-lg
-              hover:bg-neutral-100
-              dark:hover:bg-neutral-800
-              focus:outline-none focus:ring-2 focus:ring-primary-500
-            "
-            aria-label="Close modal"
-          >
-            <Icon icon="lucide:x" width={20} height={20} />
-          </button>
-        )}
-
         {/* Modal Content */}
-        {children}
+        <div
+          className={`
+            relative
+            ${sizeStyles[size]}
+            w-full
+            bg-white
+            dark:bg-neutral-900
+            rounded-xl
+            shadow-2xl
+            border border-neutral-200
+            dark:border-neutral-800
+            animate-in fade-in-0 zoom-in-95 duration-200
+            ${className}
+          `.trim().replace(/\s+/g, ' ')}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          {closeable && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="
+                absolute top-4 right-4 z-10
+                p-1
+                text-neutral-600 hover:text-neutral-900
+                dark:text-neutral-400 dark:hover:text-neutral-100
+                transition-colors duration-150
+                rounded-lg
+                hover:bg-neutral-100
+                dark:hover:bg-neutral-800
+                focus:outline-none focus:ring-2 focus:ring-primary-500
+              "
+              aria-label="Close modal"
+            >
+              <Icon icon="lucide:x" width={20} height={20} />
+            </button>
+          )}
+
+          {/* Modal Content */}
+          {children}
+        </div>
       </div>
-    </div>
+    </Portal>
   );
 }
 
