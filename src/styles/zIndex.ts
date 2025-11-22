@@ -76,12 +76,6 @@ export const zIndex = {
   // ============================================================================
   toast: 700,             // Toast notifications
   alert: 710,             // Critical alerts
-
-  // ============================================================================
-  // SHOWCASE/DEV TOOLS (for demo pages only, can overlap with app UI)
-  // ============================================================================
-  showcaseNav: 650,       // ShowcaseNav component (between modal and toast)
-  showcaseBackdrop: 640,  // ShowcaseNav backdrop
 } as const;
 
 // Type helper for TypeScript
@@ -132,6 +126,4 @@ export const {
   fullscreen,
   toast,
   alert,
-  showcaseNav,
-  showcaseBackdrop,
 } = zIndex;

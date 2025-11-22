@@ -404,10 +404,6 @@
   /* Toast layer (700 to 799) - Highest priority */
   --z-toast: 700;
   --z-alert: 710;
-
-  /* Showcase/dev tools (650 range) */
-  --z-showcase-backdrop: 640;
-  --z-showcase-nav: 650;
 }
 
 /* ============================================================================

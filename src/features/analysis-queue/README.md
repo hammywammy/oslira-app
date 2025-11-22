@@ -46,8 +46,6 @@ src/features/analysis-queue/
 │   └── useAnalysisQueueStore.ts  # Zustand state management
 ├── hooks/
 │   └── useActiveAnalyses.ts   # React Query polling hook
-├── utils/
-│   └── demoQueue.ts           # Demo/testing utility
 ├── index.ts                   # Public exports
 └── README.md                  # This file
 ```
@@ -72,16 +70,6 @@ export function TopBar() {
     </header>
   );
 }
-```
-
-### Demo Mode
-
-For testing without backend:
-
-```javascript
-// In browser console:
-window.startDemoQueue();  // Start simulated analyses
-window.stopDemoQueue();   // Stop and clear
 ```
 
 ### Backend API Endpoint
@@ -179,9 +167,6 @@ className="max-h-[320px] ..."  // Change 320px to your height
 ```bash
 # Start dev server
 npm run dev
-
-# In browser console, start demo
-window.startDemoQueue()
 ```
 
 ## Production Deployment

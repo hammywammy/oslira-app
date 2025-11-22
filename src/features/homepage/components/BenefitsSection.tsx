@@ -1,18 +1,10 @@
 /**
  * ============================================================================
- * BENEFITS SECTION - OSLIRA PROFESSIONAL V2.0
+ * BENEFITS SECTION - WHAT OSLIRA SOLVES
  * ============================================================================
- * 
- * DESIGN PRINCIPLES:
- * - Clean 3-column grid (professional, scannable)
- * - Data-driven benefits from copy intelligence
- * - Minimal animation (fade-in only, purposeful)
- * - Proper color usage (blue icons, neutral foundation)
- * 
- * COPY STRATEGY (From Intelligence File):
- * - Time savings: "20 minutes → 60 seconds"
- * - Rejection shield: "Emotional distance from failures"
- * - Strategic authority: "Sound like insider consultant"
+ *
+ * A Precise, Fast, and Predictable Prospecting System
+ * Feature → Outcome focused, enterprise B2B positioning
  * ============================================================================
  */
 
@@ -21,51 +13,49 @@ import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
 // =============================================================================
-// DATA - REAL OSLIRA BENEFITS
+// DATA - WHAT OSLIRA SOLVES
 // =============================================================================
 
 const benefits = [
   {
-    icon: 'mdi:clock-fast',
-    title: '20x Faster Prospecting',
-    description: 'Analyze 100+ Instagram profiles in parallel – in the time manual research takes for one. Oslira processes engagement patterns, content quality, and business fit in 30 seconds per lead.',
-    stat: '30 sec',
-    statLabel: 'per prospect'
+    icon: 'mdi:flash',
+    title: 'Instant Lead Research',
+    description: 'Surfaces company info, social activity, and key buyer signals instantly.',
+    outcome: 'Spend seconds, not minutes, preparing every outreach.',
+    stat: 'Seconds',
+    statLabel: 'not minutes'
   },
   {
-    icon: 'mdi:target-variant',
-    title: 'Comprehensive Lead Scoring',
-    description: 'AI evaluates every aspect: engagement patterns, content themes, audience quality, posting consistency, and business signals. Then scores partnership fit against your ideal customer profile.',
-    stat: '20+',
-    statLabel: 'data points'
+    icon: 'mdi:chart-timeline-variant',
+    title: 'AI Lead Scoring',
+    description: 'Scores intent based on engagement, ICP fit, and recent activity.',
+    outcome: 'Reps focus on the warmest prospects and stop guessing.',
+    stat: '100%',
+    statLabel: 'clarity'
   },
   {
-    icon: 'mdi:message-text-outline',
-    title: 'Personalized Outreach',
-    description: 'Get tailored message templates based on each lead\'s content, industry, and pain points. Sound like an insider consultant, not a cold caller.',
-    stat: '+43%',
-    statLabel: 'reply rate'
+    icon: 'mdi:bullseye-arrow',
+    title: 'Engagement Insights & Outreach Angles',
+    description: 'Finds what the lead posted, discussed, or struggled with recently.',
+    outcome: 'Every message lands with relevance.',
+    stat: '+20%',
+    statLabel: 'conversion'
   },
   {
-    icon: 'mdi:brain',
-    title: 'Psychographic Profiling',
-    description: 'X-Ray analysis reveals how prospects make decisions – data-driven or emotion-driven, cautious or aggressive. Customize your pitch to match their communication style.',
-    stat: 'X-Ray',
-    statLabel: 'exclusive'
+    icon: 'mdi:calendar-clock',
+    title: 'Follow-up Automation',
+    description: 'Integrated reminders and sequences.',
+    outcome: 'Never lose revenue because someone forgot.',
+    stat: '0',
+    statLabel: 'missed deals'
   },
   {
-    icon: 'mdi:shield-check',
-    title: 'Partnership Viability',
-    description: 'See budget signals, team stability, and growth trajectory before investing time. Filter out poor-fit prospects and focus on qualified leads.',
-    stat: '5+',
-    statLabel: 'signals'
-  },
-  {
-    icon: 'mdi:database-outline',
-    title: 'Built-In CRM',
-    description: 'All your prospect intelligence in one searchable place. Tag leads, track analysis history, export to CSV. No spreadsheets needed.',
-    stat: 'Zero',
-    statLabel: 'spreadsheets'
+    icon: 'mdi:pipeline',
+    title: 'Pipeline Intelligence',
+    description: 'Centralizes signals, notes, and actions.',
+    outcome: 'See what's working, where deals stall, and where to focus.',
+    stat: 'Full',
+    statLabel: 'visibility'
   }
 ];
 
@@ -75,8 +65,8 @@ const benefits = [
 
 const fadeIn = {
   hidden: { opacity: 0, y: 24 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
@@ -103,11 +93,11 @@ export function BenefitsSection() {
   return (
     <section ref={ref} className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* =====================================================================
             SECTION HEADER
             ===================================================================== */}
-        
+
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -115,17 +105,17 @@ export function BenefitsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Why Copywriters Choose Oslira
+            A Precise, Fast, and Predictable Prospecting System
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Stop wasting time on manual research. Let AI do the heavy lifting.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Oslira connects research, scoring, and outreach into one clean workflow.
           </p>
         </motion.div>
 
         {/* =====================================================================
             BENEFITS GRID
             ===================================================================== */}
-        
+
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -155,9 +145,16 @@ export function BenefitsSection() {
               </h3>
 
               {/* Description */}
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed mb-3">
                 {benefit.description}
               </p>
+
+              {/* Outcome */}
+              <div className="pt-3 border-t border-border">
+                <p className="text-sm font-medium text-foreground">
+                  → {benefit.outcome}
+                </p>
+              </div>
             </motion.div>
           ))}
         </motion.div>
@@ -165,7 +162,7 @@ export function BenefitsSection() {
         {/* =====================================================================
             BOTTOM CTA
             ===================================================================== */}
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -173,13 +170,13 @@ export function BenefitsSection() {
           className="mt-16 text-center"
         >
           <p className="text-muted-foreground mb-6">
-            Ready to see the difference?
+            Build a pipeline that never leaks and never sleeps.
           </p>
           <button
             onClick={() => window.location.href = '/auth/signup'}
             className="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-md"
           >
-            Get Started Free
+            Start Free
           </button>
         </motion.div>
 
