@@ -142,8 +142,6 @@ export function OAuthCallbackPage() {
       setMessage('Verifying with Google');
       logger.info('[OAuthCallback] Exchanging code for tokens');
 
-      const timestamp = Date.now();
-
       const response = await httpClient.post<AuthResponse>(
         '/api/auth/google/callback',
         { code },
