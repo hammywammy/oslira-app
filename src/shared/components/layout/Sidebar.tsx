@@ -9,6 +9,7 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
 import { Portal } from '@/shared/components/ui/Portal';
+import { env } from '@/core/auth/environment';
 
 interface NavItem {
   label: string;
@@ -90,13 +91,13 @@ export function Sidebar() {
             {/* Logo and Text - Left side, clickable */}
             {!isCollapsed ? (
               // Expanded: Logo and text on left
-              <a 
-                href="https://oslira.com" 
-                target="_blank" 
+              <a
+                href={env.marketingUrl}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
               >
-                <img 
+                <img
                   src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
                   alt="Oslira"
                   className="h-7 w-7"
@@ -108,7 +109,7 @@ export function Sidebar() {
             ) : (
               // Collapsed: Logo only on left, hidden on hover
               <a
-                href="https://oslira.com"
+                href={env.marketingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`
@@ -117,7 +118,7 @@ export function Sidebar() {
                   ${isHoveringSidebar ? 'opacity-0 pointer-events-none' : 'opacity-100'}
                 `}
               >
-                <img 
+                <img
                   src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
                   alt="Oslira"
                   className="h-7 w-7"

@@ -8,15 +8,14 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
+import { env } from '@/core/auth/environment';
 
 // =============================================================================
 // CONSTANTS
 // =============================================================================
 
-// Get app subdomain URL from environment
-const APP_URL = import.meta.env.PROD 
-  ? 'https://app.oslira.com'
-  : 'http://localhost:5173';
+// Get app subdomain URL from centralized environment config
+const APP_URL = env.appUrl;
 
 // =============================================================================
 // COMPONENT
