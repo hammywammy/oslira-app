@@ -45,7 +45,7 @@ export function TopBar() {
 
       {/* Main TopBar - respects Sidebar width */}
       <header className={`
-        fixed top-[1px] right-0 h-14 bg-background border-b border-border z-topBar
+        fixed top-[1px] right-0 h-14 bg-background/95 backdrop-blur-sm border-b border-border z-topBar
         transition-[left] duration-200
         ${isCollapsed ? 'left-16' : 'left-60'}
       `}>

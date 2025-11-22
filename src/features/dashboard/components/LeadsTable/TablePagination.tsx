@@ -51,7 +51,7 @@ export function TablePagination({
   };
 
   return (
-    <div className="h-11 px-4 border-t border-border bg-background flex items-center justify-between text-xs font-medium">
+    <div className="h-11 px-4 border-t border-border bg-background/95 backdrop-blur-sm flex items-center justify-between text-xs font-medium">
       
       {/* LEFT: Page navigation + Row count + Record count */}
       <div className="flex items-center gap-4">
