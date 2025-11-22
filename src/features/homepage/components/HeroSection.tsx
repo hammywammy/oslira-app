@@ -110,7 +110,7 @@ export function HeroSection() {
   // ===========================================================================
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary-500 via-secondary-500 to-secondary-600">
+    <section className="relative z-base min-h-screen flex items-center justify-center px-6 pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary-500 via-secondary-500 to-secondary-600">
       
       {/* Enhanced gradient overlay for depth and purple prominence */}
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-secondary-400/20 to-secondary-500/30" />
