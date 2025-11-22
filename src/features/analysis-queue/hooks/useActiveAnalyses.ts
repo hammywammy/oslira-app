@@ -108,6 +108,16 @@ export function useActiveAnalyses() {
   // Polling interval: 5s when enabled, false when disabled
   const refetchInterval = isPollingEnabled ? 5000 : false;
 
+  // Log polling state changes
+  useEffect(() => {
+    logger.info('[ActiveAnalyses] Polling state changed', {
+      isPollingEnabled,
+      refetchInterval,
+      jobCount: jobs.length,
+      activeCount: jobs.filter(j => j.status === 'pending' || j.status === 'analyzing').length,
+    });
+  }, [isPollingEnabled, refetchInterval, jobs]);
+
   const { data, error, refetch } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
@@ -121,13 +131,19 @@ export function useActiveAnalyses() {
 
   // Initialization fetch on mount to catch orphaned jobs
   useEffect(() => {
-    logger.info('[ActiveAnalyses] Initialization fetch');
+    logger.info('[ActiveAnalyses] Initialization fetch on mount');
     refetch();
-  }, [refetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   // Sync fetched data into Zustand store when data changes
   useEffect(() => {
     if (data) {
+      logger.info('[ActiveAnalyses] Data received from API', {
+        fetchedJobCount: data.length,
+        jobs: data.map(j => ({ runId: j.runId, username: j.username, status: j.status, progress: j.progress })),
+      });
+
       syncAnalysesToStore(data, jobs, addJob, updateJob, confirmJobStarted);
 
       // If we fetched zero active analyses and store also has zero active count

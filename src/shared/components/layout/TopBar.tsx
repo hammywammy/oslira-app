@@ -125,7 +125,10 @@ export function TopBar() {
 
           {/* Right: Utility Icons */}
           <div className="flex items-center gap-1 ml-6">
-            
+
+            {/* Analysis Queue Indicator */}
+            <QueueIndicator />
+
             {/* Help Button */}
             <div className="relative">
               <button
@@ -161,9 +164,6 @@ export function TopBar() {
                 </div>
               </DropdownPortal>
             </div>
-
-            {/* Analysis Queue Indicator */}
-            <QueueIndicator />
 
             {/* Notifications */}
             <NotificationBell />
