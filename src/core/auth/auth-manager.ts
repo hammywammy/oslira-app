@@ -302,6 +302,13 @@ getTokens(): {
 async forceRefresh(): Promise<string | null> {
   console.log('[AuthManager] Force refresh requested');
 
+  // DIAGNOSTIC: Log token state at entry
+  console.log('[AuthManager] DIAGNOSTIC forceRefresh entry', {
+    memoryToken: this.refreshToken?.substring(0, 8) || 'NULL',
+    localStorageToken: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
+    timestamp: Date.now()
+  });
+
   // Re-read refresh token from localStorage to ensure memory state matches storage
   // This prevents race conditions where setTokens() hasn't propagated to memory yet
   const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
@@ -355,6 +362,12 @@ async forceRefresh(): Promise<string | null> {
     try {
       console.log('[AuthManager] Calling /api/auth/refresh');
 
+      // DIAGNOSTIC: Log token being sent
+      console.log('[AuthManager] DIAGNOSTIC _performRefresh sending', {
+        tokenBeingSent: this.refreshToken?.substring(0, 8) || 'NULL',
+        timestamp: Date.now()
+      });
+
       const response = await fetch(`${env.apiUrl}/api/auth/refresh`, {
         method: 'POST',
         headers: {
@@ -386,12 +399,20 @@ async forceRefresh(): Promise<string | null> {
 
   /**
    * Store tokens (called after login or refresh)
-   * 
+   *
    * CROSS-TAB SYNC:
    * - Writing to localStorage automatically triggers 'storage' event in other tabs
    * - Other tabs detect the change and update their state
    */
   setTokens(accessToken: string, refreshToken: string, expiresAt: number): void {
+    // DIAGNOSTIC: Log at start
+    console.log('[AuthManager] DIAGNOSTIC setTokens called', {
+      newTokenPrefix: refreshToken.substring(0, 8),
+      oldMemoryToken: this.refreshToken?.substring(0, 8) || 'NULL',
+      oldLocalStorage: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
+      timestamp: Date.now()
+    });
+
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.expiresAt = expiresAt;
@@ -403,6 +424,13 @@ async forceRefresh(): Promise<string | null> {
 
     console.log('[AuthManager] Tokens stored', {
       expiresAt: new Date(expiresAt).toISOString()
+    });
+
+    // DIAGNOSTIC: Log at end
+    console.log('[AuthManager] DIAGNOSTIC setTokens complete', {
+      memoryToken: this.refreshToken?.substring(0, 8),
+      localStorageToken: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8),
+      timestamp: Date.now()
     });
 
     this.notifyListeners();
