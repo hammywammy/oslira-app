@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-import { authManager } from '@/core/auth/auth-manager';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { Logo } from '@/shared/components/ui/Logo';
