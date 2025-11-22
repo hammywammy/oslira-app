@@ -150,27 +150,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * - This is how Auth0, Clerk, WorkOS all do it
    */
   async function initializeAuth() {
-    const timestamp = Date.now();
-
-    // TRACE-027: initializeAuth entry
-    console.log(`[AUTH-TRACE-027][${timestamp}] AuthProvider.initializeAuth: Entry`, {
-      localStorageRefreshTokenPrefix: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
-      timestamp
-    });
-
     logger.info('[AuthProvider] Initializing auth...');
     setIsLoading(true);
 
     try {
       // Get current tokens from auth-manager (localStorage)
       const tokens = authManager.getTokens();
-
-      // TRACE-028: Tokens retrieved from authManager
-      console.log(`[AUTH-TRACE-028][${Date.now()}] AuthProvider.initializeAuth: Tokens retrieved from authManager`, {
-        hasTokens: !!tokens,
-        refreshTokenPrefix: tokens?.refreshToken?.substring(0, 8) || 'NULL',
-        timestamp: Date.now()
-      });
 
       if (!tokens?.refreshToken) {
         logger.info('[AuthProvider] No refresh token found, user not authenticated');
@@ -180,24 +165,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       logger.info('[AuthProvider] Refresh token found, attempting to rehydrate session');
 
-      // TRACE-029: BEFORE calling /api/auth/refresh
-      console.log(`[AUTH-TRACE-029][${Date.now()}] AuthProvider.initializeAuth: BEFORE /api/auth/refresh call`, {
-        refreshTokenBeingSent: tokens.refreshToken.substring(0, 8),
-        timestamp: Date.now()
-      });
-
       // Call /refresh endpoint to get new tokens + user data
       const response = await fetch(`${env.apiUrl}/api/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: tokens.refreshToken }),
-      });
-
-      // TRACE-030: Response from /api/auth/refresh
-      console.log(`[AUTH-TRACE-030][${Date.now()}] AuthProvider.initializeAuth: Response from /api/auth/refresh`, {
-        status: response.status,
-        ok: response.ok,
-        timestamp: Date.now()
       });
 
       if (!response.ok) {
@@ -211,23 +183,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data: RefreshResponse = await response.json();
 
-      // TRACE-031: New tokens received
-      console.log(`[AUTH-TRACE-031][${Date.now()}] AuthProvider.initializeAuth: New tokens received from /api/auth/refresh`, {
-        newAccessTokenPrefix: data.accessToken.substring(0, 8),
-        newRefreshTokenPrefix: data.refreshToken.substring(0, 8),
-        timestamp: Date.now()
-      });
-
       logger.info('[AuthProvider] Refresh successful, session rehydrated');
 
       // Store new tokens in auth-manager
       authManager.setTokens(data.accessToken, data.refreshToken, data.expiresAt);
-
-      // TRACE-032: AFTER authManager.setTokens
-      console.log(`[AUTH-TRACE-032][${Date.now()}] AuthProvider.initializeAuth: AFTER authManager.setTokens`, {
-        localStorageRefreshTokenPrefix: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
-        timestamp: Date.now()
-      });
 
       // Now fetch user data using the new access token
       // This is safe because we just got a fresh token from /refresh
@@ -237,16 +196,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authManager.markAuthReady();
       setIsAuthReady(true);
 
-      console.log(`[AUTH-TRACE-033][${Date.now()}] AuthProvider.initializeAuth: Complete`, {
-        timestamp: Date.now()
-      });
-
     } catch (error) {
       logger.error('[AuthProvider] Initialization failed', error as Error);
-      console.log(`[AUTH-TRACE-034][${Date.now()}] AuthProvider.initializeAuth: Error`, {
-        error,
-        timestamp: Date.now()
-      });
       authManager.clear();
     } finally {
       setIsLoading(false);
@@ -325,29 +276,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userData: User,
     accountData: Account
   ) {
-    const timestamp = Date.now();
-
-    // TRACE-035: login() entry
-    console.log(`[AUTH-TRACE-035][${timestamp}] AuthProvider.login: Entry`, {
-      accessTokenPrefix: accessToken.substring(0, 8),
-      refreshTokenPrefix: refreshToken.substring(0, 8),
-      userId: userData.id,
-      localStorageRefreshTokenPrefixBEFORE: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
-      timestamp
-    });
-
     logger.info('[AuthProvider] Login called', { userId: userData.id });
 
     // Store tokens in auth-manager
     authManager.setTokens(accessToken, refreshToken, expiresAt);
-
-    // TRACE-036: AFTER authManager.setTokens
-    console.log(`[AUTH-TRACE-036][${Date.now()}] AuthProvider.login: AFTER authManager.setTokens`, {
-      localStorageRefreshTokenPrefixAFTER: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
-      expectedRefreshTokenPrefix: refreshToken.substring(0, 8),
-      tokensMatch: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) === refreshToken.substring(0, 8),
-      timestamp: Date.now()
-    });
 
     authManager.setUser(userData, accountData);
 
@@ -359,10 +291,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccount(accountData);
     setIsAuthenticated(true);
     setIsAuthReady(true);
-
-    console.log(`[AUTH-TRACE-037][${Date.now()}] AuthProvider.login: Complete`, {
-      timestamp: Date.now()
-    });
   }
 
   /**

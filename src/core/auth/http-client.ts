@@ -106,27 +106,8 @@ class HttpClient {
     // Get valid access token (auth-manager handles refresh if expired)
     let token: string | null = null;
     if (!skipAuth) {
-      const timestamp = Date.now();
-
-      // TRACE-038: BEFORE getting access token
-      console.log(`[AUTH-TRACE-038][${timestamp}] HttpClient.request: BEFORE getAccessToken()`, {
-        requestId,
-        endpoint,
-        localStorageRefreshTokenPrefix: localStorage.getItem('oslira_refresh_token')?.substring(0, 8) || 'NULL',
-        timestamp
-      });
-
       logger.debug(`[HttpClient][${requestId}] Getting access token...`);
       token = await authManager.getAccessToken();
-
-      // TRACE-039: AFTER getting access token
-      console.log(`[AUTH-TRACE-039][${Date.now()}] HttpClient.request: AFTER getAccessToken()`, {
-        requestId,
-        endpoint,
-        hasToken: !!token,
-        tokenPrefix: token?.substring(0, 8) || 'NULL',
-        timestamp: Date.now()
-      });
 
       logger.debug(`[HttpClient][${requestId}] Token retrieved`, {
         hasToken: !!token,
@@ -204,44 +185,17 @@ class HttpClient {
 
     // Handle 401 Unauthorized - Try token refresh once
     if (response.status === 401 && token && !skipAuth) {
-      const timestamp = Date.now();
-
-      // TRACE-040: 401 received, attempting refresh
-      console.log(`[AUTH-TRACE-040][${timestamp}] HttpClient.request: 401 Unauthorized, attempting token refresh`, {
-        requestId,
-        endpoint,
-        tokenUsedInRequest: token.substring(0, 8),
-        timestamp
-      });
-
       logger.warn(`[HttpClient][${requestId}] 401 Unauthorized - attempting token refresh`);
 
       // Force token refresh via auth-manager
       // auth-manager will call /refresh endpoint internally
       const newToken = await authManager.forceRefresh();
 
-      // TRACE-041: Token refresh result
-      console.log(`[AUTH-TRACE-041][${Date.now()}] HttpClient.request: Token refresh result`, {
-        requestId,
-        endpoint,
-        refreshSuccess: !!newToken,
-        newTokenPrefix: newToken?.substring(0, 8) || 'NULL',
-        timestamp: Date.now()
-      });
-
       if (newToken) {
         logger.info(`[HttpClient][${requestId}] Token refreshed - retrying request`);
 
         // Retry request with new token
         headers['Authorization'] = `Bearer ${newToken}`;
-
-        // TRACE-042: Retrying request with new token
-        console.log(`[AUTH-TRACE-042][${Date.now()}] HttpClient.request: Retrying request with new token`, {
-          requestId,
-          endpoint,
-          newTokenPrefix: newToken.substring(0, 8),
-          timestamp: Date.now()
-        });
 
         const retryStartTime = performance.now();
         response = await fetch(url, {
@@ -250,15 +204,6 @@ class HttpClient {
         });
 
         const retryDuration = performance.now() - retryStartTime;
-
-        // TRACE-043: Retry response
-        console.log(`[AUTH-TRACE-043][${Date.now()}] HttpClient.request: Retry response`, {
-          requestId,
-          endpoint,
-          status: response.status,
-          ok: response.ok,
-          timestamp: Date.now()
-        });
 
         logger.info(`[HttpClient][${requestId}] Retry response received`, {
           status: response.status,
@@ -269,11 +214,6 @@ class HttpClient {
 
         // Still 401 after refresh? User session is truly invalid
         if (response.status === 401) {
-          console.log(`[AUTH-TRACE-044][${Date.now()}] HttpClient.request: Still 401 after refresh, forcing logout`, {
-            requestId,
-            endpoint,
-            timestamp: Date.now()
-          });
           logger.error(`[HttpClient][${requestId}] Still 401 after refresh - forcing logout`);
           await authManager.logout();
           window.location.href = '/auth/login';
@@ -281,11 +221,6 @@ class HttpClient {
         }
       } else {
         // Refresh failed - clear auth and redirect
-        console.log(`[AUTH-TRACE-045][${Date.now()}] HttpClient.request: Token refresh failed, forcing logout`, {
-          requestId,
-          endpoint,
-          timestamp: Date.now()
-        });
         logger.error(`[HttpClient][${requestId}] Token refresh failed - forcing logout`);
         await authManager.logout();
         window.location.href = '/auth/login';

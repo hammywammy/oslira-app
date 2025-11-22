@@ -134,20 +134,8 @@ class AuthManager {
    */
   private loadFromStorage(): void {
     try {
-      const timestamp = Date.now();
-
-      // TRACE-001: Read from localStorage
-      const accessTokenFromStorage = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      const refreshTokenFromStorage = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-
-      console.log(`[AUTH-TRACE-001][${timestamp}] AuthManager.loadFromStorage: Reading from localStorage`, {
-        accessTokenPrefix: accessTokenFromStorage?.substring(0, 8) || 'NULL',
-        refreshTokenPrefix: refreshTokenFromStorage?.substring(0, 8) || 'NULL',
-        timestamp
-      });
-
-      this.accessToken = accessTokenFromStorage;
-      this.refreshToken = refreshTokenFromStorage;
+      this.accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      this.refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
 
       const expiresAtStr = localStorage.getItem(STORAGE_KEYS.EXPIRES_AT);
       this.expiresAt = expiresAtStr ? parseInt(expiresAtStr, 10) : null;
@@ -162,16 +150,6 @@ class AuthManager {
       if (this.refreshToken) {
         this.authReady = true;
       }
-
-      // TRACE-002: Loaded into memory
-      console.log(`[AUTH-TRACE-002][${Date.now()}] AuthManager.loadFromStorage: Loaded into memory`, {
-        memoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-        memoryRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
-        hasUser: !!this.user,
-        authReady: this.authReady,
-        expiresAt: this.expiresAt ? new Date(this.expiresAt).toISOString() : null,
-        timestamp: Date.now()
-      });
     } catch (error) {
       console.error('[AuthManager] Failed to load from storage:', error);
       this.clear();
@@ -288,47 +266,18 @@ getTokens(): {
    * - Subsequent calls wait for the same refresh promise to resolve
    */
   async getAccessToken(): Promise<string | null> {
-    const timestamp = Date.now();
-
-    // TRACE-003: Entry to getAccessToken
-    console.log(`[AUTH-TRACE-003][${timestamp}] AuthManager.getAccessToken: Entry`, {
-      memoryRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
-      memoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-      expiresAt: this.expiresAt,
-      currentTime: timestamp,
-      isExpired: this.expiresAt ? timestamp >= this.expiresAt : 'N/A',
-      timestamp
-    });
-
     // No refresh token = not authenticated
     if (!this.refreshToken) {
-      console.log(`[AUTH-TRACE-004][${Date.now()}] AuthManager.getAccessToken: No refresh token`, {
-        timestamp: Date.now()
-      });
       return null;
     }
 
     // Token still valid? Return it
     if (this.accessToken && this.expiresAt && Date.now() < this.expiresAt) {
-      console.log(`[AUTH-TRACE-005][${Date.now()}] AuthManager.getAccessToken: Token still valid, returning`, {
-        accessTokenPrefix: this.accessToken.substring(0, 8),
-        timestamp: Date.now()
-      });
       return this.accessToken;
     }
 
-    console.log(`[AUTH-TRACE-006][${Date.now()}] AuthManager.getAccessToken: Token expired, attempting refresh`, {
-      timestamp: Date.now()
-    });
-
     // Token expired - refresh it
     const refreshed = await this.refresh();
-
-    console.log(`[AUTH-TRACE-007][${Date.now()}] AuthManager.getAccessToken: Refresh completed`, {
-      success: refreshed,
-      newAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-      timestamp: Date.now()
-    });
 
     return refreshed ? this.accessToken : null;
   }
@@ -341,55 +290,18 @@ getTokens(): {
  * This is called when backend returns 401 despite having what appears to be a valid token
  */
 async forceRefresh(): Promise<string | null> {
-  const timestamp = Date.now();
-
-  // TRACE-008: forceRefresh entry - BEFORE reading localStorage
-  console.log(`[AUTH-TRACE-008][${timestamp}] AuthManager.forceRefresh: Entry BEFORE localStorage read`, {
-    memoryRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
-    memoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-    timestamp
-  });
-
-  // TRACE-009: Reading from localStorage
-  const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-  const storedAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-
-  console.log(`[AUTH-TRACE-009][${Date.now()}] AuthManager.forceRefresh: localStorage state`, {
-    localStorageRefreshTokenPrefix: storedRefreshToken?.substring(0, 8) || 'NULL',
-    localStorageAccessTokenPrefix: storedAccessToken?.substring(0, 8) || 'NULL',
-    tokensMatch: storedRefreshToken === this.refreshToken,
-    timestamp: Date.now()
-  });
-
   // Re-read refresh token from localStorage to ensure memory state matches storage
   // This prevents race conditions where setTokens() hasn't propagated to memory yet
+  const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
   if (storedRefreshToken && storedRefreshToken !== this.refreshToken) {
-    console.log(`[AUTH-TRACE-010][${Date.now()}] AuthManager.forceRefresh: Syncing refresh token from localStorage`, {
-      oldMemoryTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
-      newMemoryTokenPrefix: storedRefreshToken.substring(0, 8),
-      timestamp: Date.now()
-    });
     this.refreshToken = storedRefreshToken;
   }
 
   // Clear existing refresh promise to force new refresh
   this.refreshPromise = null;
 
-  console.log(`[AUTH-TRACE-011][${Date.now()}] AuthManager.forceRefresh: Starting refresh`, {
-    refreshTokenToUse: this.refreshToken?.substring(0, 8) || 'NULL',
-    timestamp: Date.now()
-  });
-
   // Attempt refresh
   const success = await this.refresh();
-
-  // TRACE-012: forceRefresh complete
-  console.log(`[AUTH-TRACE-012][${Date.now()}] AuthManager.forceRefresh: Complete`, {
-    success,
-    newAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-    newRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
-    timestamp: Date.now()
-  });
 
   // Return new access token if successful
   return success ? this.accessToken : null;
@@ -428,16 +340,6 @@ async forceRefresh(): Promise<string | null> {
    */
   private async _performRefresh(): Promise<boolean> {
     try {
-      const timestamp = Date.now();
-
-      // TRACE-013: BEFORE sending refresh request
-      console.log(`[AUTH-TRACE-013][${timestamp}] AuthManager._performRefresh: BEFORE API call`, {
-        refreshTokenBeingSent: this.refreshToken?.substring(0, 8) || 'NULL',
-        memoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-        localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
-        timestamp
-      });
-
       const response = await fetch(`${env.apiUrl}/api/auth/refresh`, {
         method: 'POST',
         headers: {
@@ -448,44 +350,18 @@ async forceRefresh(): Promise<string | null> {
         }),
       });
 
-      // TRACE-014: API response received
-      console.log(`[AUTH-TRACE-014][${Date.now()}] AuthManager._performRefresh: API response received`, {
-        status: response.status,
-        ok: response.ok,
-        timestamp: Date.now()
-      });
-
       if (!response.ok) {
-        console.log(`[AUTH-TRACE-015][${Date.now()}] AuthManager._performRefresh: Refresh failed`, {
-          status: response.status,
-          timestamp: Date.now()
-        });
         return false;
       }
 
       const data: RefreshResponse = await response.json();
 
-      // TRACE-016: New tokens received from backend
-      console.log(`[AUTH-TRACE-016][${Date.now()}] AuthManager._performRefresh: New tokens received from backend`, {
-        newAccessTokenPrefix: data.accessToken.substring(0, 8),
-        newRefreshTokenPrefix: data.refreshToken.substring(0, 8),
-        expiresAt: data.expiresAt,
-        timestamp: Date.now()
-      });
-
       // Store new tokens (triggers cross-tab sync)
       this.setTokens(data.accessToken, data.refreshToken, data.expiresAt);
 
-      console.log(`[AUTH-TRACE-017][${Date.now()}] AuthManager._performRefresh: Refresh complete`, {
-        timestamp: Date.now()
-      });
-
       return true;
     } catch (error) {
-      console.error(`[AUTH-TRACE-018][${Date.now()}] AuthManager._performRefresh: Error`, {
-        error,
-        timestamp: Date.now()
-      });
+      console.error('[AuthManager] Refresh failed:', error);
       return false;
     }
   }
@@ -498,47 +374,15 @@ async forceRefresh(): Promise<string | null> {
    * - Other tabs detect the change and update their state
    */
   setTokens(accessToken: string, refreshToken: string, expiresAt: number): void {
-    const timestamp = Date.now();
-
-    // TRACE-019: BEFORE setting tokens
-    console.log(`[AUTH-TRACE-019][${timestamp}] AuthManager.setTokens: BEFORE setting tokens`, {
-      oldMemoryAccessTokenPrefix: this.accessToken?.substring(0, 8) || 'NULL',
-      oldMemoryRefreshTokenPrefix: this.refreshToken?.substring(0, 8) || 'NULL',
-      oldLocalStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
-      oldLocalStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
-      newAccessTokenPrefix: accessToken.substring(0, 8),
-      newRefreshTokenPrefix: refreshToken.substring(0, 8),
-      timestamp
-    });
-
     // Set in memory first
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.expiresAt = expiresAt;
 
-    // TRACE-020: AFTER setting memory, BEFORE localStorage
-    console.log(`[AUTH-TRACE-020][${Date.now()}] AuthManager.setTokens: Memory updated, BEFORE localStorage write`, {
-      memoryAccessTokenPrefix: this.accessToken.substring(0, 8),
-      memoryRefreshTokenPrefix: this.refreshToken.substring(0, 8),
-      localStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
-      localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
-      timestamp: Date.now()
-    });
-
     // Persist to localStorage (triggers storage event in other tabs)
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
-
-    // TRACE-021: AFTER localStorage write
-    console.log(`[AUTH-TRACE-021][${Date.now()}] AuthManager.setTokens: AFTER localStorage write`, {
-      memoryAccessTokenPrefix: this.accessToken.substring(0, 8),
-      memoryRefreshTokenPrefix: this.refreshToken.substring(0, 8),
-      localStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
-      localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
-      expiresAt: new Date(expiresAt).toISOString(),
-      timestamp: Date.now()
-    });
 
     this.notifyListeners();
   }
@@ -560,11 +404,6 @@ async forceRefresh(): Promise<string | null> {
     // Persist to localStorage (triggers storage event in other tabs)
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
     localStorage.setItem(STORAGE_KEYS.ACCOUNT, JSON.stringify(account));
-
-    console.log('[AuthManager] User data stored:', {
-      userId: user.id,
-      onboardingCompleted: user.onboarding_completed
-    });
 
     this.notifyListeners();
   }
@@ -603,7 +442,6 @@ async forceRefresh(): Promise<string | null> {
    * Called after successful login or token refresh to signal that auth is fully initialized
    */
   markAuthReady(): void {
-    console.log('[AuthManager] Marking auth as ready');
     this.authReady = true;
     this.notifyListeners();
   }
@@ -680,21 +518,6 @@ async forceRefresh(): Promise<string | null> {
    * - Other tabs detect the changes and clear their state automatically
    */
   clear(): void {
-    const timestamp = Date.now();
-
-    // Capture token prefixes before clearing for logging
-    const memoryAccessTokenPrefix = this.accessToken?.substring(0, 8) || 'NULL';
-    const memoryRefreshTokenPrefix = this.refreshToken?.substring(0, 8) || 'NULL';
-
-    // TRACE-022: BEFORE clearing
-    console.log(`[AUTH-TRACE-022][${timestamp}] AuthManager.clear: BEFORE clearing`, {
-      memoryAccessTokenPrefix,
-      memoryRefreshTokenPrefix,
-      localStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
-      localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
-      timestamp
-    });
-
     // Clear memory
     this.accessToken = null;
     this.refreshToken = null;
@@ -710,15 +533,6 @@ async forceRefresh(): Promise<string | null> {
 
     // Also clear business profile selection
     localStorage.removeItem('oslira-selected-business');
-
-    // TRACE-023: AFTER clearing
-    console.log(`[AUTH-TRACE-023][${Date.now()}] AuthManager.clear: AFTER clearing`, {
-      memoryAccessTokenPrefix: 'NULL',
-      memoryRefreshTokenPrefix: 'NULL',
-      localStorageAccessTokenPrefix: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 8) || 'NULL',
-      localStorageRefreshTokenPrefix: localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN)?.substring(0, 8) || 'NULL',
-      timestamp: Date.now()
-    });
 
     this.notifyListeners();
   }
