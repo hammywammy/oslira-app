@@ -89,7 +89,7 @@ window.stopDemoQueue();   // Stop and clear
 The hook polls this endpoint:
 
 ```
-GET /api/analysis-queue/active
+GET /api/analysis/active
 ```
 
 **Response format:**
@@ -183,7 +183,7 @@ window.startDemoQueue()
 
 ## Production Deployment
 
-1. Ensure backend implements `/api/analysis-queue/active` endpoint
+1. Ensure backend implements `/api/analysis/active` endpoint
 2. Backend should return all active analyses for the authenticated user
 3. Test with real Durable Objects connection
 4. Monitor polling performance in production
