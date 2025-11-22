@@ -14,6 +14,7 @@
 import { Icon } from '@iconify/react';
 import { useState, useRef, useEffect } from 'react';
 import type { SortField, SortOrder, TableFilters } from '@/pages/dashboard/DashboardPage';
+import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';
 
 interface DashboardHotbarProps {
   onBulkUpload: () => void;
@@ -47,23 +48,8 @@ export function DashboardHotbar({
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const sortMenuRef = useRef<HTMLDivElement>(null);
-  const filterMenuRef = useRef<HTMLDivElement>(null);
-
-  // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
-        setShowSortMenu(false);
-      }
-      if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
-        setShowFilterMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const sortButtonRef = useRef<HTMLButtonElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleMassDelete = async () => {
     if (selectedCount === 0) return;
@@ -185,163 +171,169 @@ export function DashboardHotbar({
           </div>
 
           {/* Sort Button with Dropdown */}
-          <div className="relative" ref={sortMenuRef}>
-            <button
-              onClick={() => setShowSortMenu(!showSortMenu)}
-              className="
-                inline-flex items-center gap-2 h-9 px-3
-                border border-border rounded-lg
-                text-sm font-medium text-foreground
-                hover:bg-muted/50 transition-colors
-                whitespace-nowrap
-              "
-            >
-              <Icon icon="mdi:sort-variant" width={18} />
-              <span>{getSortLabel()}</span>
-              <Icon icon="mdi:chevron-down" width={16} className="text-muted-foreground" />
-            </button>
+          <button
+            ref={sortButtonRef}
+            onClick={() => setShowSortMenu(!showSortMenu)}
+            className="
+              inline-flex items-center gap-2 h-9 px-3
+              border border-border rounded-lg
+              text-sm font-medium text-foreground
+              hover:bg-muted/50 transition-colors
+              whitespace-nowrap
+            "
+          >
+            <Icon icon="mdi:sort-variant" width={18} />
+            <span>{getSortLabel()}</span>
+            <Icon icon="mdi:chevron-down" width={16} className="text-muted-foreground" />
+          </button>
 
-            {showSortMenu && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-background border border-border rounded-lg shadow-lg z-dropdown">
-                <div className="p-2">
-                  <div className="text-xs font-semibold text-muted-foreground px-2 py-1">Sort by</div>
-                  {[
-                    { field: 'created_at' as SortField, label: 'Created Date' },
-                    { field: 'updated_at' as SortField, label: 'Updated Date' },
-                    { field: 'overall_score' as SortField, label: 'Score' },
-                  ].map(({ field, label }) => (
-                    <div key={field} className="space-y-1">
-                      <button
-                        onClick={() => {
-                          onSortChange(field, 'desc');
-                          setShowSortMenu(false);
+          <DropdownPortal
+            isOpen={showSortMenu}
+            onClose={() => setShowSortMenu(false)}
+            triggerRef={sortButtonRef}
+            width={192}
+            alignment="right"
+          >
+            <div className="p-2">
+              <div className="text-xs font-semibold text-muted-foreground px-2 py-1">Sort by</div>
+              {[
+                { field: 'created_at' as SortField, label: 'Created Date' },
+                { field: 'updated_at' as SortField, label: 'Updated Date' },
+                { field: 'overall_score' as SortField, label: 'Score' },
+              ].map(({ field, label }) => (
+                <div key={field} className="space-y-1">
+                  <button
+                    onClick={() => {
+                      onSortChange(field, 'desc');
+                      setShowSortMenu(false);
+                    }}
+                    className={`
+                      w-full text-left px-2 py-1.5 text-sm rounded
+                      hover:bg-muted/50 transition-colors
+                      ${sortField === field && sortOrder === 'desc' ? 'bg-primary/10 text-primary' : ''}
+                    `}
+                  >
+                    {label} (Newest)
+                  </button>
+                  <button
+                    onClick={() => {
+                      onSortChange(field, 'asc');
+                      setShowSortMenu(false);
+                    }}
+                    className={`
+                      w-full text-left px-2 py-1.5 text-sm rounded
+                      hover:bg-muted/50 transition-colors
+                      ${sortField === field && sortOrder === 'asc' ? 'bg-primary/10 text-primary' : ''}
+                    `}
+                  >
+                    {label} (Oldest)
+                  </button>
+                </div>
+              ))}
+            </div>
+          </DropdownPortal>
+
+          {/* Filter Button with Dropdown */}
+          <button
+            ref={filterButtonRef}
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className={`
+              inline-flex items-center gap-2 h-9 px-3
+              border rounded-lg text-sm font-medium
+              hover:bg-primary/5 transition-colors whitespace-nowrap
+              ${getActiveFilterCount() > 0 ? 'border-primary/30 text-primary' : 'border-border text-foreground'}
+            `}
+          >
+            <Icon icon="mdi:filter-outline" width={18} />
+            <span>Filter</span>
+            {getActiveFilterCount() > 0 && (
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-semibold">
+                {getActiveFilterCount()}
+              </span>
+            )}
+          </button>
+
+          <DropdownPortal
+            isOpen={showFilterMenu}
+            onClose={() => setShowFilterMenu(false)}
+            triggerRef={filterButtonRef}
+            width={288}
+            alignment="right"
+          >
+            <div className="p-4 space-y-4">
+              <div>
+                <div className="text-xs font-semibold text-foreground mb-2">Analysis Status</div>
+                <div className="space-y-1">
+                  {['pending', 'processing', 'complete', 'failed'].map((status) => (
+                    <label key={status} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.analysisStatus?.includes(status as any) || false}
+                        onChange={(e) => {
+                          const current = filters.analysisStatus || [];
+                          const updated = e.target.checked
+                            ? [...current, status as any]
+                            : current.filter((s) => s !== status);
+                          onFilterChange({ ...filters, analysisStatus: updated.length > 0 ? updated : undefined });
                         }}
-                        className={`
-                          w-full text-left px-2 py-1.5 text-sm rounded
-                          hover:bg-muted/50 transition-colors
-                          ${sortField === field && sortOrder === 'desc' ? 'bg-primary/10 text-primary' : ''}
-                        `}
-                      >
-                        {label} (Newest)
-                      </button>
-                      <button
-                        onClick={() => {
-                          onSortChange(field, 'asc');
-                          setShowSortMenu(false);
-                        }}
-                        className={`
-                          w-full text-left px-2 py-1.5 text-sm rounded
-                          hover:bg-muted/50 transition-colors
-                          ${sortField === field && sortOrder === 'asc' ? 'bg-primary/10 text-primary' : ''}
-                        `}
-                      >
-                        {label} (Oldest)
-                      </button>
-                    </div>
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
+                      />
+                      <span className="text-sm capitalize">{status}</span>
+                    </label>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Filter Button with Dropdown */}
-          <div className="relative" ref={filterMenuRef}>
-            <button
-              onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`
-                inline-flex items-center gap-2 h-9 px-3
-                border rounded-lg text-sm font-medium
-                hover:bg-primary/5 transition-colors whitespace-nowrap
-                ${getActiveFilterCount() > 0 ? 'border-primary/30 text-primary' : 'border-border text-foreground'}
-              `}
-            >
-              <Icon icon="mdi:filter-outline" width={18} />
-              <span>Filter</span>
-              {getActiveFilterCount() > 0 && (
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-semibold">
-                  {getActiveFilterCount()}
-                </span>
-              )}
-            </button>
-
-            {showFilterMenu && (
-              <div className="absolute right-0 top-full mt-1 w-72 bg-background border border-border rounded-lg shadow-lg z-dropdown">
-                <div className="p-4 space-y-4">
-                  <div>
-                    <div className="text-xs font-semibold text-foreground mb-2">Analysis Status</div>
-                    <div className="space-y-1">
-                      {['pending', 'processing', 'complete', 'failed'].map((status) => (
-                        <label key={status} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={filters.analysisStatus?.includes(status as any) || false}
-                            onChange={(e) => {
-                              const current = filters.analysisStatus || [];
-                              const updated = e.target.checked
-                                ? [...current, status as any]
-                                : current.filter((s) => s !== status);
-                              onFilterChange({ ...filters, analysisStatus: updated.length > 0 ? updated : undefined });
-                            }}
-                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-0"
-                          />
-                          <span className="text-sm capitalize">{status}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs font-semibold text-foreground mb-2">Score Range</div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        min="0"
-                        max="100"
-                        value={filters.scoreMin ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value ? parseInt(e.target.value) : undefined;
-                          onFilterChange({ ...filters, scoreMin: value });
-                        }}
-                        className="w-20 h-8 px-2 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                      <span className="text-muted-foreground">to</span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        min="0"
-                        max="100"
-                        value={filters.scoreMax ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value ? parseInt(e.target.value) : undefined;
-                          onFilterChange({ ...filters, scoreMax: value });
-                        }}
-                        className="w-20 h-8 px-2 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <button
-                      onClick={() => {
-                        onFilterChange({});
-                        setShowFilterMenu(false);
-                      }}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Clear All
-                    </button>
-                    <button
-                      onClick={() => setShowFilterMenu(false)}
-                      className="px-3 py-1.5 text-sm font-medium bg-primary text-white rounded hover:bg-primary/90 transition-colors"
-                    >
-                      Apply
-                    </button>
-                  </div>
+              <div>
+                <div className="text-xs font-semibold text-foreground mb-2">Score Range</div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    min="0"
+                    max="100"
+                    value={filters.scoreMin ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      onFilterChange({ ...filters, scoreMin: value });
+                    }}
+                    className="w-20 h-8 px-2 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
+                  <span className="text-muted-foreground">to</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    min="0"
+                    max="100"
+                    value={filters.scoreMax ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value ? parseInt(e.target.value) : undefined;
+                      onFilterChange({ ...filters, scoreMax: value });
+                    }}
+                    className="w-20 h-8 px-2 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  />
                 </div>
               </div>
-            )}
-          </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <button
+                  onClick={() => {
+                    onFilterChange({});
+                    setShowFilterMenu(false);
+                  }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Clear All
+                </button>
+                <button
+                  onClick={() => setShowFilterMenu(false)}
+                  className="px-3 py-1.5 text-sm font-medium bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </DropdownPortal>
 
           {/* Refresh Button */}
           <button
