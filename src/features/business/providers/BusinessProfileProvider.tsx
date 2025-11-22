@@ -166,17 +166,23 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
       }
 
       // No saved selection or invalid → select first profile
-      logger.info('[BusinessProfileProvider] No valid saved selection, selecting first profile');
-      selectBusiness(fetchedProfiles[0]);
-      localStorage.setItem(STORAGE_KEY, fetchedProfiles[0].id);
+      const firstProfile = fetchedProfiles[0];
+      if (firstProfile) {
+        logger.info('[BusinessProfileProvider] No valid saved selection, selecting first profile');
+        selectBusiness(firstProfile);
+        localStorage.setItem(STORAGE_KEY, firstProfile.id);
+      }
 
     } catch (err) {
       const error = err as Error;
       logger.error('[BusinessProfileProvider] Error restoring selection', error);
 
       // Fallback to first profile on any error
-      selectBusiness(fetchedProfiles[0]);
-      localStorage.setItem(STORAGE_KEY, fetchedProfiles[0].id);
+      const firstProfile = fetchedProfiles[0];
+      if (firstProfile) {
+        selectBusiness(firstProfile);
+        localStorage.setItem(STORAGE_KEY, firstProfile.id);
+      }
     }
   }, [selectBusiness]);
 
@@ -194,7 +200,10 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
     const profile = profiles.find((p) => p.id === profileId);
 
     if (!profile) {
-      logger.error('[BusinessProfileProvider] Profile not found', { profileId });
+      logger.error(
+        '[BusinessProfileProvider] Profile not found',
+        new Error(`Profile not found: ${profileId}`)
+      );
       return;
     }
 
