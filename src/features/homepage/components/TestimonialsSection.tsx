@@ -1,18 +1,10 @@
 /**
  * ============================================================================
- * TESTIMONIALS SECTION - OSLIRA PROFESSIONAL V2.0
+ * TESTIMONIALS SECTION - OSLIRA PROFESSIONAL B2B
  * ============================================================================
- * 
- * DESIGN PRINCIPLES:
- * - Based on actual pain points from copy intelligence research
- * - Three testimonial angles: time savings, emotional relief, strategic authority
- * - Professional card design, minimal animation
- * - Attribution (even if placeholder, makes them credible)
- * 
- * COPY STRATEGY (From Intelligence File):
- * - Time: "15 hours/week saved"
- * - Emotional: "Don't dread prospecting anymore"
- * - Authority: "Sound like insider consultant"
+ *
+ * Built for the People Who Carry the Pipeline
+ * Solo operators, consultants, founder-led sales teams
  * ============================================================================
  */
 
@@ -21,33 +13,33 @@ import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
 // =============================================================================
-// DATA - TESTIMONIALS ALIGNED WITH COPY INTELLIGENCE
+// DATA - B2B PERSONAS TESTIMONIALS
 // =============================================================================
 
 const testimonials = [
   {
-    quote: "I used to spend 20 hours a week on LinkedIn with zero results. Oslira gave me back 15 hours — now I'm actually writing more than prospecting. Game changer.",
+    quote: "Running a solo agency means I wear every hat. Oslira gave me back 10+ hours a week by automating lead research. Now I can focus on delivery instead of hunting for the next client.",
     author: 'Marcus Chen',
-    role: 'Freelance Copywriter',
+    role: 'Solo Agency Owner',
     initials: 'MC',
     color: 'from-primary-500 to-primary-600',
-    icon: 'mdi:clock-fast'
+    icon: 'mdi:briefcase'
   },
   {
-    quote: "The emotional relief is real. I don't dread prospecting anymore because Oslira handles the numbers game. I focus on the 5-10% that respond, not the 90% that don't.",
+    quote: "In cybersecurity consulting, trust is everything. Oslira helps me show up to every conversation knowing exactly what the prospect struggles with. No more cold outreach—just warm, relevant conversations.",
     author: 'Sarah Thompson',
-    role: 'B2B Copy Specialist',
+    role: 'Cybersecurity Consultant',
     initials: 'ST',
     color: 'from-secondary-500 to-secondary-600',
-    icon: 'mdi:emoticon-happy-outline'
+    icon: 'mdi:shield-check'
   },
   {
-    quote: "Clients think I'm a genius because I show up knowing their business cold. Oslira's AI briefs make me sound like an insider consultant, not a desperate freelancer.",
+    quote: "Before Oslira, we were losing 20% of revenue from missed follow-ups. The follow-up automation and pipeline intelligence eliminated that completely. Every hot lead gets the attention it deserves.",
     author: 'Kevin Rodriguez',
-    role: 'SaaS Copywriter',
+    role: 'Founder, B2B Services',
     initials: 'KR',
     color: 'from-success-500 to-success-600',
-    icon: 'mdi:account-star'
+    icon: 'mdi:rocket-launch'
   }
 ];
 
@@ -57,8 +49,8 @@ const testimonials = [
 
 const fadeIn = {
   hidden: { opacity: 0, y: 24 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
@@ -85,11 +77,11 @@ export function TestimonialsSection() {
   return (
     <section ref={ref} className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* =====================================================================
             SECTION HEADER
             ===================================================================== */}
-        
+
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -97,17 +89,17 @@ export function TestimonialsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            What Copywriters Are Saying
+            Built for the People Who Carry the Pipeline
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Real results from freelancers who got their time back.
+            Real results from solo operators, consultants, and founder-led sales teams
           </p>
         </motion.div>
 
         {/* =====================================================================
             TESTIMONIALS GRID
             ===================================================================== */}
-        
+
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -149,7 +141,7 @@ export function TestimonialsSection() {
         {/* =====================================================================
             SOCIAL PROOF STATS
             ===================================================================== */}
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -157,10 +149,10 @@ export function TestimonialsSection() {
           className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8"
         >
           {[
-            { number: '500+', label: 'Active Users' },
-            { number: '20x', label: 'Faster Than Manual' },
-            { number: '+43%', label: 'Reply Rate Increase' },
-            { number: '100+', label: 'Profiles Per Hour' }
+            { number: '1,400', label: 'Hours Saved/Year' },
+            { number: '20%', label: 'Conversion Lift' },
+            { number: 'Seconds', label: 'Not Minutes' },
+            { number: '0', label: 'Missed Follow-Ups' }
           ].map((stat, index) => (
             <div key={index} className="text-center">
               <div className="text-4xl font-bold text-primary mb-2">{stat.number}</div>

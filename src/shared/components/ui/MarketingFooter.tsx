@@ -24,7 +24,7 @@ export function MarketingFooter() {
             </div>
             
             <p className="text-slate-400 leading-relaxed">
-              Turn hours of Instagram prospecting into minutes with AI-powered lead analysis and personalized outreach.
+              The prospecting engine for small teams and solo operators. Turn raw leads into revenue with intelligent outbound.
             </p>
           </div>
 

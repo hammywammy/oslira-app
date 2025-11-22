@@ -89,65 +89,6 @@ export async function analyzeInstagramAnonymous(
 }
 
 /**
- * Generate demo results (fallback when API unavailable)
- */
-export function generateDemoResults(username: string): InstagramAnalysisResponse {
-  const cleanUsername = username.replace('@', '');
-  
-  const demoProfiles = [
-    {
-      niche: 'Health & Wellness',
-      category: 'Business',
-      tags: ['Needs copy help', 'High engagement', 'Business owner'],
-    },
-    {
-      niche: 'Tech Startup',
-      category: 'Business',
-      tags: ['Growing fast', 'Content creator', 'B2B focus'],
-    },
-    {
-      niche: 'E-commerce',
-      category: 'Business',
-      tags: ['Product launches', 'Email marketing', 'Conversion focused'],
-    },
-    {
-      niche: 'Coaching',
-      category: 'Business',
-      tags: ['Personal brand', 'Course creator', 'Audience building'],
-    },
-  ];
-
-  const randomProfile = demoProfiles[Math.floor(Math.random() * demoProfiles.length)];
-  if (!randomProfile) {
-    throw new Error('Failed to generate demo profile');
-  }
-
-  const followers = (Math.random() * 50 + 5).toFixed(1);
-  const score = Math.floor(Math.random() * 25 + 75);
-
-  return {
-    profile: {
-      username: cleanUsername,
-      followersCount: parseFloat(followers) * 1000,
-      bio: `${randomProfile.niche} enthusiast`,
-    },
-    insights: {
-      overallScore: score,
-      accountSummary: `High-quality account with strong engagement potential for business partnerships. ${randomProfile.niche} focus.`,
-      engagementInsights: [
-        'Posts consistently get 5%+ engagement rate',
-        'Audience is highly engaged with business content',
-        'Strong potential for collaboration opportunities',
-        'Posts during peak hours for maximum reach',
-        'Uses relevant hashtags effectively',
-      ],
-      niche: randomProfile.niche,
-      category: randomProfile.category,
-    },
-  };
-}
-
-/**
  * Check if error is rate limit error
  */
 export function isRateLimitError(error: unknown): error is RateLimitError {
@@ -162,6 +103,5 @@ export function isRateLimitError(error: unknown): error is RateLimitError {
 
 export default {
   analyzeInstagramAnonymous,
-  generateDemoResults,
   isRateLimitError,
 };

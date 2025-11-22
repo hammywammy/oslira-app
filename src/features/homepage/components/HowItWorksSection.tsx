@@ -1,18 +1,10 @@
 /**
  * ============================================================================
- * HOW IT WORKS SECTION - OSLIRA PROFESSIONAL V2.0
+ * HOW IT WORKS SECTION - OSLIRA PROFESSIONAL B2B
  * ============================================================================
- * 
- * DESIGN PRINCIPLES:
- * - Actual Oslira workflow (paste URL → choose tier → get intelligence)
- * - Clean 3-step visualization
- * - Minimal animation (fade-in + subtle line draw)
- * - Professional color usage
- * 
- * COPY STRATEGY:
- * - Real product steps, not generic "sign up → use → profit"
- * - Highlight three-tier system (Light/Deep/X-Ray)
- * - Emphasize speed and intelligence quality
+ *
+ * The complete prospecting workflow from lead to close
+ * Clear, actionable steps for B2B teams
  * ============================================================================
  */
 
@@ -21,30 +13,44 @@ import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
 // =============================================================================
-// DATA - ACTUAL OSLIRA WORKFLOW
+// DATA - HOW IT WORKS
 // =============================================================================
 
 const steps = [
   {
     number: '01',
-    title: 'Paste Instagram URL',
-    description: 'Drop any Instagram business profile URL into Oslira. Our AI instantly begins analyzing engagement patterns, content themes, and commercial signals to assess partnership fit.',
-    icon: 'mdi:link-variant',
+    title: 'Add Leads',
+    description: 'Import from your CRM, spreadsheet, or scrape directly from platforms.',
+    icon: 'mdi:database-import',
     color: 'primary'
   },
   {
     number: '02',
-    title: 'Choose Analysis Depth',
-    description: 'Select Light for quick filtering, Deep for comprehensive profiling, or X-Ray for complete business intelligence with psychographic analysis and personalized outreach messages.',
-    icon: 'mdi:layers-triple',
+    title: 'Oslira Analyzes',
+    description: 'Scores intent, identifies activity, pulls context, and detects angles.',
+    icon: 'mdi:brain',
     color: 'secondary'
   },
   {
     number: '03',
-    title: 'Get Lead Intelligence',
-    description: 'Receive engagement scoring, partnership viability assessment, content analysis, and ready-to-send personalized outreach – all in 30 seconds.',
-    icon: 'mdi:sparkles',
+    title: 'Prioritize & Act',
+    description: 'Focus only on the "hot" or "warm" list.',
+    icon: 'mdi:fire',
+    color: 'warning'
+  },
+  {
+    number: '04',
+    title: 'Execute Outreach',
+    description: 'Email, DM, or call with context baked in.',
+    icon: 'mdi:send',
     color: 'success'
+  },
+  {
+    number: '05',
+    title: 'Close With Confidence',
+    description: 'Follow-ups handled. Notes organized. Pipeline visible.',
+    icon: 'mdi:check-circle',
+    color: 'primary'
   }
 ];
 
@@ -54,8 +60,8 @@ const steps = [
 
 const fadeIn = {
   hidden: { opacity: 0, y: 24 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
@@ -66,7 +72,7 @@ const stagger = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15
+      staggerChildren: 0.12
     }
   }
 };
@@ -82,11 +88,11 @@ export function HowItWorksSection() {
   return (
     <section ref={ref} className="py-24 px-6 bg-neutral-50">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* =====================================================================
             SECTION HEADER
             ===================================================================== */}
-        
+
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
@@ -94,107 +100,102 @@ export function HowItWorksSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            How Oslira Works
+            How It Works
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Three steps to qualified leads. No guesswork, no spreadsheets.
+            From raw leads to closed deals in five clear steps
           </p>
         </motion.div>
 
         {/* =====================================================================
-            STEPS TIMELINE
+            STEPS GRID
             ===================================================================== */}
-        
+
         <motion.div
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={stagger}
-          className="relative"
+          className="space-y-8"
         >
-          {/* Connection Lines (Desktop) */}
-          <div className="hidden lg:block absolute top-16 left-0 right-0 h-0.5 bg-border" 
-               style={{ 
-                 left: 'calc(16.666% + 3rem)', 
-                 right: 'calc(16.666% + 3rem)' 
-               }} 
-          />
+          {steps.map((step, index) => (
+            <motion.div
+              key={index}
+              variants={fadeIn}
+              className="relative"
+            >
+              {/* Desktop Layout */}
+              <div className={`flex items-center gap-8 ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''}`}>
 
-          {/* Steps Grid */}
-          <div className="grid lg:grid-cols-3 gap-12 lg:gap-8">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                variants={fadeIn}
-                className="relative"
-              >
-                {/* Mobile Connection Arrow */}
-                {index < steps.length - 1 && (
-                  <div className="lg:hidden flex justify-center my-8">
-                    <Icon icon="mdi:chevron-down" className="text-3xl text-border" />
-                  </div>
-                )}
-
-                {/* Step Card */}
-                <div className="relative bg-card border border-border rounded-xl p-8">
-                  
-                  {/* Step Number Circle */}
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg shadow-lg z-10">
+                {/* Number Circle */}
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                     {step.number}
                   </div>
+                </div>
 
-                  {/* Icon */}
-                  <div className="mt-4 mb-6 flex justify-center">
-                    <div className={`w-16 h-16 rounded-lg bg-${step.color}/10 flex items-center justify-center`}>
-                      <Icon 
-                        icon={step.icon} 
+                {/* Content Card */}
+                <div className="flex-1 bg-card border border-border rounded-xl p-8 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-6">
+
+                    {/* Icon */}
+                    <div className={`flex-shrink-0 w-16 h-16 rounded-lg bg-${step.color}/10 flex items-center justify-center`}>
+                      <Icon
+                        icon={step.icon}
                         className={`text-3xl ${
                           step.color === 'primary' ? 'text-primary' :
                           step.color === 'secondary' ? 'text-secondary-600' :
-                          'text-success-600'
-                        }`} 
+                          step.color === 'warning' ? 'text-warning-600' :
+                          step.color === 'success' ? 'text-success-600' :
+                          'text-primary'
+                        }`}
                       />
                     </div>
+
+                    {/* Text Content */}
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-foreground mb-3">
+                        {step.title}
+                      </h3>
+                      <p className="text-lg text-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-
-                  {/* Title */}
-                  <h3 className="text-2xl font-bold text-foreground mb-4 text-center">
-                    {step.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-muted-foreground leading-relaxed text-center">
-                    {step.description}
-                  </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+
+              {/* Connecting Line */}
+              {index < steps.length - 1 && (
+                <div className="flex justify-center my-4">
+                  <Icon icon="mdi:chevron-down" className="text-3xl text-border" />
+                </div>
+              )}
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* =====================================================================
-            FEATURE CALLOUT
+            BOTTOM CTA
             ===================================================================== */}
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
           className="mt-16 bg-primary/5 border border-primary/20 rounded-xl p-8 text-center"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Icon icon="mdi:lightning-bolt" className="text-3xl text-primary" />
-            <h3 className="text-2xl font-bold text-foreground">Three-Tier Intelligence</h3>
+            <Icon icon="mdi:rocket-launch" className="text-3xl text-primary" />
+            <h3 className="text-2xl font-bold text-foreground">Ready to Build Your Pipeline?</h3>
           </div>
           <p className="text-muted-foreground max-w-3xl mx-auto mb-6">
-            Not every prospect deserves deep research. Filter 100 profiles quickly with Light analysis, 
-            then invest time in comprehensive Deep analysis for strong prospects, 
-            then get complete X-Ray intelligence on your top candidates – complete with psychographic profiling and personalized outreach.
+            Stop wasting time on dead leads. Start closing more deals with intelligent prospecting.
           </p>
           <button
             onClick={() => window.location.href = '/auth/signup'}
             className="px-8 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
           >
-            Try Light Analysis Free
+            Start Free
           </button>
         </motion.div>
 

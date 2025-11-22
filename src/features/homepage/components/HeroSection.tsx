@@ -1,18 +1,10 @@
 /**
  * ============================================================================
- * HERO SECTION - OSLIRA PROFESSIONAL V2.1 (FINAL)
+ * HERO SECTION - OSLIRA PROFESSIONAL B2B
  * ============================================================================
- * 
- * UPDATES:
- * - Stronger purple gradient (more visible, professional)
- * - Upgraded demo card (better elevation, glow, depth)
- * - Enhanced visual polish
- * - All white/light backgrounds only
- * 
- * COLOR STRATEGY:
- * - Primary Blue → Secondary Purple gradient (50/50 blend)
- * - Purple more prominent but still professional
- * - Demo card has subtle glow effect
+ *
+ * The Prospecting Engine for Small Teams and Solo Operators
+ * Professional, enterprise-grade, outcome-first positioning
  * ============================================================================
  */
 
@@ -38,8 +30,8 @@ interface AnalysisDemo {
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
   }
@@ -68,10 +60,10 @@ export function HeroSection() {
   // ===========================================================================
   // HANDLERS
   // ===========================================================================
-  
+
   const handleAnalysis = async () => {
     const cleanUsername = username.trim().replace('@', '');
-    
+
     if (!cleanUsername) return;
 
     setIsAnalyzing(true);
@@ -82,12 +74,12 @@ export function HeroSection() {
     const demoData: AnalysisDemo = {
       username: cleanUsername,
       score: Math.floor(Math.random() * 25 + 70),
-      niche: 'Content Creator',
+      niche: 'B2B Services',
       followers: `${(Math.random() * 50 + 5).toFixed(1)}K`,
       signals: [
-        'High engagement rate',
-        'Business-focused content',
-        'Active in last 7 days'
+        'Recent activity shows buying intent',
+        'ICP match: Strong alignment',
+        'Outreach angle: Posted about scaling challenges'
       ]
     };
 
@@ -111,10 +103,10 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center px-6 pt-32 pb-24 overflow-hidden bg-gradient-to-br from-primary-500 via-secondary-500 to-secondary-600">
-      
+
       {/* Enhanced gradient overlay for depth and purple prominence */}
       <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-secondary-400/20 to-secondary-500/30" />
-      
+
       {/* Subtle animated mesh gradient */}
       <div className="absolute inset-0">
         <motion.div
@@ -129,19 +121,19 @@ export function HeroSection() {
           }}
         />
       </div>
-      
-      {/* Subtle noise texture (OpenAI-style) */}
+
+      {/* Subtle noise texture */}
       <div className="absolute inset-0 opacity-[0.02]" style={{
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")',
       }} />
 
       <div className="relative max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          
+
           {/* ===================================================================
               LEFT COLUMN - VALUE PROPOSITION
               =================================================================== */}
-          
+
           <motion.div
             initial="hidden"
             animate="visible"
@@ -152,33 +144,31 @@ export function HeroSection() {
             <motion.div variants={fadeIn}>
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
                 <Icon icon="mdi:lightning-bolt" className="text-white text-lg" />
-                <span className="text-white/90 text-sm font-medium">AI-Powered Instagram Prospecting</span>
+                <span className="text-white/90 text-sm font-medium">The Prospecting Engine for Small Teams</span>
               </div>
             </motion.div>
 
             {/* Headline */}
             <motion.div variants={fadeIn}>
               <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
-                Stop Prospecting.
-                <br />
-                <span className="text-white/90">Start Writing.</span>
+                Turn Raw Leads Into Revenue With Intelligent Outbound
               </h1>
             </motion.div>
 
             {/* Subheadline */}
             <motion.div variants={fadeIn}>
               <p className="text-xl lg:text-2xl text-white/80 leading-relaxed">
-                Oslira automates Instagram prospecting so copywriters spend{' '}
-                <span className="font-semibold text-white">90% of their time writing</span>, not selling.
+                Oslira analyzes buyers, scores intent, and gives you the exact reason to reach out—so you never waste time on dead leads or miss a serious one again.
               </p>
             </motion.div>
 
             {/* Value Props */}
             <motion.div variants={fadeIn} className="space-y-4">
               {[
-                { icon: 'mdi:clock-fast', text: '30 seconds per prospect – 20x faster than manual' },
-                { icon: 'mdi:brain', text: 'Comprehensive AI analysis of business fit, not just follower count' },
-                { icon: 'mdi:message-text', text: 'Personalized outreach messages tailored to each lead' }
+                { icon: 'mdi:clock-fast', text: 'Cuts research time from minutes to seconds' },
+                { icon: 'mdi:chart-line', text: 'Raises conversions by eliminating missed follow-ups' },
+                { icon: 'mdi:message-text-outline', text: 'Gives clear outreach angles pulled from real engagement data' },
+                { icon: 'mdi:account-group', text: 'Built for agencies, consultants, and founder-led sales teams' }
               ].map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
@@ -195,7 +185,7 @@ export function HeroSection() {
                 onClick={handleGetStarted}
                 className="px-8 py-4 bg-white text-primary-600 font-semibold rounded-lg hover:bg-neutral-50 transition-colors shadow-lg"
               >
-                Get 25 Free Credits
+                Start Free
               </button>
               <button
                 onClick={() => {
@@ -204,7 +194,7 @@ export function HeroSection() {
                 }}
                 className="px-8 py-4 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
               >
-                See Demo
+                Watch Demo
               </button>
             </motion.div>
 
@@ -212,25 +202,25 @@ export function HeroSection() {
             <motion.div variants={fadeIn} className="pt-6 border-t border-white/20">
               <div className="flex items-center gap-6">
                 <div className="text-white/80 text-sm">
-                  <div className="font-semibold text-white text-lg">100+</div>
-                  <div>Profiles/Hour</div>
+                  <div className="font-semibold text-white text-lg">1,400</div>
+                  <div>Hours Saved/Year</div>
                 </div>
                 <div className="text-white/80 text-sm">
-                  <div className="font-semibold text-white text-lg">20x</div>
-                  <div>Faster</div>
+                  <div className="font-semibold text-white text-lg">20%</div>
+                  <div>Conversion Lift</div>
                 </div>
                 <div className="text-white/80 text-sm">
-                  <div className="font-semibold text-white text-lg">+43%</div>
-                  <div>Reply Rate Increase</div>
+                  <div className="font-semibold text-white text-lg">Seconds</div>
+                  <div>Not Minutes</div>
                 </div>
               </div>
             </motion.div>
           </motion.div>
 
           {/* ===================================================================
-              RIGHT COLUMN - UPGRADED DEMO CARD
+              RIGHT COLUMN - DEMO CARD
               =================================================================== */}
-          
+
           <motion.div
             initial={{ opacity: 0, x: 40, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -239,10 +229,10 @@ export function HeroSection() {
           >
             {/* Glow effect behind card */}
             <div className="absolute -inset-4 bg-gradient-to-br from-white/40 via-secondary-300/40 to-primary-300/40 rounded-3xl blur-2xl opacity-60" />
-            
+
             <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/50">
-              
-              {/* Demo Header - macOS style */}
+
+              {/* Demo Header */}
               <div className="bg-neutral-50 px-6 py-4 border-b border-neutral-200">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-2">
@@ -256,13 +246,13 @@ export function HeroSection() {
 
               {/* Demo Content */}
               <div className="p-8 space-y-6 bg-gradient-to-br from-white to-neutral-50/30">
-                
+
                 <div>
-                  <h3 className="text-xl font-bold text-neutral-900 mb-2">Try it yourself</h3>
-                  <p className="text-neutral-600 text-sm">Paste any Instagram username to see Oslira's analysis</p>
+                  <h3 className="text-xl font-bold text-neutral-900 mb-2">See Instant Lead Intelligence</h3>
+                  <p className="text-neutral-600 text-sm">Analyze any Instagram profile to see prospect scoring in action</p>
                 </div>
 
-                {/* Input with better styling */}
+                {/* Input */}
                 <div id="demo-input" className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-500">
                     <Icon icon="mdi:instagram" className="text-xl" />
@@ -288,7 +278,7 @@ export function HeroSection() {
                       Analyzing...
                     </span>
                   ) : (
-                    'Analyze Profile'
+                    'Analyze Lead'
                   )}
                 </button>
 
@@ -302,19 +292,19 @@ export function HeroSection() {
                     {/* Score */}
                     <div className="flex items-center justify-between p-4 bg-gradient-to-br from-primary-50 to-secondary-50 rounded-lg border border-primary-100">
                       <div>
-                        <div className="text-sm text-neutral-600 mb-1">Lead Score</div>
+                        <div className="text-sm text-neutral-600 mb-1">Intent Score</div>
                         <div className="font-bold text-neutral-900">@{result.username}</div>
                         <div className="text-xs text-neutral-500 mt-1">{result.niche} • {result.followers}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-4xl font-bold bg-gradient-to-br from-primary-600 to-secondary-600 bg-clip-text text-transparent">{result.score}%</div>
-                        <div className="text-xs text-neutral-500 font-medium">Partnership Fit</div>
+                        <div className="text-xs text-neutral-500 font-medium">Quality Match</div>
                       </div>
                     </div>
 
                     {/* Signals */}
                     <div className="space-y-2">
-                      <div className="text-sm font-semibold text-neutral-700">Key Signals</div>
+                      <div className="text-sm font-semibold text-neutral-700">Outreach Intelligence</div>
                       {result.signals.map((signal, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm text-neutral-600 bg-white p-2 rounded border border-neutral-100">
                           <Icon icon="mdi:check-circle" className="text-success-500 flex-shrink-0" />
@@ -329,7 +319,7 @@ export function HeroSection() {
                         onClick={handleGetStarted}
                         className="w-full py-3 bg-gradient-to-r from-neutral-900 to-neutral-800 text-white font-semibold rounded-lg hover:from-neutral-800 hover:to-neutral-700 transition-all shadow-lg"
                       >
-                        See Full Analysis →
+                        Start Prospecting →
                       </button>
                     </div>
                   </motion.div>

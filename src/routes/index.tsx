@@ -12,7 +12,6 @@
  */
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
 import { HomePage } from '@/pages/marketing/HomePage';
 import { PricingPage } from '@/pages/marketing/PricingPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -35,18 +34,6 @@ import { UsageTab } from '@/pages/settings/tabs/UsageTab';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
-
-// =============================================================================
-// LAZY LOADED COMPONENTS (Marketing Showcase Pages)
-// =============================================================================
-
-const TailwindShowcase = lazy(() => import('@/pages/showcase/TailwindShowcase'));
-const FramerShowcase = lazy(() => import('@/pages/showcase/FramerShowcase'));
-const ComponentLab = lazy(() => import('@/pages/showcase/ComponentLab'));
-const DarkModeShowcase = lazy(() => import('@/pages/showcase/DarkModeShowcase'));
-const ChartsShowcase = lazy(() => import('@/pages/showcase/ChartsShowcase'));
-const ComponentShowcase = lazy(() => import('@/pages/showcase/ComponentShowcase'));
-const ThemeTest = lazy(() => import('@/pages/showcase/ThemeTest'));
 
 // =============================================================================
 // DOMAIN GUARD
@@ -96,81 +83,6 @@ export const router = createBrowserRouter([
     element: (
       <DomainGuard domain="marketing">
         <PricingPage />
-      </DomainGuard>
-    ),
-  },
-
-  // ============================================================
-  // MARKETING SHOWCASE PAGES (Development)
-  // ============================================================
-  
-  {
-    path: '/showcase/tailwind',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <TailwindShowcase />
-        </Suspense>
-      </DomainGuard>
-    ),
-  },
-  {
-    path: '/showcase/framer',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <FramerShowcase />
-        </Suspense>
-      </DomainGuard>
-    ),
-  },
-  {
-    path: '/showcase/component-lab',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <ComponentLab />
-        </Suspense>
-      </DomainGuard>
-    ),
-  },
-  {
-    path: '/showcase/dark-mode',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <DarkModeShowcase />
-        </Suspense>
-      </DomainGuard>
-    ),
-  },
-  {
-    path: '/showcase/charts',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <ChartsShowcase />
-        </Suspense>
-      </DomainGuard>
-    ),
-  },
-  {
-    path: '/showcase/components',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <ComponentShowcase />
-        </Suspense>
-      </DomainGuard>
-    ),
-  },
-  {
-    path: '/showcase/theme-test',
-    element: (
-      <DomainGuard domain="marketing">
-        <Suspense fallback={<div>Loading...</div>}>
-          <ThemeTest />
-        </Suspense>
       </DomainGuard>
     ),
   },
