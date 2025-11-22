@@ -93,9 +93,8 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
       return;
     }
 
-    // Don't fetch if no business profile selected
+    // Don't fetch if no business profile selected (silent during loading)
     if (!businessProfileId) {
-      logger.warn('[useLeads] No businessProfileId, skipping fetch');
       setLeads([]);
       setIsLoading(false);
       return;
