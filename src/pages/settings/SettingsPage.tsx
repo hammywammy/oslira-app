@@ -26,8 +26,11 @@
  * - Usage stats from analytics
  */
 
-import { Navigate, Outlet, useLocation, NavLink, Link } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, NavLink } from 'react-router-dom';
 import { Icon } from '@iconify/react';
+import { TopBar } from '@/shared/components/layout/TopBar';
+import { Sidebar } from '@/shared/components/layout/Sidebar';
+import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
 // =============================================================================
 // TAB CONFIGURATION
@@ -85,6 +88,7 @@ const SETTINGS_TABS: SettingsTab[] = [
 
 export function SettingsPage() {
   const location = useLocation();
+  const { isCollapsed } = useSidebarStore();
 
   // Redirect /settings to /settings/general
   if (location.pathname === '/settings') {
@@ -93,17 +97,18 @@ export function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Back Arrow */}
-      <div className="fixed top-6 left-6 z-50">
-        <Link
-          to="/dashboard"
-          className="flex items-center justify-center w-10 h-10 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
-        >
-          <Icon icon="ph:arrow-left" className="w-5 h-5 text-foreground" />
-        </Link>
-      </div>
+      {/* Global TopBar - Fixed top, spans full width */}
+      <TopBar />
 
-      <div className="max-w-7xl mx-auto p-6 pt-20">
+      {/* Sidebar - Fixed left */}
+      <Sidebar />
+
+      {/* Main Content - Respects sidebar width */}
+      <div className={`
+        transition-[margin] duration-200 pt-20
+        ${isCollapsed ? 'ml-16' : 'ml-60'}
+      `}>
+        <div className="max-w-7xl mx-auto p-6">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
@@ -157,6 +162,7 @@ export function SettingsPage() {
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
+        </div>
         </div>
       </div>
     </div>
