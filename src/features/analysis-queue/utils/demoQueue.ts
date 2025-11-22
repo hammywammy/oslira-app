@@ -36,13 +36,14 @@ let activeSimulations: Map<string, NodeJS.Timeout> = new Map();
 /**
  * Simulate a single analysis job from start to completion
  */
-function simulateAnalysis(leadId: string, username: string, avatarUrl?: string) {
+function simulateAnalysis(runId: string, username: string, avatarUrl?: string) {
   const { addJob, updateJob } = useAnalysisQueueStore.getState();
 
   // Start job
   addJob({
-    leadId,
+    runId,
     username,
+    analysisType: 'light',
     avatarUrl,
     progress: 0,
     step: { current: 0, total: 4 },
@@ -62,14 +63,14 @@ function simulateAnalysis(leadId: string, username: string, avatarUrl?: string) 
       // 90% success rate, 10% failure rate
       const success = Math.random() > 0.1;
 
-      updateJob(leadId, {
+      updateJob(runId, {
         progress: currentProgress,
         step: { current: currentStep, total: 4 },
         status: success ? 'complete' : 'failed',
       });
 
       clearInterval(interval);
-      activeSimulations.delete(leadId);
+      activeSimulations.delete(runId);
     } else {
       // Update step based on progress
       if (currentProgress >= 75 && currentStep < 3) {
@@ -80,7 +81,7 @@ function simulateAnalysis(leadId: string, username: string, avatarUrl?: string) 
         currentStep = 1;
       }
 
-      updateJob(leadId, {
+      updateJob(runId, {
         progress: currentProgress,
         step: { current: currentStep, total: 4 },
         status: 'analyzing',
@@ -88,7 +89,7 @@ function simulateAnalysis(leadId: string, username: string, avatarUrl?: string) 
     }
   }, 1000); // Update every second
 
-  activeSimulations.set(leadId, interval);
+  activeSimulations.set(runId, interval);
 }
 
 /**
@@ -107,9 +108,9 @@ export function startDemoQueue() {
   for (let i = 0; i < initialJobs; i++) {
     const user = DEMO_USERS[Math.floor(Math.random() * DEMO_USERS.length)];
     if (!user) continue;
-    const leadId = `demo-${Date.now()}-${i}`;
+    const runId = `demo-${Date.now()}-${i}`;
     setTimeout(() => {
-      simulateAnalysis(leadId, user.username, user.avatarUrl);
+      simulateAnalysis(runId, user.username, user.avatarUrl);
     }, i * 2000); // Stagger start times
   }
 
@@ -117,8 +118,8 @@ export function startDemoQueue() {
   demoInterval = setInterval(() => {
     const user = DEMO_USERS[Math.floor(Math.random() * DEMO_USERS.length)];
     if (!user) return;
-    const leadId = `demo-${Date.now()}`;
-    simulateAnalysis(leadId, user.username, user.avatarUrl);
+    const runId = `demo-${Date.now()}`;
+    simulateAnalysis(runId, user.username, user.avatarUrl);
   }, Math.floor(Math.random() * 10000) + 10000);
 }
 
