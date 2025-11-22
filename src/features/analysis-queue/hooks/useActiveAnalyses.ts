@@ -95,24 +95,12 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
  */
 export function useActiveAnalyses() {
   const {
-    jobs,
-    isPollingEnabled,
-    pollingShouldStop,
     addJob,
     updateJob,
     disablePolling,
     enablePolling,
     confirmJobStarted,
   } = useAnalysisQueueStore();
-
-  // Log polling state changes
-  useEffect(() => {
-    logger.info('[ActiveAnalyses] Polling state changed', {
-      isPollingEnabled,
-      jobCount: jobs.length,
-      activeCount: jobs.filter(j => j.status === 'pending' || j.status === 'analyzing').length,
-    });
-  }, [isPollingEnabled, jobs]);
 
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
@@ -121,6 +109,7 @@ export function useActiveAnalyses() {
     // Stops polling when both backend returns 0 results AND no local active jobs
     refetchInterval: (query) => {
       const hasBackendJobs = (query.state.data?.length ?? 0) > 0;
+      const { jobs } = useAnalysisQueueStore.getState();
       const hasLocalActiveJobs = jobs.filter(j => j.status === 'pending' || j.status === 'analyzing').length > 0;
       const shouldPoll = hasBackendJobs || hasLocalActiveJobs;
 
@@ -146,34 +135,40 @@ export function useActiveAnalyses() {
 
   // Sync fetched data into Zustand store when data changes
   useEffect(() => {
-    if (data) {
-      logger.info('[ActiveAnalyses] Data received from API', {
-        fetchedJobCount: data.length,
-        jobs: data.map(j => ({ runId: j.runId, username: j.username, status: j.status, progress: j.progress })),
-      });
+    if (!data) return;
 
-      syncAnalysesToStore(data, jobs, addJob, updateJob, confirmJobStarted);
+    // Read current state from store inside effect to avoid dependency loop
+    const {
+      jobs: currentJobs,
+      isPollingEnabled: currentIsPollingEnabled,
+      pollingShouldStop: currentPollingShouldStop
+    } = useAnalysisQueueStore.getState();
 
-      // If we fetched zero active analyses and store also has zero active count
-      const fetchedActiveCount = data.filter(
-        (job) => job.status === 'pending' || job.status === 'analyzing'
-      ).length;
+    logger.info('[ActiveAnalyses] Data received from API', {
+      fetchedJobCount: data.length,
+      jobs: data.map(j => ({ runId: j.runId, username: j.username, status: j.status, progress: j.progress })),
+    });
 
-      if (fetchedActiveCount === 0 && jobs.filter(
-        (job) => job.status === 'pending' || job.status === 'analyzing'
-      ).length === 0) {
-        // Check if we should stop polling
-        if (pollingShouldStop || isPollingEnabled) {
-          logger.info('[ActiveAnalyses] No active analyses, disabling polling');
-          disablePolling();
-        }
-      } else if (fetchedActiveCount > 0 && !isPollingEnabled) {
-        // If we found active jobs and polling is disabled, enable it
-        logger.info('[ActiveAnalyses] Found active analyses, enabling polling');
-        enablePolling();
+    syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted);
+
+    const fetchedActiveCount = data.filter(
+      (job) => job.status === 'pending' || job.status === 'analyzing'
+    ).length;
+
+    const localActiveCount = currentJobs.filter(
+      (job) => job.status === 'pending' || job.status === 'analyzing'
+    ).length;
+
+    if (fetchedActiveCount === 0 && localActiveCount === 0) {
+      if (currentPollingShouldStop || currentIsPollingEnabled) {
+        logger.info('[ActiveAnalyses] No active analyses, disabling polling');
+        disablePolling();
       }
+    } else if (fetchedActiveCount > 0 && !currentIsPollingEnabled) {
+      logger.info('[ActiveAnalyses] Found active analyses, enabling polling');
+      enablePolling();
     }
-  }, [data, jobs, addJob, updateJob, confirmJobStarted, disablePolling, enablePolling, isPollingEnabled, pollingShouldStop]);
+  }, [data, addJob, updateJob, confirmJobStarted, disablePolling, enablePolling]);
 
   // Log errors
   if (error) {
