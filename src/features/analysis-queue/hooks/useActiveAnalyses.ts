@@ -14,7 +14,7 @@
  *
  * BACKEND ENDPOINT:
  * GET /api/analysis/active
- * Returns: { success: boolean, data: AnalysisJob[] }
+ * Returns: { success: boolean, data: { active_count: number, analyses: AnalysisJob[] } }
  *
  * USAGE:
  * useActiveAnalyses(); // Call in a top-level component (e.g., TopBar)
@@ -31,7 +31,10 @@ import { logger } from '@/core/utils/logger';
 
 interface FetchActiveAnalysesResponse {
   success: boolean;
-  data: AnalysisJob[];
+  data: {
+    active_count: number;
+    analyses: AnalysisJob[];
+  };
 }
 
 // =============================================================================
@@ -62,10 +65,10 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
     }
 
     logger.info('[ActiveAnalyses] Active analyses fetched', {
-      count: response.data.length,
+      count: response.data?.analyses?.length ?? 0,
     });
 
-    return response.data;
+    return response.data?.analyses ?? [];
   } catch (error) {
     logger.error('[ActiveAnalyses] Failed to fetch active analyses', error as Error);
     // Return empty array instead of throwing - graceful degradation

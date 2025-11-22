@@ -97,20 +97,23 @@ GET /api/analysis/active
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "leadId": "unique-lead-id",
-      "username": "johndoe",
-      "avatarUrl": "https://instagram.com/avatar.jpg",
-      "progress": 45,
-      "step": {
-        "current": 2,
-        "total": 4
-      },
-      "status": "analyzing",
-      "startedAt": 1234567890
-    }
-  ]
+  "data": {
+    "active_count": 1,
+    "analyses": [
+      {
+        "leadId": "unique-lead-id",
+        "username": "johndoe",
+        "avatarUrl": "https://instagram.com/avatar.jpg",
+        "progress": 45,
+        "step": {
+          "current": 2,
+          "total": 4
+        },
+        "status": "analyzing",
+        "startedAt": 1234567890
+      }
+    ]
+  }
 }
 ```
 
