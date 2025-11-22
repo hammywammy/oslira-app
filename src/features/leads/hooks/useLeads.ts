@@ -16,6 +16,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchLeads } from '../api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { Lead } from '@/shared/types/leads.types';
+import { useAuth } from '@/features/auth/contexts/AuthProvider';
 
 // =============================================================================
 // TYPES
@@ -66,6 +67,7 @@ interface UseLeadsReturn {
  * ```
  */
 export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     autoFetch = true,
     page = 1,
@@ -83,6 +85,14 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
    * Fetch leads from API
    */
   const fetchLeadsData = useCallback(async () => {
+    // Don't fetch if not authenticated or auth is loading
+    if (!isAuthenticated || authLoading) {
+      logger.warn('[useLeads] Not authenticated or auth loading, skipping fetch');
+      setLeads([]);
+      setIsLoading(false);
+      return;
+    }
+
     // Don't fetch if no business profile selected
     if (!businessProfileId) {
       logger.warn('[useLeads] No businessProfileId, skipping fetch');
@@ -115,7 +125,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, sortBy, sortOrder, businessProfileId]);
+  }, [isAuthenticated, authLoading, page, pageSize, sortBy, sortOrder, businessProfileId]);
 
   /**
    * Refresh leads data

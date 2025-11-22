@@ -183,14 +183,12 @@ export function OAuthCallbackPage() {
         : 'Welcome back!';
       setMessage(welcomeMessage);
 
-      // Step 5: Navigate AFTER a tick to ensure state propagation
-      setTimeout(() => {
-        const redirectPath = response.data.user.onboarding_completed
-          ? '/dashboard'
-          : '/onboarding';
-        logger.info('[OAuthCallback] Redirecting', { path: redirectPath });
-        navigate(redirectPath, { replace: true });
-      }, 100); // Small delay ensures React state + localStorage are synchronized
+      // Step 5: Navigate immediately - login() and setTokens() are synchronous
+      const redirectPath = response.data.user.onboarding_completed
+        ? '/dashboard'
+        : '/onboarding';
+      logger.info('[OAuthCallback] Redirecting', { path: redirectPath });
+      navigate(redirectPath, { replace: true });
 
     } catch (error: any) {
       logger.error('[OAuthCallback] Processing failed', error);
