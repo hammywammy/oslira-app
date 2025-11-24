@@ -77,13 +77,17 @@ export function useCompleteOnboarding() {
 
       console.log('[CompleteOnboarding] ✅ SSE stream complete');
 
-      // Refresh user data (this will also get fresh JWT if needed)
+      // Refresh user data (onboarding_completed will be true, and we'll get fresh JWT)
       console.log('[CompleteOnboarding] 🔄 Refreshing user data...');
       try {
         await refreshUser();
         console.log('[CompleteOnboarding] ✅ User data refreshed');
       } catch (refreshError: any) {
-        console.warn('[CompleteOnboarding] ⚠️ User refresh failed', refreshError.message);
+        console.warn('[CompleteOnboarding] ⚠️ User refresh failed (proceeding anyway)', {
+          error: refreshError.message,
+          timestamp: new Date().toISOString()
+        });
+        // Don't throw - Worker already completed successfully
       }
 
       // CRITICAL: Wait for React state to propagate before navigation
