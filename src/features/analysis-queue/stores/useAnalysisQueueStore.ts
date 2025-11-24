@@ -31,7 +31,7 @@ import { create } from 'zustand';
 // TYPES
 // =============================================================================
 
-export type AnalysisStatus = 'pending' | 'analyzing' | 'complete' | 'failed';
+export type AnalysisStatus = 'pending' | 'analyzing' | 'complete' | 'failed' | 'cancelled';
 
 export interface AnalysisJob {
   runId: string;
