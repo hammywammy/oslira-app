@@ -73,13 +73,15 @@ export function useCompleteOnboarding() {
         run_id: response.data.run_id
       });
 
-      // Poll for completion
+      // Stream progress via SSE
       const runId = response.data.run_id;
-      console.log('[CompleteOnboarding] ⏳ Starting polling for run_id:', runId);
-      
-      await pollGenerationProgress(runId);
-      
-      console.log('[CompleteOnboarding] ✅ Polling complete');
+      console.log('[CompleteOnboarding] ⏳ Starting SSE stream for run_id:', runId);
+
+      await streamGenerationProgress(runId, (progress) => {
+        console.log('[SSE] Progress callback', progress);
+      });
+
+      console.log('[CompleteOnboarding] ✅ SSE stream complete');
 
       // Refresh user data (onboarding_completed will be true)
       console.log('[CompleteOnboarding] 🔄 Refreshing user data...');
@@ -112,123 +114,87 @@ export function useCompleteOnboarding() {
 }
 
 // =============================================================================
-// HELPER: Poll generation progress
+// HELPER: Stream generation progress via SSE
 // =============================================================================
 
-async function pollGenerationProgress(runId: string): Promise<void> {
-  const maxAttempts = 60; // 60 seconds max (1 poll per second)
-  let attempts = 0;
-  let stuckAt100Count = 0;
+async function streamGenerationProgress(
+  runId: string,
+  onProgress: (data: { status: string; progress: number; current_step: string }) => void
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const eventSource = new EventSource(
+      `/api/business/generate-context/${runId}/stream`,
+      { withCredentials: true }
+    );
 
-  console.log('[Poll] 🔍 Starting progress polling', {
-    timestamp: new Date().toISOString(),
-    run_id: runId,
-    max_attempts: maxAttempts
-  });
-
-  while (attempts < maxAttempts) {
-    attempts++;
-
-    try {
-      const response = await httpClient.get<{
-        status: 'pending' | 'processing' | 'complete' | 'failed';
-        progress: number;
-        current_step: string;
-      }>(`/api/business/generate-context/${runId}/progress`);
-
-      // Log every poll with full context
-      console.log(`[Poll #${attempts}] 📊 Progress update`, {
-        timestamp: new Date().toISOString(),
-        status: response.status,
-        progress: response.progress,
-        step: response.current_step,
-        attempt: attempts,
-        max_attempts: maxAttempts
-      });
-
-      // ✅ CHECK FOR COMPLETION
-if (response.status === 'complete') {
-  console.log('[Poll] 🎉 GENERATION COMPLETE!', {
-    timestamp: new Date().toISOString(),
-    final_progress: response.progress,
-    final_step: response.current_step,
-    total_attempts: attempts,
-    duration_seconds: attempts
-  });
-  break; // ✅ Exit loop immediately
-}
-
-// ✅ CHECK FOR FAILURE
-if (response.status === 'failed') {
-  console.error('[Poll] ❌ Generation failed', {
-    timestamp: new Date().toISOString(),
-    status: response.status,
-    step: response.current_step,
-    attempts: attempts
-  });
-  throw new Error('Context generation failed');
-}
-
-// ⚠️ SAFETY: Detect if backend is stuck (should never happen with the fix)
-if (response.status === 'processing' && response.progress === 100) {
-  stuckAt100Count++;
-  console.warn(`[Poll] ⚠️  Backend stuck at 100% (count: ${stuckAt100Count}/10)`, {
-    timestamp: new Date().toISOString(),
-    status: response.status,
-    progress: response.progress,
-    step: response.current_step,
-    warning: 'This indicates a backend /complete endpoint failure'
-  });
-
-  // Give backend 10 seconds (increased from 5) before forcing through
-  if (stuckAt100Count >= 10) {
-    console.error('[Poll] 🛑 CRITICAL: Backend failed to mark complete after 10 seconds', {
+    console.log('[SSE] 🔌 Connected to progress stream', {
       timestamp: new Date().toISOString(),
-      final_step: response.current_step,
-      recommendation: 'Check backend logs for /complete endpoint errors'
+      run_id: runId,
+      url: `/api/business/generate-context/${runId}/stream`
     });
-    // Force completion as fallback (backend already did the work)
-    break;
-  }
-} else {
-  stuckAt100Count = 0; // Reset counter
-}
 
-      // Wait 1 second before next poll
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    // Handle progress updates
+    eventSource.addEventListener('message', (event) => {
+      try {
+        const data = JSON.parse(event.data);
 
-    } catch (pollError: any) {
-      console.error(`[Poll #${attempts}] ❌ Poll request failed`, {
-        timestamp: new Date().toISOString(),
-        error: pollError.message,
-        attempt: attempts,
-        will_retry: attempts < maxAttempts - 1
-      });
+        console.log('[SSE] 📊 Progress update', {
+          timestamp: new Date().toISOString(),
+          status: data.status,
+          progress: data.progress,
+          step: data.current_step
+        });
 
-      // If not last attempt, continue polling
-      if (attempts < maxAttempts - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        continue;
+        onProgress(data);
+
+        // Check for completion
+        if (data.status === 'complete') {
+          console.log('[SSE] 🎉 GENERATION COMPLETE!', {
+            timestamp: new Date().toISOString(),
+            final_progress: data.progress,
+            final_step: data.current_step
+          });
+          eventSource.close();
+          resolve();
+        }
+
+        // Check for failure
+        if (data.status === 'failed') {
+          console.error('[SSE] ❌ Generation failed', {
+            timestamp: new Date().toISOString(),
+            status: data.status,
+            step: data.current_step
+          });
+          eventSource.close();
+          reject(new Error('Context generation failed'));
+        }
+      } catch (parseError: any) {
+        console.error('[SSE] ❌ Failed to parse message', {
+          timestamp: new Date().toISOString(),
+          error: parseError.message,
+          raw_data: event.data
+        });
       }
-
-      // Last attempt failed - throw error
-      throw pollError;
-    }
-  }
-
-  // ✅ CHECK FOR TIMEOUT
-  if (attempts >= maxAttempts) {
-    console.error('[Poll] ⏰ TIMEOUT - exceeded max attempts', {
-      timestamp: new Date().toISOString(),
-      attempts: attempts,
-      max_attempts: maxAttempts,
-      duration_seconds: maxAttempts
     });
-    throw new Error('Generation timeout - exceeded 60 seconds');
-  }
 
-  console.log('[Poll] ✅ Polling loop exited successfully', {
-    timestamp: new Date().toISOString(),
-    total_attempts: attempts
+    // Handle custom 'complete' event
+    eventSource.addEventListener('complete', () => {
+      console.log('[SSE] ✅ Complete event received', {
+        timestamp: new Date().toISOString()
+      });
+      eventSource.close();
+      resolve();
+    });
+
+    // Handle errors
+    eventSource.addEventListener('error', (error) => {
+      console.error('[SSE] ❌ Connection error', {
+        timestamp: new Date().toISOString(),
+        error: error,
+        readyState: eventSource.readyState
+      });
+      eventSource.close();
+      reject(new Error('SSE connection failed'));
+    });
   });
 }
