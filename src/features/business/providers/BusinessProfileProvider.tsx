@@ -61,7 +61,7 @@ const BusinessProfileContext = createContext<BusinessProfileContextValue | undef
 // =============================================================================
 
 export function BusinessProfileProvider({ children }: { children: ReactNode }) {
-  const { isFullyReady, isLoading: authLoading } = useAuth();
+  const { isFullyReady } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -76,21 +76,18 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
   // ===========================================================================
 
   useEffect(() => {
-    let cancelled = false;
+    // Don't fetch during OAuth callback - wait for navigation to complete
+    const isOAuthCallback = window.location.pathname === '/auth/callback';
 
-    if (isFullyReady && !authLoading && profiles.length === 0 && !isLoading) {
-      logger.info('[BusinessProfileProvider] User fully ready, fetching profiles');
-      fetchProfiles().then(() => {
-        if (cancelled) {
-          logger.debug('[BusinessProfileProvider] Fetch cancelled due to unmount');
-        }
-      });
+    if (isOAuthCallback) {
+      return; // OAuthCallbackPage will navigate away after login()
     }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [isFullyReady, authLoading]);
+    if (isFullyReady && profiles.length === 0 && !isLoading) {
+      logger.info('[BusinessProfileProvider] User authenticated and auth ready, fetching profiles');
+      fetchProfiles();
+    }
+  }, [isFullyReady]);
 
   // ===========================================================================
   // API CALLS
@@ -100,8 +97,8 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
    * Fetch business profiles from API and populate global store
    */
   const fetchProfiles = useCallback(async () => {
-    if (!isAuthenticated) {
-      logger.warn('[BusinessProfileProvider] Cannot fetch profiles - not authenticated');
+    if (!isFullyReady) {
+      logger.warn('[BusinessProfileProvider] Cannot fetch profiles - not fully ready');
       return;
     }
 
@@ -147,7 +144,7 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, setBusinesses]);
+  }, [isFullyReady, setBusinesses]);
 
   /**
    * Restore previously selected profile from localStorage
