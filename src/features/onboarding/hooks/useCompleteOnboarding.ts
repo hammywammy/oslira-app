@@ -70,36 +70,28 @@ export function useCompleteOnboarding() {
     },
 
     onSuccess: async (response) => {
-      console.log('[CompleteOnboarding] 🎯 onSuccess triggered', {
-        timestamp: new Date().toISOString(),
-        run_id: response.data.run_id
-      });
+      console.log('[CompleteOnboarding] 🎯 onSuccess triggered');
 
-      // Stream progress via SSE
       const runId = response.data.run_id;
-      console.log('[CompleteOnboarding] ⏳ Starting SSE stream for run_id:', runId);
-
       await streamGenerationProgress(runId);
 
       console.log('[CompleteOnboarding] ✅ SSE stream complete');
 
-      // Refresh user data (onboarding_completed will be true)
+      // Refresh user data (this will also get fresh JWT if needed)
       console.log('[CompleteOnboarding] 🔄 Refreshing user data...');
       try {
         await refreshUser();
         console.log('[CompleteOnboarding] ✅ User data refreshed');
       } catch (refreshError: any) {
-        console.warn('[CompleteOnboarding] ⚠️  User refresh failed (proceeding anyway)', {
-          error: refreshError.message,
-          timestamp: new Date().toISOString()
-        });
-        // Don't throw - Worker already completed successfully
+        console.warn('[CompleteOnboarding] ⚠️ User refresh failed', refreshError.message);
       }
 
-      // Navigate to dashboard
-      console.log('[CompleteOnboarding] 🧭 Navigating to dashboard', {
-        timestamp: new Date().toISOString()
-      });
+      // CRITICAL: Wait for React state to propagate before navigation
+      // This ensures all providers have updated state before dashboard mounts
+      console.log('[CompleteOnboarding] ⏳ Waiting for state propagation...');
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      console.log('[CompleteOnboarding] 🧭 Navigating to dashboard');
       navigate('/dashboard', { replace: true });
     },
 

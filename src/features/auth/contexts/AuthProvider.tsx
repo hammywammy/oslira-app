@@ -223,8 +223,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: {
         user: User;
         account: Account;
+        newAccessToken?: string;  // Optional fresh token when onboarding status changed
       };
     }>('/api/auth/session');
+
+    // CRITICAL: If backend issued new token, update auth-manager
+    if (response.data.newAccessToken) {
+      logger.info('[AuthProvider] Received fresh JWT from session endpoint');
+
+      const tokens = authManager.getTokens();
+      if (tokens?.refreshToken) {
+        authManager.setTokens(
+          response.data.newAccessToken,
+          tokens.refreshToken,
+          Date.now() + (15 * 60 * 1000)  // 15 minutes from now
+        );
+      }
+    }
 
     setUser(response.data.user);
     setAccount(response.data.account);
@@ -235,7 +250,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     logger.info('[AuthProvider] User data loaded', {
       userId: response.data.user.id,
-      onboardingCompleted: response.data.user.onboarding_completed
+      onboardingCompleted: response.data.user.onboarding_completed,
+      receivedFreshToken: !!response.data.newAccessToken
     });
   }
 
