@@ -70,15 +70,9 @@ export function useCompleteOnboarding() {
     },
 
     onSuccess: async (response) => {
-      console.log('[CompleteOnboarding] 🎯 onSuccess triggered', {
-        timestamp: new Date().toISOString(),
-        run_id: response.data.run_id
-      });
+      console.log('[CompleteOnboarding] 🎯 onSuccess triggered');
 
-      // Stream progress via SSE
       const runId = response.data.run_id;
-      console.log('[CompleteOnboarding] ⏳ Starting SSE stream for run_id:', runId);
-
       await streamGenerationProgress(runId);
 
       console.log('[CompleteOnboarding] ✅ SSE stream complete');
@@ -96,10 +90,12 @@ export function useCompleteOnboarding() {
         // Don't throw - Worker already completed successfully
       }
 
-      // Navigate to dashboard
-      console.log('[CompleteOnboarding] 🧭 Navigating to dashboard', {
-        timestamp: new Date().toISOString()
-      });
+      // CRITICAL: Wait for React state to propagate before navigation
+      // This ensures all providers have updated state before dashboard mounts
+      console.log('[CompleteOnboarding] ⏳ Waiting for state propagation...');
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      console.log('[CompleteOnboarding] 🧭 Navigating to dashboard');
       navigate('/dashboard', { replace: true });
     },
 

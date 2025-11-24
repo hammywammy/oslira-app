@@ -61,7 +61,7 @@ const BusinessProfileContext = createContext<BusinessProfileContextValue | undef
 // =============================================================================
 
 export function BusinessProfileProvider({ children }: { children: ReactNode }) {
-  const { isFullyReady } = useAuth();
+  const { isFullyReady, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -76,18 +76,25 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
   // ===========================================================================
 
   useEffect(() => {
-    // Don't fetch during OAuth callback - wait for navigation to complete
+    // Don't fetch during OAuth callback
     const isOAuthCallback = window.location.pathname === '/auth/callback';
+    if (isOAuthCallback) return;
 
-    if (isOAuthCallback) {
-      return; // OAuthCallbackPage will navigate away after login()
+    // Guard: Only fetch when fully ready AND user has completed onboarding
+    // This ensures we have fresh JWT with correct onboardingCompleted claim
+    if (!isFullyReady || !user?.onboarding_completed) {
+      logger.debug('[BusinessProfileProvider] Not ready to fetch', {
+        isFullyReady,
+        onboardingCompleted: user?.onboarding_completed
+      });
+      return;
     }
 
-    if (isFullyReady && profiles.length === 0 && !isLoading) {
-      logger.info('[BusinessProfileProvider] User authenticated and auth ready, fetching profiles');
+    if (profiles.length === 0 && !isLoading) {
+      logger.info('[BusinessProfileProvider] Fetching profiles');
       fetchProfiles();
     }
-  }, [isFullyReady]);
+  }, [isFullyReady, user?.onboarding_completed]);
 
   // ===========================================================================
   // API CALLS
