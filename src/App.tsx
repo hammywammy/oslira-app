@@ -21,6 +21,7 @@ import { BusinessProfileProvider } from '@/features/business/providers/BusinessP
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
 import { CreditsInitializer } from '@/features/credits/components/CreditsInitializer';
+import { SubscriptionInitializer } from '@/features/billing/components/SubscriptionInitializer';
 
 // =============================================================================
 // QUERY CLIENT SETUP
@@ -88,6 +89,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <CreditsInitializer />
+            <SubscriptionInitializer />
             <BusinessProfileProvider>
               <RouterProvider router={router} />
             </BusinessProfileProvider>
