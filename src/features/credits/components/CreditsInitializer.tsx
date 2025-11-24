@@ -15,25 +15,31 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '../hooks/useCreditsService';
 
 export function CreditsInitializer() {
-  const { isFullyReady, isAuthenticated } = useAuth();
+  const { isFullyReady, isAuthenticated, user } = useAuth();
   const { fetchBalance } = useCreditsService();
   const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    // Only fetch when user is fully ready (authenticated AND onboarding completed)
-    // Use ref to ensure we only fetch once per auth session
-    if (isFullyReady && !hasFetchedRef.current) {
+    // Guard: Only fetch when fully ready AND user has completed onboarding
+    // AND user object exists with correct onboarding status
+    if (isFullyReady && user?.onboarding_completed && !hasFetchedRef.current) {
       console.log('[CreditsInitializer] User fully ready, fetching balance');
       fetchBalance().then(() => {
         if (!cancelled) {
           hasFetchedRef.current = true;
         }
+      }).catch((error) => {
+        // Don't retry on 403 - user state might still be transitioning
+        if (error.message?.includes('Onboarding not completed')) {
+          console.log('[CreditsInitializer] Onboarding transition - will retry');
+          // Will retry on next render when state updates
+        }
       });
     }
 
-    // Reset the ref when user logs out (isAuthenticated becomes false)
+    // Reset the ref when user logs out
     if (!isAuthenticated) {
       hasFetchedRef.current = false;
     }
@@ -41,8 +47,7 @@ export function CreditsInitializer() {
     return () => {
       cancelled = true;
     };
-  }, [isFullyReady, isAuthenticated, fetchBalance]);
+  }, [isFullyReady, isAuthenticated, user?.onboarding_completed, fetchBalance]);
 
-  // This component doesn't render anything
   return null;
 }
