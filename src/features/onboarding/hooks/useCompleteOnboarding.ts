@@ -90,11 +90,7 @@ export function useCompleteOnboarding() {
         // Don't throw - Worker already completed successfully
       }
 
-      // CRITICAL: Wait for React state to propagate before navigation
-      // This ensures all providers have updated state before dashboard mounts
-      console.log('[CompleteOnboarding] ⏳ Waiting for state propagation...');
-      await new Promise(resolve => setTimeout(resolve, 150));
-
+      // Navigate immediately - fresh JWT already in auth-manager
       console.log('[CompleteOnboarding] 🧭 Navigating to dashboard');
       navigate('/dashboard', { replace: true });
     },
