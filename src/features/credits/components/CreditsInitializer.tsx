@@ -15,24 +15,33 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '../hooks/useCreditsService';
 
 export function CreditsInitializer() {
-  const { isAuthenticated, isAuthReady } = useAuth();
+  const { isFullyReady, isAuthenticated } = useAuth();
   const { fetchBalance } = useCreditsService();
   const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    // Only fetch when auth is ready and user is authenticated
+    let cancelled = false;
+
+    // Only fetch when user is fully ready (authenticated AND onboarding completed)
     // Use ref to ensure we only fetch once per auth session
-    if (isAuthReady && isAuthenticated && !hasFetchedRef.current) {
-      console.log('[CreditsInitializer] Auth ready and authenticated, fetching balance');
-      fetchBalance();
-      hasFetchedRef.current = true;
+    if (isFullyReady && !hasFetchedRef.current) {
+      console.log('[CreditsInitializer] User fully ready, fetching balance');
+      fetchBalance().then(() => {
+        if (!cancelled) {
+          hasFetchedRef.current = true;
+        }
+      });
     }
 
     // Reset the ref when user logs out (isAuthenticated becomes false)
     if (!isAuthenticated) {
       hasFetchedRef.current = false;
     }
-  }, [isAuthReady, isAuthenticated, fetchBalance]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isFullyReady, isAuthenticated, fetchBalance]);
 
   // This component doesn't render anything
   return null;

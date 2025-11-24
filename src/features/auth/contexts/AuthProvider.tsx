@@ -76,6 +76,7 @@ interface AuthContextValue {
   account: Account | null;
   isAuthenticated: boolean;
   isAuthReady: boolean;
+  isFullyReady: boolean;
   isLoading: boolean;
   login: (accessToken: string, refreshToken: string, expiresAt: number, user: User, account: Account) => void;
   logout: () => Promise<void>;
@@ -363,11 +364,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // CONTEXT VALUE
   // ===========================================================================
 
+  // Computed: User is fully ready when authenticated AND onboarding completed
+  // This is the single source of truth for "ready for dashboard data fetching"
+  const isFullyReady = isAuthReady && isAuthenticated && (user?.onboarding_completed ?? false);
+
   const value: AuthContextValue = {
     user,
     account,
     isAuthenticated,
     isAuthReady,
+    isFullyReady,
     isLoading,
     login,
     logout,
