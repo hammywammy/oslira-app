@@ -61,7 +61,7 @@ const BusinessProfileContext = createContext<BusinessProfileContextValue | undef
 // =============================================================================
 
 export function BusinessProfileProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isAuthReady, isLoading: authLoading } = useAuth();
+  const { isFullyReady, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -76,18 +76,21 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
   // ===========================================================================
 
   useEffect(() => {
-    // Don't fetch during OAuth callback - wait for navigation to complete
-    const isOAuthCallback = window.location.pathname === '/auth/callback';
+    let cancelled = false;
 
-    if (isOAuthCallback) {
-      return; // OAuthCallbackPage will navigate away after login()
+    if (isFullyReady && !authLoading && profiles.length === 0 && !isLoading) {
+      logger.info('[BusinessProfileProvider] User fully ready, fetching profiles');
+      fetchProfiles().then(() => {
+        if (cancelled) {
+          logger.debug('[BusinessProfileProvider] Fetch cancelled due to unmount');
+        }
+      });
     }
 
-    if (isAuthReady && isAuthenticated && !authLoading && profiles.length === 0 && !isLoading) {
-      logger.info('[BusinessProfileProvider] User authenticated and auth ready, fetching profiles');
-      fetchProfiles();
-    }
-  }, [isAuthReady, isAuthenticated, authLoading]);
+    return () => {
+      cancelled = true;
+    };
+  }, [isFullyReady, authLoading]);
 
   // ===========================================================================
   // API CALLS

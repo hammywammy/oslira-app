@@ -33,8 +33,17 @@ export function useCreditsService() {
 
       const data = await httpClient.get<{ data: CreditBalance }>('/api/credits/balance');
       setBalance(data.data);
-      
+
     } catch (error: any) {
+      // Handle 403 "onboarding not completed" silently - this is an expected flow state
+      const errorMessage = error?.message || '';
+      if (errorMessage.toLowerCase().includes('onboarding')) {
+        console.warn('[useCreditsService] Skipping fetch - onboarding not completed');
+        setLoading(false);
+        return;
+      }
+
+      // All other errors are unexpected and should be logged
       console.error('[useCreditsService] Fetch error:', error);
       setError(error.message || 'Failed to load balance');
     }
