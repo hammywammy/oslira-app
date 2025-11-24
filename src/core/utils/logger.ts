@@ -75,14 +75,7 @@ class Logger {
     };
 
     this.storeInHistory(entry);
-
-    try {
-if (env.isStaging) {
-  console.log(this.formatMessage('debug', message, context));
-}
-    } catch {
-      // Env not ready yet, skip
-    }
+    // Debug logs stored in history only, not printed to console
   }
 
   info(message: string, context?: LogContext): void {
@@ -96,14 +89,7 @@ if (env.isStaging) {
     };
 
     this.storeInHistory(entry);
-
-    try {
-if (env.isStaging) {
-  console.log(this.formatMessage('info', message, context));
-}
-    } catch {
-      // Env not ready yet, skip
-    }
+    // Info logs stored in history only, not printed to console
   }
 
   warn(message: string, context?: LogContext): void {

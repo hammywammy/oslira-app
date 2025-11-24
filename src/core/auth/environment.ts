@@ -261,17 +261,7 @@ class EnvironmentManager {
       throw new Error('Invalid environment configuration');
     }
 
-    // Log environment in staging (debugging)
-    if (environment === 'staging') {
-      console.log('🔧 STAGING ENVIRONMENT');
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('API:', apiUrl);
-      console.log('App:', appUrl);
-      console.log('Marketing:', this.config.marketingUrl);
-      console.log('Current Domain:', this.getCurrentDomain().type);
-      console.log('Hostname:', window.location.hostname);
-      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    }
+    // Environment validation complete (removed verbose staging logs)
   }
 
   // ===========================================================================
