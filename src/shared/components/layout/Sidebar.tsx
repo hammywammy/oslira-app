@@ -8,6 +8,7 @@ import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
+import { useSubscriptionPlan } from '@/core/store/selectors';
 import { Portal } from '@/shared/components/ui/Portal';
 import { env } from '@/core/auth/environment';
 
@@ -47,6 +48,7 @@ export function Sidebar() {
   const { theme } = useTheme();
   const creditBalance = useCurrentBalance();
   const lightBalance = useLightBalance();
+  const planType = useSubscriptionPlan();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
   const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
@@ -68,9 +70,10 @@ export function Sidebar() {
 
   // Get user's subscription plan
   const getUserPlan = () => {
-    // This would come from your subscription data
-    // For now, defaulting to "Free Plan"
-    return 'Free Plan';
+    if (!planType) return 'Free Plan';
+
+    // Capitalize first letter of plan type
+    return planType.charAt(0).toUpperCase() + planType.slice(1) + ' Plan';
   };
 
   return (

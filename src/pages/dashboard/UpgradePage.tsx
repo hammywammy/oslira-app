@@ -5,18 +5,18 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { PricingCard } from '@/features/billing/components/PricingCard';
-import { useSubscription } from '@/features/billing/hooks/useSubscription';
+import { useSubscriptionPlan } from '@/core/store/selectors';
 import { useUpgrade } from '@/features/billing/hooks/useUpgrade';
 import { PRICING_TIERS, PAID_TIERS, TierName } from '@/config/pricing.config';
 import { toast } from 'sonner';
 
 export function UpgradePage() {
   const [searchParams] = useSearchParams();
-  const { data: subscription, isLoading: isLoadingSubscription } = useSubscription();
+  const planType = useSubscriptionPlan();
   const upgradeMutation = useUpgrade();
 
   // Current tier from subscription or default to 'free'
-  const currentTier: TierName = subscription?.tier || 'free';
+  const currentTier: TierName = planType || 'free';
 
   // Handle success/cancel redirects from Stripe
   useEffect(() => {
@@ -73,47 +73,39 @@ export function UpgradePage() {
         </motion.p>
 
         {/* Current Plan Badge */}
-        {!isLoadingSubscription && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary"
-          >
-            <Icon icon="ph:crown" className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              Current plan: {PRICING_TIERS[currentTier].displayName}
-            </span>
-          </motion.div>
-        )}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary"
+        >
+          <Icon icon="ph:crown" className="w-4 h-4" />
+          <span className="text-sm font-medium">
+            Current plan: {PRICING_TIERS[currentTier].displayName}
+          </span>
+        </motion.div>
       </div>
 
       {/* Pricing Cards */}
       <div className="max-w-7xl mx-auto px-4 pb-24">
-        {isLoadingSubscription ? (
-          <div className="flex items-center justify-center py-12">
-            <Icon icon="mdi:loading" className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PAID_TIERS.map((tierId, index) => (
-              <motion.div
-                key={tierId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
-                <PricingCard
-                  tier={PRICING_TIERS[tierId]}
-                  isCurrentTier={tierId === currentTier}
-                  onSelect={() => handleSelectTier(tierId)}
-                  disabled={upgradeMutation.isPending}
-                  loading={upgradeMutation.isPending && upgradeMutation.variables === tierId}
-                />
-              </motion.div>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PAID_TIERS.map((tierId, index) => (
+            <motion.div
+              key={tierId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * index }}
+            >
+              <PricingCard
+                tier={PRICING_TIERS[tierId]}
+                isCurrentTier={tierId === currentTier}
+                onSelect={() => handleSelectTier(tierId)}
+                disabled={upgradeMutation.isPending}
+                loading={upgradeMutation.isPending && upgradeMutation.variables === tierId}
+              />
+            </motion.div>
+          ))}
+        </div>
 
         {/* Error Display */}
         {upgradeMutation.isError && (
