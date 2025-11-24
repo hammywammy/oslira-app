@@ -151,7 +151,7 @@ class AuthManager {
         this.authReady = true;
       }
     } catch (error) {
-      console.error('[AuthManager] Failed to load from storage:', error);
+      // Failed to load from storage, clear state
       this.clear();
     }
   }
@@ -181,15 +181,8 @@ class AuthManager {
         return;
       }
 
-      console.log('[AuthManager] Cross-tab storage event detected:', {
-        key: event.key,
-        hasNewValue: !!event.newValue,
-        hasOldValue: !!event.oldValue
-      });
-
       // LOGOUT DETECTION: Any auth key removed = logout
       if (event.newValue === null) {
-        console.log('[AuthManager] Cross-tab logout detected');
         
         // Clear local state (don't trigger another storage event)
         this.accessToken = null;
@@ -203,7 +196,6 @@ class AuthManager {
 
         // Redirect to login if on protected route
         if (!window.location.pathname.startsWith('/auth')) {
-          console.log('[AuthManager] Redirecting to login page');
           window.location.href = '/auth/login';
         }
         return;
@@ -211,7 +203,6 @@ class AuthManager {
 
       // LOGIN DETECTION: Refresh token added/changed = login
       if (event.key === STORAGE_KEYS.REFRESH_TOKEN && event.newValue) {
-        console.log('[AuthManager] Cross-tab login detected, reloading state...');
         
         // Reload all auth state from localStorage
         this.loadFromStorage();
@@ -220,8 +211,6 @@ class AuthManager {
         this.notifyListeners();
       }
     });
-
-    console.log('[AuthManager] Cross-tab synchronization enabled');
   }
 
   // ===========================================================================
@@ -322,7 +311,6 @@ async forceRefresh(): Promise<string | null> {
   private async refresh(): Promise<boolean> {
     // Race condition protection: only one refresh at a time
     if (this.refreshPromise) {
-      console.log('[AuthManager] Refresh already in progress, waiting...');
       return this.refreshPromise;
     }
 
@@ -361,7 +349,6 @@ async forceRefresh(): Promise<string | null> {
 
       return true;
     } catch (error) {
-      console.error('[AuthManager] Refresh failed:', error);
       return false;
     }
   }
@@ -462,7 +449,6 @@ async forceRefresh(): Promise<string | null> {
       this.user.onboarding_completed = completed;
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(this.user));
 
-      console.log('[AuthManager] Onboarding status updated:', completed);
       this.notifyListeners();
     }
   }
@@ -485,8 +471,6 @@ async forceRefresh(): Promise<string | null> {
    * - Other tabs detect the logout and clear their state automatically
    */
   async logout(): Promise<void> {
-    console.log('[AuthManager] Logout initiated');
-
     // Revoke refresh token on backend
     if (this.refreshToken) {
       try {
@@ -499,9 +483,7 @@ async forceRefresh(): Promise<string | null> {
             refreshToken: this.refreshToken,
           }),
         });
-        console.log('[AuthManager] Refresh token revoked on backend');
       } catch (error) {
-        console.error('[AuthManager] Logout API call failed:', error);
         // Continue with local cleanup even if API call fails
       }
     }
