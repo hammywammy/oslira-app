@@ -1,23 +1,23 @@
 // src/features/analysis-queue/hooks/useActiveAnalyses.ts
 
 /**
- * ACTIVE ANALYSES POLLING HOOK - V3.0 ADAPTIVE POLLING
+ * ACTIVE ANALYSES SSE + POLLING HOOK - V4.0 HYBRID APPROACH
  *
- * Uses React Query to poll the backend for active analysis jobs and syncs
- * them into the Zustand store for UI consumption.
+ * Combines SSE for real-time updates with polling fallback for reliability.
  *
  * ARCHITECTURE:
- * - Adaptive polling interval based on active job count:
+ * - Primary: SSE connections for real-time progress updates (per analysis)
+ * - Fallback: Adaptive polling when SSE fails or for bulk operations
  *   • 0 active jobs: Stop polling completely
- *   • 1-3 active jobs: Poll every 3 seconds
+ *   • 1-3 active jobs: Poll every 10 seconds (slower, SSE handles updates)
  *   • 4+ active jobs: Poll every 5 seconds (bulk mode)
  * - Initialization fetch on mount to catch orphaned jobs
  * - Confirms optimistic jobs when backend returns them
  * - Auto-dismiss handled by store's existing logic
  *
- * BACKEND ENDPOINT:
- * GET /api/analysis/active
- * Returns: { success: boolean, data: { active_count: number, analyses: AnalysisJob[] } }
+ * BACKEND ENDPOINTS:
+ * - SSE: /api/analysis/${runId}/stream (per-analysis real-time)
+ * - Polling: GET /api/analysis/active (fallback + bulk sync)
  *
  * USAGE:
  * useActiveAnalyses(); // Call in a top-level component (e.g., TopBar)
@@ -30,6 +30,7 @@ import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
+import { useAnalysisSSE } from '@/hooks/useAnalysisSSE';
 
 // =============================================================================
 // TYPES
@@ -85,10 +86,11 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
 // =============================================================================
 
 /**
- * Polls the backend for active analyses and syncs them into the Zustand store
+ * Hybrid hook: Uses SSE for real-time updates with polling fallback
  *
  * Features:
- * - Adaptive polling interval (0 jobs: stop, 1-3 jobs: 3s, 4+ jobs: 5s)
+ * - SSE connections for active analyses (real-time progress)
+ * - Adaptive polling fallback (0 jobs: stop, 1-3 jobs: 10s, 4+ jobs: 5s)
  * - Initialization fetch on mount
  * - Auto-stops polling when no active analyses
  * - Confirms optimistic jobs when backend returns them
@@ -96,16 +98,52 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
 export function useActiveAnalyses() {
   const { isAuthenticated, isAuthReady, isLoading: authLoading } = useAuth();
   const {
+    jobs: currentJobs,
     addJob,
     updateJob,
     confirmJobStarted,
   } = useAnalysisQueueStore();
   const { fetchBalance } = useCreditsService();
 
+  // Get first active job for SSE tracking (one at a time to reduce connections)
+  const activeJob = currentJobs.find(
+    (j) => j.status === 'pending' || j.status === 'analyzing'
+  );
+
+  // SSE connection for real-time updates on active job
+  const { progress: sseProgress, error: sseError } = useAnalysisSSE(
+    activeJob?.runId || null
+  );
+
+  // Sync SSE progress to store
+  useEffect(() => {
+    if (!sseProgress) return;
+
+    const currentJob = currentJobs.find((j) => j.runId === sseProgress.runId);
+    if (!currentJob) return;
+
+    // Update job with SSE progress
+    updateJob(sseProgress.runId, {
+      progress: sseProgress.progress,
+      status: sseProgress.status,
+      step: sseProgress.step,
+      avatarUrl: sseProgress.avatarUrl,
+      leadId: sseProgress.leadId,
+    });
+
+    // Refresh balance on completion
+    if (sseProgress.status === 'complete') {
+      fetchBalance().catch((error) => {
+        logger.error('[ActiveAnalyses] Failed to refresh balance after SSE completion', error as Error);
+      });
+    }
+  }, [sseProgress, currentJobs, updateJob, fetchBalance]);
+
+  // Polling fallback query (slower intervals when SSE is active)
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    // Adaptive polling based on active job count
+    // Adaptive polling based on active job count and SSE status
     refetchInterval: (query) => {
       const data = query.state.data ?? [];
       const activeCount = data.filter(
@@ -113,7 +151,15 @@ export function useActiveAnalyses() {
       ).length;
 
       if (activeCount === 0) return false;        // Stop polling completely
-      if (activeCount <= 3) return 3000;          // 3 seconds for 1-3 jobs
+
+      // If SSE has error, use faster polling as fallback
+      if (sseError) {
+        if (activeCount <= 3) return 3000;        // 3 seconds for 1-3 jobs
+        return 5000;                               // 5 seconds for bulk (4+ jobs)
+      }
+
+      // SSE working - use slower polling for backup sync
+      if (activeCount <= 3) return 10000;         // 10 seconds for 1-3 jobs
       return 5000;                                 // 5 seconds for bulk (4+ jobs)
     },
     refetchOnWindowFocus: true,
@@ -128,15 +174,16 @@ export function useActiveAnalyses() {
   useEffect(() => {
     if (!data) return;
 
-    // Read current jobs from store to sync with fetched data
-    const { jobs: currentJobs } = useAnalysisQueueStore.getState();
-
     syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance);
-  }, [data, addJob, updateJob, confirmJobStarted, fetchBalance]);
+  }, [data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance]);
 
   // Log errors
   if (error) {
-    logger.error('[ActiveAnalyses] Query error', error as Error);
+    logger.error('[ActiveAnalyses] Polling error', error as Error);
+  }
+
+  if (sseError) {
+    logger.warn('[ActiveAnalyses] SSE error, using polling fallback', { error: sseError.message });
   }
 }
 
