@@ -11,6 +11,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { httpClient } from '@/core/auth/http-client';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
+import { authManager } from '@/core/auth/auth-manager';
+import { env } from '@/core/auth/environment';
 import type { FormData } from '@/features/onboarding/constants/validationSchemas';
 
 // =============================================================================
@@ -77,9 +79,7 @@ export function useCompleteOnboarding() {
       const runId = response.data.run_id;
       console.log('[CompleteOnboarding] ⏳ Starting SSE stream for run_id:', runId);
 
-      await streamGenerationProgress(runId, (progress) => {
-        console.log('[SSE] Progress callback', progress);
-      });
+      await streamGenerationProgress(runId);
 
       console.log('[CompleteOnboarding] ✅ SSE stream complete');
 
@@ -117,38 +117,50 @@ export function useCompleteOnboarding() {
 // HELPER: Stream generation progress via SSE
 // =============================================================================
 
-async function streamGenerationProgress(
-  runId: string,
-  onProgress: (data: { status: string; progress: number; current_step: string }) => void
-): Promise<void> {
+async function streamGenerationProgress(runId: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const eventSource = new EventSource(
-      `/api/business/generate-context/${runId}/stream`,
-      { withCredentials: true }
-    );
-
-    console.log('[SSE] 🔌 Connected to progress stream', {
+    console.log('[SSE] 🔍 Starting SSE stream', {
       timestamp: new Date().toISOString(),
-      run_id: runId,
-      url: `/api/business/generate-context/${runId}/stream`
+      run_id: runId
     });
 
-    // Handle progress updates
-    eventSource.addEventListener('message', (event) => {
-      try {
-        const data = JSON.parse(event.data);
+    // Get auth token for query parameter (EventSource doesn't support headers)
+    authManager.getAccessToken().then(token => {
+      if (!token) {
+        console.error('[SSE] ❌ No auth token available');
+        reject(new Error('Authentication required'));
+        return;
+      }
 
-        console.log('[SSE] 📊 Progress update', {
-          timestamp: new Date().toISOString(),
-          status: data.status,
-          progress: data.progress,
-          step: data.current_step
-        });
+      // Construct full absolute URL with API base
+      const streamUrl = `${env.apiUrl}/api/business/generate-context/${runId}/stream?token=${encodeURIComponent(token)}`;
 
-        onProgress(data);
+      console.log('[SSE] 🌐 Connecting to stream', {
+        timestamp: new Date().toISOString(),
+        url: streamUrl.replace(token, '[REDACTED]')
+      });
 
-        // Check for completion
-        if (data.status === 'complete') {
+      const eventSource = new EventSource(streamUrl);
+
+      // Handle progress updates
+      eventSource.addEventListener('progress', (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[SSE] 📊 Progress update', {
+            timestamp: new Date().toISOString(),
+            status: data.status,
+            progress: data.progress,
+            step: data.current_step
+          });
+        } catch (error) {
+          console.error('[SSE] ❌ Failed to parse progress event', error);
+        }
+      });
+
+      // Handle completion
+      eventSource.addEventListener('complete', (event) => {
+        try {
+          const data = JSON.parse(event.data);
           console.log('[SSE] 🎉 GENERATION COMPLETE!', {
             timestamp: new Date().toISOString(),
             final_progress: data.progress,
@@ -156,45 +168,64 @@ async function streamGenerationProgress(
           });
           eventSource.close();
           resolve();
-        }
-
-        // Check for failure
-        if (data.status === 'failed') {
-          console.error('[SSE] ❌ Generation failed', {
-            timestamp: new Date().toISOString(),
-            status: data.status,
-            step: data.current_step
-          });
+        } catch (error) {
+          console.error('[SSE] ❌ Failed to parse complete event', error);
           eventSource.close();
-          reject(new Error('Context generation failed'));
+          reject(error);
         }
-      } catch (parseError: any) {
-        console.error('[SSE] ❌ Failed to parse message', {
+      });
+
+      // Handle errors
+      eventSource.addEventListener('error', (event: any) => {
+        console.error('[SSE] ❌ Stream error', {
           timestamp: new Date().toISOString(),
-          error: parseError.message,
-          raw_data: event.data
+          error: event
         });
-      }
-    });
 
-    // Handle custom 'complete' event
-    eventSource.addEventListener('complete', () => {
-      console.log('[SSE] ✅ Complete event received', {
-        timestamp: new Date().toISOString()
-      });
-      eventSource.close();
-      resolve();
-    });
+        // Check if backend sent error message
+        if (event.data) {
+          try {
+            const data = JSON.parse(event.data);
+            console.error('[SSE] ❌ Backend error', data);
+            eventSource.close();
+            reject(new Error(data.message || 'Context generation failed'));
+            return;
+          } catch {
+            // Not JSON, generic error
+          }
+        }
 
-    // Handle errors
-    eventSource.addEventListener('error', (error) => {
-      console.error('[SSE] ❌ Connection error', {
-        timestamp: new Date().toISOString(),
-        error: error,
-        readyState: eventSource.readyState
+        eventSource.close();
+        reject(new Error('SSE connection failed'));
       });
-      eventSource.close();
-      reject(new Error('SSE connection failed'));
+
+      // Handle connection errors
+      eventSource.onerror = (error) => {
+        console.error('[SSE] ❌ Connection error', {
+          timestamp: new Date().toISOString(),
+          readyState: eventSource.readyState
+        });
+        eventSource.close();
+        reject(new Error('SSE connection error'));
+      };
+
+      // Timeout after 60 seconds
+      const timeout = setTimeout(() => {
+        console.error('[SSE] ⏰ TIMEOUT - exceeded 60 seconds', {
+          timestamp: new Date().toISOString()
+        });
+        eventSource.close();
+        reject(new Error('Generation timeout - exceeded 60 seconds'));
+      }, 60000);
+
+      // Clear timeout on completion
+      eventSource.addEventListener('complete', () => {
+        clearTimeout(timeout);
+      });
+
+    }).catch(error => {
+      console.error('[SSE] ❌ Failed to get auth token', error);
+      reject(error);
     });
   });
 }
