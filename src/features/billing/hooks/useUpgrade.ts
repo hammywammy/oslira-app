@@ -41,15 +41,18 @@ export function useUpgrade() {
         { newTier } as UpgradeRequest
       );
 
-      if (!response.success) {
-        throw new Error(response.error || 'Upgrade failed');
-      }
+if (!response.success) {
+  throw new Error(response.error || 'Upgrade failed');
+}
 
-      // Redirect to Stripe Checkout
-      if (response.checkoutUrl) {
-        logger.info('[Upgrade] Redirecting to Stripe Checkout');
-        window.location.href = response.checkoutUrl;
-      }
+// Redirect to Stripe Checkout
+const checkoutUrl = response.data?.checkoutUrl || response.checkoutUrl;
+if (checkoutUrl) {
+  logger.info('[Upgrade] Redirecting to Stripe Checkout', { checkoutUrl });
+  window.location.href = checkoutUrl;
+} else {
+  throw new Error('No checkout URL returned');
+}
 
       return response;
     },
