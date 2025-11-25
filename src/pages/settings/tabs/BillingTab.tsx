@@ -2,18 +2,13 @@
 
 /**
  * BILLING TAB - SUBSCRIPTION & PAYMENTS
- * 
- * Placeholder for billing and subscription features:
- * - Current plan information
- * - Payment methods
- * - Billing history
+ *
+ * Displays current subscription and billing information:
+ * - Current plan information from subscription store
+ * - Credits and light analyses from credits store
+ * - Payment methods (future)
+ * - Billing history (future)
  * - Upgrade/downgrade options
- * 
- * FUTURE INTEGRATION:
- * - Connect to billing/subscription API
- * - Add Stripe payment method management
- * - Add invoice history
- * - Add plan change functionality
  */
 
 import { Icon } from '@iconify/react';
@@ -21,16 +16,45 @@ import { Card } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { Badge } from '@/shared/components/ui/Badge';
 import { Link } from 'react-router-dom';
+import { useCurrentTier, useCurrentPeriodEnd } from '@/features/billing/store/subscriptionStore';
+import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
+import { PRICING_TIERS } from '@/config/pricing.config';
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+function formatDate(dateString: string | null): string {
+  if (!dateString) return 'N/A';
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return 'N/A';
+  }
+}
+
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 // =============================================================================
 // COMPONENT
 // =============================================================================
 
 export function BillingTab() {
-  // Placeholder data (will be replaced with real subscription data)
-  const currentPlan = 'Free';
-  const creditsRemaining = 25;
-  const lightAnalysesRemaining = 10;
+  // Get real data from stores (hydrated by AuthProvider via bootstrap)
+  const tier = useCurrentTier();
+  const periodEnd = useCurrentPeriodEnd();
+  const creditsRemaining = useCurrentBalance();
+  const lightAnalysesRemaining = useLightBalance();
+
+  // Get display name from pricing config
+  const currentPlan = PRICING_TIERS[tier]?.displayName ?? capitalize(tier);
+  const isFree = tier === 'free';
 
   return (
     <div className="space-y-6">
@@ -84,8 +108,12 @@ export function BillingTab() {
                 <Icon icon="ph:calendar" className="w-4 h-4" />
                 Renewal Date
               </div>
-              <div className="text-2xl font-bold text-foreground">N/A</div>
-              <div className="text-xs text-muted-foreground mt-1">free plan</div>
+              <div className="text-2xl font-bold text-foreground">
+                {isFree ? 'N/A' : formatDate(periodEnd)}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {isFree ? 'free plan' : 'next billing date'}
+              </div>
             </div>
           </div>
 

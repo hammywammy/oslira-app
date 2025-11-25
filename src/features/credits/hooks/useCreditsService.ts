@@ -2,9 +2,16 @@
 
 /**
  * CREDITS SERVICE HOOK
- * 
- * Fetches balance from API and updates store.
- * Call this on auth success to initialize balance.
+ *
+ * Provides explicit refetch functionality for credit balance.
+ *
+ * IMPORTANT: Credits are initialized via /api/auth/bootstrap in AuthProvider.
+ * This hook is ONLY for explicit refetches after:
+ * - Credit purchase
+ * - Subscription upgrade
+ * - Manual refresh requests
+ *
+ * DO NOT USE for initialization - AuthProvider handles that.
  */
 
 import { useCallback } from 'react';
@@ -24,9 +31,16 @@ export function useCreditsService() {
   const { setBalance, setLoading, setError, clearBalance } = useCreditsStore();
 
   /**
-   * Fetch current balance from API
+   * Refetch current balance from API
+   *
+   * USE CASES:
+   * - After credit purchase (to reflect new balance)
+   * - After subscription upgrade (to reflect new credits)
+   * - Manual refresh requests
+   *
+   * NOT FOR INITIALIZATION - AuthProvider handles that via bootstrap
    */
-  const fetchBalance = useCallback(async () => {
+  const refetchBalance = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -57,7 +71,7 @@ export function useCreditsService() {
   }, [clearBalance]);
 
   return {
-    fetchBalance,
+    refetchBalance,
     clearCreditsBalance,
   };
 }

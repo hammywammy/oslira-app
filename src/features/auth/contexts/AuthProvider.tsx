@@ -51,6 +51,7 @@ import { env } from '@/core/auth/environment';
 import { logger } from '@/core/utils/logger';
 import { httpClient } from '@/core/auth/http-client';
 import { useCreditsStore } from '@/features/credits/store/creditsStore';
+import { useSubscriptionStore, Subscription } from '@/features/billing/store/subscriptionStore';
 
 // =============================================================================
 // TYPES
@@ -69,6 +70,15 @@ interface Account {
   name: string;
   credit_balance: number;
   light_analyses_balance: number;
+}
+
+interface CreditBalance {
+  account_id: string;
+  credit_balance: number;
+  light_analyses_balance: number;
+  last_transaction_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface AuthContextValue {
@@ -191,7 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Now fetch user data using the new access token
       // This is safe because we just got a fresh token from /refresh
-      await fetchUserData();
+      await fetchBootstrap();
 
       // Mark auth as ready after successful initialization
       authManager.markAuthReady();
@@ -206,30 +216,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   /**
-   * Fetch user data from /session endpoint
-   * 
+   * Fetch all user data from /bootstrap endpoint
+   *
+   * HYDRATES ALL STORES AT ONCE:
+   * - User and account data (React state)
+   * - Credits store (Zustand)
+   * - Subscription store (Zustand)
+   *
    * WHEN TO USE:
    * - After successful /refresh (to get user data with fresh token)
    * - When explicitly refreshing user data (profile updates, etc.)
-   * 
+   *
    * WHEN NOT TO USE:
    * - During initialization (use /refresh instead)
    * - When access token might be expired (use /refresh first)
+   *
+   * BENEFITS:
+   * - Single API call instead of 3 separate calls
+   * - No flickering UI on page load
+   * - All stores hydrated atomically
    */
-  async function fetchUserData() {
-    logger.info('[AuthProvider] Fetching user data from /session');
+  async function fetchBootstrap() {
+    logger.info('[AuthProvider] Fetching bootstrap data');
 
     const response = await httpClient.get<{
       data: {
         user: User;
         account: Account;
+        subscription: Subscription;
+        balances: CreditBalance;
         newAccessToken?: string;  // Optional fresh token when onboarding status changed
       };
-    }>('/api/auth/session');
+    }>('/api/auth/bootstrap');
 
     // CRITICAL: If backend issued new token, update auth-manager
     if (response.data.newAccessToken) {
-      logger.info('[AuthProvider] Received fresh JWT from session endpoint');
+      logger.info('[AuthProvider] Received fresh JWT from bootstrap endpoint');
 
       const tokens = authManager.getTokens();
       if (tokens?.refreshToken) {
@@ -241,16 +263,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Hydrate React state
     setUser(response.data.user);
     setAccount(response.data.account);
     setIsAuthenticated(true);
 
+    // Hydrate credits store
+    useCreditsStore.getState().setBalance(response.data.balances);
+
+    // Hydrate subscription store
+    useSubscriptionStore.getState().setSubscription(response.data.subscription);
+
     // Update auth-manager cache
     authManager.setUser(response.data.user, response.data.account);
 
-    logger.info('[AuthProvider] User data loaded', {
+    logger.info('[AuthProvider] Bootstrap complete', {
       userId: response.data.user.id,
       onboardingCompleted: response.data.user.onboarding_completed,
+      tier: response.data.subscription?.tier,
+      creditBalance: response.data.balances?.credit_balance,
       receivedFreshToken: !!response.data.newAccessToken
     });
   }
@@ -327,6 +358,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear credits store
     useCreditsStore.getState().clearBalance();
 
+    // Clear subscription store
+    useSubscriptionStore.getState().clearSubscription();
+
     // Update React state
     setUser(null);
     setAccount(null);
@@ -356,20 +390,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * Refresh user data from backend
-   * 
+   *
    * USE CASES:
    * - User updates their profile
    * - Need to fetch latest credit balance
    * - Verify onboarding status
-   * 
-   * NOTE: This uses /session endpoint with current access token
+   *
+   * NOTE: This uses /bootstrap endpoint with current access token
    * If token is expired, httpClient will auto-refresh via auth-manager
    */
   async function refreshUser() {
     logger.info('[AuthProvider] Refreshing user data');
 
     try {
-      await fetchUserData();
+      await fetchBootstrap();
     } catch (error) {
       logger.error('[AuthProvider] Failed to refresh user data', error as Error);
       throw error;
