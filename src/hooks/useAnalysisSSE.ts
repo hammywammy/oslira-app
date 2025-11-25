@@ -71,7 +71,6 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
     }
 
     let isMounted = true;
-    let connectionEstablished = false;  // CRITICAL: Track if connection actually opened
 
     const connectSSE = async () => {
       try {
@@ -97,9 +96,12 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
 
         // Connection opened
         eventSource.addEventListener('open', () => {
-          if (!isMounted) return;
+          // FIX: Close immediately if component unmounted before open event
+          if (!isMounted) {
+            eventSource.close();
+            return;
+          }
 
-          connectionEstablished = true;  // CRITICAL: Mark connection as established
           logger.info('[AnalysisSSE] Connection established', { runId });
           setIsConnected(true);
           setError(null);
@@ -127,14 +129,15 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
           try {
             const data = JSON.parse(event.data);
 
+            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: data.status || 'analyzing',
               progress: data.progress || 0,
               step: data.step || { current: 0, total: 4 },
-              currentStep: data.current_step,
-              leadId: data.lead_id,
-              avatarUrl: data.avatar_url,
+              currentStep: data.current_step || data.currentStep,
+              leadId: data.lead_id || data.leadId,
+              avatarUrl: data.avatar_url || data.avatarUrl,
             });
 
             logger.info('[AnalysisSSE] Progress update', {
@@ -154,19 +157,20 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
           try {
             const data = JSON.parse(event.data);
 
+            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: 'complete',
               progress: 100,
               step: data.step || { current: 4, total: 4 },
-              currentStep: data.current_step,
-              leadId: data.lead_id,
-              avatarUrl: data.avatar_url,
+              currentStep: data.current_step || data.currentStep,
+              leadId: data.lead_id || data.leadId,
+              avatarUrl: data.avatar_url || data.avatarUrl,
             });
 
             logger.info('[AnalysisSSE] Analysis complete', {
               runId,
-              leadId: data.lead_id,
+              leadId: data.lead_id || data.leadId,
             });
 
             // Close connection
@@ -184,14 +188,15 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
           try {
             const data = JSON.parse(event.data);
 
+            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: 'failed',
               progress: data.progress || 0,
               step: data.step || { current: 0, total: 4 },
-              currentStep: data.current_step || 'Failed',
-              leadId: data.lead_id,
-              avatarUrl: data.avatar_url,
+              currentStep: data.current_step || data.currentStep || 'Failed',
+              leadId: data.lead_id || data.leadId,
+              avatarUrl: data.avatar_url || data.avatarUrl,
             });
 
             logger.error('[AnalysisSSE] Analysis failed', new Error(data.error || 'Analysis failed'), {
@@ -213,14 +218,15 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
           try {
             const data = JSON.parse(event.data);
 
+            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: 'cancelled',
               progress: data.progress || 0,
               step: data.step || { current: 0, total: 4 },
               currentStep: 'Cancelled',
-              leadId: data.lead_id,
-              avatarUrl: data.avatar_url,
+              leadId: data.lead_id || data.leadId,
+              avatarUrl: data.avatar_url || data.avatarUrl,
             });
 
             logger.info('[AnalysisSSE] Analysis cancelled', { runId });
@@ -284,13 +290,12 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
     return () => {
       isMounted = false;
 
-      // CRITICAL: Only close if connection was actually established
-      if (connectionEstablished && eventSourceRef.current) {
-        logger.info('[AnalysisSSE] Cleaning up established connection', { runId });
+      // FIX: Always close EventSource if it exists (idempotent operation)
+      // EventSource.close() is safe to call even if connection not fully established
+      if (eventSourceRef.current) {
+        logger.info('[AnalysisSSE] Cleaning up SSE connection', { runId });
         eventSourceRef.current.close();
         eventSourceRef.current = null;
-      } else {
-        logger.info('[AnalysisSSE] Cleanup called before connection established, skipping close', { runId });
       }
 
       if (timeoutRef.current) {
