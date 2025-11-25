@@ -1,15 +1,16 @@
 // src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
 
 /**
- * LEAD DETAIL MODAL - V4.1 (Professional B2B Intelligence)
+ * LEAD DETAIL MODAL - V4.2 (Professional B2B Intelligence)
  *
  * Professional modal for displaying complete lead information
  * Triggered by clicking the eye icon in the leads table
  *
  * FEATURES:
  * - Compact horizontal header with dense profile metadata
- * - Score inside circular progress ring (top-right)
- * - Verification, platform, niche, and business badges inline
+ * - Score inside circular progress ring (top-right, below close button)
+ * - Verification badge inline with name
+ * - Platform, niche, business badges on same row as stats (right side)
  * - Plain text stats with bullet separators
  * - Refined tab navigation
  * - Dark mode support
@@ -113,6 +114,7 @@ function BusinessBadge() {
 
 /**
  * Score display with number INSIDE circular progress ring
+ * Positioned below the close button
  */
 function ScoreDisplay({ score }: { score: number | null }) {
   const scoreColor = getScoreColor(score);
@@ -121,7 +123,7 @@ function ScoreDisplay({ score }: { score: number | null }) {
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className="absolute top-4 right-4 flex flex-col items-center">
+    <div className="absolute top-14 right-4 flex flex-col items-center">
       {/* Circular Progress Ring with Score Inside */}
       <div className="relative w-20 h-20">
         <svg className="w-full h-full transform -rotate-90">
@@ -284,12 +286,12 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
           HEADER - PROFESSIONAL HORIZONTAL LAYOUT
           ======================================================================== */}
       <div className="relative p-6 border-b border-gray-200 dark:border-gray-800">
-        {/* Score Display - Top Right with score inside circle */}
+        {/* Score Display - Below close button */}
         {lead.overall_score !== null && <ScoreDisplay score={lead.overall_score} />}
 
         {/* Main Profile Content - Horizontal Flexbox */}
-        <div className="flex items-start gap-4 pr-24">
-          {/* Avatar - No Instagram overlay */}
+        <div className="flex items-start gap-4 pr-28">
+          {/* Avatar */}
           <div className="shrink-0">
             <LeadAvatar
               url={lead.profile_pic_url}
@@ -324,21 +326,24 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               />
             </a>
 
-            {/* Row 3: Badges (Instagram, Niche, Business) */}
-            <div className="flex items-center gap-2 flex-wrap pt-1">
-              <PlatformBadge />
-              <NicheBadge />
-              {lead.is_business && <BusinessBadge />}
-            </div>
+            {/* Row 3: Stats + Badges (same row, badges on right) */}
+            <div className="flex items-center justify-between pt-2">
+              {/* Stats on left */}
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {formatNumber(lead.follower_count)} followers
+                <span className="mx-2">•</span>
+                {formatNumber(lead.following_count)} following
+                <span className="mx-2">•</span>
+                {lead.post_count || 0} posts
+              </p>
 
-            {/* Row 4: Stats (plain text with bullets) */}
-            <p className="text-sm text-gray-600 dark:text-gray-400 pt-1">
-              {formatNumber(lead.follower_count)} followers
-              <span className="mx-2">•</span>
-              {formatNumber(lead.following_count)} following
-              <span className="mx-2">•</span>
-              {lead.post_count || 0} posts
-            </p>
+              {/* Badges on right */}
+              <div className="flex items-center gap-2 shrink-0">
+                <PlatformBadge />
+                <NicheBadge />
+                <BusinessBadge />
+              </div>
+            </div>
           </div>
         </div>
       </div>
