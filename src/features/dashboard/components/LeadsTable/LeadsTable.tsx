@@ -190,6 +190,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLea
       <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px`, padding: '12px 16px' }}>
         <div className="flex items-center gap-3">
           <LeadAvatar
+            key={lead.id}
             url={lead.profile_pic_url}
             username={lead.username}
             displayName={lead.display_name}

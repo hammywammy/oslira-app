@@ -1,6 +1,6 @@
 // src/shared/components/ui/LeadAvatar.tsx
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /**
  * LEAD AVATAR COMPONENT
@@ -62,12 +62,6 @@ export function LeadAvatar({
 }: LeadAvatarProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  // Reset error state when URL changes (e.g., after re-analysis)
-  useEffect(() => {
-    setImageError(false);
-    setImageLoaded(false);
-  }, [url]);
 
   // Get initials from display name or username
   const getInitial = (): string => {

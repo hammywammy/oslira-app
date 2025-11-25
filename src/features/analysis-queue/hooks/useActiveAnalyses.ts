@@ -24,7 +24,7 @@
  */
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAnalysisQueueStore, type AnalysisJob } from '../stores/useAnalysisQueueStore';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
@@ -104,6 +104,7 @@ export function useActiveAnalyses() {
     confirmJobStarted,
   } = useAnalysisQueueStore();
   const { fetchBalance } = useCreditsService();
+  const queryClient = useQueryClient();
 
   // Get first active job for SSE tracking (one at a time to reduce connections)
   const activeJob = currentJobs.find(
@@ -131,14 +132,17 @@ export function useActiveAnalyses() {
       leadId: sseProgress.leadId,
     });
 
-    // Refresh balance on completion
+    // Refresh balance and leads table on completion
     if (sseProgress.status === 'complete') {
       fetchBalance().catch((error) => {
         logger.error('[ActiveAnalyses] Failed to refresh balance after SSE completion', error as Error);
       });
+
+      // CRITICAL: Invalidate leads query to trigger refetch
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      logger.info('[ActiveAnalyses] Leads table refresh triggered after analysis completion');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sseProgress]);
+  }, [sseProgress, queryClient, currentJobs, updateJob, fetchBalance]);
 
   // Auto-dismiss completed jobs after 3 seconds
   useEffect(() => {

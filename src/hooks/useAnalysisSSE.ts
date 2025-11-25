@@ -71,6 +71,7 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
     }
 
     let isMounted = true;
+    let connectionEstablished = false;  // CRITICAL: Track if connection actually opened
 
     const connectSSE = async () => {
       try {
@@ -98,6 +99,7 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
         eventSource.addEventListener('open', () => {
           if (!isMounted) return;
 
+          connectionEstablished = true;  // CRITICAL: Mark connection as established
           logger.info('[AnalysisSSE] Connection established', { runId });
           setIsConnected(true);
           setError(null);
@@ -282,9 +284,13 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
     return () => {
       isMounted = false;
 
-      if (eventSourceRef.current) {
+      // CRITICAL: Only close if connection was actually established
+      if (connectionEstablished && eventSourceRef.current) {
+        logger.info('[AnalysisSSE] Cleaning up established connection', { runId });
         eventSourceRef.current.close();
         eventSourceRef.current = null;
+      } else {
+        logger.info('[AnalysisSSE] Cleanup called before connection established, skipping close', { runId });
       }
 
       if (timeoutRef.current) {
@@ -294,7 +300,7 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
 
       setIsConnected(false);
     };
-  }, [runId]);
+  }, [runId]); // CRITICAL: Only runId as dependency, nothing else
 
   return {
     progress,

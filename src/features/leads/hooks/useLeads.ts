@@ -1,18 +1,6 @@
 // src/features/leads/hooks/useLeads.ts
 
-/**
- * USE LEADS HOOK
- *
- * React hook for managing leads data fetching and state
- *
- * FEATURES:
- * - Automatic data fetching on mount
- * - Loading and error states
- * - Refresh functionality
- * - Type-safe lead data
- */
-
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchLeads } from '../api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { Lead } from '@/shared/types/leads.types';
@@ -43,31 +31,10 @@ interface UseLeadsReturn {
 // HOOK
 // =============================================================================
 
-/**
- * Hook for fetching and managing leads data
- *
- * @param options - Configuration options
- * @returns Leads data, loading state, error state, and refresh function
- *
- * @example
- * ```tsx
- * function MyComponent() {
- *   const { leads, isLoading, error, refresh } = useLeads();
- *
- *   if (isLoading) return <div>Loading...</div>;
- *   if (error) return <div>Error: {error.message}</div>;
- *
- *   return (
- *     <div>
- *       {leads.map(lead => <LeadCard key={lead.id} lead={lead} />)}
- *       <button onClick={refresh}>Refresh</button>
- *     </div>
- *   );
- * }
- * ```
- */
 export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+
   const {
     autoFetch = true,
     page = 1,
@@ -77,34 +44,12 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
     businessProfileId,
   } = options;
 
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  /**
-   * Fetch leads from API
-   */
-  const fetchLeadsData = useCallback(async () => {
-    // Don't fetch if not authenticated or auth is loading
-    if (!isAuthenticated || authLoading) {
-      logger.warn('[useLeads] Not authenticated or auth loading, skipping fetch');
-      setLeads([]);
-      setIsLoading(false);
-      return;
-    }
-
-    // Don't fetch if no business profile selected (silent during loading)
-    if (!businessProfileId) {
-      setLeads([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      logger.info('[useLeads] Fetching leads', { page, pageSize, sortBy, sortOrder, businessProfileId });
+  const { data: leads = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['leads', businessProfileId, page, sortBy, sortOrder],
+    queryFn: async () => {
+      logger.info('[useLeads] Fetching leads', {
+        page, pageSize, sortBy, sortOrder, businessProfileId
+      });
 
       const data = await fetchLeads({
         page,
@@ -114,39 +59,24 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
         businessProfileId,
       });
 
-      setLeads(data);
       logger.info('[useLeads] Leads loaded', { count: data.length });
-    } catch (err) {
-      const error = err as Error;
-      logger.error('[useLeads] Failed to fetch leads', error);
-      setError(error);
-      setLeads([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated, authLoading, page, pageSize, sortBy, sortOrder, businessProfileId]);
+      return data;
+    },
+    enabled: autoFetch && !!businessProfileId && isAuthenticated && !authLoading,
+    staleTime: 30000, // 30s - keep data stable during analysis
+    gcTime: 5 * 60 * 1000, // 5min cache
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+  });
 
-  /**
-   * Refresh leads data
-   */
-  const refresh = useCallback(async () => {
+  const refresh = async () => {
     logger.info('[useLeads] Manual refresh triggered');
-    await fetchLeadsData();
-  }, [fetchLeadsData]);
-
-  /**
-   * Auto-fetch on mount and when dependencies change
-   */
-  useEffect(() => {
-    if (autoFetch) {
-      fetchLeadsData();
-    }
-  }, [autoFetch, fetchLeadsData]);
+    await refetch();
+  };
 
   return {
     leads,
     isLoading,
-    error,
+    error: error as Error | null,
     refresh,
     isEmpty: leads.length === 0 && !isLoading,
   };
