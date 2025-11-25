@@ -112,7 +112,13 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
       const newJobs = state.jobs.map((job) => {
         if (job.runId !== runId) return job;
 
-        const updatedJob = { ...job, ...updates };
+        // FIX: Explicitly clone nested step object to ensure immutability
+        const updatedJob = {
+          ...job,
+          ...updates,
+          // Clone step object if provided in updates, otherwise use existing
+          step: updates.step ? { ...updates.step } : job.step,
+        };
 
         // Set completedAt timestamp when status changes to complete or failed
         if (

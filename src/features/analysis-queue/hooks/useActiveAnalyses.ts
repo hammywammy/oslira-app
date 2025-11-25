@@ -175,11 +175,11 @@ export function useActiveAnalyses() {
     };
   }, [currentJobs]);
 
-  // Polling fallback query (slower intervals when SSE is active)
+  // Polling fallback query (disabled when SSE is active and working)
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    // Adaptive polling based on active job count and SSE status
+    // FIX: Disable polling when SSE is active and working
     refetchInterval: (query) => {
       const data = query.state.data ?? [];
       const activeCount = data.filter(
@@ -194,7 +194,12 @@ export function useActiveAnalyses() {
         return 5000;                               // 5 seconds for bulk (4+ jobs)
       }
 
-      // SSE working - use slower polling for backup sync
+      // FIX: If SSE is working and activeJob exists, disable polling
+      if (activeJob) {
+        return false;                              // SSE handles updates
+      }
+
+      // SSE not tracking anything - use slower polling
       if (activeCount <= 3) return 10000;         // 10 seconds for 1-3 jobs
       return 5000;                                 // 5 seconds for bulk (4+ jobs)
     },
