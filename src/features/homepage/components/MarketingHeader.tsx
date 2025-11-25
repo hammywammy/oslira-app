@@ -66,25 +66,6 @@ export function MarketingHeader() {
               <span className="text-xl font-bold text-slate-900">Oslira</span>
             </motion.a>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              {[
-                { label: 'Features', href: '#benefits' },
-                { label: 'How It Works', href: '#how-it-works' },
-                { label: 'Pricing', href: '/pricing' },
-                { label: 'About', href: '/about' }
-              ].map((link) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
-                  whileHover={{ y: -2 }}
-                >
-                  {link.label}
-                </motion.a>
-              ))}
-            </div>
-
             {/* Desktop CTA Buttons */}
             <div className="hidden md:flex items-center gap-3">
               <motion.button
@@ -132,26 +113,7 @@ export function MarketingHeader() {
             className="fixed top-[73px] left-0 right-0 z-[400] bg-white border-b border-slate-200 shadow-lg md:hidden overflow-hidden"
           >
             <div className="px-6 py-6 space-y-4">
-              {[
-                { label: 'Features', href: '#benefits' },
-                { label: 'How It Works', href: '#how-it-works' },
-                { label: 'Pricing', href: '/pricing' },
-                { label: 'About', href: '/about' }
-              ].map((link, index) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="block text-slate-700 hover:text-slate-900 font-medium py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </motion.a>
-              ))}
-              
-              <div className="pt-4 border-t border-slate-200 space-y-3">
+              <div className="space-y-3">
                 <button
                   onClick={handleLogin}
                   className="w-full px-5 py-3 text-slate-700 font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 transition-colors"
