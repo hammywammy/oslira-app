@@ -8,8 +8,9 @@
  *
  * FEATURES:
  * - Real-time progress updates
- * - Automatic reconnection (max 3 attempts)
- * - Heartbeat ping/pong (every 15s)
+ * - Automatic reconnection (max 1 attempt - fail fast to polling)
+ * - Heartbeat ping/pong (every 8s - below DO 10s hibernation threshold)
+ * - Page Visibility API detection for tab hibernation
  * - Graceful degradation to HTTP polling
  * - Auto-cleanup on unmount
  *
@@ -64,9 +65,9 @@ interface UseAnalysisWebSocketReturn {
 // CONSTANTS
 // =============================================================================
 
-const HEARTBEAT_INTERVAL = 15000; // 15 seconds
-const RECONNECT_DELAY = 2000; // 2 seconds
-const MAX_RECONNECT_ATTEMPTS = 3;
+const HEARTBEAT_INTERVAL = 8000; // 8 seconds (must be < DO hibernation timeout of 10s)
+const RECONNECT_DELAY = 1000; // 1 second (fail fast to polling)
+const MAX_RECONNECT_ATTEMPTS = 1; // Fail fast - fall back to HTTP polling quickly
 
 // =============================================================================
 // HOOK
@@ -269,6 +270,25 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
       cleanup();
     };
   }, [runId, connect, cleanup]);
+
+  // Page Visibility handler - reconnect when tab becomes visible
+  useEffect(() => {
+    if (!isConnected || !runId) return;
+
+    // Prevent tab/browser hibernation during analysis
+    const handleVisibilityChange = () => {
+      if (!document.hidden && wsRef.current?.readyState !== WebSocket.OPEN) {
+        logger.warn('[WebSocket] Tab visible but WS dead - reconnecting');
+        connect();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isConnected, runId, connect]);
 
   return { progress, isConnected, error, reconnect: connect };
 }
