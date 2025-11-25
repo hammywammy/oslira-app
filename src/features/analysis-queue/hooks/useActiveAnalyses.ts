@@ -1,22 +1,23 @@
 // src/features/analysis-queue/hooks/useActiveAnalyses.ts
 
 /**
- * ACTIVE ANALYSES SSE + POLLING HOOK - V4.0 HYBRID APPROACH
+ * ACTIVE ANALYSES WEBSOCKET + POLLING HOOK - V5.0 HYBRID APPROACH
  *
- * Combines SSE for real-time updates with polling fallback for reliability.
+ * Combines WebSocket for real-time updates with polling fallback for reliability.
+ * Uses Durable Object WebSocket Hibernation API for efficiency.
  *
  * ARCHITECTURE:
- * - Primary: SSE connections for real-time progress updates (per analysis)
- * - Fallback: Adaptive polling when SSE fails or for bulk operations
+ * - Primary: WebSocket connections for real-time progress updates (per analysis)
+ * - Fallback: Adaptive polling when WebSocket fails or for bulk operations
  *   • 0 active jobs: Stop polling completely
- *   • 1-3 active jobs: Poll every 10 seconds (slower, SSE handles updates)
+ *   • 1-3 active jobs: Poll every 3 seconds (WebSocket handles updates)
  *   • 4+ active jobs: Poll every 5 seconds (bulk mode)
  * - Initialization fetch on mount to catch orphaned jobs
  * - Confirms optimistic jobs when backend returns them
  * - Auto-dismiss handled by store's existing logic
  *
  * BACKEND ENDPOINTS:
- * - SSE: /api/analysis/${runId}/stream (per-analysis real-time)
+ * - WebSocket: /api/analysis/${runId}/ws (per-analysis real-time)
  * - Polling: GET /api/analysis/active (fallback + bulk sync)
  *
  * USAGE:
@@ -30,7 +31,7 @@ import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
-import { useAnalysisSSE } from '@/hooks/useAnalysisSSE';
+import { useAnalysisWebSocket } from '@/hooks/useAnalysisWebSocket';
 
 // =============================================================================
 // TYPES
@@ -86,11 +87,11 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
 // =============================================================================
 
 /**
- * Hybrid hook: Uses SSE for real-time updates with polling fallback
+ * Hybrid hook: Uses WebSocket for real-time updates with polling fallback
  *
  * Features:
- * - SSE connections for active analyses (real-time progress)
- * - Adaptive polling fallback (0 jobs: stop, 1-3 jobs: 10s, 4+ jobs: 5s)
+ * - WebSocket connections for active analyses (real-time progress)
+ * - Adaptive polling fallback (0 jobs: stop, 1-3 jobs: 3s, 4+ jobs: 5s)
  * - Initialization fetch on mount
  * - Auto-stops polling when no active analyses
  * - Confirms optimistic jobs when backend returns them
@@ -111,39 +112,39 @@ export function useActiveAnalyses() {
     (j) => j.status === 'pending' || j.status === 'analyzing'
   );
 
-  // SSE connection for real-time updates on active job
-  const { progress: sseProgress, error: sseError } = useAnalysisSSE(
+  // WebSocket connection for real-time updates on active job
+  const { progress: wsProgress, error: wsError } = useAnalysisWebSocket(
     activeJob?.runId || null
   );
 
-  // Sync SSE progress to store
+  // Sync WebSocket progress to store
   useEffect(() => {
-    if (!sseProgress) return;
+    if (!wsProgress) return;
 
     // Get current state without subscribing to changes (prevents infinite loop)
-    const currentJob = useAnalysisQueueStore.getState().jobs.find((j) => j.runId === sseProgress.runId);
+    const currentJob = useAnalysisQueueStore.getState().jobs.find((j) => j.runId === wsProgress.runId);
     if (!currentJob) return;
 
-    // Update job with SSE progress
-    updateJob(sseProgress.runId, {
-      progress: sseProgress.progress,
-      status: sseProgress.status,
-      step: sseProgress.step,
-      avatarUrl: sseProgress.avatarUrl,
-      leadId: sseProgress.leadId,
+    // Update job with WebSocket progress
+    updateJob(wsProgress.runId, {
+      progress: wsProgress.progress,
+      status: wsProgress.status,
+      step: wsProgress.step,
+      avatarUrl: wsProgress.avatarUrl,
+      leadId: wsProgress.leadId,
     });
 
     // Refresh balance and leads table on completion
-    if (sseProgress.status === 'complete') {
+    if (wsProgress.status === 'complete') {
       fetchBalance().catch((error) => {
-        logger.error('[ActiveAnalyses] Failed to refresh balance after SSE completion', error as Error);
+        logger.error('[ActiveAnalyses] Failed to refresh balance after WebSocket completion', error as Error);
       });
 
       // CRITICAL: Invalidate leads query to trigger refetch
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       logger.info('[ActiveAnalyses] Leads table refresh triggered after analysis completion');
     }
-  }, [sseProgress, queryClient, updateJob, fetchBalance]);
+  }, [wsProgress, queryClient, updateJob, fetchBalance]);
 
   // Auto-dismiss completed jobs after 3 seconds
   useEffect(() => {
@@ -187,12 +188,12 @@ export function useActiveAnalyses() {
 
       if (activeCount === 0) return false;
 
-      // Use polling only if SSE failed or no SSE connection
-      if (sseError || !activeJob) {
+      // Use polling only if WebSocket failed or no WebSocket connection
+      if (wsError || !activeJob) {
         return activeCount <= 3 ? 3000 : 5000;
       }
 
-      // SSE working - disable polling
+      // WebSocket working - disable polling
       return false;
     },
     refetchOnWindowFocus: true,
@@ -216,8 +217,8 @@ export function useActiveAnalyses() {
     logger.error('[ActiveAnalyses] Polling error', error as Error);
   }
 
-  if (sseError) {
-    logger.warn('[ActiveAnalyses] SSE error, using polling fallback', { error: sseError.message });
+  if (wsError) {
+    logger.warn('[ActiveAnalyses] WebSocket error, using polling fallback', { error: wsError.message });
   }
 }
 
