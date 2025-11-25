@@ -302,15 +302,9 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
                       {lead.analysis_status || 'Not Started'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">Analyzed</span>
                     <span className="text-sm text-foreground">{formatDate(lead.analysis_completed_at)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">Confidence</span>
-                    <span className="text-sm font-semibold text-foreground">
-                      {lead.confidence !== null ? `${lead.confidence}%` : 'N/A'}
-                    </span>
                   </div>
                 </InfoCard>
               </div>
