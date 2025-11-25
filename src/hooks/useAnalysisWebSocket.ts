@@ -180,7 +180,10 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
                   avatarUrl: message.data.avatar_url,
                 };
                 setProgress(completeProgress);
-                logger.info('[WebSocket] Analysis complete', { runId });
+                logger.info('[WebSocket] Analysis complete - closing connection', { runId });
+
+                // CRITICAL: Stop reconnection attempts and close WebSocket
+                reconnectAttemptsRef.current = MAX_RECONNECT_ATTEMPTS;
                 cleanup();
               }
               break;
@@ -199,7 +202,10 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
                 };
                 setProgress(failedProgress);
                 setError(new Error(message.data.error || 'Analysis failed'));
-                logger.info('[WebSocket] Analysis failed', { runId });
+                logger.info('[WebSocket] Analysis failed - closing connection', { runId });
+
+                // CRITICAL: Stop reconnection attempts and close WebSocket
+                reconnectAttemptsRef.current = MAX_RECONNECT_ATTEMPTS;
                 cleanup();
               }
               break;
