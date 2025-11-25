@@ -11,6 +11,11 @@
 
 import { useAppStore } from './appStore';
 import { useCurrentBalance } from '@/features/credits/store/creditsStore';
+import {
+  useCurrentTier,
+  useSubscriptionStore,
+  useFullSubscription,
+} from '@/features/billing/store/subscriptionStore';
 import type { BusinessProfile } from '@/shared/types/business.types';
 
 // =============================================================================
@@ -104,8 +109,9 @@ export const useHasActiveFilters = () =>
 // SUBSCRIPTION SELECTORS
 // =============================================================================
 
-export const useSubscription = () => useAppStore((state: AppState) => state.subscription);
-export const useSubscriptionPlan = () => useAppStore((state: AppState) => state.subscription?.plan_type);
+// Re-export from subscription store for backward compatibility
+export const useSubscription = useFullSubscription;
+export const useSubscriptionPlan = useCurrentTier;
 export const useCreditsRemaining = useCurrentBalance;
 
 // =============================================================================
@@ -187,13 +193,20 @@ export const useBusinessesWithLeadCount = () =>
 
 /**
  * User profile with subscription
+ * Note: subscription now comes from subscription store
  */
-export const useUserProfile = () =>
-  useAppStore((state: AppState) => ({
+export const useUserProfile = () => {
+  const appState = useAppStore((state: AppState) => ({
     user: state.auth.user,
-    subscription: state.subscription,
     isAuthenticated: state.auth.isAuthenticated,
   }));
+  const subscription = useFullSubscription();
+
+  return {
+    ...appState,
+    subscription,
+  };
+};
 
 // =============================================================================
 // ACTIONS SELECTORS (for components that only need actions)
@@ -235,7 +248,7 @@ export const useUIActions = () =>
     clearFilters: state.clearFilters,
   }));
 
-export const useSubscriptionActions = () =>
-  useAppStore((state: AppState) => ({
-    setSubscription: state.setSubscription,
-  }));
+export const useSubscriptionActions = () => ({
+  setSubscription: useSubscriptionStore.getState().setSubscription,
+  clearSubscription: useSubscriptionStore.getState().clearSubscription,
+});

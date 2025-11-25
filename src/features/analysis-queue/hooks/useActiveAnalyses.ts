@@ -107,7 +107,7 @@ export function useActiveAnalyses() {
     updateJob,
     confirmJobStarted,
   } = useAnalysisQueueStore();
-  const { fetchBalance } = useCreditsService();
+  const { refetchBalance } = useCreditsService();
   const queryClient = useQueryClient();
 
   // Get first active job for SSE tracking (one at a time to reduce connections)
@@ -147,7 +147,7 @@ export function useActiveAnalyses() {
       if (now - lastRefresh > 2000) {
         refreshDebounceMap.set(debounceKey, now);
 
-        fetchBalance().catch((error) => {
+        refetchBalance().catch((error) => {
           logger.error('[ActiveAnalyses] Balance refresh failed', error as Error);
         });
 
@@ -158,7 +158,7 @@ export function useActiveAnalyses() {
         setTimeout(() => refreshDebounceMap.delete(debounceKey), 10000);
       }
     }
-  }, [wsProgress, queryClient, updateJob, fetchBalance]);
+  }, [wsProgress, queryClient, updateJob, refetchBalance]);
 
   // Auto-dismiss completed jobs after 3 seconds
   useEffect(() => {
@@ -222,7 +222,7 @@ export function useActiveAnalyses() {
   useEffect(() => {
     if (!data) return;
 
-    syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance);
+    syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, refetchBalance);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
@@ -258,7 +258,7 @@ export function useActiveAnalyses() {
  * @param addJob - Store action to add new job
  * @param updateJob - Store action to update existing job
  * @param confirmJobStarted - Store action to confirm optimistic job
- * @param fetchBalance - Function to refresh credits balance
+ * @param refetchBalance - Function to refresh credits balance
  */
 function syncAnalysesToStore(
   fetchedJobs: AnalysisJob[],
@@ -266,7 +266,7 @@ function syncAnalysesToStore(
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void,
   updateJob: (runId: string, updates: Partial<AnalysisJob>) => void,
   confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void,
-  fetchBalance: () => Promise<void>
+  refetchBalance: () => Promise<void>
 ) {
   // Create a Set of current job runIds for fast lookup
   const currentJobIds = new Set(currentJobs.map((job) => job.runId));
@@ -319,7 +319,7 @@ function syncAnalysesToStore(
           });
 
           // Refresh credits balance after analysis completion
-          fetchBalance().catch((error) => {
+          refetchBalance().catch((error) => {
             logger.error('[ActiveAnalyses] Failed to refresh balance after completion', error as Error);
           });
 
