@@ -45,6 +45,9 @@ interface FetchActiveAnalysesResponse {
   };
 }
 
+// Debounce map to prevent duplicate leads table refreshes
+const refreshDebounceMap = new Map<string, number>();
+
 // =============================================================================
 // API FUNCTION
 // =============================================================================
@@ -134,15 +137,26 @@ export function useActiveAnalyses() {
       leadId: wsProgress.leadId,
     });
 
-    // Refresh balance and leads table on completion
+    // Refresh balance and leads table on completion (with debounce)
     if (wsProgress.status === 'complete') {
-      fetchBalance().catch((error) => {
-        logger.error('[ActiveAnalyses] Failed to refresh balance after WebSocket completion', error as Error);
-      });
+      const debounceKey = `refresh-${wsProgress.runId}`;
+      const now = Date.now();
+      const lastRefresh = refreshDebounceMap.get(debounceKey) || 0;
 
-      // CRITICAL: Invalidate leads query to trigger refetch
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
-      logger.info('[ActiveAnalyses] Leads table refresh triggered after analysis completion');
+      // Only refresh if 2+ seconds since last refresh for this runId
+      if (now - lastRefresh > 2000) {
+        refreshDebounceMap.set(debounceKey, now);
+
+        fetchBalance().catch((error) => {
+          logger.error('[ActiveAnalyses] Balance refresh failed', error as Error);
+        });
+
+        queryClient.invalidateQueries({ queryKey: ['leads'] });
+        logger.info('[ActiveAnalyses] Leads table refresh triggered');
+
+        // Cleanup old debounce entries after 10 seconds
+        setTimeout(() => refreshDebounceMap.delete(debounceKey), 10000);
+      }
     }
   }, [wsProgress, queryClient, updateJob, fetchBalance]);
 
@@ -188,13 +202,13 @@ export function useActiveAnalyses() {
 
       if (activeCount === 0) return false;
 
-      // Use polling only if WebSocket failed or no WebSocket connection
-      if (wsError || !activeJob) {
-        return activeCount <= 3 ? 3000 : 5000;
+      // WebSocket failed - use aggressive polling
+      if (wsError) {
+        return 2000; // Poll every 2 seconds when WS dead
       }
 
-      // WebSocket working - disable polling
-      return false;
+      // WebSocket working - slow polling as safety net
+      return activeJob ? 10000 : 3000;
     },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
