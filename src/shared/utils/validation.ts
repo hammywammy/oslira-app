@@ -2,9 +2,9 @@
 
 /**
  * VALIDATION UTILITIES
- * 
+ *
  * Comprehensive validation for user inputs with detailed error messages
- * Based on Instagram's actual username rules and production patterns
+ * Re-exports platform-specific validation from the modular system
  */
 
 // =============================================================================
@@ -17,82 +17,25 @@ export interface ValidationResult {
 }
 
 // =============================================================================
-// INSTAGRAM USERNAME VALIDATION
+// PLATFORM VALIDATION RE-EXPORTS
 // =============================================================================
 
-/**
- * Instagram username validation regex
- * Rules:
- * - 1-30 characters
- * - Letters, numbers, periods, underscores only
- * - Cannot start/end with period
- * - No consecutive periods
- */
-const INSTAGRAM_USERNAME_REGEX = /^[a-zA-Z0-9._]{1,30}$/;
+// Re-export everything from platformValidation for backwards compatibility
+// and to provide a single import point for validation utilities
+export {
+  validateInstagramUsername,
+  isValidInstagramUsername,
+  normalizeInstagramUsername,
+  formatInstagramUsername,
+  validatePlatformUsername,
+  isValidPlatformUsername,
+  normalizePlatformUsername,
+  formatPlatformUsername,
+  getPlatformConfig,
+  getAvailablePlatforms,
+} from './platformValidation';
 
-/**
- * Validate Instagram username with detailed feedback
- */
-export function validateInstagramUsername(username: string): ValidationResult {
-  if (!username || typeof username !== 'string') {
-    return { valid: false, error: 'Username is required' };
-  }
-
-  // Remove @ if present and trim
-  const cleaned = username.replace(/^@/, '').trim();
-
-  if (cleaned.length === 0) {
-    return { valid: false, error: 'Username is required' };
-  }
-
-  if (cleaned.length > 30) {
-    return { valid: false, error: 'Username must be 30 characters or less' };
-  }
-
-  // Check for invalid characters
-  if (!INSTAGRAM_USERNAME_REGEX.test(cleaned)) {
-    return { 
-      valid: false, 
-      error: 'Only letters, numbers, periods, and underscores allowed' 
-    };
-  }
-
-  // Check period rules
-  if (cleaned.startsWith('.') || cleaned.endsWith('.')) {
-    return { valid: false, error: 'Username cannot start or end with a period' };
-  }
-
-  if (cleaned.includes('..')) {
-    return { valid: false, error: 'Username cannot have consecutive periods' };
-  }
-
-  return { valid: true, error: null };
-}
-
-/**
- * Quick boolean check if username is valid
- */
-export function isValidInstagramUsername(username: string): boolean {
-  const result = validateInstagramUsername(username);
-  return result.valid;
-}
-
-/**
- * Normalize Instagram username (remove @, trim, lowercase)
- */
-export function normalizeInstagramUsername(username: string): string {
-  if (!username) return '';
-  return username.trim().replace(/^@/, '').toLowerCase();
-}
-
-/**
- * Format username with @ prefix for display
- */
-export function formatInstagramUsername(username: string): string {
-  if (!username) return '';
-  const cleaned = normalizeInstagramUsername(username);
-  return `@${cleaned}`;
-}
+export type { PlatformType, PlatformValidationConfig, ValidationRule } from './platformValidation';
 
 // =============================================================================
 // EMAIL VALIDATION
