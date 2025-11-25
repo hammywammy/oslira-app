@@ -65,220 +65,137 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Don't connect if no runId
-    if (!runId) {
-      return;
-    }
+    if (!runId) return;
 
     let isMounted = true;
 
     const connectSSE = async () => {
       try {
-        // Get auth token for query parameter (EventSource doesn't support headers)
         const token = await authManager.getAccessToken();
-
-        if (!token) {
-          throw new Error('Authentication required');
-        }
-
+        if (!token) throw new Error('Authentication required');
         if (!isMounted) return;
 
-        // Construct SSE endpoint URL
         const streamUrl = `${env.apiUrl}/api/analysis/${runId}/stream?token=${encodeURIComponent(token)}`;
 
-        logger.info('[AnalysisSSE] Connecting to stream', {
-          runId,
-          timestamp: new Date().toISOString(),
-        });
+        logger.info('[AnalysisSSE] Connecting to stream', { runId });
 
         const eventSource = new EventSource(streamUrl);
         eventSourceRef.current = eventSource;
 
-        // Connection opened
         eventSource.addEventListener('open', () => {
-          // FIX: Close immediately if component unmounted before open event
           if (!isMounted) {
+            logger.warn('[AnalysisSSE] Open after unmount, closing', { runId });
             eventSource.close();
             return;
           }
-
           logger.info('[AnalysisSSE] Connection established', { runId });
           setIsConnected(true);
           setError(null);
         });
 
-        // Connected event (initial confirmation from backend)
-        eventSource.addEventListener('connected', (event) => {
-          if (!isMounted) return;
-
-          try {
-            const data = JSON.parse(event.data);
-            logger.info('[AnalysisSSE] Connected event received', {
-              runId,
-              message: data.message,
-            });
-          } catch (err) {
-            logger.error('[AnalysisSSE] Failed to parse connected event', err as Error);
-          }
-        });
-
-        // Progress update event
         eventSource.addEventListener('progress', (event) => {
           if (!isMounted) return;
-
           try {
             const data = JSON.parse(event.data);
-
-            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: data.status || 'analyzing',
               progress: data.progress || 0,
               step: data.step || { current: 0, total: 4 },
-              currentStep: data.current_step || data.currentStep,
-              leadId: data.lead_id || data.leadId,
-              avatarUrl: data.avatar_url || data.avatarUrl,
+              currentStep: data.current_step,  // Backend: current_step
+              leadId: data.lead_id,            // Backend: lead_id
+              avatarUrl: data.avatar_url,      // Backend: avatar_url
             });
-
             logger.info('[AnalysisSSE] Progress update', {
               runId,
               progress: data.progress,
-              step: data.step,
             });
           } catch (err) {
-            logger.error('[AnalysisSSE] Failed to parse progress event', err as Error);
+            logger.error('[AnalysisSSE] Parse error', err as Error);
           }
         });
 
-        // Completion event
         eventSource.addEventListener('complete', (event) => {
           if (!isMounted) return;
-
           try {
             const data = JSON.parse(event.data);
-
-            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: 'complete',
               progress: 100,
               step: data.step || { current: 4, total: 4 },
-              currentStep: data.current_step || data.currentStep,
-              leadId: data.lead_id || data.leadId,
-              avatarUrl: data.avatar_url || data.avatarUrl,
+              currentStep: data.current_step,
+              leadId: data.lead_id,
+              avatarUrl: data.avatar_url,
             });
-
-            logger.info('[AnalysisSSE] Analysis complete', {
-              runId,
-              leadId: data.lead_id || data.leadId,
-            });
-
-            // Close connection
+            logger.info('[AnalysisSSE] Complete', { runId });
             eventSource.close();
             setIsConnected(false);
           } catch (err) {
-            logger.error('[AnalysisSSE] Failed to parse complete event', err as Error);
+            logger.error('[AnalysisSSE] Parse error', err as Error);
           }
         });
 
-        // Failed event
         eventSource.addEventListener('failed', (event) => {
           if (!isMounted) return;
-
           try {
             const data = JSON.parse(event.data);
-
-            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: 'failed',
               progress: data.progress || 0,
               step: data.step || { current: 0, total: 4 },
-              currentStep: data.current_step || data.currentStep || 'Failed',
-              leadId: data.lead_id || data.leadId,
-              avatarUrl: data.avatar_url || data.avatarUrl,
+              currentStep: data.current_step || 'Failed',
+              leadId: data.lead_id,
+              avatarUrl: data.avatar_url,
             });
-
-            logger.error('[AnalysisSSE] Analysis failed', new Error(data.error || 'Analysis failed'), {
-              runId,
-            });
-
             setError(new Error(data.error || 'Analysis failed'));
             eventSource.close();
             setIsConnected(false);
           } catch (err) {
-            logger.error('[AnalysisSSE] Failed to parse failed event', err as Error);
+            logger.error('[AnalysisSSE] Parse error', err as Error);
           }
         });
 
-        // Cancelled event
         eventSource.addEventListener('cancelled', (event) => {
           if (!isMounted) return;
-
           try {
             const data = JSON.parse(event.data);
-
-            // FIX: Map snake_case backend fields to camelCase frontend fields
             setProgress({
               runId,
               status: 'cancelled',
               progress: data.progress || 0,
               step: data.step || { current: 0, total: 4 },
               currentStep: 'Cancelled',
-              leadId: data.lead_id || data.leadId,
-              avatarUrl: data.avatar_url || data.avatarUrl,
+              leadId: data.lead_id,
+              avatarUrl: data.avatar_url,
             });
-
-            logger.info('[AnalysisSSE] Analysis cancelled', { runId });
-
             eventSource.close();
             setIsConnected(false);
           } catch (err) {
-            logger.error('[AnalysisSSE] Failed to parse cancelled event', err as Error);
+            logger.error('[AnalysisSSE] Parse error', err as Error);
           }
         });
 
-        // Error handler
-        eventSource.onerror = (event: any) => {
+        eventSource.onerror = () => {
           if (!isMounted) return;
-
-          logger.error('[AnalysisSSE] Connection error', new Error('SSE connection error'), {
-            runId,
-            readyState: eventSource.readyState,
-            timestamp: new Date().toISOString(),
-          });
-
-          // Check if backend sent error message
-          if (event.data) {
-            try {
-              const data = JSON.parse(event.data);
-              setError(new Error(data.message || 'SSE connection failed'));
-            } catch {
-              setError(new Error('SSE connection failed'));
-            }
-          } else {
-            setError(new Error('SSE connection failed'));
-          }
-
+          logger.error('[AnalysisSSE] Connection error', new Error('SSE failed'), { runId });
+          setError(new Error('SSE connection failed'));
           eventSource.close();
           setIsConnected(false);
         };
 
-        // Timeout after 5 minutes (analyses should complete within this time)
         timeoutRef.current = setTimeout(() => {
           if (!isMounted) return;
-
-          logger.error('[AnalysisSSE] Timeout - exceeded 5 minutes', new Error('Analysis timeout'));
-
-          setError(new Error('Analysis timeout - exceeded 5 minutes'));
+          logger.error('[AnalysisSSE] Timeout', new Error('5min timeout'));
+          setError(new Error('Analysis timeout'));
           eventSource.close();
           setIsConnected(false);
-        }, 300000); // 5 minutes
+        }, 300000);
 
       } catch (err) {
         if (!isMounted) return;
-
-        logger.error('[AnalysisSSE] Failed to establish connection', err as Error);
+        logger.error('[AnalysisSSE] Connection failed', err as Error);
         setError(err instanceof Error ? err : new Error('Failed to connect'));
         setIsConnected(false);
       }
@@ -286,14 +203,12 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
 
     connectSSE();
 
-    // Cleanup function
+    // Cleanup - always close if exists
     return () => {
       isMounted = false;
 
-      // FIX: Always close EventSource if it exists (idempotent operation)
-      // EventSource.close() is safe to call even if connection not fully established
       if (eventSourceRef.current) {
-        logger.info('[AnalysisSSE] Cleaning up SSE connection', { runId });
+        logger.info('[AnalysisSSE] Cleaning up', { runId });
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
@@ -305,7 +220,7 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
 
       setIsConnected(false);
     };
-  }, [runId]); // CRITICAL: Only runId as dependency, nothing else
+  }, [runId]);
 
   return {
     progress,

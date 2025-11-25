@@ -179,29 +179,21 @@ export function useActiveAnalyses() {
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    // FIX: Disable polling when SSE is active and working
     refetchInterval: (query) => {
       const data = query.state.data ?? [];
       const activeCount = data.filter(
         j => j.status === 'pending' || j.status === 'analyzing'
       ).length;
 
-      if (activeCount === 0) return false;        // Stop polling completely
+      if (activeCount === 0) return false;
 
-      // If SSE has error, use faster polling as fallback
-      if (sseError) {
-        if (activeCount <= 3) return 3000;        // 3 seconds for 1-3 jobs
-        return 5000;                               // 5 seconds for bulk (4+ jobs)
+      // Use polling only if SSE failed or no SSE connection
+      if (sseError || !activeJob) {
+        return activeCount <= 3 ? 3000 : 5000;
       }
 
-      // FIX: If SSE is working and activeJob exists, disable polling
-      if (activeJob) {
-        return false;                              // SSE handles updates
-      }
-
-      // SSE not tracking anything - use slower polling
-      if (activeCount <= 3) return 10000;         // 10 seconds for 1-3 jobs
-      return 5000;                                 // 5 seconds for bulk (4+ jobs)
+      // SSE working - disable polling
+      return false;
     },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
