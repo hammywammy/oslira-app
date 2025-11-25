@@ -81,7 +81,7 @@ const getActiveCount = (jobs: AnalysisJob[]): number => {
 // STORE
 // =============================================================================
 
-export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
+export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
   // State
   jobs: [],
   activeCount: 0,
@@ -126,13 +126,6 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
       });
 
       const newActiveCount = getActiveCount(newJobs);
-
-      // Auto-dismiss completed jobs after 3 seconds
-      if (updates.status === 'complete') {
-        setTimeout(() => {
-          get().removeJob(runId);
-        }, 3000);
-      }
 
       return {
         jobs: newJobs,
