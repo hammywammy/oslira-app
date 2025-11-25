@@ -7,10 +7,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
+import { useCurrentBalance, useLightBalance, useCreditsLoading } from '@/features/credits/store/creditsStore';
 import { useSubscriptionPlan } from '@/core/store/selectors';
+import { useSubscriptionLoading } from '@/features/billing/store/subscriptionStore';
 import { Portal } from '@/shared/components/ui/Portal';
 import { env } from '@/core/auth/environment';
+
+// Skeleton component for loading states
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse bg-muted-foreground/20 rounded ${className ?? ''}`}
+    />
+  );
+}
 
 interface NavItem {
   label: string;
@@ -48,10 +58,15 @@ export function Sidebar() {
   const { theme } = useTheme();
   const creditBalance = useCurrentBalance();
   const lightBalance = useLightBalance();
+  const creditsLoading = useCreditsLoading();
   const planType = useSubscriptionPlan();
+  const subscriptionLoading = useSubscriptionLoading();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isHoveringToggle, setIsHoveringToggle] = useState(false);
   const [isHoveringSidebar, setIsHoveringSidebar] = useState(false);
+
+  // Combined loading state for stores hydrated by bootstrap
+  const isStoresLoading = creditsLoading || subscriptionLoading;
 
   const handleLogout = async () => {
     await logout();
@@ -209,9 +224,13 @@ export function Sidebar() {
                   <Icon icon="ph:lightning" className="w-4 h-4 text-primary flex-shrink-0" />
                   <span className="text-xs font-medium text-muted-foreground">Credits</span>
                 </div>
-                <div className="text-xl font-bold text-primary">
-                  {creditBalance}
-                </div>
+                {isStoresLoading ? (
+                  <Skeleton className="h-7 w-16 mt-1" />
+                ) : (
+                  <div className="text-xl font-bold text-primary">
+                    {creditBalance}
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground mt-0.5">remaining this month</div>
               </div>
             )}
@@ -223,9 +242,13 @@ export function Sidebar() {
                   <Icon icon="ph:chart-line" className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                   <span className="text-xs font-medium text-muted-foreground">Light Analysis</span>
                 </div>
-                <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                  {lightBalance}
-                </div>
+                {isStoresLoading ? (
+                  <Skeleton className="h-7 w-16 mt-1" />
+                ) : (
+                  <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                    {lightBalance}
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground mt-0.5">remaining this month</div>
               </div>
             )}
@@ -235,15 +258,23 @@ export function Sidebar() {
               <div className="flex flex-col items-center gap-2 py-2">
                 <div className="text-center">
                   <Icon icon="ph:lightning" className="w-4 h-4 text-primary mx-auto mb-1" />
-                  <span className="text-xs font-bold text-primary">
-                    {creditBalance}
-                  </span>
+                  {isStoresLoading ? (
+                    <Skeleton className="h-4 w-8 mx-auto" />
+                  ) : (
+                    <span className="text-xs font-bold text-primary">
+                      {creditBalance}
+                    </span>
+                  )}
                 </div>
                 <div className="text-center">
                   <Icon icon="ph:chart-line" className="w-4 h-4 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
-                  <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
-                    {lightBalance}
-                  </span>
+                  {isStoresLoading ? (
+                    <Skeleton className="h-4 w-8 mx-auto" />
+                  ) : (
+                    <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                      {lightBalance}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -271,13 +302,17 @@ export function Sidebar() {
                       <p className="text-sm font-medium text-foreground truncate">
                         {user?.full_name || 'User'}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {getUserPlan()}
-                      </p>
+                      {isStoresLoading ? (
+                        <Skeleton className="h-3 w-16 mt-1" />
+                      ) : (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {getUserPlan()}
+                        </p>
+                      )}
                     </div>
-                    <Icon 
-                      icon={showUserMenu ? 'ph:caret-up' : 'ph:caret-down'} 
-                      className="w-4 h-4 text-muted-foreground flex-shrink-0" 
+                    <Icon
+                      icon={showUserMenu ? 'ph:caret-up' : 'ph:caret-down'}
+                      className="w-4 h-4 text-muted-foreground flex-shrink-0"
                     />
                   </>
                 )}

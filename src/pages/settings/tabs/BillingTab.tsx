@@ -16,8 +16,8 @@ import { Card } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { Badge } from '@/shared/components/ui/Badge';
 import { Link } from 'react-router-dom';
-import { useCurrentTier, useCurrentPeriodEnd } from '@/features/billing/store/subscriptionStore';
-import { useCurrentBalance, useLightBalance } from '@/features/credits/store/creditsStore';
+import { useCurrentTier, useCurrentPeriodEnd, useSubscriptionLoading } from '@/features/billing/store/subscriptionStore';
+import { useCurrentBalance, useLightBalance, useCreditsLoading } from '@/features/credits/store/creditsStore';
 import { PRICING_TIERS } from '@/config/pricing.config';
 
 // =============================================================================
@@ -41,6 +41,15 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Skeleton component for loading states
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={`animate-pulse bg-muted-foreground/20 rounded ${className ?? ''}`}
+    />
+  );
+}
+
 // =============================================================================
 // COMPONENT
 // =============================================================================
@@ -51,6 +60,11 @@ export function BillingTab() {
   const periodEnd = useCurrentPeriodEnd();
   const creditsRemaining = useCurrentBalance();
   const lightAnalysesRemaining = useLightBalance();
+  const subscriptionLoading = useSubscriptionLoading();
+  const creditsLoading = useCreditsLoading();
+
+  // Combined loading state for stores hydrated by bootstrap
+  const isLoading = subscriptionLoading || creditsLoading;
 
   // Get display name from pricing config
   const currentPlan = PRICING_TIERS[tier]?.displayName ?? capitalize(tier);
@@ -80,7 +94,11 @@ export function BillingTab() {
                 Your subscription details and usage
               </p>
             </div>
-            <Badge variant="primary">{currentPlan}</Badge>
+            {isLoading ? (
+              <Skeleton className="h-6 w-20" />
+            ) : (
+              <Badge variant="primary">{currentPlan}</Badge>
+            )}
           </div>
 
           {/* Plan Details */}
@@ -90,7 +108,11 @@ export function BillingTab() {
                 <Icon icon="ph:coins" className="w-4 h-4" />
                 AI Credits
               </div>
-              <div className="text-2xl font-bold text-foreground">{creditsRemaining}</div>
+              {isLoading ? (
+                <Skeleton className="h-8 w-16 mt-1" />
+              ) : (
+                <div className="text-2xl font-bold text-foreground">{creditsRemaining}</div>
+              )}
               <div className="text-xs text-muted-foreground mt-1">remaining this month</div>
             </div>
 
@@ -99,7 +121,11 @@ export function BillingTab() {
                 <Icon icon="ph:lightning" className="w-4 h-4" />
                 Light Analyses
               </div>
-              <div className="text-2xl font-bold text-foreground">{lightAnalysesRemaining}</div>
+              {isLoading ? (
+                <Skeleton className="h-8 w-16 mt-1" />
+              ) : (
+                <div className="text-2xl font-bold text-foreground">{lightAnalysesRemaining}</div>
+              )}
               <div className="text-xs text-muted-foreground mt-1">remaining this month</div>
             </div>
 
@@ -108,9 +134,13 @@ export function BillingTab() {
                 <Icon icon="ph:calendar" className="w-4 h-4" />
                 Renewal Date
               </div>
-              <div className="text-2xl font-bold text-foreground">
-                {isFree ? 'N/A' : formatDate(periodEnd)}
-              </div>
+              {isLoading ? (
+                <Skeleton className="h-8 w-24 mt-1" />
+              ) : (
+                <div className="text-2xl font-bold text-foreground">
+                  {isFree ? 'N/A' : formatDate(periodEnd)}
+                </div>
+              )}
               <div className="text-xs text-muted-foreground mt-1">
                 {isFree ? 'free plan' : 'next billing date'}
               </div>
