@@ -9,7 +9,7 @@
  * FEATURES:
  * - Real-time progress updates
  * - Automatic reconnection (max 1 attempt - fail fast to polling)
- * - Heartbeat ping/pong (every 8s - below DO 10s hibernation threshold)
+ * - Heartbeat ping/pong (immediate + every 5s - well under DO 10s hibernation threshold)
  * - Page Visibility API detection for tab hibernation
  * - Graceful degradation to HTTP polling
  * - Auto-cleanup on unmount
@@ -40,7 +40,7 @@ export interface AnalysisProgressState {
 }
 
 interface WebSocketMessage {
-  type: 'initial' | 'progress' | 'complete' | 'failed' | 'pong' | 'error';
+  type: 'initial' | 'progress' | 'complete' | 'failed' | 'pong' | 'error' | 'ready';
   data?: {
     status?: AnalysisStatus;
     progress?: number;
@@ -65,7 +65,7 @@ interface UseAnalysisWebSocketReturn {
 // CONSTANTS
 // =============================================================================
 
-const HEARTBEAT_INTERVAL = 8000; // 8 seconds (must be < DO hibernation timeout of 10s)
+const HEARTBEAT_INTERVAL = 5000; // 5 seconds (well under DO hibernation timeout of 10s)
 const RECONNECT_DELAY = 1000; // 1 second (fail fast to polling)
 const MAX_RECONNECT_ATTEMPTS = 1; // Fail fast - fall back to HTTP polling quickly
 
@@ -132,7 +132,10 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
         setError(null);
         reconnectAttemptsRef.current = 0;
 
-        // Start heartbeat
+        // Send immediate ping to prevent early hibernation
+        ws.send(JSON.stringify({ action: 'ping' }));
+
+        // Start heartbeat interval
         heartbeatIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ action: 'ping' }));
@@ -211,6 +214,10 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
               break;
             }
 
+            case 'ready':
+              logger.info('[WebSocket] Connection ready', { runId });
+              break;
+
             case 'pong':
               // Heartbeat acknowledged
               break;
@@ -236,12 +243,23 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
       ws.onclose = (event) => {
         if (!isMountedRef.current) return;
 
-        logger.warn('[WebSocket] Closed', { runId, code: event.code, reason: event.reason });
         setIsConnected(false);
         cleanup();
 
-        // Reconnect if not normal closure and not a terminal state
-        if (event.code !== 1000 && reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+        // Clean closure (code 1000 or 1001) - no reconnection needed
+        if (event.code === 1000 || event.code === 1001) {
+          logger.info('[WebSocket] Clean closure, no reconnection needed', {
+            runId,
+            code: event.code,
+            reason: event.reason,
+          });
+          return;
+        }
+
+        // Abnormal closure - attempt reconnection
+        logger.warn('[WebSocket] Abnormal closure', { runId, code: event.code, reason: event.reason });
+
+        if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
           reconnectAttemptsRef.current++;
           logger.info('[WebSocket] Reconnecting', {
             attempt: reconnectAttemptsRef.current,
@@ -251,9 +269,9 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, RECONNECT_DELAY * reconnectAttemptsRef.current);
-        } else if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+        } else {
           setError(new Error('Max reconnection attempts reached'));
-          logger.error('[WebSocket] Max retries', new Error('Max retries reached'), { runId });
+          logger.error('[WebSocket] Max retries reached for abnormal closure', new Error('Max retries reached'), { runId });
         }
       };
     } catch (err) {
