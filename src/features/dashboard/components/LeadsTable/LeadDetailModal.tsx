@@ -1,30 +1,26 @@
 // src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
 
 /**
- * LEAD DETAIL MODAL - V3.1 (Stripe-Level Polish)
+ * LEAD DETAIL MODAL - V4.0 (Professional B2B Intelligence)
  *
  * Professional modal for displaying complete lead information
  * Triggered by clicking the eye icon in the leads table
  *
  * FEATURES:
- * - Centered header content with prominent score badge
- * - Verification badge (Instagram-style blue checkmark)
- * - Business account indicator badge
- * - Tab navigation (Overview/Analytics)
- * - 4-category score breakdown
- * - Niche badge
- * - Enhanced summary card with score-based indicators
- * - External links section with smart icons
- * - Compact analysis meta cards
+ * - Compact horizontal header with dense profile metadata
+ * - Score display with circular progress ring (top-right)
+ * - Verification and business badges inline with name
+ * - Plain text stats with bullet separators (no icons)
+ * - Platform badge with subtle gradient
+ * - Refined tab navigation
  * - Dark mode support
  *
  * DESIGN PHILOSOPHY:
- * "Surprisingly simple for how much info is provided"
- * - Clean, not cluttered
- * - Visual interest through hierarchy
- * - Subtle animations
- * - Everything has purpose
- * - Conditional rendering keeps UI clean
+ * "Professional B2B intelligence aesthetic"
+ * - Dense but not cluttered
+ * - Stripe/Linear level polish
+ * - Information hierarchy through typography
+ * - Subtle visual cues
  */
 
 import { useState } from 'react';
@@ -34,7 +30,6 @@ import { Modal } from '@/shared/components/ui/Modal';
 import { LeadAvatar } from '@/shared/components/ui/LeadAvatar';
 import type { Lead } from '@/shared/types/leads.types';
 
-import { TabNavigation, type TabType } from './TabNavigation';
 import { ScoreBreakdown } from './ScoreBreakdown';
 import { AnalysisMetaCards } from './AnalysisMetaCards';
 import { SummaryCard } from './SummaryCard';
@@ -51,19 +46,15 @@ interface LeadDetailModalProps {
   lead: Lead | null;
 }
 
+type TabType = 'overview' | 'analytics';
+
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
 
-function formatFollowers(count: number | null): string {
+function formatNumber(count: number | null): string {
   if (!count) return '0';
-  if (count >= 1000000) {
-    return `${(count / 1000000).toFixed(1)}M`;
-  }
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}K`;
-  }
-  return count.toString();
+  return count.toLocaleString();
 }
 
 function getScoreColor(score: number | null): string {
@@ -71,13 +62,6 @@ function getScoreColor(score: number | null): string {
   if (score >= 80) return 'text-emerald-500';
   if (score >= 60) return 'text-blue-500';
   return 'text-amber-500';
-}
-
-function extractNiche(lead: Lead): string | null {
-  // Placeholder: In the future, this would extract from bio or category
-  // For now, return a default based on analysis existence
-  if (!lead.analysis_type) return null;
-  return 'Copywriting';
 }
 
 // =============================================================================
@@ -101,78 +85,134 @@ function VerificationBadge() {
 }
 
 /**
- * Niche badge (blue)
- */
-function NicheBadge({ niche }: { niche: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
-      <span>🎯</span>
-      {niche}
-    </span>
-  );
-}
-
-/**
- * Business account badge (purple)
+ * Business account badge (purple, compact)
  */
 function BusinessBadge() {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
       <span>💼</span>
       Business
     </span>
   );
 }
 
-function StatItem({ icon, value, label }: { icon: string; value: string; label: string }) {
+/**
+ * Platform badge with gradient
+ */
+function PlatformBadge() {
   return (
-    <div className="flex items-center gap-2">
-      <Icon icon={icon} className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-      <span className="text-sm">
-        <span className="font-semibold text-gray-900 dark:text-gray-100">{value}</span>
-        <span className="text-gray-500 dark:text-gray-400 ml-1">{label}</span>
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-full">
+      <Icon icon="mdi:instagram" className="w-3.5 h-3.5 text-pink-600 dark:text-pink-400" />
+      <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Instagram</span>
+    </span>
+  );
+}
+
+/**
+ * Score display with number and circular progress ring
+ */
+function ScoreDisplay({ score }: { score: number | null }) {
+  const scoreColor = getScoreColor(score);
+  const percentage = score !== null ? score : 0;
+  const circumference = 2 * Math.PI * 20; // radius = 20
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
+      {/* Score Number */}
+      <span className={`text-4xl font-bold ${score !== null ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}`}>
+        {score !== null ? score : '--'}
+      </span>
+
+      {/* Circular Progress Ring */}
+      <div className="relative w-12 h-12">
+        <svg className="w-full h-full transform -rotate-90">
+          {/* Background track */}
+          <circle
+            cx="24"
+            cy="24"
+            r="20"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+            className="text-gray-200 dark:text-gray-700"
+          />
+          {/* Progress stroke */}
+          {score !== null && (
+            <circle
+              cx="24"
+              cy="24"
+              r="20"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              className={scoreColor}
+            />
+          )}
+        </svg>
+      </div>
+
+      {/* Label */}
+      <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+        Overall
       </span>
     </div>
   );
 }
 
-function ScoreCircle({ score }: { score: number | null }) {
-  const scoreColor = getScoreColor(score);
-  const strokeDasharray = score !== null ? `${score * 2.51} 251` : '0 251';
-
+/**
+ * Tab Navigation (inline component for precise control)
+ */
+function TabNav({
+  activeTab,
+  onTabChange,
+  isLightAnalysis
+}: {
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
+  isLightAnalysis: boolean;
+}) {
   return (
-    <div className="absolute top-4 right-12 flex flex-col items-center gap-1">
-      <div className="relative w-20 h-20">
-        <svg className="w-full h-full transform -rotate-90">
-          <circle
-            cx="40"
-            cy="40"
-            r="34"
-            stroke="currentColor"
-            strokeWidth="5"
-            fill="none"
-            className="text-gray-200 dark:text-gray-700"
-          />
-          {score !== null && (
-            <circle
-              cx="40"
-              cy="40"
-              r="34"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray={strokeDasharray}
-              className={scoreColor}
-              strokeLinecap="round"
-            />
+    <div className="border-b border-gray-200 dark:border-gray-700">
+      <nav className="flex gap-1 px-6 -mb-px" aria-label="Tabs">
+        {/* Overview Tab */}
+        <button
+          type="button"
+          onClick={() => onTabChange('overview')}
+          className={`
+            px-4 py-3 text-sm font-medium border-b-2 transition-all duration-100
+            ${activeTab === 'overview'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+            }
+          `}
+        >
+          Overview
+        </button>
+
+        {/* Analytics Tab */}
+        <button
+          type="button"
+          onClick={() => onTabChange('analytics')}
+          className={`
+            inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-all duration-100
+            ${activeTab === 'analytics'
+              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+              : isLightAnalysis
+                ? 'border-transparent text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+            }
+          `}
+        >
+          Analytics
+          {isLightAnalysis && (
+            <Icon icon="mdi:lock" className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
           )}
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {score !== null ? score : '--'}
-          </span>
-        </div>
-      </div>
+        </button>
+      </nav>
     </div>
   );
 }
@@ -182,25 +222,21 @@ function ScoreCircle({ score }: { score: number | null }) {
 // =============================================================================
 
 function OverviewTab({ lead }: { lead: Lead }) {
-  // For now, we'll simulate score breakdown since the actual breakdown
-  // isn't in the Lead type yet. This can be connected to real data later.
   const scoreBreakdown = {
     profileFit: lead.overall_score !== null ? Math.round(lead.overall_score * 0.25) : null,
-    engagement: null, // Placeholder - available in deep analysis
+    engagement: null,
     authority: lead.overall_score !== null ? Math.round(lead.overall_score * 0.22) : null,
-    readiness: null, // Placeholder - available in deep analysis
+    readiness: null,
   };
 
   return (
     <div className="space-y-5">
-      {/* Analysis Meta Cards */}
       <AnalysisMetaCards
         analysisType={lead.analysis_type}
         status={lead.analysis_status}
         analyzedAt={lead.analysis_completed_at}
       />
 
-      {/* Score Breakdown */}
       {lead.overall_score !== null && (
         <ScoreBreakdown
           scores={scoreBreakdown}
@@ -208,7 +244,6 @@ function OverviewTab({ lead }: { lead: Lead }) {
         />
       )}
 
-      {/* Summary Card */}
       {lead.summary && (
         <SummaryCard
           summary={lead.summary}
@@ -216,12 +251,10 @@ function OverviewTab({ lead }: { lead: Lead }) {
         />
       )}
 
-      {/* External Links Section */}
       {lead.external_urls && lead.external_urls.length > 0 && (
         <ExternalLinksSection links={lead.external_urls} />
       )}
 
-      {/* Empty State for Unanalyzed Leads */}
       {!lead.analysis_type && (
         <div className="flex flex-col items-center justify-center py-12 px-8 text-center bg-gray-50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
           <Icon icon="mdi:chart-line-variant" className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-4" />
@@ -246,78 +279,80 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
 
   if (!lead) return null;
 
-  const niche = extractNiche(lead);
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
-  const showBadges = niche || lead.is_business;
 
   return (
-    <Modal open={isOpen} onClose={onClose} size="3xl" closeable>
+    <Modal open={isOpen} onClose={onClose} size="3xl" closeable={false}>
       {/* ========================================================================
-          HEADER - CENTERED PROFILE OVERVIEW
+          HEADER - PROFESSIONAL HORIZONTAL LAYOUT
           ======================================================================== */}
-      <div className="relative bg-gradient-to-br from-blue-50/80 via-gray-50/50 to-white dark:from-blue-900/10 dark:via-gray-900/50 dark:to-gray-900 border-b border-gray-200 dark:border-gray-800">
-        {/* Score Circle - Absolute positioned top-right */}
-        {lead.overall_score !== null && <ScoreCircle score={lead.overall_score} />}
+      <div className="relative p-6 border-b border-gray-200 dark:border-gray-800">
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-label="Close modal"
+        >
+          <Icon icon="lucide:x" className="w-5 h-5" />
+        </button>
 
-        <div className="px-8 py-8">
-          {/* Centered Content */}
-          <div className="flex flex-col items-center text-center">
-            {/* Avatar with Platform Badge */}
-            <div className="relative mb-4">
-              <LeadAvatar
-                url={lead.profile_pic_url}
-                username={lead.username}
-                displayName={lead.display_name}
-                size="xl"
-                className="shadow-lg"
-              />
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900 shadow-sm">
-                <Icon icon="mdi:instagram" className="w-3.5 h-3.5 text-white" />
-              </div>
+        {/* Score Display - Below close button */}
+        {lead.overall_score !== null && <ScoreDisplay score={lead.overall_score} />}
+
+        {/* Main Profile Content - Horizontal Flexbox */}
+        <div className="flex items-start gap-4 pr-24">
+          {/* Avatar with Instagram Badge */}
+          <div className="relative shrink-0">
+            <LeadAvatar
+              url={lead.profile_pic_url}
+              username={lead.username}
+              displayName={lead.display_name}
+              size="lg"
+              className="w-16 h-16"
+            />
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700">
+              <Icon icon="mdi:instagram" className="w-4 h-4 text-pink-500" />
+            </div>
+          </div>
+
+          {/* Profile Information Column */}
+          <div className="flex-1 min-w-0 space-y-1">
+            {/* Row 1: Name + Verification + Business Badge */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                {lead.display_name || lead.username}
+              </h2>
+              {lead.is_verified && <VerificationBadge />}
+              {lead.is_business && <BusinessBadge />}
             </div>
 
-            {/* Name with Verification Badge */}
-            <h2 className="flex items-center justify-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-              {lead.display_name || lead.username}
-              {lead.is_verified && <VerificationBadge />}
-            </h2>
-
-            {/* Username Link */}
+            {/* Row 2: Username Link */}
             <a
               href={lead.profile_url || `https://instagram.com/${lead.username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors mb-3"
+              className="group inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
             >
-              <span className="text-sm font-medium">@{lead.username}</span>
-              <Icon icon="mdi:open-in-new" width={12} />
+              <span>@{lead.username}</span>
+              <Icon
+                icon="mdi:open-in-new"
+                className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+              />
             </a>
 
-            {/* Niche + Business Badges */}
-            {showBadges && (
-              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-                {niche && <NicheBadge niche={niche} />}
-                {lead.is_business && <BusinessBadge />}
-              </div>
-            )}
+            {/* Row 3: Stats (plain text with bullets) */}
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {formatNumber(lead.follower_count)} followers
+              <span className="mx-2">•</span>
+              {formatNumber(lead.following_count)} following
+              <span className="mx-2">•</span>
+              {lead.post_count || 0} posts
+            </p>
 
-            {/* Stats Row */}
-            <div className="flex items-center gap-6">
-              <StatItem
-                icon="mdi:account-group"
-                value={formatFollowers(lead.follower_count)}
-                label="followers"
-              />
-              <StatItem
-                icon="mdi:account-multiple"
-                value={formatFollowers(lead.following_count)}
-                label="following"
-              />
-              <StatItem
-                icon="mdi:grid"
-                value={String(lead.post_count || 0)}
-                label="posts"
-              />
+            {/* Row 4: Platform Badge */}
+            <div className="pt-1">
+              <PlatformBadge />
             </div>
           </div>
         </div>
@@ -326,7 +361,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       {/* ========================================================================
           TAB NAVIGATION
           ======================================================================== */}
-      <TabNavigation
+      <TabNav
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isLightAnalysis={isLightAnalysis}
@@ -335,7 +370,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       {/* ========================================================================
           TAB CONTENT
           ======================================================================== */}
-      <div className="px-8 py-6 max-h-[50vh] overflow-y-auto">
+      <div className="px-6 py-5 max-h-[50vh] overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
