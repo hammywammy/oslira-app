@@ -63,7 +63,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
       return data;
     },
     enabled: autoFetch && !!businessProfileId && isAuthenticated && !authLoading,
-    staleTime: 30000, // 30s - keep data stable during analysis
+    staleTime: 2000, // CHANGED: 2s allows refetch after analysis completion
     gcTime: 5 * 60 * 1000, // 5min cache
     refetchOnWindowFocus: false, // Prevent unnecessary refetches
   });

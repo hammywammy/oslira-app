@@ -23,7 +23,7 @@
  * useActiveAnalyses(); // Call in a top-level component (e.g., TopBar)
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAnalysisQueueStore, type AnalysisJob } from '../stores/useAnalysisQueueStore';
 import { httpClient } from '@/core/auth/http-client';
@@ -116,6 +116,10 @@ export function useActiveAnalyses() {
     activeJob?.runId || null
   );
 
+  // Debounced leads refresh (batch multiple completions within 2s window)
+  const debouncedLeadsRefresh = useRef<NodeJS.Timeout | null>(null);
+  const pendingCompletions = useRef<number>(0);
+
   // Sync SSE progress to store
   useEffect(() => {
     if (!sseProgress) return;
@@ -139,11 +143,36 @@ export function useActiveAnalyses() {
         logger.error('[ActiveAnalyses] Failed to refresh balance after SSE completion', error as Error);
       });
 
-      // CRITICAL: Invalidate leads query to trigger refetch
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
-      logger.info('[ActiveAnalyses] Leads table refresh triggered after analysis completion');
+      // Smart debounced refresh: first completion triggers immediately,
+      // subsequent completions within 2s are batched into single refetch
+      pendingCompletions.current += 1;
+
+      if (debouncedLeadsRefresh.current) {
+        clearTimeout(debouncedLeadsRefresh.current);
+      }
+
+      debouncedLeadsRefresh.current = setTimeout(() => {
+        const count = pendingCompletions.current;
+        pendingCompletions.current = 0;
+
+        logger.info('[ActiveAnalyses] Leads table refresh triggered', {
+          completedAnalyses: count,
+          type: count === 1 ? 'single' : 'batch'
+        });
+
+        queryClient.invalidateQueries({ queryKey: ['leads'] });
+      }, 2000); // 2s debounce window
     }
   }, [sseProgress, queryClient, updateJob, fetchBalance]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedLeadsRefresh.current) {
+        clearTimeout(debouncedLeadsRefresh.current);
+      }
+    };
+  }, []);
 
   // Auto-dismiss completed jobs after 3 seconds
   useEffect(() => {
