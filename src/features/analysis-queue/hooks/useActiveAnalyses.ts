@@ -138,8 +138,37 @@ export function useActiveAnalyses() {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sseProgress, currentJobs]);
-  // Zustand actions (updateJob, fetchBalance) are stable references and never change, similar to Redux dispatch
+  }, [sseProgress]);
+
+  // Auto-dismiss completed jobs after 3 seconds
+  useEffect(() => {
+    const completedJobs = currentJobs.filter((job) => job.status === 'complete');
+
+    if (completedJobs.length === 0) return;
+
+    const timeouts: NodeJS.Timeout[] = [];
+
+    completedJobs.forEach((job) => {
+      // Only auto-dismiss if job has been completed for less than 3 seconds
+      // (to avoid re-creating timeouts on every render)
+      if (job.completedAt) {
+        const timeElapsed = Date.now() - job.completedAt;
+        const remainingTime = 3000 - timeElapsed;
+
+        if (remainingTime > 0) {
+          const timeout = setTimeout(() => {
+            useAnalysisQueueStore.getState().removeJob(job.runId);
+          }, remainingTime);
+
+          timeouts.push(timeout);
+        }
+      }
+    });
+
+    return () => {
+      timeouts.forEach((timeout) => clearTimeout(timeout));
+    };
+  }, [currentJobs]);
 
   // Polling fallback query (slower intervals when SSE is active)
   const { data, error } = useQuery({
@@ -178,8 +207,7 @@ export function useActiveAnalyses() {
 
     syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, currentJobs]);
-  // Zustand actions (addJob, updateJob, confirmJobStarted, fetchBalance) are stable references and never change, similar to Redux dispatch
+  }, [data]);
 
   // Log errors
   if (error) {
