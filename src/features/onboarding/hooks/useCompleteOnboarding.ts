@@ -1,18 +1,20 @@
 // src/features/onboarding/hooks/useCompleteOnboarding.ts
 
 /**
- * COMPLETE ONBOARDING HOOK - WITH EXTENSIVE DIAGNOSTIC LOGGING
- * 
- * Sends EXACTLY what the form collects.
+ * COMPLETE ONBOARDING HOOK - WITH WEBSOCKET PROGRESS TRACKING
+ *
+ * Sends form data to initiate business context generation.
+ * Uses WebSocket for real-time progress updates (non-blocking enhancement).
  * Backend derives signature_name from full_name.
  */
 
+import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { httpClient } from '@/core/auth/http-client';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-import { authManager } from '@/core/auth/auth-manager';
-import { env } from '@/core/auth/environment';
+import { useBusinessContextWebSocket } from './useBusinessContextWebSocket';
+import type { BusinessContextProgressState } from './useBusinessContextWebSocket';
 import type { FormData } from '@/features/onboarding/constants/validationSchemas';
 
 // =============================================================================
@@ -30,14 +32,106 @@ interface OnboardingCompleteResponse {
 }
 
 // =============================================================================
+// RETURN TYPE
+// =============================================================================
+
+interface UseCompleteOnboardingReturn {
+  mutate: (formData: FormData) => void;
+  isPending: boolean;
+  isError: boolean;
+  error: Error | null;
+  progress: BusinessContextProgressState | null;
+  isConnected: boolean;
+}
+
+// =============================================================================
+// CONSTANTS
+// =============================================================================
+
+// Fallback timeout if WebSocket fails - ensures user isn't stuck forever
+const FALLBACK_TIMEOUT = 90000; // 90 seconds
+
+// =============================================================================
 // HOOK
 // =============================================================================
 
-export function useCompleteOnboarding() {
+export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
+  const [runId, setRunId] = useState<string | null>(null);
+  const hasNavigatedRef = useRef(false);
+  const fallbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  return useMutation({
+  // WebSocket hook for real-time progress tracking
+  const { progress, isConnected, error: wsError } = useBusinessContextWebSocket(runId);
+
+  // Handle completion - navigate when WebSocket reports complete
+  useEffect(() => {
+    if (hasNavigatedRef.current) return;
+
+    if (progress?.status === 'complete') {
+      hasNavigatedRef.current = true;
+
+      // Clear fallback timeout
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+        fallbackTimeoutRef.current = null;
+      }
+
+      console.log('[CompleteOnboarding] ✅ WebSocket reports complete - navigating');
+
+      // Refresh user data (onboarding_completed will be true, and we'll get fresh JWT)
+      refreshUser()
+        .then(() => {
+          console.log('[CompleteOnboarding] ✅ User data refreshed');
+          navigate('/dashboard', { replace: true });
+        })
+        .catch((refreshError: Error) => {
+          console.warn('[CompleteOnboarding] ⚠️ User refresh failed (proceeding anyway)', {
+            error: refreshError.message,
+          });
+          // Don't throw - Worker already completed successfully
+          navigate('/dashboard', { replace: true });
+        });
+    }
+  }, [progress?.status, refreshUser, navigate]);
+
+  // Handle WebSocket failure - if generation failed, we should still navigate eventually
+  useEffect(() => {
+    if (hasNavigatedRef.current) return;
+
+    if (progress?.status === 'failed') {
+      hasNavigatedRef.current = true;
+
+      // Clear fallback timeout
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+        fallbackTimeoutRef.current = null;
+      }
+
+      console.error('[CompleteOnboarding] ❌ Generation failed', {
+        error: wsError?.message,
+      });
+
+      // Still navigate - user needs to see the result
+      refreshUser()
+        .catch(() => {}) // Ignore refresh errors
+        .finally(() => {
+          navigate('/dashboard', { replace: true });
+        });
+    }
+  }, [progress?.status, wsError, refreshUser, navigate]);
+
+  // Cleanup fallback timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (fallbackTimeoutRef.current) {
+        clearTimeout(fallbackTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
       console.log('[CompleteOnboarding] 🚀 Starting mutation', {
         timestamp: new Date().toISOString(),
@@ -48,8 +142,8 @@ export function useCompleteOnboarding() {
           has_target_description: !!formData.target_description,
           communication_tone: formData.communication_tone,
           follower_range: `${formData.icp_min_followers}-${formData.icp_max_followers}`,
-          company_sizes_count: formData.target_company_sizes?.length || 0
-        }
+          company_sizes_count: formData.target_company_sizes?.length || 0,
+        },
       });
 
       // Send the form data EXACTLY as-is
@@ -63,161 +157,50 @@ export function useCompleteOnboarding() {
         timestamp: new Date().toISOString(),
         run_id: response.data.run_id,
         status: response.data.status,
-        message: response.data.message
+        message: response.data.message,
       });
 
       return response;
     },
 
-    onSuccess: async (response) => {
-      console.log('[CompleteOnboarding] 🎯 onSuccess triggered');
+    onSuccess: (response: OnboardingCompleteResponse) => {
+      console.log('[CompleteOnboarding] 🎯 onSuccess triggered - starting WebSocket');
 
-      const runId = response.data.run_id;
-      await streamGenerationProgress(runId);
+      const newRunId = response.data.run_id;
 
-      console.log('[CompleteOnboarding] ✅ SSE stream complete');
+      // Set runId to trigger WebSocket connection
+      setRunId(newRunId);
 
-      // Refresh user data (onboarding_completed will be true, and we'll get fresh JWT)
-      console.log('[CompleteOnboarding] 🔄 Refreshing user data...');
-      try {
-        await refreshUser();
-        console.log('[CompleteOnboarding] ✅ User data refreshed');
-      } catch (refreshError: any) {
-        console.warn('[CompleteOnboarding] ⚠️ User refresh failed (proceeding anyway)', {
-          error: refreshError.message,
-          timestamp: new Date().toISOString()
-        });
-        // Don't throw - Worker already completed successfully
-      }
+      // Set fallback timeout in case WebSocket fails completely
+      // This ensures user isn't stuck forever if WebSocket never connects/completes
+      fallbackTimeoutRef.current = setTimeout(() => {
+        if (hasNavigatedRef.current) return;
 
-      // Navigate immediately - fresh JWT already in auth-manager
-      console.log('[CompleteOnboarding] 🧭 Navigating to dashboard');
-      navigate('/dashboard', { replace: true });
+        console.warn('[CompleteOnboarding] ⏰ Fallback timeout triggered - navigating anyway');
+        hasNavigatedRef.current = true;
+
+        refreshUser()
+          .catch(() => {}) // Ignore refresh errors
+          .finally(() => {
+            navigate('/dashboard', { replace: true });
+          });
+      }, FALLBACK_TIMEOUT);
     },
 
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('[CompleteOnboarding] ❌ Error in mutation flow', {
         timestamp: new Date().toISOString(),
         error: error.message,
-        stack: error.stack
       });
     },
   });
-}
 
-// =============================================================================
-// HELPER: Stream generation progress via SSE
-// =============================================================================
-
-async function streamGenerationProgress(runId: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    console.log('[SSE] 🔍 Starting SSE stream', {
-      timestamp: new Date().toISOString(),
-      run_id: runId
-    });
-
-    // Get auth token for query parameter (EventSource doesn't support headers)
-    authManager.getAccessToken().then(token => {
-      if (!token) {
-        console.error('[SSE] ❌ No auth token available');
-        reject(new Error('Authentication required'));
-        return;
-      }
-
-      // Construct full absolute URL with API base
-      const streamUrl = `${env.apiUrl}/api/business/generate-context/${runId}/stream?token=${encodeURIComponent(token)}`;
-
-      console.log('[SSE] 🌐 Connecting to stream', {
-        timestamp: new Date().toISOString(),
-        url: streamUrl.replace(token, '[REDACTED]')
-      });
-
-      const eventSource = new EventSource(streamUrl);
-
-      // Handle progress updates
-      eventSource.addEventListener('progress', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('[SSE] 📊 Progress update', {
-            timestamp: new Date().toISOString(),
-            status: data.status,
-            progress: data.progress,
-            step: data.current_step
-          });
-        } catch (error) {
-          console.error('[SSE] ❌ Failed to parse progress event', error);
-        }
-      });
-
-      // Handle completion
-      eventSource.addEventListener('complete', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('[SSE] 🎉 GENERATION COMPLETE!', {
-            timestamp: new Date().toISOString(),
-            final_progress: data.progress,
-            final_step: data.current_step
-          });
-          eventSource.close();
-          resolve();
-        } catch (error) {
-          console.error('[SSE] ❌ Failed to parse complete event', error);
-          eventSource.close();
-          reject(error);
-        }
-      });
-
-      // Handle errors
-      eventSource.addEventListener('error', (event: any) => {
-        console.error('[SSE] ❌ Stream error', {
-          timestamp: new Date().toISOString(),
-          error: event
-        });
-
-        // Check if backend sent error message
-        if (event.data) {
-          try {
-            const data = JSON.parse(event.data);
-            console.error('[SSE] ❌ Backend error', data);
-            eventSource.close();
-            reject(new Error(data.message || 'Context generation failed'));
-            return;
-          } catch {
-            // Not JSON, generic error
-          }
-        }
-
-        eventSource.close();
-        reject(new Error('SSE connection failed'));
-      });
-
-      // Handle connection errors
-      eventSource.onerror = (error) => {
-        console.error('[SSE] ❌ Connection error', {
-          timestamp: new Date().toISOString(),
-          readyState: eventSource.readyState
-        });
-        eventSource.close();
-        reject(new Error('SSE connection error'));
-      };
-
-      // Timeout after 60 seconds
-      const timeout = setTimeout(() => {
-        console.error('[SSE] ⏰ TIMEOUT - exceeded 60 seconds', {
-          timestamp: new Date().toISOString()
-        });
-        eventSource.close();
-        reject(new Error('Generation timeout - exceeded 60 seconds'));
-      }, 60000);
-
-      // Clear timeout on completion
-      eventSource.addEventListener('complete', () => {
-        clearTimeout(timeout);
-      });
-
-    }).catch(error => {
-      console.error('[SSE] ❌ Failed to get auth token', error);
-      reject(error);
-    });
-  });
+  return {
+    mutate: mutation.mutate,
+    isPending: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    progress,
+    isConnected,
+  };
 }
