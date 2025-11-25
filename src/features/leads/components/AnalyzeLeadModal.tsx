@@ -21,6 +21,7 @@ import { validateInstagramUsername } from '@/shared/utils/validation';
 import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
 import { useSelectedBusinessId, useBusinessProfiles } from '@/core/store/selectors';
 import { useAnalysisQueueStore } from '@/features/analysis-queue/stores/useAnalysisQueueStore';
+import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -84,6 +85,9 @@ export function AnalyzeLeadModal({
 
   // Queue store for optimistic updates
   const { addOptimisticJob } = useAnalysisQueueStore();
+
+  // Credits service for refreshing balance after analysis starts
+  const { refetchBalance } = useCreditsService();
 
   // Form state
   const [rawInput, setRawInput] = useState('');
@@ -173,6 +177,11 @@ export function AnalyzeLeadModal({
 
         // Add optimistic job to queue store
         addOptimisticJob(response.data.run_id, cleanUsername, analysisType);
+
+        // Refresh credits balance immediately (credits are deducted on backend when analysis starts)
+        refetchBalance().catch((error) => {
+          logger.warn('[AnalyzeLeadModal] Failed to refresh balance after analysis start', error as Error);
+        });
 
         // Call onSuccess if provided
         onSuccess?.(response.data.run_id);

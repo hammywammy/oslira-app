@@ -20,6 +20,7 @@ import { logger } from '@/core/utils/logger';
 import { validateInstagramUsername } from '@/shared/utils/validation';
 import { useBusinessProfile } from '@/features/business/providers/BusinessProfileProvider';
 import { useSelectedBusinessId, useBusinessProfiles } from '@/core/store/selectors';
+import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
 // =============================================================================
@@ -93,6 +94,9 @@ export function BulkUploadModal({
   const businessProfiles = useBusinessProfiles();
   const selectedProfileId = useSelectedBusinessId();
   const { isLoading: isLoadingProfiles, selectProfile } = useBusinessProfile();
+
+  // Credits service for refreshing balance after analysis starts
+  const { refetchBalance } = useCreditsService();
 
   // Local state
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -221,8 +225,13 @@ export function BulkUploadModal({
       );
 
       if (response.success && response.data?.job_id) {
-        logger.info('[BulkUploadModal] Bulk analysis started', { 
-          jobId: response.data.job_id 
+        logger.info('[BulkUploadModal] Bulk analysis started', {
+          jobId: response.data.job_id
+        });
+
+        // Refresh credits balance immediately (credits are deducted on backend when analysis starts)
+        refetchBalance().catch((error) => {
+          logger.warn('[BulkUploadModal] Failed to refresh balance after analysis start', error as Error);
         });
 
         if (onSuccess) {
