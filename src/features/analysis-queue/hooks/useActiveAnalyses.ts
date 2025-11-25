@@ -137,7 +137,9 @@ export function useActiveAnalyses() {
         logger.error('[ActiveAnalyses] Failed to refresh balance after SSE completion', error as Error);
       });
     }
-  }, [sseProgress, currentJobs, updateJob, fetchBalance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sseProgress, currentJobs]);
+  // Zustand actions (updateJob, fetchBalance) are stable references and never change, similar to Redux dispatch
 
   // Polling fallback query (slower intervals when SSE is active)
   const { data, error } = useQuery({
@@ -175,7 +177,9 @@ export function useActiveAnalyses() {
     if (!data) return;
 
     syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance);
-  }, [data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, currentJobs]);
+  // Zustand actions (addJob, updateJob, confirmJobStarted, fetchBalance) are stable references and never change, similar to Redux dispatch
 
   // Log errors
   if (error) {
