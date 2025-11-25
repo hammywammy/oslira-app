@@ -239,6 +239,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function fetchBootstrap() {
     logger.info('[AuthProvider] Fetching bootstrap data');
 
+    // Set loading states on stores BEFORE API call
+    // This enables components to show skeletons during bootstrap
+    useCreditsStore.getState().setLoading(true);
+    useSubscriptionStore.getState().setLoading(true);
+
     const response = await httpClient.get<{
       data: {
         user: User;
