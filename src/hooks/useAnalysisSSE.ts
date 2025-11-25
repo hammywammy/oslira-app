@@ -93,6 +93,32 @@ export function useAnalysisSSE(runId: string | null): UseAnalysisSSEReturn {
           setError(null);
         });
 
+        // ADDED: Listen for "ready" event when DO finishes initialization
+        eventSource.addEventListener('ready', (event) => {
+          if (!isMounted) return;
+          try {
+            const data = JSON.parse(event.data);
+            logger.info('[AnalysisSSE] DO ready, progress tracking active', {
+              runId,
+              progress: data.progress,
+              step: data.current_step
+            });
+
+            // Set initial state from ready event
+            setProgress({
+              runId,
+              status: 'pending',
+              progress: data.progress || 0,
+              step: { current: 0, total: 4 },
+              currentStep: data.current_step || 'Initializing',
+              leadId: data.lead_id,
+              avatarUrl: data.avatar_url,
+            });
+          } catch (err) {
+            logger.error('[AnalysisSSE] Failed to parse ready event', err as Error);
+          }
+        });
+
         eventSource.addEventListener('progress', (event) => {
           if (!isMounted) return;
           try {
