@@ -120,7 +120,8 @@ export function useActiveAnalyses() {
   useEffect(() => {
     if (!sseProgress) return;
 
-    const currentJob = currentJobs.find((j) => j.runId === sseProgress.runId);
+    // Get current state without subscribing to changes (prevents infinite loop)
+    const currentJob = useAnalysisQueueStore.getState().jobs.find((j) => j.runId === sseProgress.runId);
     if (!currentJob) return;
 
     // Update job with SSE progress
@@ -142,7 +143,7 @@ export function useActiveAnalyses() {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
       logger.info('[ActiveAnalyses] Leads table refresh triggered after analysis completion');
     }
-  }, [sseProgress, queryClient, currentJobs, updateJob, fetchBalance]);
+  }, [sseProgress, queryClient, updateJob, fetchBalance]);
 
   // Auto-dismiss completed jobs after 3 seconds
   useEffect(() => {
