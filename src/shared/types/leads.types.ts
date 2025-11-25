@@ -38,4 +38,18 @@ export interface Lead {
   overall_score: number | null;
   summary: string | null;
   confidence: number | null;
+
+  // Profile metadata
+  is_verified?: boolean;
+  is_business?: boolean;
+  external_urls?: ExternalLink[];
+}
+
+/**
+ * External link from lead's profile
+ */
+export interface ExternalLink {
+  url: string;
+  title?: string;
+  link_type?: string;
 }

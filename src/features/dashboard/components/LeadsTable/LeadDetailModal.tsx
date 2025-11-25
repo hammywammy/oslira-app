@@ -1,26 +1,30 @@
 // src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
 
 /**
- * LEAD DETAIL MODAL - V3.0 (Stripe-Level Polish)
+ * LEAD DETAIL MODAL - V3.1 (Stripe-Level Polish)
  *
  * Professional modal for displaying complete lead information
  * Triggered by clicking the eye icon in the leads table
  *
  * FEATURES:
  * - Centered header content with prominent score badge
+ * - Verification badge (Instagram-style blue checkmark)
+ * - Business account indicator badge
  * - Tab navigation (Overview/Analytics)
  * - 4-category score breakdown
- * - Niche badge placeholder
+ * - Niche badge
  * - Enhanced summary card with score-based indicators
+ * - External links section with smart icons
  * - Compact analysis meta cards
  * - Dark mode support
  *
  * DESIGN PHILOSOPHY:
- * "Stripe-level polish"
+ * "Surprisingly simple for how much info is provided"
  * - Clean, not cluttered
  * - Visual interest through hierarchy
  * - Subtle animations
  * - Everything has purpose
+ * - Conditional rendering keeps UI clean
  */
 
 import { useState } from 'react';
@@ -35,6 +39,7 @@ import { ScoreBreakdown } from './ScoreBreakdown';
 import { AnalysisMetaCards } from './AnalysisMetaCards';
 import { SummaryCard } from './SummaryCard';
 import { AnalyticsTab } from './AnalyticsTab';
+import { ExternalLinksSection } from './ExternalLinksSection';
 
 // =============================================================================
 // TYPES
@@ -68,10 +73,10 @@ function getScoreColor(score: number | null): string {
   return 'text-amber-500';
 }
 
-function extractNiche(lead: Lead): string {
+function extractNiche(lead: Lead): string | null {
   // Placeholder: In the future, this would extract from bio or category
   // For now, return a default based on analysis existence
-  if (!lead.analysis_type) return 'Not Classified';
+  if (!lead.analysis_type) return null;
   return 'Copywriting';
 }
 
@@ -79,11 +84,42 @@ function extractNiche(lead: Lead): string {
 // SUB-COMPONENTS
 // =============================================================================
 
+/**
+ * Instagram-style verification badge (blue checkmark)
+ */
+function VerificationBadge() {
+  return (
+    <svg
+      className="w-5 h-5 text-blue-500 shrink-0"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-label="Verified account"
+    >
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+    </svg>
+  );
+}
+
+/**
+ * Niche badge (blue)
+ */
 function NicheBadge({ niche }: { niche: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
-      <Icon icon="mdi:target" className="w-3.5 h-3.5" />
+      <span>🎯</span>
       {niche}
+    </span>
+  );
+}
+
+/**
+ * Business account badge (purple)
+ */
+function BusinessBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+      <span>💼</span>
+      Business
     </span>
   );
 }
@@ -180,6 +216,11 @@ function OverviewTab({ lead }: { lead: Lead }) {
         />
       )}
 
+      {/* External Links Section */}
+      {lead.external_urls && lead.external_urls.length > 0 && (
+        <ExternalLinksSection links={lead.external_urls} />
+      )}
+
       {/* Empty State for Unanalyzed Leads */}
       {!lead.analysis_type && (
         <div className="flex flex-col items-center justify-center py-12 px-8 text-center bg-gray-50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -207,6 +248,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
 
   const niche = extractNiche(lead);
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
+  const showBadges = niche || lead.is_business;
 
   return (
     <Modal open={isOpen} onClose={onClose} size="3xl" closeable>
@@ -234,9 +276,10 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               </div>
             </div>
 
-            {/* Name */}
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {/* Name with Verification Badge */}
+            <h2 className="flex items-center justify-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
               {lead.display_name || lead.username}
+              {lead.is_verified && <VerificationBadge />}
             </h2>
 
             {/* Username Link */}
@@ -250,10 +293,13 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               <Icon icon="mdi:open-in-new" width={12} />
             </a>
 
-            {/* Niche Badge */}
-            <div className="mb-4">
-              <NicheBadge niche={niche} />
-            </div>
+            {/* Niche + Business Badges */}
+            {showBadges && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                {niche && <NicheBadge niche={niche} />}
+                {lead.is_business && <BusinessBadge />}
+              </div>
+            )}
 
             {/* Stats Row */}
             <div className="flex items-center gap-6">

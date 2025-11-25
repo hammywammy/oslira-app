@@ -16,3 +16,4 @@ export { AnalysisMetaCards } from './AnalysisMetaCards';
 export { TabNavigation, type TabType } from './TabNavigation';
 export { SummaryCard } from './SummaryCard';
 export { AnalyticsTab } from './AnalyticsTab';
+export { ExternalLinksSection } from './ExternalLinksSection';
