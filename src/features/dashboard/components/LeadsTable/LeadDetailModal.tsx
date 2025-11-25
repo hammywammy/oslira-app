@@ -1,26 +1,18 @@
 // src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
 
 /**
- * LEAD DETAIL MODAL - V4.0 (Professional B2B Intelligence)
+ * LEAD DETAIL MODAL - V4.1 (Professional B2B Intelligence)
  *
  * Professional modal for displaying complete lead information
  * Triggered by clicking the eye icon in the leads table
  *
  * FEATURES:
  * - Compact horizontal header with dense profile metadata
- * - Score display with circular progress ring (top-right)
- * - Verification and business badges inline with name
- * - Plain text stats with bullet separators (no icons)
- * - Platform badge with subtle gradient
+ * - Score inside circular progress ring (top-right)
+ * - Verification, platform, niche, and business badges inline
+ * - Plain text stats with bullet separators
  * - Refined tab navigation
  * - Dark mode support
- *
- * DESIGN PHILOSOPHY:
- * "Professional B2B intelligence aesthetic"
- * - Dense but not cluttered
- * - Stripe/Linear level polish
- * - Information hierarchy through typography
- * - Subtle visual cues
  */
 
 import { useState } from 'react';
@@ -85,19 +77,7 @@ function VerificationBadge() {
 }
 
 /**
- * Business account badge (purple, compact)
- */
-function BusinessBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
-      <span>💼</span>
-      Business
-    </span>
-  );
-}
-
-/**
- * Platform badge with gradient
+ * Platform badge (Instagram) with gradient
  */
 function PlatformBadge() {
   return (
@@ -109,42 +89,60 @@ function PlatformBadge() {
 }
 
 /**
- * Score display with number and circular progress ring
+ * Niche badge placeholder
+ */
+function NicheBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full">
+      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">NICHE BADGE</span>
+    </span>
+  );
+}
+
+/**
+ * Business account badge (purple)
+ */
+function BusinessBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-full">
+      <span>💼</span>
+      <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Business</span>
+    </span>
+  );
+}
+
+/**
+ * Score display with number INSIDE circular progress ring
  */
 function ScoreDisplay({ score }: { score: number | null }) {
   const scoreColor = getScoreColor(score);
   const percentage = score !== null ? score : 0;
-  const circumference = 2 * Math.PI * 20; // radius = 20
+  const circumference = 2 * Math.PI * 36; // radius = 36
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
-      {/* Score Number */}
-      <span className={`text-4xl font-bold ${score !== null ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}`}>
-        {score !== null ? score : '--'}
-      </span>
-
-      {/* Circular Progress Ring */}
-      <div className="relative w-12 h-12">
+    <div className="absolute top-4 right-4 flex flex-col items-center">
+      {/* Circular Progress Ring with Score Inside */}
+      <div className="relative w-20 h-20">
         <svg className="w-full h-full transform -rotate-90">
           {/* Background track */}
           <circle
-            cx="24"
-            cy="24"
-            r="20"
+            cx="40"
+            cy="40"
+            r="36"
             stroke="currentColor"
-            strokeWidth="4"
+            strokeWidth="5"
             fill="none"
             className="text-gray-200 dark:text-gray-700"
           />
           {/* Progress stroke */}
           {score !== null && (
             <circle
-              cx="24"
-              cy="24"
-              r="20"
+              cx="40"
+              cy="40"
+              r="36"
               stroke="currentColor"
-              strokeWidth="4"
+              strokeWidth="5"
               fill="none"
               strokeLinecap="round"
               strokeDasharray={circumference}
@@ -153,18 +151,19 @@ function ScoreDisplay({ score }: { score: number | null }) {
             />
           )}
         </svg>
+        {/* Score Number Inside */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className={`text-2xl font-bold ${score !== null ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}`}>
+            {score !== null ? score : '--'}
+          </span>
+        </div>
       </div>
-
-      {/* Label */}
-      <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-        Overall
-      </span>
     </div>
   );
 }
 
 /**
- * Tab Navigation (inline component for precise control)
+ * Tab Navigation
  */
 function TabNav({
   activeTab,
@@ -178,7 +177,6 @@ function TabNav({
   return (
     <div className="border-b border-gray-200 dark:border-gray-700">
       <nav className="flex gap-1 px-6 -mb-px" aria-label="Tabs">
-        {/* Overview Tab */}
         <button
           type="button"
           onClick={() => onTabChange('overview')}
@@ -193,7 +191,6 @@ function TabNav({
           Overview
         </button>
 
-        {/* Analytics Tab */}
         <button
           type="button"
           onClick={() => onTabChange('analytics')}
@@ -282,28 +279,18 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
 
   return (
-    <Modal open={isOpen} onClose={onClose} size="3xl" closeable={false}>
+    <Modal open={isOpen} onClose={onClose} size="3xl" closeable>
       {/* ========================================================================
           HEADER - PROFESSIONAL HORIZONTAL LAYOUT
           ======================================================================== */}
       <div className="relative p-6 border-b border-gray-200 dark:border-gray-800">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          aria-label="Close modal"
-        >
-          <Icon icon="lucide:x" className="w-5 h-5" />
-        </button>
-
-        {/* Score Display - Below close button */}
+        {/* Score Display - Top Right with score inside circle */}
         {lead.overall_score !== null && <ScoreDisplay score={lead.overall_score} />}
 
         {/* Main Profile Content - Horizontal Flexbox */}
         <div className="flex items-start gap-4 pr-24">
-          {/* Avatar with Instagram Badge */}
-          <div className="relative shrink-0">
+          {/* Avatar - No Instagram overlay */}
+          <div className="shrink-0">
             <LeadAvatar
               url={lead.profile_pic_url}
               username={lead.username}
@@ -311,20 +298,16 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               size="lg"
               className="w-16 h-16"
             />
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700">
-              <Icon icon="mdi:instagram" className="w-4 h-4 text-pink-500" />
-            </div>
           </div>
 
           {/* Profile Information Column */}
-          <div className="flex-1 min-w-0 space-y-1">
-            {/* Row 1: Name + Verification + Business Badge */}
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex-1 min-w-0 space-y-1.5">
+            {/* Row 1: Name + Verification Badge */}
+            <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {lead.display_name || lead.username}
               </h2>
               {lead.is_verified && <VerificationBadge />}
-              {lead.is_business && <BusinessBadge />}
             </div>
 
             {/* Row 2: Username Link */}
@@ -341,19 +324,21 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               />
             </a>
 
-            {/* Row 3: Stats (plain text with bullets) */}
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            {/* Row 3: Badges (Instagram, Niche, Business) */}
+            <div className="flex items-center gap-2 flex-wrap pt-1">
+              <PlatformBadge />
+              <NicheBadge />
+              {lead.is_business && <BusinessBadge />}
+            </div>
+
+            {/* Row 4: Stats (plain text with bullets) */}
+            <p className="text-sm text-gray-600 dark:text-gray-400 pt-1">
               {formatNumber(lead.follower_count)} followers
               <span className="mx-2">•</span>
               {formatNumber(lead.following_count)} following
               <span className="mx-2">•</span>
               {lead.post_count || 0} posts
             </p>
-
-            {/* Row 4: Platform Badge */}
-            <div className="pt-1">
-              <PlatformBadge />
-            </div>
           </div>
         </div>
       </div>
