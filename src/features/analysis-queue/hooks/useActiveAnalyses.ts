@@ -23,14 +23,15 @@
  * useActiveAnalyses(); // Call in a top-level component (e.g., TopBar)
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAnalysisQueueStore, type AnalysisJob } from '../stores/useAnalysisQueueStore';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
-import { useAnalysisSSE } from '@/hooks/useAnalysisSSE';
+import { authManager } from '@/core/auth/auth-manager';
+import { env } from '@/core/auth/environment';
 
 // =============================================================================
 // TYPES
@@ -105,45 +106,14 @@ export function useActiveAnalyses() {
   } = useAnalysisQueueStore();
   const { fetchBalance } = useCreditsService();
 
-  // Get first active job for SSE tracking (one at a time to reduce connections)
-  const activeJob = currentJobs.find(
-    (j) => j.status === 'pending' || j.status === 'analyzing'
-  );
-
-  // SSE connection for real-time updates on active job
-  const { progress: sseProgress, error: sseError } = useAnalysisSSE(
-    activeJob?.runId || null
-  );
-
-  // Sync SSE progress to store
-  useEffect(() => {
-    if (!sseProgress) return;
-
-    const currentJob = currentJobs.find((j) => j.runId === sseProgress.runId);
-    if (!currentJob) return;
-
-    // Update job with SSE progress
-    updateJob(sseProgress.runId, {
-      progress: sseProgress.progress,
-      status: sseProgress.status,
-      step: sseProgress.step,
-      avatarUrl: sseProgress.avatarUrl,
-      leadId: sseProgress.leadId,
-    });
-
-    // Refresh balance on completion
-    if (sseProgress.status === 'complete') {
-      fetchBalance().catch((error) => {
-        logger.error('[ActiveAnalyses] Failed to refresh balance after SSE completion', error as Error);
-      });
-    }
-  }, [sseProgress, currentJobs, updateJob, fetchBalance]);
+  // Track active SSE connections to prevent duplicates
+  const activeStreamsRef = useRef<Set<string>>(new Set());
 
   // Polling fallback query (slower intervals when SSE is active)
   const { data, error } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    // Adaptive polling based on active job count and SSE status
+    // Adaptive polling based on active job count
     refetchInterval: (query) => {
       const data = query.state.data ?? [];
       const activeCount = data.filter(
@@ -151,12 +121,6 @@ export function useActiveAnalyses() {
       ).length;
 
       if (activeCount === 0) return false;        // Stop polling completely
-
-      // If SSE has error, use faster polling as fallback
-      if (sseError) {
-        if (activeCount <= 3) return 3000;        // 3 seconds for 1-3 jobs
-        return 5000;                               // 5 seconds for bulk (4+ jobs)
-      }
 
       // SSE working - use slower polling for backup sync
       if (activeCount <= 3) return 10000;         // 10 seconds for 1-3 jobs
@@ -177,13 +141,39 @@ export function useActiveAnalyses() {
     syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance);
   }, [data, currentJobs, addJob, updateJob, confirmJobStarted, fetchBalance]);
 
+  // Start SSE stream when first active job appears
+  useEffect(() => {
+    const activeJob = currentJobs.find(
+      (j) => j.status === 'pending' || j.status === 'analyzing'
+    );
+
+    if (!activeJob) {
+      return; // No active jobs, nothing to stream
+    }
+
+    // Prevent duplicate streams for the same runId
+    if (activeStreamsRef.current.has(activeJob.runId)) {
+      return;
+    }
+
+    // Mark this stream as active
+    activeStreamsRef.current.add(activeJob.runId);
+
+    // Start the SSE stream (Promise-based, not React hook)
+    streamAnalysisProgress(
+      activeJob.runId,
+      updateJob,
+      confirmJobStarted,
+      fetchBalance
+    ).finally(() => {
+      // Remove from active streams when complete
+      activeStreamsRef.current.delete(activeJob.runId);
+    });
+  }, [currentJobs, updateJob, confirmJobStarted, fetchBalance]);
+
   // Log errors
   if (error) {
     logger.error('[ActiveAnalyses] Polling error', error as Error);
-  }
-
-  if (sseError) {
-    logger.warn('[ActiveAnalyses] SSE error, using polling fallback', { error: sseError.message });
   }
 }
 
@@ -342,5 +332,254 @@ function syncAnalysesToStore(
         progress: 100,
       });
     }
+  });
+}
+
+// =============================================================================
+// SSE HELPER: Stream analysis progress
+// =============================================================================
+
+/**
+ * Promise-based SSE stream for analysis progress updates
+ *
+ * Based on the working onboarding pattern from useCompleteOnboarding.ts
+ * Uses direct Zustand calls from event listeners (NO React state)
+ *
+ * @param runId - Analysis run ID to stream
+ * @param updateJob - Zustand store action
+ * @param confirmJobStarted - Zustand store action
+ * @param fetchBalance - Function to refresh credits balance
+ * @returns Promise that resolves when analysis completes
+ */
+async function streamAnalysisProgress(
+  runId: string,
+  updateJob: (runId: string, updates: Partial<AnalysisJob>) => void,
+  confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void,
+  fetchBalance: () => Promise<void>
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    logger.info('[SSE] Starting SSE stream', { runId });
+
+    // Get auth token for query parameter (EventSource doesn't support headers)
+    authManager.getAccessToken().then(token => {
+      if (!token) {
+        logger.error('[SSE] No auth token available');
+        reject(new Error('Authentication required'));
+        return;
+      }
+
+      // Track if component is still mounted
+      let isMounted = true;
+
+      // Construct SSE endpoint URL
+      const streamUrl = `${env.apiUrl}/api/analysis/${runId}/stream?token=${encodeURIComponent(token)}`;
+
+      logger.info('[SSE] Connecting to stream', {
+        runId,
+        url: streamUrl.replace(token, '[REDACTED]')
+      });
+
+      const eventSource = new EventSource(streamUrl);
+
+      // Connection opened
+      eventSource.addEventListener('open', () => {
+        if (!isMounted) return;
+        logger.info('[SSE] Connection established', { runId });
+      });
+
+      // Connected event (initial confirmation from backend)
+      eventSource.addEventListener('connected', (event) => {
+        if (!isMounted) return;
+
+        try {
+          const data = JSON.parse(event.data);
+          logger.info('[SSE] Connected event received', {
+            runId,
+            message: data.message,
+          });
+        } catch (err) {
+          logger.error('[SSE] Failed to parse connected event', err as Error);
+        }
+      });
+
+      // Progress update event
+      eventSource.addEventListener('progress', (event) => {
+        if (!isMounted) return;
+
+        try {
+          const data = JSON.parse(event.data);
+
+          // Direct Zustand call - NO React state
+          updateJob(runId, {
+            status: data.status || 'analyzing',
+            progress: data.progress || 0,
+            step: data.step || { current: 0, total: 4 },
+            avatarUrl: data.avatar_url,
+            leadId: data.lead_id,
+          });
+
+          // Confirm job started with backend data if available
+          if (data.lead_id || data.avatar_url) {
+            confirmJobStarted(runId, data.avatar_url, data.lead_id);
+          }
+
+          logger.info('[SSE] Progress update', {
+            runId,
+            progress: data.progress,
+            step: data.step,
+          });
+        } catch (err) {
+          logger.error('[SSE] Failed to parse progress event', err as Error);
+        }
+      });
+
+      // Completion event
+      eventSource.addEventListener('complete', (event) => {
+        if (!isMounted) return;
+
+        try {
+          const data = JSON.parse(event.data);
+
+          // Direct Zustand call - NO React state
+          updateJob(runId, {
+            status: 'complete',
+            progress: 100,
+            step: data.step || { current: 4, total: 4 },
+            avatarUrl: data.avatar_url,
+            leadId: data.lead_id,
+          });
+
+          logger.info('[SSE] Analysis complete', {
+            runId,
+            leadId: data.lead_id,
+          });
+
+          // Refresh balance after completion
+          fetchBalance().catch((error) => {
+            logger.error('[SSE] Failed to refresh balance after completion', error as Error);
+          });
+
+          eventSource.close();
+          isMounted = false;
+          resolve();
+        } catch (err) {
+          logger.error('[SSE] Failed to parse complete event', err as Error);
+          eventSource.close();
+          isMounted = false;
+          reject(err);
+        }
+      });
+
+      // Failed event
+      eventSource.addEventListener('failed', (event) => {
+        if (!isMounted) return;
+
+        try {
+          const data = JSON.parse(event.data);
+
+          // Direct Zustand call - NO React state
+          updateJob(runId, {
+            status: 'failed',
+            progress: data.progress || 0,
+            step: data.step || { current: 0, total: 4 },
+            avatarUrl: data.avatar_url,
+            leadId: data.lead_id,
+          });
+
+          logger.error('[SSE] Analysis failed', new Error(data.error || 'Analysis failed'), {
+            runId,
+          });
+
+          eventSource.close();
+          isMounted = false;
+          reject(new Error(data.error || 'Analysis failed'));
+        } catch (err) {
+          logger.error('[SSE] Failed to parse failed event', err as Error);
+          eventSource.close();
+          isMounted = false;
+          reject(err);
+        }
+      });
+
+      // Cancelled event
+      eventSource.addEventListener('cancelled', (event) => {
+        if (!isMounted) return;
+
+        try {
+          const data = JSON.parse(event.data);
+
+          // Direct Zustand call - NO React state
+          updateJob(runId, {
+            status: 'cancelled',
+            progress: data.progress || 0,
+            step: data.step || { current: 0, total: 4 },
+            avatarUrl: data.avatar_url,
+            leadId: data.lead_id,
+          });
+
+          logger.info('[SSE] Analysis cancelled', { runId });
+
+          eventSource.close();
+          isMounted = false;
+          resolve();
+        } catch (err) {
+          logger.error('[SSE] Failed to parse cancelled event', err as Error);
+          eventSource.close();
+          isMounted = false;
+          reject(err);
+        }
+      });
+
+      // Error handler
+      eventSource.onerror = (event: any) => {
+        if (!isMounted) return;
+
+        logger.error('[SSE] Connection error', new Error('SSE connection error'), {
+          runId,
+          readyState: eventSource.readyState,
+        });
+
+        // Check if backend sent error message
+        if (event.data) {
+          try {
+            const data = JSON.parse(event.data);
+            eventSource.close();
+            isMounted = false;
+            reject(new Error(data.message || 'SSE connection failed'));
+            return;
+          } catch {
+            // Not JSON, generic error
+          }
+        }
+
+        eventSource.close();
+        isMounted = false;
+        reject(new Error('SSE connection failed'));
+      };
+
+      // Timeout after 60 seconds (analyses should complete within this time)
+      const timeout = setTimeout(() => {
+        if (!isMounted) return;
+
+        logger.error('[SSE] Timeout - exceeded 60 seconds', new Error('Analysis timeout'));
+
+        eventSource.close();
+        isMounted = false;
+        reject(new Error('Analysis timeout - exceeded 60 seconds'));
+      }, 60000);
+
+      // Clear timeout on completion
+      eventSource.addEventListener('complete', () => {
+        clearTimeout(timeout);
+      });
+
+      eventSource.addEventListener('cancelled', () => {
+        clearTimeout(timeout);
+      });
+
+    }).catch(error => {
+      logger.error('[SSE] Failed to get auth token', error);
+      reject(error);
+    });
   });
 }
