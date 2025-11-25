@@ -10,10 +10,11 @@
  * ✅ Progress tracking handled globally by useActiveAnalyses hook
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Icon } from '@iconify/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { Button } from '@/shared/components/ui/Button';
+import { ValidationError } from '@/shared/components/ui/ValidationError';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { validateInstagramUsername } from '@/shared/utils/validation';
@@ -88,9 +89,25 @@ export function AnalyzeLeadModal({
   const [rawInput, setRawInput] = useState('');
   const [analysisType, setAnalysisType] = useState<AnalysisType>('light');
 
+  // Validation state
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
   // Loading states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ===========================================================================
+  // VALIDATION
+  // ===========================================================================
+
+  const validateInput = useCallback((value: string): string | null => {
+    if (!value.trim()) {
+      return null; // Don't show error for empty input until submit
+    }
+    const result = validateInstagramUsername(value);
+    return result.error;
+  }, []);
 
   // ===========================================================================
   // HANDLERS
@@ -99,6 +116,13 @@ export function AnalyzeLeadModal({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/^@/, '');
     setRawInput(value);
+    setHasInteracted(true);
+
+    // Real-time validation - show error as user types
+    const validationResult = validateInput(value);
+    setValidationError(validationResult);
+
+    // Clear submission error when user starts typing
     if (error) setError(null);
   };
 
@@ -171,6 +195,8 @@ export function AnalyzeLeadModal({
       setRawInput('');
       setAnalysisType('light');
       setError(null);
+      setValidationError(null);
+      setHasInteracted(false);
       setIsSubmitting(false);
       onClose();
     }
@@ -180,8 +206,11 @@ export function AnalyzeLeadModal({
   // DERIVED STATE
   // ===========================================================================
 
+  // Check if input is valid (no validation errors and passes full validation)
+  const isInputValid = rawInput.trim().length > 0 && !validationError && validateInstagramUsername(rawInput.trim()).valid;
+
   const canSubmit =
-    rawInput.trim().length > 0 &&
+    isInputValid &&
     selectedProfileId &&
     !isSubmitting &&
     !isLoadingProfiles;
@@ -254,7 +283,7 @@ export function AnalyzeLeadModal({
                 Instagram Username
               </label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${validationError && hasInteracted ? 'text-red-500' : 'text-muted-foreground'}`}>
                   @
                 </div>
                 <input
@@ -262,9 +291,22 @@ export function AnalyzeLeadModal({
                   value={rawInput}
                   onChange={handleInputChange}
                   placeholder="username"
-                  className="w-full h-10 pl-8 pr-3 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className={`
+                    w-full h-10 pl-8 pr-3 rounded-lg bg-background text-foreground text-sm
+                    focus:outline-none focus:ring-2 transition-colors
+                    ${validationError && hasInteracted
+                      ? 'border-2 border-red-500 focus:border-red-500 focus:ring-red-200 dark:focus:ring-red-900/50'
+                      : 'border border-border focus:ring-primary focus:border-primary'
+                    }
+                  `}
                   disabled={isSubmitting}
+                  aria-invalid={!!validationError && hasInteracted}
+                  aria-describedby={validationError ? 'username-validation-error' : undefined}
                 />
+              </div>
+              {/* Inline Validation Error */}
+              <div id="username-validation-error" className="mt-2">
+                <ValidationError message={validationError} show={hasInteracted && !!validationError} size="sm" />
               </div>
             </div>
 

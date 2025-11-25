@@ -33,10 +33,16 @@ interface BulkUploadModalProps {
   currentCredits?: number;
 }
 
+interface InvalidUsername {
+  username: string;
+  error: string;
+}
+
 interface ParsedFile {
   filename: string;
   usernames: string[];
   duplicatesRemoved: number;
+  invalidUsernames: InvalidUsername[];
 }
 
 interface AnalysisOption {
@@ -114,11 +120,18 @@ export function BulkUploadModal({
 
         const rawUsernames = lines.map((line) => line.replace(/^@/, '').trim());
         const validUsernames: string[] = [];
+        const invalidUsernames: InvalidUsername[] = [];
 
         rawUsernames.forEach((username) => {
+          if (!username) return; // Skip empty lines
           const validation = validateInstagramUsername(username);
           if (validation.valid) {
             validUsernames.push(username);
+          } else {
+            invalidUsernames.push({
+              username,
+              error: validation.error || 'Invalid username',
+            });
           }
         });
 
@@ -139,11 +152,13 @@ export function BulkUploadModal({
           filename: file.name,
           usernames: uniqueUsernames,
           duplicatesRemoved,
+          invalidUsernames,
         });
 
         logger.info('[BulkUploadModal] File parsed', {
           filename: file.name,
           validCount: uniqueUsernames.length,
+          invalidCount: invalidUsernames.length,
         });
       } catch (err) {
         logger.error('[BulkUploadModal] Parse failed', err as Error);
@@ -368,7 +383,7 @@ export function BulkUploadModal({
 
                 {/* Username Preview */}
                 <div className="p-3 bg-background border border-border rounded-lg">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Preview:</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Valid usernames:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {parsedFile.usernames.slice(0, 10).map((username, idx) => (
                       <span
@@ -385,6 +400,38 @@ export function BulkUploadModal({
                     )}
                   </div>
                 </div>
+
+                {/* Invalid Usernames Warning */}
+                {parsedFile.invalidUsernames.length > 0 && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon icon="lucide:alert-circle" className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <p className="text-xs font-medium text-red-700 dark:text-red-300">
+                        {parsedFile.invalidUsernames.length} invalid username{parsedFile.invalidUsernames.length > 1 ? 's' : ''} skipped:
+                      </p>
+                    </div>
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {parsedFile.invalidUsernames.slice(0, 5).map((invalid, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2 text-xs"
+                        >
+                          <span className="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded font-mono">
+                            @{invalid.username}
+                          </span>
+                          <span className="text-red-600 dark:text-red-400">
+                            {invalid.error}
+                          </span>
+                        </div>
+                      ))}
+                      {parsedFile.invalidUsernames.length > 5 && (
+                        <p className="text-xs text-red-600 dark:text-red-400 pt-1">
+                          +{parsedFile.invalidUsernames.length - 5} more invalid usernames
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
