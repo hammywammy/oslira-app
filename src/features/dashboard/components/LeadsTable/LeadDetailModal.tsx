@@ -372,7 +372,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
             {activeTab === 'overview' ? (
               <OverviewTab lead={lead} />
             ) : (
-              <AnalyticsTab analysisType={lead.analysis_type} />
+              <AnalyticsTab lead={lead} analysisType={lead.analysis_type} />
             )}
           </motion.div>
         </AnimatePresence>
