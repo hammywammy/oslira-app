@@ -106,7 +106,7 @@ export function QueueIndicator() {
   // Single job display
   if (activeJobs.length === 1) {
     const job = activeJobs[0];
-    if (!job) return null;
+    if (!job || !job.username) return null;
 
     const displayUsername =
       job.username.length > 12 ? `${job.username.slice(0, 12)}...` : job.username;
@@ -215,6 +215,7 @@ export function QueueIndicator() {
           {/* Stacked avatars (max 3) */}
           <div className="relative flex items-center flex-shrink-0 z-10">
             {activeJobs.slice(0, 3).map((job, index) => {
+              if (!job || !job.username) return null;
               const firstLetter = job.username.charAt(0).toUpperCase();
               return (
                 <div

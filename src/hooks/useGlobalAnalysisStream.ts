@@ -120,19 +120,37 @@ export function useGlobalAnalysisStream() {
           }
         };
 
-        ws.onerror = (error) => {
+        ws.onerror = () => {
           if (!mounted) return;
-          logger.error('[GlobalStream] WebSocket error', { error });
+          // Silently handle error - onclose will log details
         };
 
         ws.onclose = (event) => {
           if (!mounted) return;
 
-          logger.info('[GlobalStream] Disconnected', {
-            code: event.code,
-            reason: event.reason,
-            wasClean: event.wasClean
-          });
+          // Only log if it's not a clean closure or if we're debugging
+          const isCleanClose = event.code === 1000 || event.code === 1001;
+          const isNormalClose = event.code === 1006 && reconnectAttemptsRef.current === 0;
+
+          if (!isCleanClose && !isNormalClose) {
+            logger.info('[GlobalStream] Disconnected', {
+              code: event.code,
+              reason: event.reason || 'No reason provided',
+              wasClean: event.wasClean,
+              attempt: reconnectAttemptsRef.current
+            });
+          }
+
+          // Don't attempt reconnection if:
+          // 1. Clean closure (intentional disconnect)
+          // 2. First connection failed (backend might not support WebSocket yet)
+          if (isCleanClose || (event.code === 1006 && reconnectAttemptsRef.current === 0)) {
+            if (event.code === 1006 && reconnectAttemptsRef.current === 0) {
+              logger.info('[GlobalStream] WebSocket endpoint not available, using polling only');
+            }
+            reconnectAttemptsRef.current = 3; // Prevent further reconnection attempts
+            return;
+          }
 
           // Attempt reconnection with exponential backoff (max 3 attempts)
           if (reconnectAttemptsRef.current < 3) {
@@ -148,7 +166,7 @@ export function useGlobalAnalysisStream() {
               if (mounted) connect();
             }, delay);
           } else {
-            logger.warn('[GlobalStream] Max reconnection attempts reached, falling back to polling');
+            logger.info('[GlobalStream] Max reconnection attempts reached, using polling only');
           }
         };
       } catch (error) {
