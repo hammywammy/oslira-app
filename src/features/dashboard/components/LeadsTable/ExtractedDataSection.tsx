@@ -338,56 +338,6 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
           </motion.div>
         )}
       </MetricsSection>
-
-      {/* Metadata Section */}
-      <MetricsSection title="Extraction Metadata">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-md bg-white border border-gray-200">
-                <Icon icon="mdi:information" className="w-3.5 h-3.5 text-gray-600" />
-              </div>
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Version
-              </span>
-            </div>
-            <div className="text-xl font-bold text-gray-900 tracking-tight">
-              {metadata.version}
-            </div>
-          </div>
-
-          <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-md bg-white border border-gray-200">
-                <Icon icon="mdi:database" className="w-3.5 h-3.5 text-gray-600" />
-              </div>
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Sample Size
-              </span>
-            </div>
-            <div className="text-xl font-bold text-gray-900 tracking-tight">
-              {metadata.sampleSize} <span className="text-base font-medium text-gray-500">posts</span>
-            </div>
-          </div>
-
-          <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-md bg-white border border-gray-200">
-                <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5 text-gray-600" />
-              </div>
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Extracted
-              </span>
-            </div>
-            <div className="text-xl font-bold text-gray-900 tracking-tight mb-1">
-              {formatExtractedDate(metadata.extractedAt)}
-            </div>
-            <div className="text-xs text-gray-500 font-medium">
-              {formatTimeAgo(metadata.extractedAt)}
-            </div>
-          </div>
-        </div>
-      </MetricsSection>
     </div>
   );
 }
@@ -409,38 +359,6 @@ function formatDaysAgo(days: number | null | undefined): string {
   if (days < 7) return `${Math.round(days)}d ago`;
   if (days < 30) return `${Math.round(days / 7)}w ago`;
   return `${Math.round(days / 30)}mo ago`;
-}
-
-function formatExtractedDate(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch {
-    return 'Unknown';
-  }
-}
-
-function formatTimeAgo(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return `${Math.floor(diffDays / 30)} months ago`;
-  } catch {
-    return 'Unknown';
-  }
 }
 
 function getHealthInterpretation(score: number | null | undefined): string {

@@ -6,7 +6,6 @@
  * Displays extracted data from deep analysis including:
  * - Static metrics (raw observed data)
  * - Calculated analytics (derived values)
- * - Extraction metadata
  * Shows locked state for light analysis
  */
 
@@ -17,6 +16,80 @@ import { ExtractedDataSection } from './ExtractedDataSection';
 interface AnalyticsTabProps {
   lead: Lead;
   analysisType: AnalysisType | null;
+}
+
+/**
+ * Bottom metadata bar - Shows analysis type, status, and extraction metadata
+ */
+function BottomMetadataBar({ lead }: { lead: Lead }) {
+  const metadata = lead.extracted_data?.metadata;
+
+  // Analysis type config
+  const typeConfig = {
+    light: { icon: 'mdi:lightning-bolt', label: 'Light Analysis', color: 'text-amber-600' },
+    deep: { icon: 'mdi:brain', label: 'Deep Analysis', color: 'text-blue-600' },
+    xray: { icon: 'mdi:atom', label: 'X-Ray Analysis', color: 'text-purple-600' },
+  };
+
+  // Status config
+  const statusConfig = {
+    pending: { icon: 'mdi:clock-outline', label: 'Pending', color: 'text-gray-600' },
+    processing: { icon: 'mdi:loading', label: 'Processing', color: 'text-amber-600' },
+    complete: { icon: 'mdi:check-circle', label: 'Complete', color: 'text-green-600' },
+    failed: { icon: 'mdi:alert-circle', label: 'Failed', color: 'text-red-600' },
+  };
+
+  const typeInfo = lead.analysis_type && typeConfig[lead.analysis_type];
+  const statusInfo = lead.analysis_status && statusConfig[lead.analysis_status];
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  return (
+    <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 mt-6">
+      <div className="flex items-center justify-between">
+        {/* Left: Analysis Type & Status */}
+        <div className="flex items-center gap-3">
+          {typeInfo && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <Icon icon={typeInfo.icon} className={`w-4 h-4 ${typeInfo.color}`} />
+              <span className="font-medium text-gray-700">{typeInfo.label}</span>
+            </div>
+          )}
+          {typeInfo && statusInfo && (
+            <span className="text-gray-300">•</span>
+          )}
+          {statusInfo && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <Icon icon={statusInfo.icon} className={`w-4 h-4 ${statusInfo.color}`} />
+              <span className="font-medium text-gray-700">{statusInfo.label}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Extraction Metadata */}
+        {metadata && (
+          <div className="flex items-center gap-4 text-xs text-gray-600">
+            <div className="flex items-center gap-1.5">
+              <Icon icon="mdi:code-tags" className="w-3.5 h-3.5" />
+              <span>v{metadata.version}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Icon icon="mdi:database" className="w-3.5 h-3.5" />
+              <span>{metadata.sampleSize} posts</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5" />
+              <span>{formatDate(metadata.extractedAt)}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
@@ -34,6 +107,8 @@ export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
   return (
     <div className="space-y-6">
       <ExtractedDataSection extractedData={lead.extracted_data} />
+      {/* Bottom Metadata Bar */}
+      <BottomMetadataBar lead={lead} />
     </div>
   );
 }
