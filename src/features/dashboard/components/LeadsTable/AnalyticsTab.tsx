@@ -19,6 +19,7 @@ import {
   GapAnalysis,
   ViralPostIndicator,
 } from './analytics';
+import { ExtractedDataSection } from './ExtractedDataSection';
 
 interface AnalyticsTabProps {
   lead: Lead;
@@ -41,6 +42,25 @@ export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
   // Deep analysis - show full metrics
   return (
     <div className="space-y-6">
+      {/* Extracted Data Section (if available) */}
+      {lead.extracted_data && (
+        <>
+          <ExtractedDataSection extractedData={lead.extracted_data} />
+
+          {/* Divider */}
+          <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-gray-300 dark:border-gray-700" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="px-4 bg-white dark:bg-gray-950 text-sm font-medium text-gray-500 dark:text-gray-400">
+                Advanced Metrics
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Score Cards Section */}
       <ScoreCardsSection metrics={metrics} />
 
