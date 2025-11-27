@@ -26,7 +26,9 @@ export function useGlobalAnalysisStream() {
 
       const wsProtocol = env.apiUrl.startsWith('https') ? 'wss' : 'ws';
       const wsUrl = env.apiUrl.replace(/^https?/, wsProtocol);
-      const ws = new WebSocket(`${wsUrl}/api/analysis/ws`);
+
+      // ADD TOKEN AS QUERY PARAMETER
+      const ws = new WebSocket(`${wsUrl}/api/analysis/ws?token=${encodeURIComponent(token)}`);
 
       wsRef.current = ws;
 
