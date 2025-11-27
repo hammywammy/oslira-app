@@ -10,6 +10,7 @@ interface MetricProps {
   icon?: string;
   color?: string;
   unit?: string;
+  tooltip?: string;
 }
 
 const colorMap: Record<string, { icon: string; bg: string }> = {
@@ -31,12 +32,13 @@ export function Metric({
   icon,
   color = 'gray',
   unit,
+  tooltip,
 }: MetricProps) {
   const colors = colorMap[color] || colorMap.gray;
 
   return (
     <div className="group flex flex-col gap-2 p-4 rounded-lg border border-gray-100 bg-gray-50/50 transition-all duration-200 hover:bg-white hover:border-gray-200 hover:shadow-sm">
-      {/* Label with icon */}
+      {/* Label with icon and tooltip */}
       <div className="flex items-center gap-2">
         {icon && (
           <div className={`p-1.5 rounded-md ${colors.bg}`}>
@@ -44,6 +46,15 @@ export function Metric({
           </div>
         )}
         <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">{label}</span>
+        {tooltip && (
+          <div className="group/tooltip relative">
+            <Icon icon="mdi:information-outline" className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+            <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tooltip:block w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
+              {tooltip}
+              <div className="absolute top-full left-4 w-2 h-2 bg-gray-900 transform rotate-45 -mt-1"></div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Value */}

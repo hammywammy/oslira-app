@@ -26,9 +26,9 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
 
   return (
     <div className="space-y-6">
-      {/* Static Metrics Section */}
-      <MetricsSection title="Raw Profile Data">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Post Stats Section */}
+      <MetricsSection title="Post Stats">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <Metric
             label="Total Posts"
             value={staticMetrics.postsCount?.toLocaleString() || '0'}
@@ -59,22 +59,6 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             icon="mdi:comment"
             color="green"
           />
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-          <Metric
-            label="Account Type"
-            value={staticMetrics.isBusinessAccount ? 'Business' : 'Personal'}
-            icon={staticMetrics.isBusinessAccount ? 'mdi:briefcase' : 'mdi:account'}
-            color={staticMetrics.isBusinessAccount ? 'purple' : 'gray'}
-          />
-
-          <Metric
-            label="Verified"
-            value={staticMetrics.verified ? 'Yes' : 'No'}
-            icon={staticMetrics.verified ? 'mdi:check-decagram' : 'mdi:close-circle-outline'}
-            color={staticMetrics.verified ? 'blue' : 'gray'}
-          />
 
           <Metric
             label="Format Diversity"
@@ -97,45 +81,18 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             icon="mdi:clock-outline"
             color="blue"
           />
+
+          {/* Video Performance as a box */}
+          {staticMetrics.avgVideoViews !== null && staticMetrics.avgVideoViews !== undefined && (
+            <Metric
+              label="Avg Video Views"
+              value={formatNumber(staticMetrics.avgVideoViews)}
+              rawValue={staticMetrics.avgVideoViews}
+              icon="mdi:video"
+              color="purple"
+            />
+          )}
         </div>
-
-        {/* Video Performance */}
-        {staticMetrics.avgVideoViews !== null && staticMetrics.avgVideoViews !== undefined && (
-          <div className="mt-4 p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-purple-50">
-                <Icon icon="mdi:video" className="w-4 h-4 text-purple-600" />
-              </div>
-              Video Performance
-            </h4>
-            <div className="text-2xl font-bold text-gray-900 tracking-tight">
-              {formatNumber(staticMetrics.avgVideoViews)} <span className="text-base font-medium text-gray-500">avg views</span>
-            </div>
-            <div className="text-xs text-gray-400 mt-2 font-mono">
-              Raw: {staticMetrics.avgVideoViews.toLocaleString()}
-            </div>
-          </div>
-        )}
-
-        {/* External URL */}
-        {staticMetrics.externalUrl && (
-          <div className="mt-4 p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <div className="p-1.5 rounded-md bg-blue-50">
-                <Icon icon="mdi:link" className="w-4 h-4 text-blue-600" />
-              </div>
-              External Link
-            </h4>
-            <a
-              href={staticMetrics.externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:text-blue-700 hover:underline break-all font-medium transition-colors"
-            >
-              {staticMetrics.externalUrl}
-            </a>
-          </div>
-        )}
 
         {/* Business Category */}
         {staticMetrics.businessCategoryName && (
@@ -227,6 +184,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             interpretation={getHealthInterpretation(calculated.profileHealthScore)}
             icon="mdi:heart-pulse"
             color="blue"
+            tooltip="Overall account health based on follower count, engagement rate, posting frequency, and content diversity. Higher scores indicate a well-maintained, active profile."
           />
 
           <Metric
@@ -235,6 +193,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             interpretation={getHealthInterpretation(calculated.engagementHealth)}
             icon="mdi:chart-line"
             color="teal"
+            tooltip="Measures how well the audience interacts with content. Considers likes-to-follower ratio, comment rate, and engagement consistency across posts."
           />
 
           <Metric
@@ -243,6 +202,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             interpretation={getQualityInterpretation(calculated.contentSophistication)}
             icon="mdi:star"
             color="purple"
+            tooltip="Evaluates content professionalism through format diversity, caption quality, posting consistency, and use of hashtags and mentions."
           />
 
           <Metric
@@ -251,6 +211,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             interpretation={getMaturityInterpretation(calculated.accountMaturity)}
             icon="mdi:shield-check"
             color="green"
+            tooltip="Indicates account establishment and credibility based on total posts, follower base size, and profile completeness."
           />
         </div>
 
@@ -260,6 +221,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             value={Math.round(calculated.authorityRatio || 0).toString()}
             icon="mdi:crown"
             color="gold"
+            tooltip="Ratio of followers to following count. Higher values suggest the account is influential and has earned its audience rather than following many accounts for reciprocal follows."
           />
 
           <Metric
@@ -274,6 +236,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             }
             icon="mdi:trending-up"
             color="green"
+            tooltip="Normalized engagement metric calculated as (average likes + comments) / followers × 100. Shows how engaged the audience is relative to follower count."
           />
 
           <Metric
@@ -288,6 +251,7 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             }
             icon="mdi:chart-bell-curve"
             color="amber"
+            tooltip="Measures how stable engagement is across posts. High consistency means the audience reliably engages with content, while low scores indicate unpredictable performance."
           />
         </div>
 

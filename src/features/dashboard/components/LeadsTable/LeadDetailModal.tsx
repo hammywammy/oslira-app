@@ -574,6 +574,26 @@ function OverviewTab({ lead }: { lead: Lead }) {
         <ExternalLinksSection links={lead.external_urls} />
       )}
 
+      {/* External URL from extracted data */}
+      {lead.extracted_data?.static?.externalUrl && (
+        <div className="p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-blue-50">
+              <Icon icon="mdi:link" className="w-4 h-4 text-blue-600" />
+            </div>
+            External Link
+          </h4>
+          <a
+            href={lead.extracted_data.static.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 hover:text-blue-700 hover:underline break-all font-medium transition-colors"
+          >
+            {lead.extracted_data.static.externalUrl}
+          </a>
+        </div>
+      )}
+
       {/* Empty State */}
       {!lead.analysis_type && (
         <div className="flex flex-col items-center justify-center py-16 px-8 text-center bg-gray-50 dark:bg-gray-800/30 rounded-xl border border-gray-200 dark:border-gray-700">
