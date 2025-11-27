@@ -219,7 +219,7 @@ function HeroInsight({ lead }: { lead: Lead }) {
 }
 
 /**
- * Quick Stats Grid - Refined enterprise card design
+ * Quick Stats Grid - Engaging visual cards with progress indicators
  */
 function QuickStatsGrid({ lead }: { lead: Lead }) {
   const metrics = lead.calculated_metrics;
@@ -227,60 +227,88 @@ function QuickStatsGrid({ lead }: { lead: Lead }) {
   const stats = [
     {
       label: 'Engagement Rate',
-      value: metrics?.engagement_rate ? `${metrics.engagement_rate.toFixed(2)}%` : '—',
+      value: metrics?.engagement_rate ? metrics.engagement_rate.toFixed(2) : '0',
+      displayValue: metrics?.engagement_rate ? `${metrics.engagement_rate.toFixed(2)}%` : '—',
+      max: 10, // 10% is excellent engagement
       icon: 'mdi:trending-up',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
+      barColor: 'bg-green-500',
     },
     {
       label: 'Profile Health',
-      value: metrics?.profile_health_score ? `${metrics.profile_health_score}/100` : '—',
+      value: metrics?.profile_health_score?.toString() || '0',
+      displayValue: metrics?.profile_health_score ? `${metrics.profile_health_score}/100` : '—',
+      max: 100,
       icon: 'mdi:heart-pulse',
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
+      barColor: 'bg-blue-500',
     },
     {
       label: 'Content Quality',
-      value: metrics?.content_sophistication ? `${metrics.content_sophistication}/100` : '—',
+      value: metrics?.content_sophistication?.toString() || '0',
+      displayValue: metrics?.content_sophistication ? `${metrics.content_sophistication}/100` : '—',
+      max: 100,
       icon: 'mdi:star',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
+      barColor: 'bg-purple-500',
     },
     {
       label: 'Posting Frequency',
-      value: metrics?.posting_frequency ? `${metrics.posting_frequency.toFixed(1)}/mo` : '—',
+      value: metrics?.posting_frequency ? metrics.posting_frequency.toFixed(1) : '0',
+      displayValue: metrics?.posting_frequency ? `${metrics.posting_frequency.toFixed(1)}/mo` : '—',
+      max: 30, // 30 posts per month is very active
       icon: 'mdi:calendar-clock',
       color: 'text-amber-600',
       bgColor: 'bg-amber-50',
+      barColor: 'bg-amber-500',
     },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {stats.map((stat, idx) => (
-        <motion.div
-          key={stat.label}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, delay: idx * 0.05 }}
-          className="group bg-white rounded-lg border border-gray-200 p-5 transition-all duration-200 hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
-        >
-          {/* Icon */}
-          <div className={`inline-flex p-2.5 rounded-lg ${stat.bgColor} mb-4 transition-transform duration-200 group-hover:scale-105`}>
-            <Icon icon={stat.icon} className={`w-5 h-5 ${stat.color}`} />
-          </div>
+      {stats.map((stat, idx) => {
+        const percentage = Math.min(100, (parseFloat(stat.value) / stat.max) * 100);
 
-          {/* Value */}
-          <div className="text-2xl font-bold text-gray-900 mb-1.5 tracking-tight">
-            {stat.value}
-          </div>
+        return (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.15, delay: idx * 0.05 }}
+            className="group bg-white rounded-lg border border-gray-200 p-5 transition-all duration-200 hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
+          >
+            {/* Icon */}
+            <div className={`inline-flex p-2.5 rounded-lg ${stat.bgColor} mb-4 transition-transform duration-200 group-hover:scale-105`}>
+              <Icon icon={stat.icon} className={`w-5 h-5 ${stat.color}`} />
+            </div>
 
-          {/* Label */}
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            {stat.label}
-          </div>
-        </motion.div>
-      ))}
+            {/* Value */}
+            <div className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">
+              {stat.displayValue}
+            </div>
+
+            {/* Progress Bar */}
+            <div className="mb-2">
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentage}%` }}
+                  transition={{ duration: 0.6, delay: idx * 0.1, ease: 'easeOut' }}
+                  className={`h-full ${stat.barColor} rounded-full`}
+                />
+              </div>
+            </div>
+
+            {/* Label */}
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              {stat.label}
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
