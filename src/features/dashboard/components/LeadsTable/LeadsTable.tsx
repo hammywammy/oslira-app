@@ -53,8 +53,7 @@ const COLUMN_WIDTHS = {
   checkbox: 56,
   lead: 280,
   niche: 120,
-  accountType: 140,
-  platform: 120,
+  platform: 130,
   score: 200,
   analysis: 130,
   updated: 110,
@@ -147,31 +146,6 @@ function AnalysisTypeBadge({ type }: { type: 'light' | 'deep' | 'xray' | null })
   );
 }
 
-function AccountTypeBadge({ isBusiness }: { isBusiness: boolean | undefined }) {
-  const config = isBusiness
-    ? {
-        bg: 'bg-purple-50',
-        text: 'text-purple-700',
-        border: 'border-purple-200',
-        icon: 'mdi:briefcase',
-        label: 'Business Account',
-      }
-    : {
-        bg: 'bg-gray-50',
-        text: 'text-gray-700',
-        border: 'border-gray-200',
-        icon: 'mdi:account',
-        label: 'Personal Account',
-      };
-
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-xs font-medium ${config.bg} ${config.text} ${config.border}`}>
-      <Icon icon={config.icon} width={14} />
-      {config.label}
-    </span>
-  );
-}
-
 // =============================================================================
 // TABLE ROW COMPONENT
 // =============================================================================
@@ -236,22 +210,15 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLea
       {/* Niche */}
       <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.niche}px`, padding: '12px 16px' }}>
         {lead.niche ? (
-          <span className="text-sm text-foreground truncate" title="Niche">{lead.niche}</span>
+          <span className="text-sm text-foreground truncate">{lead.niche}</span>
         ) : (
-          <span className="text-sm text-muted-foreground" title="Niche">—</span>
+          <span className="text-sm text-muted-foreground">—</span>
         )}
-      </td>
-
-      {/* Account Type */}
-      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.accountType}px`, padding: '12px 16px' }}>
-        <div title="Account type">
-          <AccountTypeBadge isBusiness={lead.is_business} />
-        </div>
       </td>
 
       {/* Platform */}
       <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.platform}px`, padding: '12px 16px' }}>
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-pink-50 text-pink-700 border border-pink-200" title="Platform analyzed">
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-pink-50 text-pink-700 border border-pink-200">
           <Icon icon="mdi:instagram" width={16} />
           <span className="text-xs font-medium">Instagram</span>
         </div>
@@ -508,11 +475,6 @@ export function LeadsTable({
           {/* Niche */}
           <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.niche}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Niche</span>
-          </th>
-
-          {/* Account Type */}
-          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.accountType}px` }}>
-            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Account Type</span>
           </th>
 
           {/* Platform */}
