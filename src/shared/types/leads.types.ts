@@ -214,128 +214,121 @@ export interface ExternalUrlDetail {
 /**
  * Calculated metrics from backend analysis (JSONB field)
  * Contains 80+ metrics from deep analysis pipeline
+ * NOTE: Backend returns flat snake_case structure, not nested
  */
 export interface CalculatedMetrics {
-  version: string;
-  sampleSize: number;
-  calculatedAt: string;
+  // Profile basics
+  username?: string;
+  verified?: boolean;
+  has_bio?: boolean;
+  bio_length?: number;
+  has_channel?: boolean;
+  is_business_account?: boolean;
+  business_category_name?: string | null;
+  external_url?: string;
+  has_external_link?: boolean;
+  external_links_count?: number;
+  external_urls?: ExternalUrlDetail[];
+
+  // Follower metrics
+  followers_count?: number;
+  follows_count?: number;
+  authority_ratio?: number;
+  authority_ratio_raw?: number;
+
+  // Post counts
+  posts_count?: number;
+  recent_posts_sampled?: number;
+
+  // Engagement metrics
+  total_likes?: number;
+  total_comments?: number;
+  total_engagement?: number;
+  avg_likes_per_post?: number;
+  avg_comments_per_post?: number;
+  avg_engagement_per_post?: number;
+  engagement_rate?: number;
+  engagement_rate_per_post?: number[];
+  engagement_consistency?: number;
+  engagement_std_dev?: number;
+  comment_to_like_ratio?: number;
+
+  // Format distribution
+  image_count?: number;
+  reels_count?: number;
+  video_count?: number;
+  carousel_count?: number;
+  igtv_video_count?: number;
+  video_post_count?: number;
+  non_reels_video_count?: number;
+  image_rate?: number;
+  reels_rate?: number;
+  video_rate?: number;
+  carousel_rate?: number;
+  format_diversity?: number;
+  dominant_format?: string;
+
+  // Video metrics
+  total_video_views?: number | null;
+  avg_video_views?: number | null;
+  video_view_to_like_ratio?: number | null;
+
+  // Content metrics
+  total_hashtags?: number;
+  unique_hashtag_count?: number;
+  avg_hashtags_per_post?: number;
+  hashtag_diversity?: number | null;
+  top_hashtags?: any[];
+  total_mentions?: number;
+  unique_mentions_count?: number;
+  avg_mentions_per_post?: number;
+  top_mentions?: any[];
+  total_caption_length?: number;
+  avg_caption_length?: number;
+  avg_caption_length_non_empty?: number;
+  max_caption_length?: number;
+
+  // Location & settings
+  posts_with_location?: number;
+  location_tagging_rate?: number;
+  posts_with_alt_text?: number;
+  alt_text_rate?: number;
+  comments_enabled_rate?: number;
+  comments_disabled_rate?: number;
+  posts_with_comments_disabled?: number;
+
+  // Posting behavior
+  posting_frequency?: number;
+  posting_period_days?: number;
+  posting_consistency?: number;
+  days_since_last_post?: number;
+  avg_days_between_posts?: number;
+  time_between_posts_days?: number[];
+  oldest_post_timestamp?: string;
+  newest_post_timestamp?: string;
+
+  // Derived metrics
+  content_density?: number;
+  viral_post_rate?: number;
+  recent_viral_post_count?: number;
+  highlight_reel_count?: number;
 
   // Composite scores (5 fields)
-  scores: {
-    profileHealthScore: number;
-    engagementHealth: number;
-    contentSophistication: number;
-    accountMaturity: number;
-    fakeFollowerRisk: number;
-  };
+  profile_health_score?: number;
+  engagement_health?: number;
+  content_sophistication?: number;
+  account_maturity?: number;
+  fake_follower_risk?: number;
 
-  // Raw calculated metrics (60+ fields)
-  raw: {
-    // Profile basics
-    username?: string;
-    verified?: boolean;
-    hasBio?: boolean;
-    bioLength?: number;
-    hasChannel?: boolean;
-    isBusinessAccount?: boolean;
-    businessCategoryName?: string | null;
-    externalUrl?: string;
-    hasExternalLink?: boolean;
-    externalLinksCount?: number;
-    externalUrls?: ExternalUrlDetail[];
-
-    // Follower metrics
-    followersCount?: number;
-    followsCount?: number;
-    authorityRatio?: number;
-    authorityRatioRaw?: number;
-
-    // Post counts
-    postsCount?: number;
-    recentPostsSampled?: number;
-
-    // Engagement metrics
-    totalLikes?: number;
-    totalComments?: number;
-    totalEngagement?: number;
-    avgLikesPerPost?: number;
-    avgCommentsPerPost?: number;
-    avgEngagementPerPost?: number;
-    engagementRate?: number;
-    engagementRatePerPost?: number[];
-    engagementConsistency?: number;
-    engagementStdDev?: number;
-    commentToLikeRatio?: number;
-
-    // Format distribution
-    imageCount?: number;
-    reelsCount?: number;
-    videoCount?: number;
-    carouselCount?: number;
-    igtvVideoCount?: number;
-    videoPostCount?: number;
-    nonReelsVideoCount?: number;
-    imageRate?: number;
-    reelsRate?: number;
-    videoRate?: number;
-    carouselRate?: number;
-    formatDiversity?: number;
-    dominantFormat?: string;
-
-    // Video metrics
-    totalVideoViews?: number | null;
-    avgVideoViews?: number | null;
-    videoViewToLikeRatio?: number | null;
-
-    // Content metrics
-    totalHashtags?: number;
-    uniqueHashtagCount?: number;
-    avgHashtagsPerPost?: number;
-    hashtagDiversity?: number | null;
-    topHashtags?: any[];
-    totalMentions?: number;
-    uniqueMentionCount?: number;
-    avgMentionsPerPost?: number;
-    topMentions?: any[];
-    totalCaptionLength?: number;
-    avgCaptionLength?: number;
-    maxCaptionLength?: number;
-
-    // Location & settings
-    postsWithLocation?: number;
-    locationTaggingRate?: number;
-    postsWithAltText?: number;
-    altTextRate?: number;
-    commentsEnabledRate?: number;
-    commentsDisabledRate?: number;
-    postsWithCommentsDisabled?: number;
-
-    // Posting behavior
-    postingFrequency?: number;
-    postingPeriodDays?: number;
-    postingConsistency?: number;
-    daysSinceLastPost?: number;
-    avgDaysBetweenPosts?: number;
-    timeBetweenPostsDays?: number[];
-    oldestPostTimestamp?: string;
-    newestPostTimestamp?: string;
-
-    // Derived metrics
-    contentDensity?: number;
-    viralPostRate?: number;
-    recentViralPostCount?: number;
-    highlightReelCount?: number;
-
-    // Risk analysis
-    fakeFollowerRiskScore?: number;
-    fakeFollowerWarnings?: string[];
-  };
+  // Risk analysis
+  fake_follower_risk_score?: number;
+  fake_follower_interpretation?: string;
+  warnings_count?: number;
+  warnings?: string[];
 
   // Gap detection flags (4 boolean flags)
-  gaps: {
-    engagementGap: boolean;
-    contentGap: boolean;
-    conversionGap: boolean;
-    platformGap: boolean;
-  };
+  engagement_gap?: boolean;
+  content_gap?: boolean;
+  conversion_gap?: boolean;
+  platform_gap?: boolean;
 }

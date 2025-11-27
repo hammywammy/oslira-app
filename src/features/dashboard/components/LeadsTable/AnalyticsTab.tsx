@@ -8,7 +8,7 @@
  */
 
 import { Icon } from '@iconify/react';
-import type { Lead, AnalysisType } from '@/shared/types/leads.types';
+import type { Lead, AnalysisType, CalculatedMetrics } from '@/shared/types/leads.types';
 import {
   ScoreCard,
   MetricsSection,
@@ -31,45 +31,33 @@ export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
     return <LockedState />;
   }
 
-  // Debug logging
-  console.log('=== AnalyticsTab Debug ===');
-  console.log('lead.calculated_metrics:', lead.calculated_metrics);
-  console.log('Has calculated_metrics:', !!lead.calculated_metrics);
-  if (lead.calculated_metrics) {
-    console.log('Has raw:', !!lead.calculated_metrics.raw);
-    console.log('Has scores:', !!lead.calculated_metrics.scores);
-    console.log('Has gaps:', !!lead.calculated_metrics.gaps);
-    console.log('calculated_metrics keys:', Object.keys(lead.calculated_metrics));
-  }
-
   // No calculated_metrics data - show empty state
-  if (!lead.calculated_metrics || !lead.calculated_metrics.raw || !lead.calculated_metrics.scores || !lead.calculated_metrics.gaps) {
-    console.log('Showing EmptyMetricsState because one of the required fields is missing');
+  if (!lead.calculated_metrics) {
     return <EmptyMetricsState />;
   }
+
+  const metrics = lead.calculated_metrics;
 
   // Deep analysis - show full metrics
   return (
     <div className="space-y-6">
       {/* Score Cards Section */}
-      <ScoreCardsSection lead={lead} />
+      <ScoreCardsSection metrics={metrics} />
 
       {/* Engagement Metrics */}
-      <EngagementSection lead={lead} />
+      <EngagementSection metrics={metrics} />
 
       {/* Content Strategy */}
-      <ContentStrategySection lead={lead} />
+      <ContentStrategySection metrics={metrics} />
 
       {/* Posting Behavior */}
-      <PostingBehaviorSection lead={lead} />
+      <PostingBehaviorSection metrics={metrics} />
 
       {/* Video Performance (conditional) */}
-      {(lead.calculated_metrics.raw.videoPostCount || 0) > 0 && (
-        <VideoPerformanceSection lead={lead} />
-      )}
+      {(metrics.video_post_count || 0) > 0 && <VideoPerformanceSection metrics={metrics} />}
 
       {/* Risk & Signals */}
-      <RiskAndSignalsSection lead={lead} />
+      <RiskAndSignalsSection metrics={metrics} />
     </div>
   );
 }
@@ -126,16 +114,12 @@ function EmptyMetricsState() {
 // SCORE CARDS SECTION
 // =============================================================================
 
-function ScoreCardsSection({ lead }: { lead: Lead }) {
-  const metrics = lead.calculated_metrics!;
-  const scores = metrics.scores;
-  const raw = metrics.raw;
-
+function ScoreCardsSection({ metrics }: { metrics: CalculatedMetrics }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <ScoreCard
         label="Profile Health"
-        score={scores.profileHealthScore}
+        score={metrics.profile_health_score}
         maxScore={100}
         icon="mdi:heart-pulse"
         color="blue"
@@ -144,7 +128,7 @@ function ScoreCardsSection({ lead }: { lead: Lead }) {
 
       <ScoreCard
         label="Engagement Health"
-        score={scores.engagementHealth}
+        score={metrics.engagement_health}
         maxScore={100}
         icon="mdi:chart-line"
         color="teal"
@@ -153,7 +137,7 @@ function ScoreCardsSection({ lead }: { lead: Lead }) {
 
       <ScoreCard
         label="Content Quality"
-        score={scores.contentSophistication}
+        score={metrics.content_sophistication}
         maxScore={100}
         icon="mdi:pencil-box-outline"
         color="purple"
@@ -162,7 +146,7 @@ function ScoreCardsSection({ lead }: { lead: Lead }) {
 
       <ScoreCard
         label="Account Maturity"
-        score={scores.accountMaturity}
+        score={metrics.account_maturity}
         maxScore={100}
         icon="mdi:shield-check"
         color="green"
@@ -171,7 +155,7 @@ function ScoreCardsSection({ lead }: { lead: Lead }) {
 
       <ScoreCard
         label="Fake Follower Risk"
-        score={scores.fakeFollowerRisk}
+        score={metrics.fake_follower_risk_score}
         maxScore={100}
         icon="mdi:alert-circle"
         color="orange"
@@ -181,12 +165,12 @@ function ScoreCardsSection({ lead }: { lead: Lead }) {
 
       <ScoreCard
         label="Authority Ratio"
-        score={raw.authorityRatio}
+        score={metrics.authority_ratio}
         maxScore={100}
         icon="mdi:crown"
         color="gold"
-        rawValue={raw.authorityRatioRaw}
-        tooltip={`Followers-to-following ratio (raw: ${raw.authorityRatioRaw?.toLocaleString() || 0})`}
+        rawValue={metrics.authority_ratio_raw}
+        tooltip={`Followers-to-following ratio (raw: ${metrics.authority_ratio_raw?.toLocaleString() || 0})`}
       />
     </div>
   );
@@ -196,9 +180,7 @@ function ScoreCardsSection({ lead }: { lead: Lead }) {
 // ENGAGEMENT SECTION
 // =============================================================================
 
-function EngagementSection({ lead }: { lead: Lead }) {
-  const raw = lead.calculated_metrics!.raw;
-
+function EngagementSection({ metrics }: { metrics: CalculatedMetrics }) {
   const getEngagementInterpretation = (rate: number | null | undefined): string => {
     if (!rate) return 'No data';
     if (rate >= 3) return 'Excellent';
@@ -212,31 +194,35 @@ function EngagementSection({ lead }: { lead: Lead }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Metric
           label="Engagement Rate"
-          value={raw.engagementRate ? `${raw.engagementRate.toFixed(2)}%` : '—'}
-          interpretation={getEngagementInterpretation(raw.engagementRate)}
+          value={metrics.engagement_rate ? `${metrics.engagement_rate.toFixed(2)}%` : '—'}
+          interpretation={getEngagementInterpretation(metrics.engagement_rate)}
           icon="mdi:trending-up"
           color="green"
         />
 
         <Metric
           label="Avg Likes/Post"
-          value={raw.avgLikesPerPost ? formatNumber(raw.avgLikesPerPost) : '—'}
-          rawValue={raw.avgLikesPerPost}
+          value={metrics.avg_likes_per_post ? formatNumber(metrics.avg_likes_per_post) : '—'}
+          rawValue={metrics.avg_likes_per_post}
           icon="mdi:heart"
           color="red"
         />
 
         <Metric
           label="Avg Comments/Post"
-          value={raw.avgCommentsPerPost ? formatNumber(raw.avgCommentsPerPost) : '—'}
-          rawValue={raw.avgCommentsPerPost}
+          value={metrics.avg_comments_per_post ? formatNumber(metrics.avg_comments_per_post) : '—'}
+          rawValue={metrics.avg_comments_per_post}
           icon="mdi:comment"
           color="blue"
         />
 
         <Metric
           label="Comment-to-Like Ratio"
-          value={raw.commentToLikeRatio ? `${(raw.commentToLikeRatio * 100).toFixed(2)}%` : '—'}
+          value={
+            metrics.comment_to_like_ratio
+              ? `${(metrics.comment_to_like_ratio * 100).toFixed(2)}%`
+              : '—'
+          }
           interpretation="Normal"
           icon="mdi:comment-quote"
           color="purple"
@@ -244,7 +230,7 @@ function EngagementSection({ lead }: { lead: Lead }) {
       </div>
 
       {/* Engagement Consistency */}
-      {raw.engagementConsistency !== null && raw.engagementConsistency !== undefined && (
+      {metrics.engagement_consistency !== null && metrics.engagement_consistency !== undefined && (
         <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -256,16 +242,16 @@ function EngagementSection({ lead }: { lead: Lead }) {
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-teal-500 transition-all duration-300"
-                  style={{ width: `${raw.engagementConsistency}%` }}
+                  style={{ width: `${metrics.engagement_consistency}%` }}
                 />
               </div>
             </div>
             <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {Math.round(raw.engagementConsistency)}/100
+              {Math.round(metrics.engagement_consistency)}/100
             </span>
           </div>
           <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-            {raw.engagementStdDev && raw.engagementStdDev > 0.2
+            {metrics.engagement_std_dev && metrics.engagement_std_dev > 0.2
               ? 'High volatility - some posts perform much better than others'
               : 'Consistent engagement across posts'}
           </p>
@@ -279,9 +265,7 @@ function EngagementSection({ lead }: { lead: Lead }) {
 // CONTENT STRATEGY SECTION
 // =============================================================================
 
-function ContentStrategySection({ lead }: { lead: Lead }) {
-  const raw = lead.calculated_metrics!.raw;
-
+function ContentStrategySection({ metrics }: { metrics: CalculatedMetrics }) {
   return (
     <MetricsSection title="Content Strategy">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -291,18 +275,19 @@ function ContentStrategySection({ lead }: { lead: Lead }) {
             Content Format Mix
           </h4>
           <div className="space-y-2">
-            {raw.reelsRate !== null && raw.reelsRate !== undefined && (
-              <FormatBar label="Reels" percentage={raw.reelsRate} color="purple" />
+            {metrics.reels_rate !== null && metrics.reels_rate !== undefined && (
+              <FormatBar label="Reels" percentage={metrics.reels_rate} color="purple" />
             )}
-            {raw.imageRate !== null && raw.imageRate !== undefined && (
-              <FormatBar label="Images" percentage={raw.imageRate} color="blue" />
+            {metrics.image_rate !== null && metrics.image_rate !== undefined && (
+              <FormatBar label="Images" percentage={metrics.image_rate} color="blue" />
             )}
-            {raw.carouselRate !== null && raw.carouselRate !== undefined && (
-              <FormatBar label="Carousels" percentage={raw.carouselRate} color="green" />
+            {metrics.carousel_rate !== null && metrics.carousel_rate !== undefined && (
+              <FormatBar label="Carousels" percentage={metrics.carousel_rate} color="green" />
             )}
           </div>
           <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
-            Format Diversity: {raw.formatDiversity || 0}/4 • Dominant: {raw.dominantFormat || 'unknown'}
+            Format Diversity: {metrics.format_diversity || 0}/4 • Dominant:{' '}
+            {metrics.dominant_format || 'unknown'}
           </div>
         </div>
 
@@ -314,22 +299,22 @@ function ContentStrategySection({ lead }: { lead: Lead }) {
           <div className="space-y-2 mb-3">
             <Metric
               label="Avg per Post"
-              value={raw.avgHashtagsPerPost?.toFixed(2) || '0'}
+              value={metrics.avg_hashtags_per_post?.toFixed(2) || '0'}
               interpretation={
-                (raw.avgHashtagsPerPost || 0) < 1
+                (metrics.avg_hashtags_per_post || 0) < 1
                   ? 'Very low'
-                  : (raw.avgHashtagsPerPost || 0) < 5
+                  : (metrics.avg_hashtags_per_post || 0) < 5
                     ? 'Low'
                     : 'Good'
               }
             />
-            <Metric label="Unique Count" value={raw.uniqueHashtagCount || 0} />
+            <Metric label="Unique Count" value={metrics.unique_hashtag_count || 0} />
           </div>
-          {raw.topHashtags && raw.topHashtags.length > 0 && (
+          {metrics.top_hashtags && metrics.top_hashtags.length > 0 && (
             <div>
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Top Hashtags:</p>
               <div className="flex flex-wrap gap-2">
-                {raw.topHashtags.map((ht, idx) => (
+                {metrics.top_hashtags.map((ht, idx) => (
                   <HashtagBadge key={idx} tag={ht.hashtag} count={ht.count} />
                 ))}
               </div>
@@ -342,31 +327,35 @@ function ContentStrategySection({ lead }: { lead: Lead }) {
       <div className="grid grid-cols-3 gap-4 mt-6">
         <Metric
           label="Avg Caption Length"
-          value={raw.avgCaptionLength ? `${Math.round(raw.avgCaptionLength)} chars` : '—'}
+          value={metrics.avg_caption_length ? `${Math.round(metrics.avg_caption_length)} chars` : '—'}
           interpretation={
-            (raw.avgCaptionLength || 0) < 100 ? 'Short' : (raw.avgCaptionLength || 0) < 200 ? 'Medium' : 'Long'
+            (metrics.avg_caption_length || 0) < 100
+              ? 'Short'
+              : (metrics.avg_caption_length || 0) < 200
+                ? 'Medium'
+                : 'Long'
           }
         />
         <Metric
           label="Location Tags"
-          value={raw.locationTaggingRate ? `${raw.locationTaggingRate.toFixed(0)}%` : '0%'}
-          interpretation={(raw.locationTaggingRate || 0) === 0 ? 'Opportunity' : 'Good'}
+          value={metrics.location_tagging_rate ? `${metrics.location_tagging_rate.toFixed(0)}%` : '0%'}
+          interpretation={(metrics.location_tagging_rate || 0) === 0 ? 'Opportunity' : 'Good'}
         />
         <Metric
           label="Comments Enabled"
-          value={raw.commentsEnabledRate ? `${raw.commentsEnabledRate.toFixed(0)}%` : '—'}
-          interpretation={(raw.commentsEnabledRate || 0) >= 90 ? 'Good' : 'Review'}
+          value={metrics.comments_enabled_rate ? `${metrics.comments_enabled_rate.toFixed(0)}%` : '—'}
+          interpretation={(metrics.comments_enabled_rate || 0) >= 90 ? 'Good' : 'Review'}
         />
       </div>
 
       {/* Top Mentions */}
-      {raw.topMentions && raw.topMentions.length > 0 && (
+      {metrics.top_mentions && metrics.top_mentions.length > 0 && (
         <div className="mt-6">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
             Most Mentioned Accounts
           </h4>
           <div className="flex flex-wrap gap-2">
-            {raw.topMentions.map((mention, idx) => (
+            {metrics.top_mentions.map((mention, idx) => (
               <MentionBadge key={idx} username={mention.username} count={mention.count} />
             ))}
           </div>
@@ -380,19 +369,17 @@ function ContentStrategySection({ lead }: { lead: Lead }) {
 // POSTING BEHAVIOR SECTION
 // =============================================================================
 
-function PostingBehaviorSection({ lead }: { lead: Lead }) {
-  const raw = lead.calculated_metrics!.raw;
-
+function PostingBehaviorSection({ metrics }: { metrics: CalculatedMetrics }) {
   return (
     <MetricsSection title="Posting Behavior">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Metric
           label="Posting Frequency"
-          value={raw.postingFrequency ? `${raw.postingFrequency.toFixed(1)}/mo` : '—'}
+          value={metrics.posting_frequency ? `${metrics.posting_frequency.toFixed(1)}/mo` : '—'}
           interpretation={
-            (raw.postingFrequency || 0) > 20
+            (metrics.posting_frequency || 0) > 20
               ? 'Very active'
-              : (raw.postingFrequency || 0) > 10
+              : (metrics.posting_frequency || 0) > 10
                 ? 'Active'
                 : 'Low'
           }
@@ -402,11 +389,11 @@ function PostingBehaviorSection({ lead }: { lead: Lead }) {
 
         <Metric
           label="Last Post"
-          value={formatDaysAgo(raw.daysSinceLastPost)}
+          value={formatDaysAgo(metrics.days_since_last_post)}
           interpretation={
-            (raw.daysSinceLastPost || 999) < 1
+            (metrics.days_since_last_post || 999) < 1
               ? 'Recent'
-              : (raw.daysSinceLastPost || 999) < 7
+              : (metrics.days_since_last_post || 999) < 7
                 ? 'Active'
                 : 'Inactive'
           }
@@ -416,11 +403,11 @@ function PostingBehaviorSection({ lead }: { lead: Lead }) {
 
         <Metric
           label="Posting Consistency"
-          value={raw.postingConsistency ? `${Math.round(raw.postingConsistency)}/100` : '—'}
+          value={metrics.posting_consistency ? `${Math.round(metrics.posting_consistency)}/100` : '—'}
           interpretation={
-            (raw.postingConsistency || 0) >= 80
+            (metrics.posting_consistency || 0) >= 80
               ? 'Excellent'
-              : (raw.postingConsistency || 0) >= 60
+              : (metrics.posting_consistency || 0) >= 60
                 ? 'Good'
                 : 'Inconsistent'
           }
@@ -430,7 +417,7 @@ function PostingBehaviorSection({ lead }: { lead: Lead }) {
 
         <Metric
           label="Avg Between Posts"
-          value={formatDaysBetween(raw.avgDaysBetweenPosts)}
+          value={formatDaysBetween(metrics.avg_days_between_posts)}
           icon="mdi:timer-outline"
           color="purple"
         />
@@ -443,31 +430,29 @@ function PostingBehaviorSection({ lead }: { lead: Lead }) {
 // VIDEO PERFORMANCE SECTION
 // =============================================================================
 
-function VideoPerformanceSection({ lead }: { lead: Lead }) {
-  const raw = lead.calculated_metrics!.raw;
-
+function VideoPerformanceSection({ metrics }: { metrics: CalculatedMetrics }) {
   return (
     <MetricsSection title="Video Performance">
       <div className="grid grid-cols-3 gap-4">
         <Metric
           label="Video Posts"
-          value={raw.videoPostCount || 0}
-          unit={`of ${raw.postsCount || 0}`}
+          value={metrics.video_post_count || 0}
+          unit={`of ${metrics.posts_count || 0}`}
           icon="mdi:video"
         />
 
         <Metric
           label="Total Views"
-          value={formatNumber(raw.totalVideoViews || 0)}
-          rawValue={raw.totalVideoViews}
+          value={formatNumber(metrics.total_video_views || 0)}
+          rawValue={metrics.total_video_views}
           icon="mdi:eye"
           color="blue"
         />
 
         <Metric
           label="Avg Views/Video"
-          value={formatNumber(raw.avgVideoViews || 0)}
-          rawValue={raw.avgVideoViews}
+          value={formatNumber(metrics.avg_video_views || 0)}
+          rawValue={metrics.avg_video_views}
           icon="mdi:trending-up"
           color="green"
         />
@@ -480,21 +465,21 @@ function VideoPerformanceSection({ lead }: { lead: Lead }) {
 // RISK & SIGNALS SECTION
 // =============================================================================
 
-function RiskAndSignalsSection({ lead }: { lead: Lead }) {
-  const metrics = lead.calculated_metrics!;
-  const raw = metrics.raw;
-  const gaps = metrics.gaps;
-
+function RiskAndSignalsSection({ metrics }: { metrics: CalculatedMetrics }) {
   // Build opportunities list from gaps
   const opportunities: string[] = [];
-  if (gaps.contentGap) {
-    if ((raw.avgHashtagsPerPost || 0) < 1) {
-      opportunities.push(`Increase hashtag usage (currently ${raw.avgHashtagsPerPost?.toFixed(2)}/post)`);
+  if (metrics.content_gap) {
+    if ((metrics.avg_hashtags_per_post || 0) < 1) {
+      opportunities.push(
+        `Increase hashtag usage (currently ${metrics.avg_hashtags_per_post?.toFixed(2)}/post)`
+      );
     }
-    if ((raw.avgCaptionLength || 0) < 150) {
-      opportunities.push(`Expand caption length (currently ${Math.round(raw.avgCaptionLength || 0)} chars)`);
+    if ((metrics.avg_caption_length || 0) < 150) {
+      opportunities.push(
+        `Expand caption length (currently ${Math.round(metrics.avg_caption_length || 0)} chars)`
+      );
     }
-    if (raw.locationTaggingRate === 0) {
+    if (metrics.location_tagging_rate === 0) {
       opportunities.push('Add location tags (currently 0%)');
     }
   }
@@ -504,29 +489,30 @@ function RiskAndSignalsSection({ lead }: { lead: Lead }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Risk Score */}
         <RiskScoreCard
-          score={raw.fakeFollowerRiskScore}
-          warnings={raw.fakeFollowerWarnings}
+          score={metrics.fake_follower_risk_score}
+          interpretation={metrics.fake_follower_interpretation}
+          warnings={metrics.warnings}
         />
 
         {/* Gap Detection */}
         <GapAnalysis
           gaps={{
-            engagementGap: gaps.engagementGap,
-            contentGap: gaps.contentGap,
-            conversionGap: gaps.conversionGap,
-            platformGap: gaps.platformGap,
+            engagementGap: metrics.engagement_gap,
+            contentGap: metrics.content_gap,
+            conversionGap: metrics.conversion_gap,
+            platformGap: metrics.platform_gap,
           }}
           opportunities={opportunities}
         />
       </div>
 
       {/* Viral Posts */}
-      {raw.recentViralPostCount !== null && raw.recentViralPostCount !== undefined && (
+      {metrics.recent_viral_post_count !== null && metrics.recent_viral_post_count !== undefined && (
         <div className="mt-6">
           <ViralPostIndicator
-            recentViralCount={raw.recentViralPostCount}
-            totalSampled={raw.recentPostsSampled}
-            percentage={raw.viralPostRate}
+            recentViralCount={metrics.recent_viral_post_count}
+            totalSampled={metrics.recent_posts_sampled}
+            percentage={metrics.viral_post_rate}
             disclaimer="Based on recent sample - not representative of full history"
           />
         </div>
