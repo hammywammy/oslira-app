@@ -62,40 +62,34 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
 
   return (
     <div className="space-y-6">
-      {/* Influencer Level Section */}
-      {(calculated?.leadTier || calculated?.audienceScale) && (
-        <MetricsSection title="Influencer Level">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Lead Tier Badge */}
-            {calculated?.leadTier && (
-              <div
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border ${tierConfig.bg} ${tierConfig.border} transition-all duration-200 hover:shadow-sm`}
-              >
-                <Icon icon={tierConfig.icon} className={`w-5 h-5 ${tierConfig.text}`} />
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Lead Tier</span>
-                  <span className={`text-sm font-bold uppercase ${tierConfig.text}`}>
-                    {calculated.leadTier}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Audience Scale Badge */}
-            {calculated?.audienceScale && (
-              <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 transition-all duration-200 hover:shadow-sm">
-                <Icon icon="mdi:account-group" className="w-5 h-5 text-purple-700 dark:text-purple-300" />
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Audience Scale</span>
-                  <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                    {calculated.audienceScale}
-                  </span>
-                </div>
-              </div>
-            )}
+      {/* Influencer Markings Section - Always visible */}
+      <MetricsSection title="Influencer Markings">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Lead Tier Badge */}
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border ${tierConfig.bg} ${tierConfig.border} transition-all duration-200 hover:shadow-sm`}
+          >
+            <Icon icon={tierConfig.icon} className={`w-5 h-5 ${tierConfig.text}`} />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Lead Tier</span>
+              <span className={`text-sm font-bold uppercase ${tierConfig.text}`}>
+                {calculated?.leadTier || 'Not set'}
+              </span>
+            </div>
           </div>
-        </MetricsSection>
-      )}
+
+          {/* Audience Scale Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 transition-all duration-200 hover:shadow-sm">
+            <Icon icon="mdi:account-group" className="w-5 h-5 text-purple-700 dark:text-purple-300" />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Audience Scale</span>
+              <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
+                {calculated?.audienceScale || 'Not set'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </MetricsSection>
 
       {/* Post Stats Section */}
       <MetricsSection title="Post Stats">
