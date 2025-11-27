@@ -36,6 +36,10 @@ import { AnalysisMetaCards } from './AnalysisMetaCards';
 import { SummaryCard } from './SummaryCard';
 import { AnalyticsTab } from './AnalyticsTab';
 import { ExternalLinksSection } from './ExternalLinksSection';
+import { AIAnalysisSection } from './AIAnalysisSection';
+import { FitReasoningSection } from './FitReasoningSection';
+import { OpportunitiesSection } from './OpportunitiesSection';
+import { RecommendedActionsSection } from './RecommendedActionsSection';
 
 // =============================================================================
 // TYPES
@@ -399,6 +403,33 @@ function OverviewTab({ lead }: { lead: Lead }) {
         analyzedAt={lead.analysis_completed_at}
       />
 
+      {/* AI Analysis Section - Strengths, Weaknesses, Risk Factors */}
+      {lead.ai_response && (
+        <AIAnalysisSection
+          strengths={lead.ai_response.strengths}
+          weaknesses={lead.ai_response.weaknesses}
+          riskFactors={lead.ai_response.riskFactors}
+        />
+      )}
+
+      {/* ICP Fit Assessment */}
+      {lead.ai_response?.fitReasoning && (
+        <FitReasoningSection
+          fitReasoning={lead.ai_response.fitReasoning}
+          leadTier={lead.ai_response.leadTier}
+        />
+      )}
+
+      {/* Partnership Opportunities */}
+      {lead.ai_response?.opportunities && (
+        <OpportunitiesSection opportunities={lead.ai_response.opportunities} />
+      )}
+
+      {/* Recommended Next Steps */}
+      {lead.ai_response?.recommendedActions && (
+        <RecommendedActionsSection recommendedActions={lead.ai_response.recommendedActions} />
+      )}
+
       {/* Score Breakdown */}
       {lead.overall_score !== null && (
         <ScoreBreakdown scores={scoreBreakdown} overallScore={lead.overall_score} />
@@ -457,7 +488,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       {/* ========================================================================
           HEADER - ENTERPRISE-GRADE LAYOUT
           ======================================================================== */}
-      <div className="relative p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-b from-gray-50/80 to-white dark:from-gray-800/30 dark:to-gray-900">
+      <div className="relative p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
         {/* Main Profile Content */}
         <div className="flex items-start gap-5">
           {/* Avatar */}

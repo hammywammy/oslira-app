@@ -191,6 +191,16 @@ export interface Lead {
   // CALCULATED METRICS (JSONB field from backend)
   // ============================================================================
   calculated_metrics?: CalculatedMetrics;
+
+  // ============================================================================
+  // AI RESPONSE (JSONB field from backend - enhanced AI analysis)
+  // ============================================================================
+  ai_response?: AIResponse;
+
+  // ============================================================================
+  // EXTRACTED DATA (JSONB field from backend - raw metrics)
+  // ============================================================================
+  extracted_data?: ExtractedData;
 }
 
 /**
@@ -331,4 +341,73 @@ export interface CalculatedMetrics {
   content_gap?: boolean;
   conversion_gap?: boolean;
   platform_gap?: boolean;
+}
+
+/**
+ * AI Response data from backend analysis
+ * Contains enhanced AI-generated insights and recommendations
+ */
+export interface AIResponse {
+  score: number;
+  leadTier: LeadTier;
+  strengths: string[];
+  weaknesses: string[];
+  riskFactors: string[];
+  fitReasoning: string;
+  opportunities: string[];
+  recommendedActions: string[];
+}
+
+/**
+ * Extracted data from backend analysis
+ * Contains raw metrics organized by category
+ */
+export interface ExtractedData {
+  static: StaticMetrics;
+  calculated: CalculatedDataMetrics;
+  metadata: MetadataInfo;
+}
+
+/**
+ * Static metrics that don't change frequently
+ */
+export interface StaticMetrics {
+  verified: boolean;
+  postsCount: number;
+  externalUrl: string | null;
+  topHashtags: Array<{ hashtag: string; count: number }>;
+  topMentions: Array<{ username: string; count: number }>;
+  avgVideoViews: number | null;
+  dominantFormat: string;
+  followersCount: number;
+  avgLikesPerPost: number;
+  formatDiversity: number;
+  daysSinceLastPost: number;
+  isBusinessAccount: boolean;
+  avgCommentsPerPost: number;
+  postingConsistency: number;
+  businessCategoryName: string | null;
+}
+
+/**
+ * Calculated metrics from analysis
+ */
+export interface CalculatedDataMetrics {
+  authorityRatio: number;
+  accountMaturity: number;
+  engagementScore: number;
+  engagementHealth: number;
+  profileHealthScore: number;
+  fakeFollowerWarning: string;
+  contentSophistication: number;
+  engagementConsistency: number;
+}
+
+/**
+ * Metadata about the analysis
+ */
+export interface MetadataInfo {
+  version: string;
+  sampleSize: number;
+  extractedAt: string;
 }
