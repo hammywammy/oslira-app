@@ -219,6 +219,8 @@ export interface CalculatedDataMetrics {
   fakeFollowerWarning: string;
   contentSophistication: number;
   engagementConsistency: number;
+  leadTier?: 'hot' | 'warm' | 'cold';
+  audienceScale?: string;
 }
 
 /**
