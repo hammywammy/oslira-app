@@ -225,18 +225,18 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
           />
 
           <Metric
-            label="Engagement Score"
-            value={calculated.engagementScore?.toFixed(2) || '0'}
+            label="Engagement Rate"
+            value={`${calculated.engagementRate?.toFixed(2) || '0'}%`}
             interpretation={
-              (calculated.engagementScore || 0) >= 3
+              (calculated.engagementRate || 0) >= 5
                 ? 'Excellent'
-                : (calculated.engagementScore || 0) >= 1
+                : (calculated.engagementRate || 0) >= 2
                   ? 'Good'
                   : 'Fair'
             }
             icon="mdi:trending-up"
             color="green"
-            tooltip="Normalized engagement metric calculated as (average likes + comments) / followers × 100. Shows how engaged the audience is relative to follower count."
+            tooltip="Percentage of followers who engage with content. Calculated as (average likes + comments) / followers × 100. Higher rates indicate a more active and responsive audience."
           />
 
           <Metric

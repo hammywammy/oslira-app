@@ -226,10 +226,10 @@ function QuickStatsGrid({ lead }: { lead: Lead }) {
 
   const stats = [
     {
-      label: 'Engagement Rate',
-      value: extractedCalc?.engagementRate ? extractedCalc.engagementRate.toFixed(2) : '0',
-      displayValue: extractedCalc?.engagementRate ? `${extractedCalc.engagementRate.toFixed(2)}%` : '—',
-      max: 10, // 10% is excellent engagement
+      label: 'Engagement Score',
+      value: extractedCalc?.engagementScore ? extractedCalc.engagementScore.toFixed(2) : '0',
+      displayValue: extractedCalc?.engagementScore ? extractedCalc.engagementScore.toFixed(2) : '—',
+      max: 5, // 5 is excellent engagement score
       icon: 'mdi:trending-up',
       color: 'text-green-600',
       bgColor: 'bg-green-50',
