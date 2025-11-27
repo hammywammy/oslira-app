@@ -481,6 +481,20 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
 
   if (!lead) return null;
 
+  // DEBUG LOGGING - Check what data we're receiving
+  useEffect(() => {
+    if (isOpen && lead) {
+      console.group('🔍 Lead Detail Modal - Data Check');
+      console.log('Full lead object:', lead);
+      console.log('ai_response:', lead.ai_response);
+      console.log('extracted_data:', lead.extracted_data);
+      console.log('calculated_metrics:', lead.calculated_metrics);
+      console.log('analysis_type:', lead.analysis_type);
+      console.log('analysis_status:', lead.analysis_status);
+      console.groupEnd();
+    }
+  }, [isOpen, lead]);
+
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
 
   return (
