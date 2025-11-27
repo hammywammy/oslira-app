@@ -12,6 +12,17 @@ interface MetricProps {
   unit?: string;
 }
 
+const colorMap: Record<string, { icon: string; bg: string }> = {
+  blue: { icon: 'text-blue-600', bg: 'bg-blue-50' },
+  purple: { icon: 'text-purple-600', bg: 'bg-purple-50' },
+  red: { icon: 'text-red-600', bg: 'bg-red-50' },
+  green: { icon: 'text-green-600', bg: 'bg-green-50' },
+  amber: { icon: 'text-amber-600', bg: 'bg-amber-50' },
+  teal: { icon: 'text-teal-600', bg: 'bg-teal-50' },
+  gray: { icon: 'text-gray-600', bg: 'bg-gray-50' },
+  gold: { icon: 'text-yellow-600', bg: 'bg-yellow-50' },
+};
+
 export function Metric({
   label,
   value,
@@ -21,24 +32,34 @@ export function Metric({
   color = 'gray',
   unit,
 }: MetricProps) {
+  const colors = colorMap[color] || colorMap.gray;
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="group flex flex-col gap-2 p-4 rounded-lg border border-gray-100 bg-gray-50/50 transition-all duration-200 hover:bg-white hover:border-gray-200 hover:shadow-sm">
+      {/* Label with icon */}
       <div className="flex items-center gap-2">
-        {icon && <Icon icon={icon} className={`w-4 h-4 text-${color}-500`} />}
-        <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
+        {icon && (
+          <div className={`p-1.5 rounded-md ${colors.bg}`}>
+            <Icon icon={icon} className={`w-3.5 h-3.5 ${colors.icon}`} />
+          </div>
+        )}
+        <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">{label}</span>
       </div>
 
-      <div className="flex items-baseline gap-1">
-        <span className="text-xl font-semibold text-gray-900 dark:text-gray-100">{value}</span>
-        {unit && <span className="text-sm text-gray-500">{unit}</span>}
+      {/* Value */}
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-2xl font-bold text-gray-900 tracking-tight">{value}</span>
+        {unit && <span className="text-sm font-medium text-gray-400">{unit}</span>}
       </div>
 
+      {/* Interpretation */}
       {interpretation && (
-        <span className="text-xs text-gray-500 dark:text-gray-400">{interpretation}</span>
+        <span className="text-xs font-medium text-gray-500">{interpretation}</span>
       )}
 
+      {/* Raw value */}
       {rawValue !== undefined && rawValue !== null && (
-        <span className="text-xs text-gray-400">({rawValue.toLocaleString()})</span>
+        <span className="text-xs text-gray-400 font-mono">({rawValue.toLocaleString()})</span>
       )}
     </div>
   );

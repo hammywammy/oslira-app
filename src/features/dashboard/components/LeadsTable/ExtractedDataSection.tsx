@@ -101,32 +101,36 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
 
         {/* Video Performance */}
         {staticMetrics.avgVideoViews !== null && staticMetrics.avgVideoViews !== undefined && (
-          <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-200 dark:border-purple-800">
-            <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-2 flex items-center gap-2">
-              <Icon icon="mdi:video" className="w-4 h-4" />
+          <div className="mt-4 p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-purple-50">
+                <Icon icon="mdi:video" className="w-4 h-4 text-purple-600" />
+              </div>
               Video Performance
             </h4>
-            <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-              {formatNumber(staticMetrics.avgVideoViews)} avg views
+            <div className="text-2xl font-bold text-gray-900 tracking-tight">
+              {formatNumber(staticMetrics.avgVideoViews)} <span className="text-base font-medium text-gray-500">avg views</span>
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              Raw value: {staticMetrics.avgVideoViews.toLocaleString()}
+            <div className="text-xs text-gray-400 mt-2 font-mono">
+              Raw: {staticMetrics.avgVideoViews.toLocaleString()}
             </div>
           </div>
         )}
 
         {/* External URL */}
         {staticMetrics.externalUrl && (
-          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
-              <Icon icon="mdi:link" className="w-4 h-4" />
+          <div className="mt-4 p-5 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-blue-50">
+                <Icon icon="mdi:link" className="w-4 h-4 text-blue-600" />
+              </div>
               External Link
             </h4>
             <a
               href={staticMetrics.externalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline break-all"
+              className="text-sm text-blue-600 hover:text-blue-700 hover:underline break-all font-medium transition-colors"
             >
               {staticMetrics.externalUrl}
             </a>
@@ -179,28 +183,32 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
         </div>
 
         {/* Posting Consistency */}
-        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <div className="mt-6 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-green-50">
+                <Icon icon="mdi:calendar-check" className="w-4 h-4 text-green-600" />
+              </div>
               Posting Consistency
             </h4>
+            <span className="text-xl font-bold text-gray-900 tracking-tight">
+              {Math.round(staticMetrics.postingConsistency || 0)}
+              <span className="text-sm font-medium text-gray-400">/100</span>
+            </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-3">
             <div className="flex-1">
-              <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${staticMetrics.postingConsistency || 0}%` }}
                   transition={{ duration: 0.6, ease: 'easeOut' }}
-                  className="h-full bg-green-500"
+                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                 />
               </div>
             </div>
-            <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {Math.round(staticMetrics.postingConsistency || 0)}/100
-            </span>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-xs font-medium text-gray-500">
             {(staticMetrics.postingConsistency || 0) >= 80
               ? 'Highly consistent posting schedule'
               : (staticMetrics.postingConsistency || 0) >= 60
@@ -289,50 +297,42 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`mt-6 p-4 rounded-lg border-2 ${
+            className={`mt-6 p-6 rounded-lg border-2 bg-white shadow-sm ${
               calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
-                ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800'
+                ? 'border-emerald-200'
                 : calculated.fakeFollowerWarning.toLowerCase().includes('warning')
-                  ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800'
-                  : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
+                  ? 'border-amber-200'
+                  : 'border-red-200'
             }`}
           >
-            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              <Icon
-                icon={
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2.5">
+              <div
+                className={`p-1.5 rounded-md ${
                   calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
-                    ? 'mdi:shield-check'
-                    : 'mdi:shield-alert'
-                }
-                className={`w-5 h-5 ${
-                  calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
-                    ? 'text-emerald-600 dark:text-emerald-400'
+                    ? 'bg-emerald-50'
                     : calculated.fakeFollowerWarning.toLowerCase().includes('warning')
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-red-600 dark:text-red-400'
+                      ? 'bg-amber-50'
+                      : 'bg-red-50'
                 }`}
-              />
-              <span
-                className={
-                  calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
-                    ? 'text-emerald-900 dark:text-emerald-100'
-                    : calculated.fakeFollowerWarning.toLowerCase().includes('warning')
-                      ? 'text-amber-900 dark:text-amber-100'
-                      : 'text-red-900 dark:text-red-100'
-                }
               >
-                Authenticity Assessment
-              </span>
+                <Icon
+                  icon={
+                    calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
+                      ? 'mdi:shield-check'
+                      : 'mdi:shield-alert'
+                  }
+                  className={`w-4 h-4 ${
+                    calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
+                      ? 'text-emerald-600'
+                      : calculated.fakeFollowerWarning.toLowerCase().includes('warning')
+                        ? 'text-amber-600'
+                        : 'text-red-600'
+                  }`}
+                />
+              </div>
+              <span className="text-gray-900">Authenticity Assessment</span>
             </h4>
-            <p
-              className={`text-sm ${
-                calculated.fakeFollowerWarning.toLowerCase().includes('healthy')
-                  ? 'text-emerald-700 dark:text-emerald-300'
-                  : calculated.fakeFollowerWarning.toLowerCase().includes('warning')
-                    ? 'text-amber-700 dark:text-amber-300'
-                    : 'text-red-700 dark:text-red-300'
-              }`}
-            >
+            <p className="text-sm text-gray-700 leading-relaxed">
               {calculated.fakeFollowerWarning}
             </p>
           </motion.div>
@@ -342,41 +342,47 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
       {/* Metadata Section */}
       <MetricsSection title="Extraction Metadata">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon icon="mdi:information" className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-md bg-white border border-gray-200">
+                <Icon icon="mdi:information" className="w-3.5 h-3.5 text-gray-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Version
               </span>
             </div>
-            <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <div className="text-xl font-bold text-gray-900 tracking-tight">
               {metadata.version}
             </div>
           </div>
 
-          <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon icon="mdi:database" className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-md bg-white border border-gray-200">
+                <Icon icon="mdi:database" className="w-3.5 h-3.5 text-gray-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Sample Size
               </span>
             </div>
-            <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              {metadata.sampleSize} posts
+            <div className="text-xl font-bold text-gray-900 tracking-tight">
+              {metadata.sampleSize} <span className="text-base font-medium text-gray-500">posts</span>
             </div>
           </div>
 
-          <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon icon="mdi:clock-outline" className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 rounded-md bg-white border border-gray-200">
+                <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5 text-gray-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Extracted
               </span>
             </div>
-            <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <div className="text-xl font-bold text-gray-900 tracking-tight mb-1">
               {formatExtractedDate(metadata.extractedAt)}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            <div className="text-xs text-gray-500 font-medium">
               {formatTimeAgo(metadata.extractedAt)}
             </div>
           </div>
