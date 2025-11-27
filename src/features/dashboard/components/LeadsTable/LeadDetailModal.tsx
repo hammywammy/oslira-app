@@ -381,11 +381,29 @@ function TabNav({
 // =============================================================================
 
 function OverviewTab({ lead }: { lead: Lead }) {
+  // Calculate score breakdown from extracted_data (each component is out of 25)
+  const extractedCalc = lead.extracted_data?.calculated;
+
   const scoreBreakdown = {
-    profileFit: lead.overall_score !== null ? Math.round(lead.overall_score * 0.25) : null,
-    engagement: null,
-    authority: lead.overall_score !== null ? Math.round(lead.overall_score * 0.22) : null,
-    readiness: null,
+    // Profile Fit: Use AI assessment score (scaled to /25)
+    profileFit: lead.ai_response?.score !== null && lead.ai_response?.score !== undefined
+      ? Math.round((lead.ai_response.score / 100) * 25)
+      : null,
+
+    // Engagement: Use engagement_health (0-100 → 0-25)
+    engagement: extractedCalc?.engagementHealth !== null && extractedCalc?.engagementHealth !== undefined
+      ? Math.round((extractedCalc.engagementHealth / 100) * 25)
+      : null,
+
+    // Authority: Use account_maturity (0-100 → 0-25)
+    authority: extractedCalc?.accountMaturity !== null && extractedCalc?.accountMaturity !== undefined
+      ? Math.round((extractedCalc.accountMaturity / 100) * 25)
+      : null,
+
+    // Readiness: Use content_sophistication (0-100 → 0-25)
+    readiness: extractedCalc?.contentSophistication !== null && extractedCalc?.contentSophistication !== undefined
+      ? Math.round((extractedCalc.contentSophistication / 100) * 25)
+      : null,
   };
 
   return (
