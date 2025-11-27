@@ -96,6 +96,8 @@ function mapExtractedData(extractedData: any): any {
           fakeFollowerWarning: extractedData.calculated.fake_follower_warning,
           contentSophistication: extractedData.calculated.content_sophistication,
           engagementConsistency: extractedData.calculated.engagement_consistency,
+          leadTier: extractedData.calculated.leadTier || extractedData.calculated.lead_tier,
+          audienceScale: extractedData.calculated.audienceScale || extractedData.calculated.audience_scale,
         }
       : undefined,
     metadata: extractedData.metadata
