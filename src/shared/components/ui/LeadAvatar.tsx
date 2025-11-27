@@ -1,5 +1,3 @@
-// src/shared/components/ui/LeadAvatar.tsx
-
 import { useState } from 'react';
 
 /**

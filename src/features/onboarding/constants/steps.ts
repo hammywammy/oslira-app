@@ -1,5 +1,3 @@
-// src/features/onboarding/constants/steps.ts
-
 /**
  * ONBOARDING STEPS CONFIGURATION
  * 

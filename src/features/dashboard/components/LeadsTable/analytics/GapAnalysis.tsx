@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/GapAnalysis.tsx
-
 import { Icon } from '@iconify/react';
 
 interface Gaps {

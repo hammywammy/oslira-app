@@ -1,4 +1,3 @@
-// src/pages/auth/OAuthCallbackPage.tsx
 /**
  * @file OAuth Callback Page - Stripe-inspired Professional Design
  * @description Clean callback handler with elegant loading states
@@ -12,10 +11,6 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { Logo } from '@/shared/components/ui/Logo';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 type CallbackState = 'processing' | 'success' | 'error';
 
@@ -41,10 +36,7 @@ interface AuthResponse {
   };
 }
 
-// =============================================================================
 // ANIMATION VARIANTS
-// =============================================================================
-
 const fadeIn = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { 
@@ -67,10 +59,6 @@ const checkmarkPath = {
     transition: { duration: 0.4, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
   }
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function OAuthCallbackPage() {
   const [state, setState] = useState<CallbackState>('processing');

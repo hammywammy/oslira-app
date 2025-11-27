@@ -1,13 +1,9 @@
-// src/core/config/constants.ts
 /**
  * @file Application Constants
  * @description Centralized configuration constants
  */
 
-// =============================================================================
 // AUTHENTICATION CONFIGURATION
-// =============================================================================
-
 /**
  * Authentication Configuration
  * 
@@ -37,10 +33,7 @@ export const AUTH = {
   RETRY_DELAY: 1000, // Initial delay in ms
 } as const;
 
-// =============================================================================
 // API CONFIGURATION
-// =============================================================================
-
 export const API = {
   TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3,
@@ -53,10 +46,7 @@ export const API = {
   CACHE_TTL: 5 * 60 * 1000, // 5 minutes
 } as const;
 
-// =============================================================================
 // UI CONFIGURATION
-// =============================================================================
-
 export const UI = {
   // Sidebar
   SIDEBAR_WIDTH: 280,
@@ -75,10 +65,7 @@ export const UI = {
   STAGGER_DELAY: 50,
 } as const;
 
-// =============================================================================
 // BUSINESS CONFIGURATION
-// =============================================================================
-
 export const BUSINESS = {
   // Industry options
   INDUSTRIES: [
@@ -104,10 +91,7 @@ export const BUSINESS = {
   ] as const,
 } as const;
 
-// =============================================================================
 // LEAD CONFIGURATION
-// =============================================================================
-
 export const LEAD = {
   // Lead status options
   STATUSES: [
@@ -128,10 +112,7 @@ export const LEAD = {
   PRIORITIES: ['low', 'medium', 'high', 'urgent'] as const,
 } as const;
 
-// =============================================================================
 // SUBSCRIPTION CONFIGURATION
-// =============================================================================
-
 export const SUBSCRIPTION = {
   // Plan tiers
   PLANS: {
@@ -191,10 +172,7 @@ export const SUBSCRIPTION = {
   } as const,
 } as const;
 
-// =============================================================================
 // FILE UPLOAD CONFIGURATION
-// =============================================================================
-
 export const UPLOAD = {
   // Max file sizes (in bytes)
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
@@ -212,10 +190,7 @@ export const UPLOAD = {
   ],
 } as const;
 
-// =============================================================================
 // FEATURE FLAGS
-// =============================================================================
-
 export const FEATURES = {
   ENABLE_ANALYTICS: true,
   ENABLE_REAL_TIME: true,
@@ -224,10 +199,7 @@ export const FEATURES = {
   ENABLE_AI_INSIGHTS: true,
 } as const;
 
-// =============================================================================
 // EXTERNAL LINKS
-// =============================================================================
-
 export const LINKS = {
   DOCUMENTATION: 'https://docs.oslira.com',
   SUPPORT: 'https://support.oslira.com',
@@ -236,10 +208,7 @@ export const LINKS = {
   STATUS_PAGE: 'https://status.oslira.com',
 } as const;
 
-// =============================================================================
 // HTTP STATUS CODES
-// =============================================================================
-
 export const HTTP_STATUS = {
   OK: 200,
   CREATED: 201,
@@ -255,10 +224,7 @@ export const HTTP_STATUS = {
   SERVICE_UNAVAILABLE: 503,
 } as const;
 
-// =============================================================================
 // ERROR CODES
-// =============================================================================
-
 export const ERROR_CODES = {
   NETWORK_ERROR: 'NETWORK_ERROR',
   TIMEOUT_ERROR: 'TIMEOUT_ERROR',
@@ -268,10 +234,6 @@ export const ERROR_CODES = {
   SERVER_ERROR: 'SERVER_ERROR',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 } as const;
-
-// =============================================================================
-// EXPORTS
-// =============================================================================
 
 export default {
   AUTH,

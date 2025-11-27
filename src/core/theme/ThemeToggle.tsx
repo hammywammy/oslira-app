@@ -1,5 +1,3 @@
-// src/core/theme/ThemeToggle.tsx
-
 /**
  * THEME TOGGLE BUTTON - V2.0 (SUBDOMAIN-AWARE)
  * 
@@ -14,10 +12,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '@iconify/react';
 import { useTheme } from './ThemeProvider';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface ThemeToggleProps {
   /** Visual variant */
   variant?: 'fixed' | 'inline' | 'minimal' | 'full';
@@ -26,10 +20,6 @@ interface ThemeToggleProps {
   /** Show tooltip when disabled */
   showDisabledTooltip?: boolean;
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function ThemeToggle({ 
   variant = 'fixed',

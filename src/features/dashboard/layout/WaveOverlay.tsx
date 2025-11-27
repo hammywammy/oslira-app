@@ -1,4 +1,3 @@
-// src/features/dashboard/layout/WaveOverlay.tsx
 /**
  * WAVE OVERLAY
  * 

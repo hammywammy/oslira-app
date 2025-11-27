@@ -1,5 +1,3 @@
-// src/shared/components/ui/Modal.tsx
-
 /**
  * MODAL COMPONENT - PRODUCTION GRADE V1.1
  *
@@ -39,10 +37,6 @@ import { Icon } from '@iconify/react';
 import { HTMLAttributes, ReactNode, useEffect } from 'react';
 import { Portal } from './Portal';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   /** Modal open state */
   open: boolean;
@@ -67,10 +61,7 @@ interface ModalSectionProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'max-w-sm',
   md: 'max-w-md',
@@ -81,20 +72,14 @@ const sizeStyles = {
   full: 'max-w-full mx-4',
 } as const;
 
-// =============================================================================
 // BACKDROP STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const backdropStyles = {
   blur: 'backdrop-blur-sm bg-neutral-900/60 dark:bg-neutral-950/70',
   dark: 'bg-neutral-900/80 dark:bg-neutral-950/90',
   light: 'bg-neutral-100/80 dark:bg-neutral-900/70',
 } as const;
 
-// =============================================================================
 // MODAL COMPONENT
-// =============================================================================
-
 export function Modal({
   open,
   onClose,
@@ -198,10 +183,7 @@ export function Modal({
   );
 }
 
-// =============================================================================
 // MODAL HEADER
-// =============================================================================
-
 Modal.Header = function ModalHeader({ children, className = '', ...props }: ModalSectionProps) {
   return (
     <div
@@ -220,10 +202,7 @@ Modal.Header = function ModalHeader({ children, className = '', ...props }: Moda
   );
 };
 
-// =============================================================================
 // MODAL BODY
-// =============================================================================
-
 Modal.Body = function ModalBody({ children, className = '', ...props }: ModalSectionProps) {
   return (
     <div
@@ -240,10 +219,7 @@ Modal.Body = function ModalBody({ children, className = '', ...props }: ModalSec
   );
 };
 
-// =============================================================================
 // MODAL FOOTER
-// =============================================================================
-
 Modal.Footer = function ModalFooter({ children, className = '', ...props }: ModalSectionProps) {
   return (
     <div

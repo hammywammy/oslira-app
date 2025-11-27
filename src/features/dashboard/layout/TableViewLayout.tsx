@@ -1,5 +1,3 @@
-// src/features/dashboard/layout/TableViewLayout.tsx
-
 /**
  * TABLE VIEW LAYOUT - SUPABASE STYLE
  *

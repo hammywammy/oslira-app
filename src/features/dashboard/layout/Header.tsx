@@ -1,4 +1,3 @@
-// src/features/dashboard/layout/Header.tsx
 /**
  * HEADER COMPONENT
  * 
@@ -12,10 +11,6 @@ import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Header() {
   const { user, account, logout } = useAuth();

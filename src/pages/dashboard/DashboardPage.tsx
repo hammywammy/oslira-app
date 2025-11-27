@@ -1,5 +1,3 @@
-// src/pages/dashboard/DashboardPage.tsx
-
 /**
  * DASHBOARD PAGE - V7.0 SUPABASE-STYLE
  * 
@@ -27,10 +25,6 @@ import { bulkDeleteLeads } from '@/features/leads/api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { AnalysisStatus } from '@/shared/types/leads.types';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export type SortField = 'created_at' | 'updated_at' | 'overall_score';
 export type SortOrder = 'asc' | 'desc';
 
@@ -39,10 +33,6 @@ export interface TableFilters {
   scoreMin?: number;
   scoreMax?: number;
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function DashboardPage() {
   // Modal state

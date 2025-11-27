@@ -1,5 +1,3 @@
-// src/features/onboarding/animations/variants.ts
-
 /**
  * FRAMER MOTION VARIANTS
  * 
@@ -9,10 +7,7 @@
  * - Clean easing curves
  */
 
-// =============================================================================
 // STEP TRANSITION (HORIZONTAL SLIDE)
-// =============================================================================
-
 export const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 40 : -40,
@@ -34,10 +29,7 @@ export const slideTransition = {
   duration: 0.3,
 };
 
-// =============================================================================
 // FADE IN (FOR FORM FIELDS)
-// =============================================================================
-
 export const fadeInVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: (index: number = 0) => ({
@@ -51,10 +43,7 @@ export const fadeInVariants = {
   }),
 };
 
-// =============================================================================
 // PROGRESS BAR
-// =============================================================================
-
 export const progressVariants = {
   initial: { scaleX: 0 },
   animate: {
@@ -63,10 +52,7 @@ export const progressVariants = {
   },
 };
 
-// =============================================================================
 // BUTTON HOVER
-// =============================================================================
-
 export const buttonHover = {
   scale: 1.02,
   transition: { duration: 0.2, ease: 'easeOut' },
@@ -77,10 +63,7 @@ export const buttonTap = {
   transition: { duration: 0.1 },
 };
 
-// =============================================================================
 // ERROR MESSAGE
-// =============================================================================
-
 export const errorVariants = {
   hidden: { opacity: 0, y: -4, height: 0 },
   visible: {
@@ -91,10 +74,7 @@ export const errorVariants = {
   },
 };
 
-// =============================================================================
 // LOADING DOTS
-// =============================================================================
-
 export const loadingDotVariants = {
   animate: (index: number) => ({
     scale: [1, 1.3, 1],
@@ -108,10 +88,7 @@ export const loadingDotVariants = {
   }),
 };
 
-// =============================================================================
 // CONTAINER
-// =============================================================================
-
 export const containerVariants = {
   hidden: { opacity: 0 },
   visible: {

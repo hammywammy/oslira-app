@@ -1,4 +1,3 @@
-// src/features/auth/components/GoogleOAuthButton.tsx
 /**
  * @file Google OAuth Button - Minimal Design
  * @description Clean OAuth button with subtle interactions
@@ -9,18 +8,10 @@ import { motion } from 'framer-motion';
 import { httpClient } from '@/core/auth/http-client';
 import { env } from '@/core/auth/environment';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface GoogleOAuthButtonProps {
   label?: string;
   mode?: 'login' | 'signup';
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function GoogleOAuthButton({
   label = 'Continue with Google',

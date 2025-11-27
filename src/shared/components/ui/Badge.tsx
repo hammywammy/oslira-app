@@ -1,5 +1,3 @@
-// src/shared/components/ui/Badge.tsx
-
 /**
  * BADGE COMPONENT - V2.0 (SUBTLE PROFESSIONAL)
  * 
@@ -24,10 +22,6 @@
 import { Icon } from '@iconify/react';
 import { ReactNode } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface BadgeProps {
   children: ReactNode;
   variant?: 
@@ -42,10 +36,7 @@ export interface BadgeProps {
   className?: string;
 }
 
-// =============================================================================
 // VARIANT STYLES - UPDATED (Better Contrast + Gradients)
-// =============================================================================
-
 const variantStyles = {
   // Standard variants
   default: 'bg-neutral-100 text-neutral-700 border border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700',
@@ -70,10 +61,7 @@ const glowStyles = {
   'xray-analysis': 'shadow-[0_0_12px_rgba(139,127,199,0.25)]',
 } as const;
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'px-2 py-0.5 text-xs gap-1',
   md: 'px-2.5 py-1 text-sm gap-1.5',
@@ -91,10 +79,6 @@ const dotSize = {
   md: 'w-2 h-2',
   lg: 'w-2.5 h-2.5',
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Badge({
   children,

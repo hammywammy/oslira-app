@@ -1,4 +1,3 @@
-// src/routes/dashboard.routes.tsx
 /**
  * DASHBOARD ROUTES
  * 

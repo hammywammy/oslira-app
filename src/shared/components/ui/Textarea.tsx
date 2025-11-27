@@ -1,5 +1,3 @@
-// src/shared/components/ui/Textarea.tsx
-
 /**
  * TEXTAREA COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -28,10 +26,6 @@
 
 import { Icon } from '@iconify/react';
 import { TextareaHTMLAttributes, forwardRef, useEffect, useState } from 'react';
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   /** Size variant (controls padding) */
   size?: 'sm' | 'md' | 'lg';
@@ -51,30 +45,20 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES (PADDING)
-// =============================================================================
-
 const sizeStyles = {
   sm: 'px-3 py-2 text-sm',
   md: 'px-4 py-3 text-base',
   lg: 'px-5 py-4 text-lg',
 } as const;
 
-// =============================================================================
 // RESIZE STYLES
-// =============================================================================
-
 const resizeStyles = {
   none: 'resize-none',
   vertical: 'resize-y',
   horizontal: 'resize-x',
   both: 'resize',
 } as const;
-
-// =============================================================================
-// STATE STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
 
 const getStateStyles = (error?: string, success?: boolean, disabled?: boolean) => {
   if (disabled) {
@@ -109,10 +93,6 @@ const getStateStyles = (error?: string, success?: boolean, disabled?: boolean) =
     dark:focus:border-primary-500 dark:focus:ring-primary-900/30
   `;
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   (

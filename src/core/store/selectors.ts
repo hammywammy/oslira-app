@@ -18,10 +18,6 @@ import {
 } from '@/features/billing/store/subscriptionStore';
 import type { BusinessProfile } from '@/shared/types/business.types';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 type AppState = ReturnType<typeof useAppStore.getState>;
 
 export interface Lead {
@@ -36,18 +32,12 @@ export interface Lead {
   updated_at: string;
 }
 
-// =============================================================================
 // AUTH SELECTORS
-// =============================================================================
-
 export const useUser = () => useAppStore((state: AppState) => state.auth.user);
 export const useSession = () => useAppStore((state: AppState) => state.auth.session);
 export const useIsAuthenticated = () => useAppStore((state: AppState) => state.auth.isAuthenticated);
 
-// =============================================================================
 // BUSINESS SELECTORS
-// =============================================================================
-
 export const useBusinesses = () => useAppStore((state: AppState) => state.business.all);
 export const useSelectedBusiness = () => useAppStore((state: AppState) => state.business.selected);
 export const useSelectedBusinessId = () =>
@@ -65,10 +55,7 @@ export const useHasBusinessProfiles = () =>
 export const useBusinessById = (businessId: string) =>
   useAppStore((state: AppState) => state.business.all.find((b: BusinessProfile) => b.id === businessId));
 
-// =============================================================================
 // LEADS SELECTORS
-// =============================================================================
-
 export const useLeads = () => useAppStore((state: AppState) => state.leads.all);
 export const useFilteredLeads = () => useAppStore((state: AppState) => state.leads.filtered);
 export const useSelectedLeads = () => useAppStore((state: AppState) => state.leads.selected);
@@ -93,10 +80,7 @@ export const useLeadsCreatedToday = () =>
     });
   });
 
-// =============================================================================
 // UI SELECTORS
-// =============================================================================
-
 export const useIsSidebarOpen = () => useAppStore((state: AppState) => state.ui.sidebarOpen);
 export const useIsSidebarCollapsed = () => useAppStore((state: AppState) => state.ui.sidebarCollapsed);
 export const useActiveModal = () => useAppStore((state: AppState) => state.ui.activeModal);
@@ -105,19 +89,13 @@ export const useFilters = () => useAppStore((state: AppState) => state.ui.filter
 export const useHasActiveFilters = () =>
   useAppStore((state: AppState) => Object.keys(state.ui.filters).length > 0);
 
-// =============================================================================
 // SUBSCRIPTION SELECTORS
-// =============================================================================
-
 // Re-export from subscription store for backward compatibility
 export const useSubscription = useFullSubscription;
 export const useSubscriptionPlan = useCurrentTier;
 export const useCreditsRemaining = useCurrentBalance;
 
-// =============================================================================
 // COMPLEX COMPUTED SELECTORS (from Selectors.js)
-// =============================================================================
-
 /**
  * Dashboard summary - computed from multiple state slices
  * Preserves Selectors.getDashboardSummary()
@@ -207,10 +185,6 @@ export const useUserProfile = () => {
     subscription,
   };
 };
-
-// =============================================================================
-// ACTIONS SELECTORS (for components that only need actions)
-// =============================================================================
 
 export const useAuthActions = () =>
   useAppStore((state: AppState) => ({

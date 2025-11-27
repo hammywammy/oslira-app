@@ -1,5 +1,3 @@
-// src/features/onboarding/constants/validationSchemas.ts
-
 /**
  * VALIDATION SCHEMAS - STREAMLINED 4-STEP ONBOARDING
  * 
@@ -13,17 +11,11 @@
 
 import { z } from 'zod';
 
-// =============================================================================
 // TYPE EXPORTS
-// =============================================================================
-
 export type TargetCompanySize = 'startup' | 'smb' | 'enterprise';
 export type CommunicationTone = 'professional' | 'friendly' | 'casual';
 
-// =============================================================================
 // STEP 1: IDENTITY
-// =============================================================================
-
 export const step1Schema = z.object({
   full_name: z
     .string()
@@ -32,10 +24,7 @@ export const step1Schema = z.object({
     .trim(),
 });
 
-// =============================================================================
 // STEP 2: BUSINESS CONTEXT
-// =============================================================================
-
 export const step2Schema = z.object({
   business_name: z
     .string()
@@ -50,10 +39,7 @@ export const step2Schema = z.object({
   }),
 });
 
-// =============================================================================
 // STEP 3: TARGET CUSTOMER
-// =============================================================================
-
 export const step3Schema = z.object({
   target_description: z
     .string()
@@ -77,18 +63,12 @@ export const step3Schema = z.object({
     .default([]),
 });
 
-// =============================================================================
 // FULL FORM SCHEMA
-// =============================================================================
-
 export const fullFormSchema = step1Schema
   .merge(step2Schema)
   .merge(step3Schema);
 
 export type FormData = z.infer<typeof fullFormSchema>;
 
-// =============================================================================
 // API SUBMISSION TYPE
-// =============================================================================
-
 export type OnboardingFormData = FormData;

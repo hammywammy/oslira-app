@@ -1,5 +1,3 @@
-// src/pages/settings/tabs/BillingTab.tsx
-
 /**
  * BILLING TAB - SUBSCRIPTION & PAYMENTS
  *
@@ -19,10 +17,6 @@ import { Link } from 'react-router-dom';
 import { useCurrentTier, useCurrentPeriodEnd, useSubscriptionLoading } from '@/features/billing/store/subscriptionStore';
 import { useCurrentBalance, useLightBalance, useCreditsLoading } from '@/features/credits/store/creditsStore';
 import { PRICING_TIERS } from '@/config/pricing.config';
-
-// =============================================================================
-// HELPERS
-// =============================================================================
 
 function formatDate(dateString: string | null): string {
   if (!dateString) return 'N/A';
@@ -49,10 +43,6 @@ function Skeleton({ className }: { className?: string }) {
     />
   );
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function BillingTab() {
   // Get real data from stores (hydrated by AuthProvider via bootstrap)

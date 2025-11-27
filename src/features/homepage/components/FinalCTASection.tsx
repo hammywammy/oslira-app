@@ -12,10 +12,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
-// =============================================================================
 // ANIMATION VARIANTS
-// =============================================================================
-
 const fadeIn = {
   hidden: { opacity: 0, y: 24 },
   visible: {
@@ -33,10 +30,6 @@ const scaleIn = {
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function FinalCTASection() {
   const ref = useRef(null);

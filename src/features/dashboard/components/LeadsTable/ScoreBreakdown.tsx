@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/ScoreBreakdown.tsx
-
 /**
  * SCORE BREAKDOWN COMPONENT
  *

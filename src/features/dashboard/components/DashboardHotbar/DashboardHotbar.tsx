@@ -1,5 +1,3 @@
-// src/features/dashboard/components/DashboardHotbar/DashboardHotbar.tsx
-
 /**
  * DASHBOARD HOTBAR - V3.0 FULL FUNCTIONALITY
  *

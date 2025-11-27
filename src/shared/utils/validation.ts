@@ -1,5 +1,3 @@
-// src/shared/utils/validation.ts
-
 /**
  * VALIDATION UTILITIES
  *
@@ -7,19 +5,12 @@
  * Re-exports platform-specific validation from the modular system
  */
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface ValidationResult {
   valid: boolean;
   error: string | null;
 }
 
-// =============================================================================
 // PLATFORM VALIDATION RE-EXPORTS
-// =============================================================================
-
 // Re-export everything from platformValidation for backwards compatibility
 // and to provide a single import point for validation utilities
 export {
@@ -37,10 +28,7 @@ export {
 
 export type { PlatformType, PlatformValidationConfig, ValidationRule } from './platformValidation';
 
-// =============================================================================
 // EMAIL VALIDATION
-// =============================================================================
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateEmail(email: string): ValidationResult {
@@ -81,10 +69,7 @@ export function validateEmail(email: string): ValidationResult {
   return { valid: true, error: null };
 }
 
-// =============================================================================
 // COMMON VALIDATIONS
-// =============================================================================
-
 /**
  * Check if value is empty
  */
@@ -166,10 +151,7 @@ export function validateRange(
   return { valid: true, error: null };
 }
 
-// =============================================================================
 // SANITIZATION
-// =============================================================================
-
 /**
  * Sanitize string (remove HTML tags)
  */

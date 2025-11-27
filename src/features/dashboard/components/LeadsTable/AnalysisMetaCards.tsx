@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/AnalysisMetaCards.tsx
-
 /**
  * ANALYSIS META CARDS COMPONENT
  *

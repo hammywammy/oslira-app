@@ -1,5 +1,3 @@
-// src/features/notifications/components/AnnouncementCard.tsx
-
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
 import type { Announcement } from '@/config/announcements';

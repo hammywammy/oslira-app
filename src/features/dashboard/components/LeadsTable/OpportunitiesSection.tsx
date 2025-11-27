@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/OpportunitiesSection.tsx
-
 /**
  * OPPORTUNITIES SECTION COMPONENT
  *

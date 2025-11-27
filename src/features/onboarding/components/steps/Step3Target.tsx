@@ -1,5 +1,3 @@
-// src/features/onboarding/components/steps/Step3Target.tsx
-
 /**
  * STEP 3: TARGET CUSTOMER - LIGHT MODE REDESIGN
  * 

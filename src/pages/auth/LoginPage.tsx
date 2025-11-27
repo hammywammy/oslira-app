@@ -1,4 +1,3 @@
-// src/pages/auth/LoginPage.tsx
 /**
  * @file Login Page - Minimal Professional Design
  * @description Clean, centered login with subtle depth
@@ -12,10 +11,7 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { logger } from '@/core/utils/logger';
 import { Logo } from '@/shared/components/ui/Logo';
 
-// =============================================================================
 // ANIMATION VARIANTS - Very subtle
-// =============================================================================
-
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: { 
@@ -32,10 +28,6 @@ const slideUp = {
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function LoginPage() {
   const navigate = useNavigate();

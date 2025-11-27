@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/index.ts
-
 /**
  * LEADS TABLE COMPONENTS
  *

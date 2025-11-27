@@ -13,10 +13,6 @@ import { devtools } from 'zustand/middleware';
 import type { User, Session } from '@supabase/supabase-js';
 import type { BusinessProfile } from '@/shared/types/business.types';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface Lead {
   id: string;
   business_id: string;
@@ -39,10 +35,6 @@ interface UserSubscription {
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
 }
-
-// =============================================================================
-// STATE INTERFACE
-// =============================================================================
 
 interface AppState {
   // Auth State
@@ -105,10 +97,7 @@ interface AppState {
   setSubscription: (subscription: UserSubscription | null) => void;
 }
 
-// =============================================================================
 // INITIAL STATE
-// =============================================================================
-
 const initialState = {
   auth: {
     user: null,
@@ -133,10 +122,6 @@ const initialState = {
   },
   subscription: null,
 };
-
-// =============================================================================
-// STORE CREATION
-// =============================================================================
 
 export const useAppStore = create<AppState>()(
   devtools(

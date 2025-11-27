@@ -1,5 +1,3 @@
-// src/shared/components/ui/DropdownPortal.tsx
-
 import { ReactNode, RefObject, useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Portal } from './Portal';

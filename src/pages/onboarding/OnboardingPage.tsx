@@ -1,5 +1,3 @@
-// src/pages/onboarding/OnboardingPage.tsx
-
 /**
  * ONBOARDING PAGE - LIGHT MODE REDESIGN
  * 

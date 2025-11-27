@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/RecommendedActionsSection.tsx
-
 /**
  * RECOMMENDED ACTIONS SECTION COMPONENT
  *

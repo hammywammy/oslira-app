@@ -1,5 +1,3 @@
-// src/shared/components/ui/Avatar.tsx
-
 /**
  * AVATAR COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -28,10 +26,6 @@
 
 import { HTMLAttributes, useState } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
   /** Image URL */
   src?: string;
@@ -49,10 +43,7 @@ export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'w-8 h-8 text-xs',
   md: 'w-10 h-10 text-sm',
@@ -67,20 +58,14 @@ const statusSize = {
   xl: 'w-4 h-4',
 } as const;
 
-// =============================================================================
 // ROUNDED STYLES
-// =============================================================================
-
 const roundedStyles = {
   md: 'rounded-md',
   lg: 'rounded-lg',
   full: 'rounded-full',
 } as const;
 
-// =============================================================================
 // STATUS COLORS - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const statusColors = {
   online: 'bg-success-500 dark:bg-success-400',
   offline: 'bg-neutral-400 dark:bg-neutral-600',
@@ -88,10 +73,7 @@ const statusColors = {
   busy: 'bg-error-500 dark:bg-error-400',
 } as const;
 
-// =============================================================================
 // HELPER: GET INITIALS
-// =============================================================================
-
 function getInitials(name?: string): string {
   if (!name) return '?';
   
@@ -117,10 +99,6 @@ function getInitials(name?: string): string {
   // Final fallback for single character names
   return cleanName.length === 1 ? cleanName.toUpperCase() : '?';
 }
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function Avatar({
   src,
   name,

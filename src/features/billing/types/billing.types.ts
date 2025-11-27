@@ -1,5 +1,3 @@
-// src/features/billing/types/billing.types.ts
-
 /**
  * BILLING TYPES
  * 
@@ -9,10 +7,7 @@
 
 import { TierName } from '@/config/pricing.config';
 
-// =============================================================================
 // SUBSCRIPTION
-// =============================================================================
-
 export interface Subscription {
   id: string;
   accountId: string;
@@ -35,10 +30,7 @@ export type SubscriptionStatus =
   | 'unpaid'
   | 'trialing';
 
-// =============================================================================
 // USAGE TRACKING
-// =============================================================================
-
 export interface UsageStats {
   accountId: string;
   billingPeriodStart: string;
@@ -59,10 +51,7 @@ export interface UsageStats {
   xrayCount: number;
 }
 
-// =============================================================================
 // BILLING OPERATIONS
-// =============================================================================
-
 export interface UpgradeRequest {
   newTier: TierName;
   // Stripe will handle payment on backend
@@ -85,10 +74,7 @@ export interface DowngradeResponse {
   message: string;
 }
 
-// =============================================================================
 // STRIPE RESPONSES
-// =============================================================================
-
 export interface StripeCheckoutSession {
   id: string;
   url: string;

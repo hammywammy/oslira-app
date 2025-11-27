@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/AIAnalysisSection.tsx
-
 /**
  * AI ANALYSIS SECTION COMPONENT
  *

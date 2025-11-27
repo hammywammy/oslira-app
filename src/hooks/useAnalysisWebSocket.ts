@@ -1,5 +1,3 @@
-// src/hooks/useAnalysisWebSocket.ts
-
 /**
  * ANALYSIS WEBSOCKET HOOK - REAL-TIME PROGRESS WITH HIBERNATION
  *
@@ -22,10 +20,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { authManager } from '@/core/auth/auth-manager';
 import { env } from '@/core/auth/environment';
 import { logger } from '@/core/utils/logger';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export type AnalysisStatus = 'pending' | 'analyzing' | 'complete' | 'failed' | 'cancelled';
 
@@ -61,17 +55,9 @@ interface UseAnalysisWebSocketReturn {
   reconnect: () => void;
 }
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const HEARTBEAT_INTERVAL = 5000; // 5 seconds (well under DO hibernation timeout of 10s)
 const RECONNECT_DELAY = 1000; // 1 second (fail fast to polling)
 const MAX_RECONNECT_ATTEMPTS = 1; // Fail fast - fall back to HTTP polling quickly
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocketReturn {
   const [progress, setProgress] = useState<AnalysisProgressState | null>(null);

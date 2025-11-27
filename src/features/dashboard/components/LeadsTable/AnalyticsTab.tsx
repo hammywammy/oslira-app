@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/AnalyticsTab.tsx
-
 /**
  * ANALYTICS TAB - EXTRACTED DATA DISPLAY
  *
@@ -113,10 +111,7 @@ export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
   );
 }
 
-// =============================================================================
 // LOCKED STATE
-// =============================================================================
-
 function LockedState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-8 text-center">

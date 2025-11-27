@@ -1,5 +1,3 @@
-// src/features/onboarding/hooks/useDebounced.ts
-
 /**
  * DEBOUNCED ACTION HOOK
  * 

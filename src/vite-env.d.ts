@@ -12,10 +12,7 @@
  * via API calls to /api/auth/google-client-id (which reads from AWS)
  */
 
-// =============================================================================
 // BUILD-TIME CONSTANTS (from vite.config.ts)
-// =============================================================================
-
 /**
  * Application environment
  * Values: 'staging' | 'production'
@@ -44,10 +41,7 @@ declare const __APP_URL__: string;
  */
 declare const __MARKETING_URL__: string;
 
-// =============================================================================
 // VITE BUILT-IN TYPES
-// =============================================================================
-
 interface ImportMetaEnv {
   readonly MODE: string;
   readonly BASE_URL: string;

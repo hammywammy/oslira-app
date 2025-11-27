@@ -1,5 +1,3 @@
-// src/shared/components/ui/ValidationError.tsx
-
 /**
  * VALIDATION ERROR COMPONENT
  *
@@ -19,10 +17,6 @@
 
 import { Icon } from '@iconify/react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface ValidationErrorProps {
   /** Error message to display */
   message: string | null;
@@ -34,10 +28,7 @@ export interface ValidationErrorProps {
   size?: 'sm' | 'md';
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: {
     container: 'p-2',
@@ -50,10 +41,6 @@ const sizeStyles = {
     icon: 16,
   },
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function ValidationError({
   message,

@@ -14,19 +14,11 @@ import {
   type RateLimitError,
 } from '../api/instagramApi';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface UseInstagramAnalysisOptions {
   onSuccess?: (data: InstagramAnalysisResponse) => void;
   onRateLimit?: (error: RateLimitError) => void;
   onError?: (error: Error) => void;
 }
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 export function useInstagramAnalysis(options?: UseInstagramAnalysisOptions) {
   return useMutation({

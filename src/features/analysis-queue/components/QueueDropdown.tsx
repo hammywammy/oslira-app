@@ -1,5 +1,3 @@
-// src/features/analysis-queue/components/QueueDropdown.tsx
-
 /**
  * QUEUE DROPDOWN - ANALYSIS PROGRESS PANEL
  *

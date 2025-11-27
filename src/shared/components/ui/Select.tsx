@@ -1,5 +1,3 @@
-// src/shared/components/ui/Select.tsx
-
 /**
  * SELECT COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -33,10 +31,6 @@
 import { Icon } from '@iconify/react';
 import { SelectHTMLAttributes, forwardRef, ReactNode } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   /** Size variant */
   size?: 'sm' | 'md' | 'lg';
@@ -52,10 +46,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'h-8 pl-3 pr-9 text-sm',
   md: 'h-10 pl-4 pr-10 text-base',
@@ -73,10 +64,6 @@ const iconPosition = {
   md: 'right-3',
   lg: 'right-4',
 } as const;
-
-// =============================================================================
-// STATE STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
 
 const getStateStyles = (error?: string, success?: boolean, disabled?: boolean) => {
   if (disabled) {
@@ -111,10 +98,6 @@ const getStateStyles = (error?: string, success?: boolean, disabled?: boolean) =
     dark:focus:border-primary-500 dark:focus:ring-primary-900/30
   `;
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (

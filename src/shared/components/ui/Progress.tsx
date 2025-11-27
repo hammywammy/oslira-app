@@ -1,5 +1,3 @@
-// src/shared/components/ui/Progress.tsx
-
 /**
  * PROGRESS COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -28,10 +26,6 @@
 
 import { HTMLAttributes } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
   /** Progress value (0-100) */
   value: number;
@@ -47,20 +41,14 @@ export interface ProgressProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES (HEIGHT)
-// =============================================================================
-
 const sizeStyles = {
   sm: 'h-1',
   md: 'h-2',
   lg: 'h-3',
 } as const;
 
-// =============================================================================
 // VARIANT STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const variantStyles = {
   primary: `
     bg-primary-500
@@ -75,10 +63,6 @@ const variantStyles = {
     dark:bg-success-500
   `,
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Progress({
   value,

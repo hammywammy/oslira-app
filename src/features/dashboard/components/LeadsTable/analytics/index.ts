@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/index.ts
-
 export { ScoreCard } from './ScoreCard';
 export { MetricsSection } from './MetricsSection';
 export { Metric } from './Metric';

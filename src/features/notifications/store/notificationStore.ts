@@ -1,5 +1,3 @@
-// src/features/notifications/store/notificationStore.ts
-
 /**
  * NOTIFICATION STORE - ZUSTAND STATE MANAGEMENT
  *
@@ -27,10 +25,6 @@ import { persist } from 'zustand/middleware';
 import { announcements as allAnnouncements } from '@/config/announcements';
 import type { Announcement } from '@/config/announcements';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface NotificationState {
   // Persisted state
   dismissedIds: Set<string>;
@@ -44,10 +38,6 @@ interface NotificationState {
   clearAllDismissed: () => void;
 }
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
 /**
  * Filter out dismissed announcements and sort by date (newest first)
  */
@@ -56,10 +46,6 @@ const getVisibleAnnouncements = (dismissedIds: Set<string>): Announcement[] => {
     .filter((announcement) => !dismissedIds.has(announcement.id))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useNotificationStore = create<NotificationState>()(
   persist(

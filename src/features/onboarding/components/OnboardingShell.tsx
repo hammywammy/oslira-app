@@ -1,5 +1,3 @@
-// src/features/onboarding/components/OnboardingShell.tsx
-
 /**
  * ONBOARDING SHELL - MODERN PROFESSIONAL
  * 

@@ -13,10 +13,6 @@ import { Component, ReactNode, ErrorInfo } from 'react';
 import { logger } from '@/core/utils/logger';
 import { errorTracking } from '@/core/lib/errorTracking';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -27,10 +23,6 @@ interface State {
   hasError: boolean;
   error: Error | null;
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {

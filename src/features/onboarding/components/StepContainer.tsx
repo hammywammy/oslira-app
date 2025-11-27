@@ -1,5 +1,3 @@
-// src/features/onboarding/components/StepContainer.tsx
-
 /**
  * STEP CONTAINER - FLEXIBLE ANIMATION WRAPPER
  * 
@@ -18,15 +16,7 @@
 import { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const ANIMATION_DURATION = 0.3; // 300ms
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface StepContainerProps {
   step: number;
@@ -34,10 +24,7 @@ interface StepContainerProps {
   children: ReactNode;
 }
 
-// =============================================================================
 // ANIMATION VARIANTS
-// =============================================================================
-
 const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 40 : -40,
@@ -57,10 +44,6 @@ const slideTransition = {
   duration: ANIMATION_DURATION,
   ease: [0.22, 1, 0.36, 1],
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function StepContainer({ step, direction, children }: StepContainerProps) {
   return (

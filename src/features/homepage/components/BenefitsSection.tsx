@@ -12,10 +12,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
-// =============================================================================
 // DATA - WHAT OSLIRA SOLVES
-// =============================================================================
-
 const benefits = [
   {
     icon: 'mdi:flash',
@@ -59,10 +56,7 @@ const benefits = [
   }
 ];
 
-// =============================================================================
 // ANIMATION VARIANTS
-// =============================================================================
-
 const fadeIn = {
   hidden: { opacity: 0, y: 24 },
   visible: {
@@ -81,10 +75,6 @@ const stagger = {
     }
   }
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function BenefitsSection() {
   const ref = useRef(null);

@@ -1,5 +1,3 @@
-// src/shared/components/layout/AppShell.tsx
-
 /**
  * APP SHELL - MAIN APPLICATION LAYOUT
  * 

@@ -1,5 +1,3 @@
-// src/features/notifications/index.ts
-
 /**
  * NOTIFICATIONS FEATURE
  *

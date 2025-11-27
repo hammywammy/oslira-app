@@ -1,5 +1,3 @@
-// src/pages/marketing/PricingPage.tsx
-
 /**
  * PRICING PAGE - PUBLIC MARKETING VERSION
  * 
@@ -30,10 +28,6 @@ import { Icon } from '@iconify/react';
 import { PricingCard } from '@/features/billing/components/PricingCard';
 import { PRICING_TIERS, ALL_TIERS, TierName } from '@/config/pricing.config';
 import { Logo } from '@/shared/components/ui/Logo';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function PricingPage() {
   const navigate = useNavigate();
@@ -275,10 +269,7 @@ export function PricingPage() {
   );
 }
 
-// =============================================================================
 // SUBCOMPONENTS
-// =============================================================================
-
 function ValueProp({ 
   icon, 
   title, 

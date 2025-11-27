@@ -1,5 +1,3 @@
-// src/pages/settings/tabs/AccountTab.tsx
-
 /**
  * ACCOUNT TAB - AUTHENTICATION & SECURITY
  * 
@@ -20,10 +18,6 @@ import { Icon } from '@iconify/react';
 import { Card } from '@/shared/components/ui/Card';
 import { Button } from '@/shared/components/ui/Button';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function AccountTab() {
   const { user } = useAuth();

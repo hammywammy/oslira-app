@@ -1,5 +1,3 @@
-// src/features/onboarding/constants/icons.ts
-
 /**
  * ICONIFY ICONS (LUCIDE SET)
  * 

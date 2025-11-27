@@ -1,5 +1,3 @@
-// src/shared/components/ui/Card.tsx
-
 /**
  * CARD COMPONENT - PRODUCTION GRADE V4.1 (SUBTLE PROFESSIONAL)
  * 
@@ -21,10 +19,6 @@
  */
 
 import { HTMLAttributes, ReactNode } from 'react';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'className'> {
   children: ReactNode;
@@ -51,20 +45,14 @@ export interface CardProps extends Omit<HTMLAttributes<HTMLDivElement>, 'classNa
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES (PADDING)
-// =============================================================================
-
 const sizeStyles = {
   sm: 'p-4',
   md: 'p-6',
   lg: 'p-8',
 } as const;
 
-// =============================================================================
 // ROUNDED STYLES
-// =============================================================================
-
 const roundedStyles = {
   sm: 'rounded-sm',
   md: 'rounded-md',
@@ -74,10 +62,7 @@ const roundedStyles = {
   full: 'rounded-full',
 } as const;
 
-// =============================================================================
 // SHADOW STYLES - UPGRADED (Softer, More Depth)
-// =============================================================================
-
 const shadowStyles = {
   none: '',
   sm: 'shadow-[0_1px_2px_rgba(0,0,0,0.04),0_1px_4px_rgba(0,0,0,0.02)]',
@@ -95,10 +80,7 @@ const hoverShadowStyles = {
   xl: 'hover:shadow-[0_12px_32px_rgba(0,0,0,0.16),0_6px_16px_rgba(0,0,0,0.12)]',
 } as const;
 
-// =============================================================================
 // HELPER: BUILD COLOR CLASS
-// =============================================================================
-
 function buildColorClass(prefix: 'bg' | 'border', color?: string, darkColor?: string): string {
   if (!color) return '';
   
@@ -114,10 +96,7 @@ function buildColorClass(prefix: 'bg' | 'border', color?: string, darkColor?: st
   return `${lightClass} ${darkClass}`.trim();
 }
 
-// =============================================================================
 // HELPER: GET DEFAULT COLORS (Improved Contrast)
-// =============================================================================
-
 function getDefaultFillColor(fillColor?: string): string {
   if (fillColor) return buildColorClass('bg', fillColor);
   // Slightly off-white for better layering
@@ -130,10 +109,6 @@ function getDefaultBorderColor(borderColor?: string): string {
   // Better contrast borders
   return 'border border-neutral-200 dark:border-neutral-700';
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Card({
   children,

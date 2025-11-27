@@ -10,10 +10,7 @@
  * - Timezone handling
  */
 
-// =============================================================================
 // FORMATTING
-// =============================================================================
-
 /**
  * Format date to readable string
  * Example: "Jan 15, 2024"
@@ -78,10 +75,7 @@ export function toISOString(date: Date | string | number): string {
   return new Date(date).toISOString();
 }
 
-// =============================================================================
 // RELATIVE TIME (Time Ago)
-// =============================================================================
-
 /**
  * Get relative time string
  * Example: "2 hours ago", "3 days ago"
@@ -154,10 +148,7 @@ export function timeUntil(date: Date | string | number): string {
   }
 }
 
-// =============================================================================
 // VALIDATION
-// =============================================================================
-
 /**
  * Check if date is valid
  */
@@ -217,10 +208,7 @@ export function isYesterday(date: Date | string | number): boolean {
   );
 }
 
-// =============================================================================
 // MANIPULATION
-// =============================================================================
-
 /**
  * Add days to date
  */
@@ -286,10 +274,7 @@ export function endOfMonth(date: Date | string | number): Date {
   return d;
 }
 
-// =============================================================================
 // COMPARISON
-// =============================================================================
-
 /**
  * Check if two dates are same day
  */
@@ -324,10 +309,7 @@ export function diffInHours(date1: Date | string | number, date2: Date | string 
   return Math.floor(diffMs / (1000 * 60 * 60));
 }
 
-// =============================================================================
 // PARSING
-// =============================================================================
-
 /**
  * Parse date from various formats
  */

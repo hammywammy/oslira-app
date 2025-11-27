@@ -30,16 +30,8 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useAppStore } from '@/core/store/appStore';
 import type { BusinessProfile, BusinessProfilesResponse } from '@/shared/types/business.types';
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const STORAGE_KEY = 'oslira-selected-business';
 const DEFAULT_PAGE_SIZE = 50;
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface BusinessProfileContextValue {
   profiles: BusinessProfile[];
@@ -50,16 +42,10 @@ interface BusinessProfileContextValue {
   refreshProfiles: () => Promise<void>;
 }
 
-// =============================================================================
 // CONTEXT
-// =============================================================================
-
 const BusinessProfileContext = createContext<BusinessProfileContextValue | undefined>(undefined);
 
-// =============================================================================
 // PROVIDER
-// =============================================================================
-
 export function BusinessProfileProvider({ children }: { children: ReactNode }) {
   const { isFullyReady, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -262,10 +248,6 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
     </BusinessProfileContext.Provider>
   );
 }
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 export function useBusinessProfile(): BusinessProfileContextValue {
   const context = useContext(BusinessProfileContext);

@@ -1,4 +1,3 @@
-// src/App.tsx
 /**
  * @file Root Application Component
  * @description Sets up all providers and routing with subdomain-aware redirect
@@ -21,9 +20,7 @@ import { BusinessProfileProvider } from '@/features/business/providers/BusinessP
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
 
-// =============================================================================
 // QUERY CLIENT SETUP
-// =============================================================================
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,9 +32,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// =============================================================================
 // SUBDOMAIN REDIRECT (runs before React Router mounts)
-// =============================================================================
 /**
  * Detects if user is on app subdomain at root and redirects to /auth/login
  * Uses native window.location to work before router context exists
@@ -68,9 +63,7 @@ function checkAndRedirectSubdomain() {
 // Execute redirect check immediately (before React even renders)
 const shouldRedirect = checkAndRedirectSubdomain();
 
-// =============================================================================
 // APP COMPONENT
-// =============================================================================
 function App() {
   // If redirect was initiated, show minimal loading state while redirecting
   if (shouldRedirect) {

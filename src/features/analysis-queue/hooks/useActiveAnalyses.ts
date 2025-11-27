@@ -1,5 +1,3 @@
-// src/features/analysis-queue/hooks/useActiveAnalyses.ts
-
 /**
  * ACTIVE ANALYSES WEBSOCKET + POLLING HOOK - V5.0 HYBRID APPROACH
  *
@@ -33,10 +31,6 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
 import { useAnalysisWebSocket } from '@/hooks/useAnalysisWebSocket';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface FetchActiveAnalysesResponse {
   success: boolean;
   data: {
@@ -48,10 +42,7 @@ interface FetchActiveAnalysesResponse {
 // Debounce map to prevent duplicate leads table refreshes
 const refreshDebounceMap = new Map<string, number>();
 
-// =============================================================================
 // API FUNCTION
-// =============================================================================
-
 /**
  * Fetch all active analyses for the authenticated user
  *
@@ -84,10 +75,6 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
     return [];
   }
 }
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 /**
  * Hybrid hook: Uses WebSocket for real-time updates with polling fallback
@@ -235,10 +222,6 @@ export function useActiveAnalyses() {
     logger.warn('[ActiveAnalyses] WebSocket error, using polling fallback', { error: wsError.message });
   }
 }
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
 
 /**
  * Syncs fetched analyses into the Zustand store

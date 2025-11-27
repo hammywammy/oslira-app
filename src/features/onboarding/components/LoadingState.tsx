@@ -1,5 +1,3 @@
-// src/features/onboarding/components/LoadingState.tsx
-
 /**
  * LOADING STATE
  * 
@@ -11,20 +9,12 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loadingDotVariants } from '../animations/variants';
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const LOADING_MESSAGES = [
   'Analyzing your business profile...',
   'Identifying ideal prospects...',
   'Personalizing your workspace...',
   'Almost ready...',
 ];
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function LoadingState() {
   const [messageIndex, setMessageIndex] = useState(0);

@@ -1,5 +1,3 @@
-// src/pages/settings/tabs/PrivacyTab.tsx
-
 /**
  * PRIVACY TAB - DATA PRIVACY & SECURITY
  * 
@@ -20,10 +18,6 @@ import { Icon } from '@iconify/react';
 import { Card } from '@/shared/components/ui/Card';
 import { Switch } from '@/shared/components/ui/Switch';
 import { Button } from '@/shared/components/ui/Button';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function PrivacyTab() {
   // Placeholder state (will be replaced with backend data)

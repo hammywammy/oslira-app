@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/FitReasoningSection.tsx
-
 /**
  * FIT REASONING SECTION COMPONENT
  *

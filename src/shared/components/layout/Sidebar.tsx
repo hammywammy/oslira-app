@@ -1,5 +1,3 @@
-// src/shared/components/layout/Sidebar.tsx
-
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Icon } from '@iconify/react';

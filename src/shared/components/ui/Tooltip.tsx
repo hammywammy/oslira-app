@@ -1,5 +1,3 @@
-// src/shared/components/ui/Tooltip.tsx
-
 /**
  * TOOLTIP COMPONENT - PRODUCTION GRADE V1.0
  * 
@@ -31,10 +29,6 @@
 
 import { HTMLAttributes, ReactNode, useState } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface TooltipProps extends Omit<HTMLAttributes<HTMLDivElement>, 'content'> {
   /** Tooltip content */
   content: ReactNode;
@@ -50,20 +44,14 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLDivElement>, 'cont
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES (PADDING)
-// =============================================================================
-
 const sizeStyles = {
   sm: 'px-2 py-1 text-xs',
   md: 'px-3 py-1.5 text-sm',
   lg: 'px-4 py-2 text-base',
 } as const;
 
-// =============================================================================
 // PLACEMENT STYLES
-// =============================================================================
-
 const placementStyles = {
   top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
   bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
@@ -71,10 +59,7 @@ const placementStyles = {
   right: 'left-full top-1/2 -translate-y-1/2 ml-2',
 } as const;
 
-// =============================================================================
 // VARIANT STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const variantStyles = {
   dark: `
     bg-neutral-900 text-white
@@ -90,10 +75,6 @@ const variantStyles = {
     shadow-lg
   `,
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Tooltip({
   content,

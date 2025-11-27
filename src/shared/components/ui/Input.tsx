@@ -1,5 +1,3 @@
-// src/shared/components/ui/Input.tsx
-
 /**
  * INPUT COMPONENT - PRODUCTION GRADE
  * 
@@ -31,10 +29,6 @@
 import { Icon } from '@iconify/react';
 import { InputHTMLAttributes, forwardRef } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   /** Size variant */
   size?: 'sm' | 'md' | 'lg';
@@ -52,10 +46,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'h-8 px-3 text-sm',
   md: 'h-10 px-3 text-base',
@@ -67,10 +58,6 @@ const iconSize = {
   md: 18,
   lg: 20,
 } as const;
-
-// =============================================================================
-// STATE STYLES
-// =============================================================================
 
 const getStateStyles = (error?: string, success?: boolean, disabled?: boolean) => {
   if (disabled) {
@@ -84,10 +71,6 @@ const getStateStyles = (error?: string, success?: boolean, disabled?: boolean) =
   }
   return 'border-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-200';
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (

@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/ViralPostIndicator.tsx
-
 import { Icon } from '@iconify/react';
 
 interface ViralPostIndicatorProps {

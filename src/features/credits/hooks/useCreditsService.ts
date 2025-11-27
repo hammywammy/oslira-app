@@ -1,5 +1,3 @@
-// src/features/credits/hooks/useCreditsService.ts
-
 /**
  * CREDITS SERVICE HOOK
  *
