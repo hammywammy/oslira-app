@@ -32,7 +32,7 @@ export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
   }
 
   // No calculated_metrics data - show empty state
-  if (!lead.calculated_metrics) {
+  if (!lead.calculated_metrics || !lead.calculated_metrics.raw || !lead.calculated_metrics.scores || !lead.calculated_metrics.gaps) {
     return <EmptyMetricsState />;
   }
 
