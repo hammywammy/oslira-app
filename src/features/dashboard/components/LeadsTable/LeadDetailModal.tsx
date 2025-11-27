@@ -501,26 +501,26 @@ function BottomMetadataBar({ lead }: { lead: Lead }) {
 // =============================================================================
 
 function OverviewTab({ lead }: { lead: Lead }) {
-  // Calculate score breakdown from extracted_data (each component is out of 25)
+  // Calculate score breakdown with 50/25/15/10 weighting
   const extractedCalc = lead.extracted_data?.calculated;
 
   const scoreBreakdown = {
-    // Profile Fit: Use AI assessment score (scaled to /25)
+    // Profile Fit: Use AI assessment score (scaled to /50) - 50% weight
     profileFit: lead.ai_response?.score !== null && lead.ai_response?.score !== undefined
-      ? Math.round((lead.ai_response.score / 100) * 25)
+      ? Math.round((lead.ai_response.score / 100) * 50)
       : null,
 
-    // Engagement: Use engagement_health (0-100 → 0-25)
+    // Engagement: Use engagement_health (0-100 → 0-15) - 15% weight
     engagement: extractedCalc?.engagementHealth !== null && extractedCalc?.engagementHealth !== undefined
-      ? Math.round((extractedCalc.engagementHealth / 100) * 25)
+      ? Math.round((extractedCalc.engagementHealth / 100) * 15)
       : null,
 
-    // Authority: Use account_maturity (0-100 → 0-25)
+    // Authority: Use account_maturity (0-100 → 0-10) - 10% weight
     authority: extractedCalc?.accountMaturity !== null && extractedCalc?.accountMaturity !== undefined
-      ? Math.round((extractedCalc.accountMaturity / 100) * 25)
+      ? Math.round((extractedCalc.accountMaturity / 100) * 10)
       : null,
 
-    // Readiness: Use content_sophistication (0-100 → 0-25)
+    // Readiness: Use content_sophistication (0-100 → 0-25) - 25% weight
     readiness: extractedCalc?.contentSophistication !== null && extractedCalc?.contentSophistication !== undefined
       ? Math.round((extractedCalc.contentSophistication / 100) * 25)
       : null,
@@ -530,6 +530,11 @@ function OverviewTab({ lead }: { lead: Lead }) {
     <div className="space-y-5" role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
       {/* Hero Insight */}
       <HeroInsight lead={lead} />
+
+      {/* Score Breakdown - Directly under hero insight */}
+      {lead.overall_score !== null && (
+        <ScoreBreakdown scores={scoreBreakdown} overallScore={lead.overall_score} />
+      )}
 
       {/* Quick Stats Grid */}
       {lead.calculated_metrics && <QuickStatsGrid lead={lead} />}
@@ -559,11 +564,6 @@ function OverviewTab({ lead }: { lead: Lead }) {
       {/* Recommended Next Steps */}
       {lead.ai_response?.recommendedActions && (
         <RecommendedActionsSection recommendedActions={lead.ai_response.recommendedActions} />
-      )}
-
-      {/* Score Breakdown */}
-      {lead.overall_score !== null && (
-        <ScoreBreakdown scores={scoreBreakdown} overallScore={lead.overall_score} />
       )}
 
       {/* Partnership Summary */}

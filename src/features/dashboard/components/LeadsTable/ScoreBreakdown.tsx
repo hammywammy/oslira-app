@@ -3,11 +3,12 @@
 /**
  * SCORE BREAKDOWN COMPONENT
  *
- * Displays 4 score categories with progress bars:
- * - Profile Fit (0-25)
- * - Engagement (0-25)
- * - Authority (0-25)
- * - Readiness (0-25)
+ * Displays 4 score categories with weighted progress bars:
+ * - Profile Fit (0-50) - 50% weight - Most dominant factor
+ * - Readiness (0-25) - 25% weight - Second strongest factor
+ * - Engagement (0-15) - 15% weight - Third priority
+ * - Authority (0-10) - 10% weight - Fourth priority
+ * Total: 100 points
  */
 
 import { Icon } from '@iconify/react';
@@ -30,10 +31,10 @@ interface ScoreBreakdownProps {
 }
 
 const SCORE_CATEGORIES: Omit<ScoreCategory, 'score'>[] = [
-  { label: 'Profile Fit', key: 'profileFit', maxScore: 25 },
-  { label: 'Engagement', key: 'engagement', maxScore: 25 },
-  { label: 'Authority', key: 'authority', maxScore: 25 },
+  { label: 'Profile Fit', key: 'profileFit', maxScore: 50 },
   { label: 'Readiness', key: 'readiness', maxScore: 25 },
+  { label: 'Engagement', key: 'engagement', maxScore: 15 },
+  { label: 'Authority', key: 'authority', maxScore: 10 },
 ];
 
 function ScoreRow({ label, score, maxScore }: { label: string; score: number | null; maxScore: number }) {
