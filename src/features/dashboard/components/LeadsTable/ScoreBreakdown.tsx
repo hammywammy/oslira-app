@@ -3,11 +3,12 @@
 /**
  * SCORE BREAKDOWN COMPONENT
  *
- * Displays 4 score categories with progress bars:
- * - Profile Fit (0-25)
- * - Engagement (0-25)
- * - Authority (0-25)
- * - Readiness (0-25)
+ * Displays 4 score categories with weighted progress bars:
+ * - Profile Fit (0-50) - 50% weight - Most dominant factor
+ * - Readiness (0-25) - 25% weight - Second strongest factor
+ * - Engagement (0-15) - 15% weight - Third priority
+ * - Authority (0-10) - 10% weight - Fourth priority
+ * Total: 100 points
  */
 
 import { Icon } from '@iconify/react';
@@ -17,6 +18,7 @@ interface ScoreCategory {
   key: 'profileFit' | 'engagement' | 'authority' | 'readiness';
   score: number | null;
   maxScore: number;
+  tooltip: string;
 }
 
 interface ScoreBreakdownProps {
@@ -30,13 +32,33 @@ interface ScoreBreakdownProps {
 }
 
 const SCORE_CATEGORIES: Omit<ScoreCategory, 'score'>[] = [
-  { label: 'Profile Fit', key: 'profileFit', maxScore: 25 },
-  { label: 'Engagement', key: 'engagement', maxScore: 25 },
-  { label: 'Authority', key: 'authority', maxScore: 25 },
-  { label: 'Readiness', key: 'readiness', maxScore: 25 },
+  {
+    label: 'Profile Fit',
+    key: 'profileFit',
+    maxScore: 50,
+    tooltip: 'AI-assessed alignment with your Ideal Customer Profile (ICP). Measures how well this lead matches your target audience based on content, niche, audience demographics, and brand values. Highest weight at 50% - nothing else matters if it\'s not a fit.'
+  },
+  {
+    label: 'Readiness',
+    key: 'readiness',
+    maxScore: 25,
+    tooltip: 'Content sophistication and partnership readiness. Evaluates the quality, professionalism, and maturity of their content. Higher scores indicate creators who produce polished, brand-safe content suitable for partnerships. Weighted at 25%.'
+  },
+  {
+    label: 'Engagement',
+    key: 'engagement',
+    maxScore: 15,
+    tooltip: 'Overall engagement health and audience activity. Measures likes, comments, shares, and interaction rates. Higher engagement means their audience is active and responsive to their content. Weighted at 15%.'
+  },
+  {
+    label: 'Authority',
+    key: 'authority',
+    maxScore: 10,
+    tooltip: 'Account maturity and established presence. Based on account age, follower count consistency, verification status, and overall credibility. More mature accounts typically have more stable, engaged audiences. Weighted at 10%.'
+  },
 ];
 
-function ScoreRow({ label, score, maxScore }: { label: string; score: number | null; maxScore: number }) {
+function ScoreRow({ label, score, maxScore, tooltip }: { label: string; score: number | null; maxScore: number; tooltip: string }) {
   const percentage = score !== null ? (score / maxScore) * 100 : 0;
   const hasScore = score !== null;
 
@@ -44,13 +66,20 @@ function ScoreRow({ label, score, maxScore }: { label: string; score: number | n
     <div className="flex items-center gap-3">
       <div className="flex items-center justify-between w-32 shrink-0">
         <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{label}</span>
-        <button
-          type="button"
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-          aria-label={`Info about ${label}`}
-        >
-          <Icon icon="mdi:information-outline" width={14} />
-        </button>
+        <div className="group/tooltip relative">
+          <button
+            type="button"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            aria-label={`Info about ${label}`}
+          >
+            <Icon icon="mdi:information-outline" width={14} />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute left-0 bottom-full mb-2 hidden group-hover/tooltip:block w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
+            {tooltip}
+            <div className="absolute top-full left-4 w-2 h-2 bg-gray-900 transform rotate-45 -mt-1"></div>
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 flex items-center gap-3">
@@ -87,6 +116,7 @@ export function ScoreBreakdown({ scores, overallScore }: ScoreBreakdownProps) {
             label={category.label}
             score={scores[category.key]}
             maxScore={category.maxScore}
+            tooltip={category.tooltip}
           />
         ))}
       </div>
