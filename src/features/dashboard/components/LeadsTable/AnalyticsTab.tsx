@@ -444,7 +444,7 @@ function VideoPerformanceSection({ metrics }: { metrics: CalculatedMetrics }) {
         <Metric
           label="Total Views"
           value={formatNumber(metrics.total_video_views || 0)}
-          rawValue={metrics.total_video_views}
+          rawValue={metrics.total_video_views ?? undefined}
           icon="mdi:eye"
           color="blue"
         />
@@ -452,7 +452,7 @@ function VideoPerformanceSection({ metrics }: { metrics: CalculatedMetrics }) {
         <Metric
           label="Avg Views/Video"
           value={formatNumber(metrics.avg_video_views || 0)}
-          rawValue={metrics.avg_video_views}
+          rawValue={metrics.avg_video_views ?? undefined}
           icon="mdi:trending-up"
           color="green"
         />
