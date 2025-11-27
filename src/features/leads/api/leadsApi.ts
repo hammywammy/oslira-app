@@ -76,6 +76,23 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
       return [];
     }
 
+    // DEBUG LOGGING - Check data structure from backend
+    console.group('🔍 Leads API - Backend Response');
+    console.log('Total leads:', response.data.length);
+    if (response.data.length > 0) {
+      const firstLead = response.data[0];
+      console.log('Sample lead object:', firstLead);
+      console.log('Has ai_response?', !!firstLead.ai_response);
+      console.log('ai_response data:', firstLead.ai_response);
+      console.log('Has extracted_data?', !!firstLead.extracted_data);
+      console.log('extracted_data data:', firstLead.extracted_data);
+      console.log('Has calculated_metrics?', !!firstLead.calculated_metrics);
+      console.log('calculated_metrics data:', firstLead.calculated_metrics);
+      console.log('Analysis type:', firstLead.analysis_type);
+      console.log('Analysis status:', firstLead.analysis_status);
+    }
+    console.groupEnd();
+
     logger.info('[LeadsApi] Leads fetched successfully', {
       count: response.data.length
     });
