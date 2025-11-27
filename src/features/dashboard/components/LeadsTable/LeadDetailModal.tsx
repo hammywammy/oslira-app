@@ -147,7 +147,10 @@ function VerificationBadge() {
  */
 function PlatformBadge() {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-full transition-all duration-200 hover:shadow-sm">
+    <span
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-full transition-all duration-200 hover:shadow-sm"
+      title="Platform analyzed"
+    >
       <Icon icon="mdi:instagram" className="w-3.5 h-3.5 text-pink-600 dark:text-pink-400" />
       <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Instagram</span>
     </span>
@@ -157,22 +160,51 @@ function PlatformBadge() {
 /**
  * Niche badge
  */
-function NicheBadge() {
+function NicheBadge({ niche }: { niche: string | null }) {
+  if (!niche) return null;
+
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full transition-all duration-200 hover:shadow-sm">
-      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">NICHE</span>
+    <span
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full transition-all duration-200 hover:shadow-sm"
+      title="Niche"
+    >
+      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{niche}</span>
     </span>
   );
 }
 
 /**
- * Business account badge
+ * Business/Personal account badge
  */
-function BusinessBadge() {
+function BusinessBadge({ isBusiness }: { isBusiness: boolean | undefined }) {
+  // Don't render if isBusiness is undefined or null
+  if (isBusiness === undefined || isBusiness === null) return null;
+
+  const config = isBusiness
+    ? {
+        icon: 'mdi:briefcase',
+        label: 'Business Account',
+        bg: 'bg-purple-50 dark:bg-purple-900/20',
+        border: 'border-purple-200 dark:border-purple-800',
+        iconColor: 'text-purple-600 dark:text-purple-400',
+        textColor: 'text-purple-700 dark:text-purple-300',
+      }
+    : {
+        icon: 'mdi:account',
+        label: 'Personal Account',
+        bg: 'bg-gray-50 dark:bg-gray-900/20',
+        border: 'border-gray-200 dark:border-gray-700',
+        iconColor: 'text-gray-600 dark:text-gray-400',
+        textColor: 'text-gray-700 dark:text-gray-300',
+      };
+
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-full transition-all duration-200 hover:shadow-sm">
-      <Icon icon="mdi:briefcase" className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-      <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Business</span>
+    <span
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 ${config.bg} border ${config.border} rounded-full transition-all duration-200 hover:shadow-sm`}
+      title="Account type"
+    >
+      <Icon icon={config.icon} className={`w-3.5 h-3.5 ${config.iconColor}`} />
+      <span className={`text-xs font-medium ${config.textColor}`}>{config.label}</span>
     </span>
   );
 }
@@ -710,8 +742,8 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
         {/* Badges - Top Right */}
         <div className="absolute top-6 right-4 flex items-center gap-2">
           <PlatformBadge />
-          <NicheBadge />
-          <BusinessBadge />
+          <NicheBadge niche={lead.niche} />
+          <BusinessBadge isBusiness={lead.is_business} />
         </div>
       </div>
 
