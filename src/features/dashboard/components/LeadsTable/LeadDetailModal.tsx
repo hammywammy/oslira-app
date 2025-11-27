@@ -285,12 +285,9 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       {/* ========================================================================
           HEADER - PROFESSIONAL HORIZONTAL LAYOUT
           ======================================================================== */}
-      <div className="relative p-6 border-b border-gray-200 dark:border-gray-800">
-        {/* Score Display - Below close button */}
-        {lead.overall_score !== null && <ScoreDisplay score={lead.overall_score} />}
-
+      <div className="relative p-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
         {/* Main Profile Content - Horizontal Flexbox */}
-        <div className="flex items-start gap-4 pr-28">
+        <div className="flex items-start gap-4">
           {/* Avatar */}
           <div className="shrink-0">
             <LeadAvatar
@@ -326,9 +323,8 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               />
             </a>
 
-            {/* Row 3: Stats + Badges (same row, badges on right) */}
-            <div className="flex items-center justify-between pt-2">
-              {/* Stats on left */}
+            {/* Row 3: Stats */}
+            <div className="pt-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {formatNumber(lead.follower_count)} followers
                 <span className="mx-2">•</span>
@@ -336,15 +332,15 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
                 <span className="mx-2">•</span>
                 {lead.post_count || 0} posts
               </p>
-
-              {/* Badges on right */}
-              <div className="flex items-center gap-2 shrink-0">
-                <PlatformBadge />
-                <NicheBadge />
-                <BusinessBadge />
-              </div>
             </div>
           </div>
+        </div>
+
+        {/* Badges - Positioned on the right */}
+        <div className="absolute top-6 right-6 flex items-center gap-2">
+          <PlatformBadge />
+          <NicheBadge />
+          <BusinessBadge />
         </div>
       </div>
 
@@ -360,7 +356,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       {/* ========================================================================
           TAB CONTENT
           ======================================================================== */}
-      <div className="px-6 py-5 max-h-[50vh] overflow-y-auto">
+      <div className="px-6 py-5 max-h-[65vh] overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
