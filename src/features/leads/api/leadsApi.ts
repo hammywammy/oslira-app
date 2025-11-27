@@ -37,6 +37,29 @@ interface FetchLeadsParams {
 }
 
 // =============================================================================
+// HELPER FUNCTIONS
+// =============================================================================
+
+/**
+ * Map backend ai_analysis to frontend AIResponse format
+ * Handles snake_case to camelCase conversion
+ */
+function mapAiAnalysisToAiResponse(aiAnalysis: any): any {
+  if (!aiAnalysis) return undefined;
+
+  return {
+    score: aiAnalysis.profile_assessment_score ?? aiAnalysis.score,
+    leadTier: aiAnalysis.lead_tier ?? aiAnalysis.leadTier,
+    strengths: aiAnalysis.strengths,
+    weaknesses: aiAnalysis.weaknesses,
+    riskFactors: aiAnalysis.risk_factors ?? aiAnalysis.riskFactors,
+    fitReasoning: aiAnalysis.fit_reasoning ?? aiAnalysis.fitReasoning,
+    opportunities: aiAnalysis.opportunities,
+    recommendedActions: aiAnalysis.recommended_actions ?? aiAnalysis.recommendedActions,
+  };
+}
+
+// =============================================================================
 // API FUNCTIONS
 // =============================================================================
 
@@ -82,22 +105,27 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
     if (response.data.length > 0) {
       const firstLead = response.data[0];
       console.log('Sample lead object:', firstLead);
-      console.log('Has ai_response?', !!firstLead.ai_response);
-      console.log('ai_response data:', firstLead.ai_response);
+      console.log('Has ai_analysis?', !!(firstLead as any).ai_analysis);
+      console.log('ai_analysis data:', (firstLead as any).ai_analysis);
       console.log('Has extracted_data?', !!firstLead.extracted_data);
       console.log('extracted_data data:', firstLead.extracted_data);
-      console.log('Has calculated_metrics?', !!firstLead.calculated_metrics);
-      console.log('calculated_metrics data:', firstLead.calculated_metrics);
-      console.log('Analysis type:', firstLead.analysis_type);
-      console.log('Analysis status:', firstLead.analysis_status);
     }
     console.groupEnd();
 
+    // Map backend fields to frontend types
+    const mappedData = response.data.map((lead: any) => ({
+      ...lead,
+      // Map ai_analysis to ai_response with proper field mapping
+      ai_response: mapAiAnalysisToAiResponse(lead.ai_analysis),
+      // Map extracted_data.calculated to calculated_metrics for backward compatibility
+      calculated_metrics: lead.extracted_data?.calculated || undefined,
+    }));
+
     logger.info('[LeadsApi] Leads fetched successfully', {
-      count: response.data.length
+      count: mappedData.length
     });
 
-    return response.data;
+    return mappedData;
   } catch (error) {
     logger.error('[LeadsApi] Failed to fetch leads', error as Error);
     // Return empty array instead of throwing - graceful degradation
