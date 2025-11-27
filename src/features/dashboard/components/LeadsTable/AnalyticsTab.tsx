@@ -31,8 +31,20 @@ export function AnalyticsTab({ lead, analysisType }: AnalyticsTabProps) {
     return <LockedState />;
   }
 
+  // Debug logging
+  console.log('=== AnalyticsTab Debug ===');
+  console.log('lead.calculated_metrics:', lead.calculated_metrics);
+  console.log('Has calculated_metrics:', !!lead.calculated_metrics);
+  if (lead.calculated_metrics) {
+    console.log('Has raw:', !!lead.calculated_metrics.raw);
+    console.log('Has scores:', !!lead.calculated_metrics.scores);
+    console.log('Has gaps:', !!lead.calculated_metrics.gaps);
+    console.log('calculated_metrics keys:', Object.keys(lead.calculated_metrics));
+  }
+
   // No calculated_metrics data - show empty state
   if (!lead.calculated_metrics || !lead.calculated_metrics.raw || !lead.calculated_metrics.scores || !lead.calculated_metrics.gaps) {
+    console.log('Showing EmptyMetricsState because one of the required fields is missing');
     return <EmptyMetricsState />;
   }
 
