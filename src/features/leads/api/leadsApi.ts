@@ -1,5 +1,3 @@
-// src/features/leads/api/leadsApi.ts
-
 /**
  * LEADS API SERVICE
  *
@@ -17,10 +15,6 @@ import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import type { Lead } from '@/shared/types/leads.types';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface FetchLeadsResponse {
   success: boolean;
   data: Lead[];
@@ -35,10 +29,6 @@ interface FetchLeadsParams {
   analysisStatus?: 'pending' | 'processing' | 'complete' | 'failed';
   businessProfileId?: string | null;
 }
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
 
 /**
  * Map backend ai_analysis to frontend AIResponse format
@@ -110,10 +100,6 @@ function mapExtractedData(extractedData: any): any {
   };
 }
 
-// =============================================================================
-// API FUNCTIONS
-// =============================================================================
-
 /**
  * Fetch all leads for the authenticated user
  *
@@ -150,41 +136,12 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
       return [];
     }
 
-    // DEBUG LOGGING - Check data structure from backend
-    console.group('🔍 Leads API - Backend Response (RAW)');
-    console.log('Total leads:', response.data.length);
-    if (response.data.length > 0) {
-      const firstLead = response.data[0];
-      console.log('Sample lead object:', firstLead);
-      console.log('Has ai_analysis?', !!(firstLead as any).ai_analysis);
-      console.log('ai_analysis data:', (firstLead as any).ai_analysis);
-      console.log('Has extracted_data?', !!firstLead.extracted_data);
-      console.log('extracted_data data (snake_case):', firstLead.extracted_data);
-    }
-    console.groupEnd();
-
-    // Map backend fields to frontend types
     const mappedData = response.data.map((lead: any) => ({
       ...lead,
-      // Map ai_analysis to ai_response with proper field mapping
       ai_response: mapAiAnalysisToAiResponse(lead.ai_analysis),
-      // Map extracted_data from snake_case to camelCase
       extracted_data: mapExtractedData(lead.extracted_data),
-      // Map extracted_data.calculated to calculated_metrics for backward compatibility
       calculated_metrics: lead.extracted_data?.calculated || undefined,
     }));
-
-    // DEBUG LOGGING - Check transformed data
-    console.group('🔄 Leads API - Transformed Response');
-    if (mappedData.length > 0) {
-      const firstMapped = mappedData[0];
-      console.log('Transformed lead object:', firstMapped);
-      console.log('Has ai_response?', !!firstMapped.ai_response);
-      console.log('ai_response data (camelCase):', firstMapped.ai_response);
-      console.log('Has extracted_data?', !!firstMapped.extracted_data);
-      console.log('extracted_data data (camelCase):', firstMapped.extracted_data);
-    }
-    console.groupEnd();
 
     logger.info('[LeadsApi] Leads fetched successfully', {
       count: mappedData.length
@@ -193,7 +150,6 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
     return mappedData;
   } catch (error) {
     logger.error('[LeadsApi] Failed to fetch leads', error as Error);
-    // Return empty array instead of throwing - graceful degradation
     return [];
   }
 }

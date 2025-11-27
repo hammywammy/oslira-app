@@ -1,8 +1,6 @@
-// src/features/dashboard/store/dashboardStore.ts
-
 /**
  * DASHBOARD STORE (Zustand)
- * 
+ *
  * Global state management for dashboard
  * - Leads state
  * - Selected leads (bulk selection)
@@ -12,10 +10,6 @@
  */
 
 import { create } from 'zustand';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface Lead {
   id: string;
@@ -89,10 +83,6 @@ interface DashboardState {
   toggleSidebar: () => void;
   toggleQueuePanel: () => void;
 }
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useDashboardStore = create<DashboardState>((set) => ({
   // Initial state
