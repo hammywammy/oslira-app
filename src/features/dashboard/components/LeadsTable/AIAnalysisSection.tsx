@@ -52,7 +52,7 @@ export function AIAnalysisSection({
               {strengths.map((strength, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-3 text-sm text-gray-700 leading-relaxed"
+                  className="flex items-start gap-3 text-[15px] text-gray-800 leading-relaxed"
                 >
                   <Icon
                     icon="mdi:circle-small"
@@ -86,7 +86,7 @@ export function AIAnalysisSection({
               {weaknesses.map((weakness, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-3 text-sm text-gray-700 leading-relaxed"
+                  className="flex items-start gap-3 text-[15px] text-gray-800 leading-relaxed"
                 >
                   <Icon
                     icon="mdi:circle-small"
@@ -120,7 +120,7 @@ export function AIAnalysisSection({
               {riskFactors.map((risk, idx) => (
                 <li
                   key={idx}
-                  className="flex items-start gap-3 text-sm text-gray-700 leading-relaxed"
+                  className="flex items-start gap-3 text-[15px] text-gray-800 leading-relaxed"
                 >
                   <Icon
                     icon="mdi:circle-small"
