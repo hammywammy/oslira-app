@@ -51,6 +51,7 @@ interface AnalysisQueueState {
   // Actions
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void;
   updateJob: (runId: string, updates: Partial<AnalysisJob>) => void;
+  updateAllJobs: (jobs: AnalysisJob[]) => void;
   removeJob: (runId: string) => void;
   retryJob: (runId: string) => void;
   clearCompleted: () => void;
@@ -117,6 +118,39 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
         return updatedJob;
       });
 
+      const newActiveCount = getActiveCount(newJobs);
+
+      return {
+        jobs: newJobs,
+        activeCount: newActiveCount,
+      };
+    }),
+
+  updateAllJobs: (fetchedJobs) =>
+    set((state) => {
+      // Merge fetched jobs with existing jobs
+      const jobMap = new Map(state.jobs.map(job => [job.runId, job]));
+
+      fetchedJobs.forEach(fetchedJob => {
+        const existingJob = jobMap.get(fetchedJob.runId);
+
+        if (existingJob) {
+          // Update existing job
+          jobMap.set(fetchedJob.runId, {
+            ...existingJob,
+            ...fetchedJob,
+            startedAt: existingJob.startedAt, // Preserve original start time
+          });
+        } else {
+          // Add new job
+          jobMap.set(fetchedJob.runId, {
+            ...fetchedJob,
+            startedAt: fetchedJob.startedAt || Date.now(),
+          });
+        }
+      });
+
+      const newJobs = Array.from(jobMap.values());
       const newActiveCount = getActiveCount(newJobs);
 
       return {

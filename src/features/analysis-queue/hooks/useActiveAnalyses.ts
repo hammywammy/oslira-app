@@ -1,25 +1,12 @@
 /**
- * ACTIVE ANALYSES WEBSOCKET + POLLING HOOK - V5.0 HYBRID APPROACH
+ * ACTIVE ANALYSES HOOK - GLOBAL WEBSOCKET + POLLING FALLBACK
  *
- * Combines WebSocket for real-time updates with polling fallback for reliability.
- * Uses Durable Object WebSocket Hibernation API for efficiency.
+ * Uses global WebSocket for real-time updates with polling fallback.
  *
  * ARCHITECTURE:
- * - Primary: WebSocket connections for real-time progress updates (per analysis)
- * - Fallback: Adaptive polling when WebSocket fails or for bulk operations
- *   • 0 active jobs: Stop polling completely
- *   • 1-3 active jobs: Poll every 3 seconds (WebSocket handles updates)
- *   • 4+ active jobs: Poll every 5 seconds (bulk mode)
- * - Initialization fetch on mount to catch orphaned jobs
+ * - Primary: Global WebSocket (1 connection for ALL jobs)
+ * - Fallback: Adaptive polling (5s when WebSocket disconnected or >3 jobs)
  * - Confirms optimistic jobs when backend returns them
- * - Auto-dismiss handled by store's existing logic
- *
- * BACKEND ENDPOINTS:
- * - WebSocket: /api/analysis/${runId}/ws (per-analysis real-time)
- * - Polling: GET /api/analysis/active (fallback + bulk sync)
- *
- * USAGE:
- * useActiveAnalyses(); // Call in a top-level component (e.g., TopBar)
  */
 
 import { useEffect } from 'react';
@@ -29,7 +16,7 @@ import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
-import { useAnalysisWebSocket } from '@/hooks/useAnalysisWebSocket';
+import { useGlobalAnalysisStream } from '@/hooks/useGlobalAnalysisStream';
 
 interface FetchActiveAnalysesResponse {
   success: boolean;
@@ -39,20 +26,6 @@ interface FetchActiveAnalysesResponse {
   };
 }
 
-// Debounce map to prevent duplicate leads table refreshes
-const refreshDebounceMap = new Map<string, number>();
-
-// API FUNCTION
-/**
- * Fetch all active analyses for the authenticated user
- *
- * Backend should:
- * 1. Get user's account_id from auth token
- * 2. Query Durable Objects or database for active analyses
- * 3. Return array of analysis jobs with current progress
- *
- * @returns Promise with array of active analysis jobs
- */
 async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
   try {
     const response = await httpClient.get<FetchActiveAnalysesResponse>(
@@ -64,315 +37,67 @@ async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
       return [];
     }
 
-    // logger.info('[ActiveAnalyses] Active analyses fetched', {
-    //   count: response.data?.analyses?.length ?? 0,
-    // });
-
     return response.data?.analyses ?? [];
   } catch (error) {
-    logger.error('[ActiveAnalyses] Failed to fetch active analyses', error as Error);
-    // Return empty array instead of throwing - graceful degradation
+    logger.error('[ActiveAnalyses] Failed to fetch', error as Error);
     return [];
   }
 }
 
-/**
- * Hybrid hook: Uses WebSocket for real-time updates with polling fallback
- *
- * Features:
- * - WebSocket connections for active analyses (real-time progress)
- * - Adaptive polling fallback (0 jobs: stop, 1-3 jobs: 3s, 4+ jobs: 5s)
- * - Initialization fetch on mount
- * - Auto-stops polling when no active analyses
- * - Confirms optimistic jobs when backend returns them
- */
 export function useActiveAnalyses() {
-  const { isAuthenticated, isAuthReady, isLoading: authLoading } = useAuth();
-  const {
-    jobs: currentJobs,
-    addJob,
-    updateJob,
-    confirmJobStarted,
-  } = useAnalysisQueueStore();
+  const { isAuthenticated, isAuthReady } = useAuth();
+  const { jobs, updateAllJobs, confirmJobStarted } = useAnalysisQueueStore();
   const { refetchBalance } = useCreditsService();
   const queryClient = useQueryClient();
 
-  // Get first active job for SSE tracking (one at a time to reduce connections)
-  const activeJob = currentJobs.find(
-    (j) => j.status === 'pending' || j.status === 'analyzing'
-  );
+  // Connect to global WebSocket
+  const { isConnected } = useGlobalAnalysisStream();
 
-  // WebSocket connection for real-time updates on active job
-  const { progress: wsProgress, error: wsError } = useAnalysisWebSocket(
-    activeJob?.runId || null
-  );
-
-  // Sync WebSocket progress to store
-  useEffect(() => {
-    if (!wsProgress) return;
-
-    // Get current state without subscribing to changes (prevents infinite loop)
-    const currentJob = useAnalysisQueueStore.getState().jobs.find((j) => j.runId === wsProgress.runId);
-    if (!currentJob) return;
-
-    // Update job with WebSocket progress
-    updateJob(wsProgress.runId, {
-      progress: wsProgress.progress,
-      status: wsProgress.status,
-      step: wsProgress.step,
-      avatarUrl: wsProgress.avatarUrl,
-      leadId: wsProgress.leadId,
-    });
-
-    // Refresh balance and leads table on completion (with debounce)
-    if (wsProgress.status === 'complete') {
-      const debounceKey = `refresh-${wsProgress.runId}`;
-      const now = Date.now();
-      const lastRefresh = refreshDebounceMap.get(debounceKey) || 0;
-
-      // Only refresh if 2+ seconds since last refresh for this runId
-      if (now - lastRefresh > 2000) {
-        refreshDebounceMap.set(debounceKey, now);
-
-        refetchBalance().catch((error) => {
-          logger.error('[ActiveAnalyses] Balance refresh failed', error as Error);
-        });
-
-        queryClient.invalidateQueries({ queryKey: ['leads'] });
-        logger.info('[ActiveAnalyses] Leads table refresh triggered');
-
-        // Cleanup old debounce entries after 10 seconds
-        setTimeout(() => refreshDebounceMap.delete(debounceKey), 10000);
-      }
-    }
-  }, [wsProgress, queryClient, updateJob, refetchBalance]);
-
-  // Auto-dismiss completed jobs after 3 seconds
-  useEffect(() => {
-    const completedJobs = currentJobs.filter((job) => job.status === 'complete');
-
-    if (completedJobs.length === 0) return;
-
-    const timeouts: NodeJS.Timeout[] = [];
-
-    completedJobs.forEach((job) => {
-      // Only auto-dismiss if job has been completed for less than 3 seconds
-      // (to avoid re-creating timeouts on every render)
-      if (job.completedAt) {
-        const timeElapsed = Date.now() - job.completedAt;
-        const remainingTime = 3000 - timeElapsed;
-
-        if (remainingTime > 0) {
-          const timeout = setTimeout(() => {
-            useAnalysisQueueStore.getState().removeJob(job.runId);
-          }, remainingTime);
-
-          timeouts.push(timeout);
-        }
-      }
-    });
-
-    return () => {
-      timeouts.forEach((timeout) => clearTimeout(timeout));
-    };
-  }, [currentJobs]);
-
-  // Polling fallback query (disabled when SSE is active and working)
-  const { data, error } = useQuery({
+  // Polling with adaptive interval
+  const { data } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
-    refetchInterval: (query) => {
-      const data = query.state.data ?? [];
-      const activeCount = data.filter(
-        j => j.status === 'pending' || j.status === 'analyzing'
+    refetchInterval: () => {
+      const activeCount = jobs.filter(j =>
+        j.status === 'pending' || j.status === 'analyzing'
       ).length;
 
+      // Stop polling if no active jobs
       if (activeCount === 0) return false;
 
-      // WebSocket failed - use aggressive polling
-      if (wsError) {
-        return 2000; // Poll every 2 seconds when WS dead
-      }
+      // If WebSocket connected and few jobs, poll slowly (WebSocket handles updates)
+      if (isConnected && activeCount <= 3) return 10000; // 10s
 
-      // WebSocket working - polling as safety net (reduced from 10s to 5s for better UX during long analyses)
-      return activeJob ? 5000 : 3000;
+      // Otherwise poll every 5s (WebSocket failed or many jobs)
+      return 5000;
     },
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    staleTime: 0, // Always consider data stale to enable polling
-    retry: 2, // Retry failed requests
-    enabled: isAuthenticated && !authLoading && isAuthReady, // Only fetch when authenticated, auth state is ready, and auth is fully initialized
+    enabled: isAuthenticated && isAuthReady && jobs.length > 0,
   });
 
-  // Sync fetched data into Zustand store when data changes
-  // React Query's function-based refetchInterval handles conditional polling
+  // Sync data to store
   useEffect(() => {
     if (!data) return;
 
-    syncAnalysesToStore(data, currentJobs, addJob, updateJob, confirmJobStarted, refetchBalance);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Bulk update (single state change = smooth animations)
+    updateAllJobs(data);
+
+    // Confirm optimistic jobs
+    data.forEach(job => {
+      const existingJob = jobs.find(j => j.runId === job.runId);
+      if (existingJob && existingJob.leadId === undefined && job.leadId) {
+        confirmJobStarted(job.runId, job.avatarUrl, job.leadId);
+      }
+    });
+
+    // Refresh balance when jobs complete
+    const completedJobs = data.filter(j => j.status === 'complete');
+    if (completedJobs.length > 0) {
+      refetchBalance().catch(error => {
+        logger.error('[ActiveAnalyses] Balance refresh failed', error as Error);
+      });
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+    }
   }, [data]);
 
-  // Log errors
-  if (error) {
-    logger.error('[ActiveAnalyses] Polling error', error as Error);
-  }
-
-  if (wsError) {
-    logger.warn('[ActiveAnalyses] WebSocket error, using polling fallback', { error: wsError.message });
-  }
-}
-
-/**
- * Syncs fetched analyses into the Zustand store
- *
- * Strategy:
- * 1. For each fetched job, check if it exists in store (by runId)
- * 2. If new, add it to store
- * 3. If exists and was optimistic, confirm it with backend data
- * 4. If exists and has updates, update it with latest data
- * 5. Fix 6: Handle completed jobs from backend
- * 6. Fix 8: Clear orphaned optimistic jobs after timeout
- * 7. Store's auto-dismiss logic handles cleanup for completed jobs
- * 8. Refresh credits balance after analysis completes
- *
- * @param fetchedJobs - Jobs from API
- * @param currentJobs - Current jobs in store
- * @param addJob - Store action to add new job
- * @param updateJob - Store action to update existing job
- * @param confirmJobStarted - Store action to confirm optimistic job
- * @param refetchBalance - Function to refresh credits balance
- */
-function syncAnalysesToStore(
-  fetchedJobs: AnalysisJob[],
-  currentJobs: AnalysisJob[],
-  addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void,
-  updateJob: (runId: string, updates: Partial<AnalysisJob>) => void,
-  confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void,
-  refetchBalance: () => Promise<void>
-) {
-  // Create a Set of current job runIds for fast lookup
-  const currentJobIds = new Set(currentJobs.map((job) => job.runId));
-  const fetchedJobIds = new Set(fetchedJobs.map((job) => job.runId));
-
-  // Process fetched jobs from backend
-  fetchedJobs.forEach((fetchedJob) => {
-    if (!currentJobIds.has(fetchedJob.runId)) {
-      // New job - add to store
-      logger.info('[ActiveAnalyses] Adding new job to store', {
-        runId: fetchedJob.runId,
-      });
-
-      // Remove startedAt since store will add it
-      const { startedAt, ...jobWithoutTimestamp } = fetchedJob;
-      addJob(jobWithoutTimestamp);
-    } else {
-      // Existing job - check if it was optimistic and needs confirmation
-      const currentJob = currentJobs.find((job) => job.runId === fetchedJob.runId);
-
-      if (currentJob) {
-        // If job doesn't have leadId or avatarUrl yet, confirm it with backend data
-        if (!currentJob.leadId || !currentJob.avatarUrl) {
-          // logger.info('[ActiveAnalyses] Confirming optimistic job', {
-          //   runId: fetchedJob.runId,
-          //   hasLeadId: !!fetchedJob.leadId,
-          //   hasAvatar: !!fetchedJob.avatarUrl,
-          // });
-
-          confirmJobStarted(
-            fetchedJob.runId,
-            fetchedJob.avatarUrl,
-            fetchedJob.leadId
-          );
-        }
-
-        // Fix 6: Handle completed jobs from backend
-        // When backend returns status 'complete', update the job to trigger auto-dismiss
-        if (fetchedJob.status === 'complete' && currentJob.status !== 'complete') {
-          logger.info('[ActiveAnalyses] Job completed, marking as complete and refreshing balance', {
-            runId: fetchedJob.runId,
-          });
-
-          updateJob(fetchedJob.runId, {
-            status: 'complete',
-            progress: 100,
-            step: fetchedJob.step,
-            avatarUrl: fetchedJob.avatarUrl,
-            leadId: fetchedJob.leadId,
-          });
-
-          // Refresh credits balance after analysis completion
-          refetchBalance().catch((error) => {
-            logger.error('[ActiveAnalyses] Failed to refresh balance after completion', error as Error);
-          });
-
-          return; // Early return since job is complete
-        }
-
-        // Handle failed jobs from backend
-        if (fetchedJob.status === 'failed' && currentJob.status !== 'failed') {
-          logger.info('[ActiveAnalyses] Job failed, marking as failed', {
-            runId: fetchedJob.runId,
-          });
-
-          updateJob(fetchedJob.runId, {
-            status: 'failed',
-            step: fetchedJob.step,
-            avatarUrl: fetchedJob.avatarUrl,
-            leadId: fetchedJob.leadId,
-          });
-          return;
-        }
-
-        // Update if data has changed
-        if (
-          currentJob.progress !== fetchedJob.progress ||
-          currentJob.status !== fetchedJob.status ||
-          currentJob.step.current !== fetchedJob.step.current
-        ) {
-          // Only log when status changes, not progress/step changes
-          if (currentJob.status !== fetchedJob.status) {
-            logger.info('[ActiveAnalyses] Updating job in store', {
-              runId: fetchedJob.runId,
-              progress: fetchedJob.progress,
-              status: fetchedJob.status,
-            });
-          }
-
-          updateJob(fetchedJob.runId, {
-            progress: fetchedJob.progress,
-            status: fetchedJob.status,
-            step: fetchedJob.step,
-            avatarUrl: fetchedJob.avatarUrl,
-            leadId: fetchedJob.leadId,
-          });
-        }
-      }
-    }
-  });
-
-  // Fix 8: Clear orphaned optimistic jobs after timeout
-  // If a local job exists but backend returns 0 results (or doesn't include it),
-  // and enough time has passed (30 seconds), mark it as complete to trigger auto-dismiss
-  const ORPHAN_TIMEOUT_MS = 30000; // 30 seconds
-  const now = Date.now();
-
-  currentJobs.forEach((currentJob) => {
-    const isOrphaned = !fetchedJobIds.has(currentJob.runId);
-    const isActive = currentJob.status === 'pending' || currentJob.status === 'analyzing';
-    const hasTimedOut = now - currentJob.startedAt > ORPHAN_TIMEOUT_MS;
-
-    if (isOrphaned && isActive && hasTimedOut) {
-      logger.info('[ActiveAnalyses] Clearing orphaned optimistic job', {
-        runId: currentJob.runId,
-        age: now - currentJob.startedAt,
-      });
-
-      // Mark as complete to trigger auto-dismiss
-      updateJob(currentJob.runId, {
-        status: 'complete',
-        progress: 100,
-      });
-    }
-  });
+  return null;
 }
