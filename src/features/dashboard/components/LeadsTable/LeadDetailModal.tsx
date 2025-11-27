@@ -222,12 +222,13 @@ function HeroInsight({ lead }: { lead: Lead }) {
  */
 function QuickStatsGrid({ lead }: { lead: Lead }) {
   const metrics = lead.calculated_metrics;
+  const extractedCalc = lead.extracted_data?.calculated;
 
   const stats = [
     {
       label: 'Engagement Rate',
-      value: metrics?.engagement_rate ? metrics.engagement_rate.toFixed(2) : '0',
-      displayValue: metrics?.engagement_rate ? `${metrics.engagement_rate.toFixed(2)}%` : '—',
+      value: extractedCalc?.engagementRate ? extractedCalc.engagementRate.toFixed(2) : '0',
+      displayValue: extractedCalc?.engagementRate ? `${extractedCalc.engagementRate.toFixed(2)}%` : '—',
       max: 10, // 10% is excellent engagement
       icon: 'mdi:trending-up',
       color: 'text-green-600',
@@ -254,20 +255,10 @@ function QuickStatsGrid({ lead }: { lead: Lead }) {
       bgColor: 'bg-purple-50',
       barColor: 'bg-purple-500',
     },
-    {
-      label: 'Posting Frequency',
-      value: metrics?.posting_frequency ? metrics.posting_frequency.toFixed(1) : '0',
-      displayValue: metrics?.posting_frequency ? `${metrics.posting_frequency.toFixed(1)}/mo` : '—',
-      max: 30, // 30 posts per month is very active
-      icon: 'mdi:calendar-clock',
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50',
-      barColor: 'bg-amber-500',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       {stats.map((stat, idx) => {
         const percentage = Math.min(100, (parseFloat(stat.value) / stat.max) * 100);
 
