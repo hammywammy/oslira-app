@@ -210,9 +210,15 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLea
       {/* Niche */}
       <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.niche}px`, padding: '12px 16px' }}>
         {lead.niche ? (
-          <span className="text-sm text-foreground truncate">{lead.niche}</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-teal-50 text-teal-700 border border-teal-200">
+            <Icon icon="mdi:tag" width={14} />
+            <span className="text-xs font-medium truncate">{lead.niche}</span>
+          </div>
         ) : (
-          <span className="text-sm text-muted-foreground">—</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-50 text-gray-500 border border-gray-200">
+            <Icon icon="mdi:tag-outline" width={14} />
+            <span className="text-xs font-medium">Not set</span>
+          </div>
         )}
       </td>
 
