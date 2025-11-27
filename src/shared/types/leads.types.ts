@@ -186,6 +186,11 @@ export interface Lead {
   // EXTERNAL LINKS
   // ============================================================================
   external_urls?: ExternalLink[];
+
+  // ============================================================================
+  // CALCULATED METRICS (JSONB field from backend)
+  // ============================================================================
+  calculated_metrics?: CalculatedMetrics;
 }
 
 /**
@@ -195,4 +200,142 @@ export interface ExternalLink {
   url: string;
   title?: string;
   link_type?: string;
+}
+
+/**
+ * External link detail with type
+ */
+export interface ExternalUrlDetail {
+  url: string;
+  title?: string;
+  linkType?: string;
+}
+
+/**
+ * Calculated metrics from backend analysis (JSONB field)
+ * Contains 80+ metrics from deep analysis pipeline
+ */
+export interface CalculatedMetrics {
+  version: string;
+  sampleSize: number;
+  calculatedAt: string;
+
+  // Composite scores (5 fields)
+  scores: {
+    profileHealthScore: number;
+    engagementHealth: number;
+    contentSophistication: number;
+    accountMaturity: number;
+    fakeFollowerRisk: number;
+  };
+
+  // Raw calculated metrics (60+ fields)
+  raw: {
+    // Profile basics
+    username?: string;
+    verified?: boolean;
+    hasBio?: boolean;
+    bioLength?: number;
+    hasChannel?: boolean;
+    isBusinessAccount?: boolean;
+    businessCategoryName?: string | null;
+    externalUrl?: string;
+    hasExternalLink?: boolean;
+    externalLinksCount?: number;
+    externalUrls?: ExternalUrlDetail[];
+
+    // Follower metrics
+    followersCount?: number;
+    followsCount?: number;
+    authorityRatio?: number;
+    authorityRatioRaw?: number;
+
+    // Post counts
+    postsCount?: number;
+    recentPostsSampled?: number;
+
+    // Engagement metrics
+    totalLikes?: number;
+    totalComments?: number;
+    totalEngagement?: number;
+    avgLikesPerPost?: number;
+    avgCommentsPerPost?: number;
+    avgEngagementPerPost?: number;
+    engagementRate?: number;
+    engagementRatePerPost?: number[];
+    engagementConsistency?: number;
+    engagementStdDev?: number;
+    commentToLikeRatio?: number;
+
+    // Format distribution
+    imageCount?: number;
+    reelsCount?: number;
+    videoCount?: number;
+    carouselCount?: number;
+    igtvVideoCount?: number;
+    videoPostCount?: number;
+    nonReelsVideoCount?: number;
+    imageRate?: number;
+    reelsRate?: number;
+    videoRate?: number;
+    carouselRate?: number;
+    formatDiversity?: number;
+    dominantFormat?: string;
+
+    // Video metrics
+    totalVideoViews?: number | null;
+    avgVideoViews?: number | null;
+    videoViewToLikeRatio?: number | null;
+
+    // Content metrics
+    totalHashtags?: number;
+    uniqueHashtagCount?: number;
+    avgHashtagsPerPost?: number;
+    hashtagDiversity?: number | null;
+    topHashtags?: any[];
+    totalMentions?: number;
+    uniqueMentionCount?: number;
+    avgMentionsPerPost?: number;
+    topMentions?: any[];
+    totalCaptionLength?: number;
+    avgCaptionLength?: number;
+    maxCaptionLength?: number;
+
+    // Location & settings
+    postsWithLocation?: number;
+    locationTaggingRate?: number;
+    postsWithAltText?: number;
+    altTextRate?: number;
+    commentsEnabledRate?: number;
+    commentsDisabledRate?: number;
+    postsWithCommentsDisabled?: number;
+
+    // Posting behavior
+    postingFrequency?: number;
+    postingPeriodDays?: number;
+    postingConsistency?: number;
+    daysSinceLastPost?: number;
+    avgDaysBetweenPosts?: number;
+    timeBetweenPostsDays?: number[];
+    oldestPostTimestamp?: string;
+    newestPostTimestamp?: string;
+
+    // Derived metrics
+    contentDensity?: number;
+    viralPostRate?: number;
+    recentViralPostCount?: number;
+    highlightReelCount?: number;
+
+    // Risk analysis
+    fakeFollowerRiskScore?: number;
+    fakeFollowerWarnings?: string[];
+  };
+
+  // Gap detection flags (4 boolean flags)
+  gaps: {
+    engagementGap: boolean;
+    contentGap: boolean;
+    conversionGap: boolean;
+    platformGap: boolean;
+  };
 }
