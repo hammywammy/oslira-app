@@ -158,27 +158,27 @@ function PlatformBadge() {
 }
 
 /**
- * Niche badge
+ * Niche badge - Always displays, shows niche or "Not specified"
  */
 function NicheBadge({ niche }: { niche: string | null }) {
-  if (!niche) return null;
-
   return (
     <span
       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full transition-all duration-200 hover:shadow-sm"
       title="Niche"
     >
-      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">{niche}</span>
+      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+        {niche || 'Not specified'}
+      </span>
     </span>
   );
 }
 
 /**
- * Business/Personal account badge
+ * Business/Personal account badge - Always displays, uses is_business_account field
  */
-function BusinessBadge({ isBusiness }: { isBusiness: boolean | undefined }) {
-  // Don't render if isBusiness is undefined or null
-  if (isBusiness === undefined || isBusiness === null) return null;
+function BusinessBadge({ isBusinessAccount }: { isBusinessAccount: boolean | undefined }) {
+  // Treat undefined/null/false as Personal Account
+  const isBusiness = isBusinessAccount === true;
 
   const config = isBusiness
     ? {
@@ -743,7 +743,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
         <div className="absolute top-6 right-4 flex items-center gap-2">
           <PlatformBadge />
           <NicheBadge niche={lead.niche} />
-          <BusinessBadge isBusiness={lead.is_business} />
+          <BusinessBadge isBusinessAccount={lead.is_business_account} />
         </div>
       </div>
 

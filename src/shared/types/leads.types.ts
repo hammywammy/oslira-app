@@ -37,6 +37,7 @@ export interface Lead {
   post_count: number | null;
   is_verified?: boolean;
   is_business?: boolean;
+  is_business_account?: boolean;
 
   // ============================================================================
   // ANALYSIS METADATA (from lead_analyses table)
