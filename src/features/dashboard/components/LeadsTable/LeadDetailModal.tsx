@@ -493,7 +493,8 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       console.log('analysis_status:', lead.analysis_status);
       console.groupEnd();
     }
-  }, [isOpen, lead]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, lead?.id]);
 
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
 
