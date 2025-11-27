@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
-
 /**
  * LEAD DETAIL MODAL - ENTERPRISE EDITION V5.0
  *
@@ -40,10 +38,6 @@ import { FitReasoningSection } from './FitReasoningSection';
 import { OpportunitiesSection } from './OpportunitiesSection';
 import { RecommendedActionsSection } from './RecommendedActionsSection';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface LeadDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -51,10 +45,6 @@ interface LeadDetailModalProps {
 }
 
 type TabType = 'overview' | 'analytics';
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
 
 function formatNumber(count: number | null): string {
   if (!count) return '0';
@@ -122,10 +112,7 @@ function getActionRecommendation(score: number | null, analysisType: string | nu
   return 'Explore other leads with stronger alignment';
 }
 
-// =============================================================================
 // SUB-COMPONENTS
-// =============================================================================
-
 /**
  * Verification badge (Instagram-style blue checkmark)
  */
@@ -440,10 +427,7 @@ function TabNav({
   );
 }
 
-// =============================================================================
 // BOTTOM METADATA BAR
-// =============================================================================
-
 /**
  * Bottom metadata bar - Shows analysis type, status, and extraction metadata
  * Appears at bottom of all tabs
@@ -519,10 +503,7 @@ function BottomMetadataBar({ lead }: { lead: Lead }) {
   );
 }
 
-// =============================================================================
 // OVERVIEW TAB CONTENT
-// =============================================================================
-
 function OverviewTab({ lead }: { lead: Lead }) {
   // Calculate score breakdown with 50/25/15/10 weighting
   const extractedCalc = lead.extracted_data?.calculated;
@@ -642,10 +623,7 @@ function OverviewTab({ lead }: { lead: Lead }) {
   );
 }
 
-// =============================================================================
 // MAIN COMPONENT
-// =============================================================================
-
 export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const hasLoggedRef = useRef<string | null>(null);
@@ -662,15 +640,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
   // DEBUG LOGGING - Check what data we're receiving (only log once per lead)
   if (isOpen && lead && hasLoggedRef.current !== lead.id) {
     hasLoggedRef.current = lead.id;
-    console.group('🔍 Lead Detail Modal - Data Check');
-    console.log('Full lead object:', lead);
-    console.log('ai_response:', lead.ai_response);
-    console.log('extracted_data:', lead.extracted_data);
-    console.log('calculated_metrics:', lead.calculated_metrics);
-    console.log('analysis_type:', lead.analysis_type);
-    console.log('analysis_status:', lead.analysis_status);
-    console.groupEnd();
-  }
+    }
 
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
 

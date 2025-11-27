@@ -1,4 +1,3 @@
-// src/pages/auth/SignupPage.tsx
 /**
  * @file Signup Page - Minimal Professional Design
  * @description Clean registration with focused messaging
@@ -13,10 +12,7 @@ import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { logger } from '@/core/utils/logger';
 import { Logo } from '@/shared/components/ui/Logo';
 
-// =============================================================================
 // ANIMATION VARIANTS - Very subtle
-// =============================================================================
-
 const fadeIn = {
   hidden: { opacity: 0 },
   visible: { 
@@ -33,10 +29,6 @@ const slideUp = {
     transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
   }
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function SignupPage() {
   const navigate = useNavigate();

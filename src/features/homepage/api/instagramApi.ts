@@ -6,10 +6,6 @@
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface InstagramProfile {
   username: string;
   followersCount?: number;
@@ -50,10 +46,7 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-// =============================================================================
 // API FUNCTIONS
-// =============================================================================
-
 /**
  * Analyze Instagram profile anonymously (no auth required)
  * Uses 1 of your daily free analyses

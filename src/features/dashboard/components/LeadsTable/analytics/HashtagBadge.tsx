@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/HashtagBadge.tsx
-
 interface HashtagBadgeProps {
   tag: string;
   count: number;

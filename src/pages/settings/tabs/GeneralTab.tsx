@@ -1,5 +1,3 @@
-// src/pages/settings/tabs/GeneralTab.tsx
-
 /**
  * GENERAL TAB - USER PREFERENCES
  * 
@@ -26,10 +24,6 @@ import { Textarea } from '@/shared/components/ui/Textarea';
 import { Button } from '@/shared/components/ui/Button';
 import { Card } from '@/shared/components/ui/Card';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function GeneralTab() {
   const { user } = useAuth();

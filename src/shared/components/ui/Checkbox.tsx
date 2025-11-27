@@ -1,5 +1,3 @@
-// src/shared/components/ui/Checkbox.tsx
-
 /**
  * CHECKBOX COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -30,10 +28,6 @@
 import { Icon } from '@iconify/react';
 import { InputHTMLAttributes, forwardRef, ReactNode, useEffect, useRef } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   /** Size variant */
   size?: 'md' | 'lg';
@@ -47,10 +41,7 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   md: 'w-5 h-5',
   lg: 'w-6 h-6',
@@ -65,10 +56,6 @@ const labelTextSize = {
   md: 'text-sm',
   lg: 'text-base',
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   (

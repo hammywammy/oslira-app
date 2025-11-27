@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/TablePagination.tsx
-
 /**
  * TABLE PAGINATION - POSTGRES/SUPABASE STYLE
  */

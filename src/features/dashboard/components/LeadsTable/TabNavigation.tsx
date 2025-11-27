@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/TabNavigation.tsx
-
 /**
  * TAB NAVIGATION COMPONENT
  *

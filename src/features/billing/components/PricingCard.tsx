@@ -1,5 +1,3 @@
-// src/features/billing/components/PricingCard.tsx
-
 /**
  * PRICING CARD - PRODUCTION GRADE
  * 
@@ -26,10 +24,6 @@ import { Icon } from '@iconify/react';
 import { PricingTier } from '@/config/pricing.config';
 import { Button } from '@/shared/components/ui/Button';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface PricingCardProps {
   tier: PricingTier;
   isCurrentTier?: boolean;
@@ -37,10 +31,6 @@ interface PricingCardProps {
   loading?: boolean;
   disabled?: boolean;
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function PricingCard({
   tier,
@@ -227,10 +217,7 @@ export function PricingCard({
   );
 }
 
-// =============================================================================
 // FEATURE ITEM
-// =============================================================================
-
 function FeatureItem({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2.5">

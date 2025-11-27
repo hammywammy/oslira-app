@@ -1,5 +1,3 @@
-// src/core/auth/auth-manager.ts
-
 /**
  * AUTH MANAGER (Singleton) - PRODUCTION GRADE (2025)
  * 
@@ -46,10 +44,6 @@
 
 import { env } from './environment';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface UserData {
   id: string;
   email: string;
@@ -72,10 +66,7 @@ interface RefreshResponse {
   expiresAt: number;
 }
 
-// =============================================================================
 // STORAGE KEYS
-// =============================================================================
-
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'oslira_access_token',
   REFRESH_TOKEN: 'oslira_refresh_token',
@@ -84,10 +75,7 @@ const STORAGE_KEYS = {
   ACCOUNT: 'oslira_account',
 } as const;
 
-// =============================================================================
 // AUTH MANAGER
-// =============================================================================
-
 class AuthManager {
   private static instance: AuthManager;
 
@@ -542,9 +530,5 @@ async forceRefresh(): Promise<string | null> {
     this.listeners.forEach(listener => listener());
   }
 }
-
-// =============================================================================
-// EXPORT SINGLETON INSTANCE
-// =============================================================================
 
 export const authManager = AuthManager.getInstance();

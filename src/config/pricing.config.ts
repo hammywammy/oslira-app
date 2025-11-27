@@ -1,5 +1,3 @@
-// src/config/pricing.config.ts
-
 /**
  * PRICING CONFIGURATION - SINGLE SOURCE OF TRUTH
  * 
@@ -17,10 +15,6 @@
  * - All UI components derive from this config
  * - Backend should sync from database (pricing_tiers table)
  */
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export type TierName = 'free' | 'growth' | 'pro' | 'agency' | 'enterprise';
 
@@ -55,10 +49,7 @@ export interface PricingTier {
   ctaText: string;
 }
 
-// =============================================================================
 // PRICING TIERS
-// =============================================================================
-
 export const PRICING_TIERS: Record<TierName, PricingTier> = {
   free: {
     id: 'free',
@@ -179,30 +170,21 @@ export const PRICING_TIERS: Record<TierName, PricingTier> = {
   },
 };
 
-// =============================================================================
 // ANALYSIS COSTS
-// =============================================================================
-
 export const ANALYSIS_COSTS = {
   light: 0,
   deep: 1,
   xray: 2,
 } as const;
 
-// =============================================================================
 // TIER ARRAYS (for iteration)
-// =============================================================================
-
 // All tiers (for marketing page)
 export const ALL_TIERS: TierName[] = ['free', 'growth', 'pro', 'agency', 'enterprise'];
 
 // Paid tiers only (for upgrade page)
 export const PAID_TIERS: TierName[] = ['growth', 'pro', 'agency', 'enterprise'];
 
-// =============================================================================
 // FEATURE DEFINITIONS (for feature comparison)
-// =============================================================================
-
 export interface FeatureDefinition {
   id: string;
   label: string;
@@ -253,10 +235,7 @@ export const FEATURE_LIST: FeatureDefinition[] = [
   },
 ];
 
-// =============================================================================
 // UTILITY FUNCTIONS
-// =============================================================================
-
 /**
  * Get tier by ID
  */

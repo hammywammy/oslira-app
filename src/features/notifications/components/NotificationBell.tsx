@@ -1,5 +1,3 @@
-// src/features/notifications/components/NotificationBell.tsx
-
 import { useState, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';

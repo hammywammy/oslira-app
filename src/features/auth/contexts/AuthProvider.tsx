@@ -1,5 +1,3 @@
-// src/features/auth/contexts/AuthProvider.tsx
-
 /**
  * AUTH PROVIDER - INDUSTRY STANDARD (2025)
  * 
@@ -53,10 +51,6 @@ import { httpClient } from '@/core/auth/http-client';
 import { useCreditsStore } from '@/features/credits/store/creditsStore';
 import { useSubscriptionStore, Subscription } from '@/features/billing/store/subscriptionStore';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface User {
   id: string;
   email: string;
@@ -100,16 +94,10 @@ interface RefreshResponse {
   expiresAt: number;
 }
 
-// =============================================================================
 // CONTEXT
-// =============================================================================
-
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// =============================================================================
 // PROVIDER
-// =============================================================================
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
@@ -438,10 +426,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);

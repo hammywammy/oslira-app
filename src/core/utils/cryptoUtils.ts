@@ -10,10 +10,7 @@
  * - Secure random strings
  */
 
-// =============================================================================
 // UUID GENERATION
-// =============================================================================
-
 /**
  * Generate UUID v4
  * Uses native crypto.randomUUID() if available, otherwise fallback
@@ -32,10 +29,7 @@ export function uuid(): string {
   });
 }
 
-// =============================================================================
 // RANDOM ID GENERATION
-// =============================================================================
-
 /**
  * Generate random alphanumeric ID
  * Example: "a3f9c2" (length 6)
@@ -114,10 +108,7 @@ export function randomInt(min: number, max: number): number {
   return min + (result % range);
 }
 
-// =============================================================================
 // HASHING
-// =============================================================================
-
 /**
  * Generate SHA-256 hash
  * Returns hex string
@@ -143,10 +134,7 @@ export function simpleHash(str: string): string {
   return Math.abs(hash).toString(36);
 }
 
-// =============================================================================
 // BASE64 ENCODING/DECODING
-// =============================================================================
-
 /**
  * Encode string to Base64
  */
@@ -188,10 +176,7 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-// =============================================================================
 // URL-SAFE BASE64
-// =============================================================================
-
 /**
  * Encode to URL-safe Base64
  */
@@ -215,10 +200,7 @@ export function fromBase64Url(base64url: string): string {
   return fromBase64(base64);
 }
 
-// =============================================================================
 // PASSWORD GENERATION
-// =============================================================================
-
 /**
  * Generate secure random password
  */
@@ -276,10 +258,7 @@ export function generateMemorablePassword(wordCount = 4): string {
   return password;
 }
 
-// =============================================================================
 // TOKEN GENERATION
-// =============================================================================
-
 /**
  * Generate secure token (for API keys, reset tokens, etc.)
  */
@@ -308,10 +287,7 @@ export function generateAlphanumericCode(length = 8): string {
   return randomString(length, 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'); // Excludes similar looking chars
 }
 
-// =============================================================================
 // UTILITIES
-// =============================================================================
-
 /**
  * Check if browser supports Web Crypto API
  */

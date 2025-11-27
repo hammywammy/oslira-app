@@ -1,5 +1,3 @@
-// src/features/analysis-queue/components/QueueItem.tsx
-
 /**
  * QUEUE ITEM - INDIVIDUAL ANALYSIS PROGRESS ROW
  *

@@ -1,5 +1,3 @@
-// src/shared/components/ui/Button.tsx
-
 /**
  * BUTTON COMPONENT - PRODUCTION GRADE V3.0
  * 
@@ -32,10 +30,6 @@ import { Icon } from '@iconify/react';
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Spinner } from './Spinner';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -48,10 +42,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
 }
 
-// =============================================================================
 // VARIANT STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const variantStyles = {
   primary: `
     bg-primary-500 text-white
@@ -105,10 +96,7 @@ const variantStyles = {
   `,
 } as const;
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'h-8 px-3 text-sm gap-1.5 rounded-md',
   md: 'h-10 px-4 text-base gap-2 rounded-lg',
@@ -120,10 +108,6 @@ const iconSize = {
   md: 18,
   lg: 20,
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Button({
   children,

@@ -1,5 +1,3 @@
-// src/features/billing/hooks/useUpgrade.ts
-
 /**
  * USE UPGRADE HOOK
  * 
@@ -24,10 +22,6 @@ import { httpClient } from '@/core/auth/http-client';
 import { UpgradeRequest, UpgradeResponse } from '../types/billing.types';
 import { TierName } from '@/config/pricing.config';
 import { logger } from '@/core/utils/logger';
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 export function useUpgrade() {
   const queryClient = useQueryClient();
@@ -63,7 +57,7 @@ if (checkoutUrl) {
       logger.info('[Upgrade] Success, redirecting to checkout');
     },
 
-    onError: (error: any) => {
+    onError: (error) => {
       logger.error('[Upgrade] Failed', error, { message: error.message });
     },
   });

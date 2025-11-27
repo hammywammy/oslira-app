@@ -1,5 +1,3 @@
-// src/features/onboarding/components/steps/Step4Review.tsx
-
 /**
  * STEP 4: REVIEW & LAUNCH - LIGHT MODE REDESIGN
  * 

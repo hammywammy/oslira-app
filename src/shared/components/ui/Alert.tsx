@@ -1,5 +1,3 @@
-// src/shared/components/ui/Alert.tsx
-
 /**
  * ALERT COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -29,10 +27,6 @@
 import { Icon } from '@iconify/react';
 import { HTMLAttributes, ReactNode, useState } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   /** Visual variant */
   variant?: 'success' | 'error' | 'warning' | 'info';
@@ -52,20 +46,14 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES (PADDING)
-// =============================================================================
-
 const sizeStyles = {
   sm: 'p-3',
   md: 'p-4',
   lg: 'p-5',
 } as const;
 
-// =============================================================================
 // ROUNDED STYLES
-// =============================================================================
-
 const roundedStyles = {
   sm: 'rounded-sm',
   md: 'rounded-md',
@@ -73,10 +61,7 @@ const roundedStyles = {
   xl: 'rounded-xl',
 } as const;
 
-// =============================================================================
 // VARIANT STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const variantStyles = {
   success: {
     container: `
@@ -112,20 +97,13 @@ const variantStyles = {
   },
 } as const;
 
-// =============================================================================
 // DEFAULT ICONS PER VARIANT
-// =============================================================================
-
 const defaultIcons = {
   success: 'lucide:check-circle',
   error: 'lucide:alert-circle',
   warning: 'lucide:alert-triangle',
   info: 'lucide:info',
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Alert({
   variant = 'info',

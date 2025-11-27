@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/MentionBadge.tsx
-
 import { Icon } from '@iconify/react';
 
 interface MentionBadgeProps {

@@ -1,5 +1,3 @@
-// src/shared/components/ui/Spinner.tsx
-
 /**
  * SPINNER COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -26,10 +24,6 @@
  * <Spinner variant="white" /> (for dark backgrounds)
  */
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface SpinnerProps {
   /** Size variant */
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -41,10 +35,7 @@ export interface SpinnerProps {
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   sm: 'w-4 h-4 border-2',
   md: 'w-6 h-6 border-2',
@@ -52,10 +43,7 @@ const sizeStyles = {
   xl: 'w-12 h-12 border-[3px]',
 } as const;
 
-// =============================================================================
 // VARIANT STYLES - LIGHT/DARK MODE COMPATIBLE
-// =============================================================================
-
 const variantStyles = {
   primary: `
     border-primary-500 border-t-transparent
@@ -69,10 +57,6 @@ const variantStyles = {
     border-white border-t-transparent
   `,
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Spinner({
   size = 'md',

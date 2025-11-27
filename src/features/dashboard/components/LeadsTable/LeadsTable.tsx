@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/LeadsTable.tsx
-
 /**
  * LEADS TABLE - SUPABASE STYLE V3.0
  * 
@@ -28,10 +26,6 @@ import { deleteLead } from '@/features/leads/api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { SortField, SortOrder, TableFilters } from '@/pages/dashboard/DashboardPage';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 import type { Lead } from '@/shared/types/leads.types';
 
 interface LeadsTableProps {
@@ -45,10 +39,6 @@ interface LeadsTableProps {
   onDeleteSuccess: () => void;
 }
 
-// =============================================================================
-// CONSTANTS - FIXED WIDTHS (NO RESIZING)
-// =============================================================================
-
 const COLUMN_WIDTHS = {
   checkbox: 56,
   lead: 280,
@@ -59,10 +49,6 @@ const COLUMN_WIDTHS = {
   updated: 110,
   actions: 100,
 };
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
 
 function formatFollowers(count: number): string {
   if (count >= 1000000) {
@@ -78,10 +64,6 @@ function formatDate(dateString: string): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-
-// =============================================================================
-// HELPER COMPONENTS
-// =============================================================================
 
 function ScoreBadge({ score }: { score: number | null }) {
   if (score === null) return <span className="text-xs text-muted-foreground">Not scored</span>;
@@ -146,10 +128,7 @@ function AnalysisTypeBadge({ type }: { type: 'light' | 'deep' | 'xray' | null })
   );
 }
 
-// =============================================================================
 // TABLE ROW COMPONENT
-// =============================================================================
-
 interface TableRowProps {
   lead: Lead;
   isSelected: boolean;
@@ -277,10 +256,7 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLea
 
 TableRow.displayName = 'TableRow';
 
-// =============================================================================
 // MAIN COMPONENT
-// =============================================================================
-
 export function LeadsTable({
   selectedLeads,
   onSelectionChange,

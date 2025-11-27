@@ -1,5 +1,3 @@
-// src/features/onboarding/components/steps/Step2Business.tsx
-
 /**
  * STEP 2: BUSINESS CONTEXT - LIGHT MODE REDESIGN
  * 

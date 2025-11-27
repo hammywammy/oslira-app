@@ -14,10 +14,6 @@
 
 import { logger } from '@/core/utils/logger';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export type EventCallback = (data?: unknown) => void;
 
 interface EventListener {
@@ -39,10 +35,7 @@ interface EventStats {
   recentEvents: number;
 }
 
-// =============================================================================
 // EVENT BUS CLASS
-// =============================================================================
-
 class EventBus {
   private listeners = new Map<string, EventListener[]>();
   private wildcardListeners: EventListener[] = [];
@@ -253,16 +246,10 @@ class EventBus {
   }
 }
 
-// =============================================================================
 // SINGLETON INSTANCE
-// =============================================================================
-
 export const eventBus = new EventBus();
 
-// =============================================================================
 // COMMON EVENT TYPES (from EventTypes.js)
-// =============================================================================
-
 export const EVENT_TYPES = {
   // Auth events
   AUTH: {
@@ -302,9 +289,5 @@ export const EVENT_TYPES = {
     TOAST_SHOWN: 'ui:toast-shown',
   },
 } as const;
-
-// =============================================================================
-// EXPORTS
-// =============================================================================
 
 export default eventBus;

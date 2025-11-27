@@ -1,5 +1,3 @@
-// src/features/analysis-queue/stores/useAnalysisQueueStore.ts
-
 /**
  * ANALYSIS QUEUE STORE - ZUSTAND STATE MANAGEMENT
  *
@@ -26,10 +24,6 @@
  */
 
 import { create } from 'zustand';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export type AnalysisStatus = 'pending' | 'analyzing' | 'complete' | 'failed' | 'cancelled';
 
@@ -66,20 +60,12 @@ interface AnalysisQueueState {
   confirmJobStarted: (runId: string, avatarUrl?: string, leadId?: string) => void;
 }
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
 /**
  * Compute active count (pending or analyzing jobs)
  */
 const getActiveCount = (jobs: AnalysisJob[]): number => {
   return jobs.filter((job) => job.status === 'pending' || job.status === 'analyzing').length;
 };
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
   // State

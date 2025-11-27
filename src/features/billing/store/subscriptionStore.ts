@@ -1,5 +1,3 @@
-// src/features/billing/store/subscriptionStore.ts
-
 /**
  * SUBSCRIPTION STORE - FEATURE-ISOLATED STATE MANAGEMENT
  *
@@ -17,10 +15,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { TierName } from '@/config/pricing.config';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export interface Subscription {
   id: string;
@@ -49,10 +43,6 @@ interface SubscriptionState {
   getCurrentTier: () => TierName;
   getStatus: () => string;
 }
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useSubscriptionStore = create<SubscriptionState>()(
   devtools(
@@ -99,10 +89,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
   )
 );
 
-// =============================================================================
 // SELECTORS (for component consumption)
-// =============================================================================
-
 export const useCurrentTier = () =>
   useSubscriptionStore((state) => state.subscription?.tier ?? 'free');
 

@@ -1,5 +1,3 @@
-// src/pages/dashboard/UpgradePage.tsx
-
 import { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';

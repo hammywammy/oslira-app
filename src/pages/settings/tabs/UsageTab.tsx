@@ -1,5 +1,3 @@
-// src/pages/settings/tabs/UsageTab.tsx
-
 /**
  * USAGE TAB - ANALYTICS & CREDIT TRACKING
  * 
@@ -20,10 +18,6 @@ import { Icon } from '@iconify/react';
 import { Card } from '@/shared/components/ui/Card';
 import { Badge } from '@/shared/components/ui/Badge';
 import { Button } from '@/shared/components/ui/Button';
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function UsageTab() {
   // Placeholder data (will be replaced with real analytics data)

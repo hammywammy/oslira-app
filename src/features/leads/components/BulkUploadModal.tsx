@@ -1,5 +1,3 @@
-// src/features/leads/components/BulkUploadModal.tsx
-
 /**
  * BULK UPLOAD MODAL - V6.0 SIMPLIFIED
  * 
@@ -22,10 +20,6 @@ import { useBusinessProfile } from '@/features/business/providers/BusinessProfil
 import { useSelectedBusinessId, useBusinessProfiles } from '@/core/store/selectors';
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
 import type { AnalysisType } from '@/shared/types/leads.types';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface BulkUploadModalProps {
   isOpen: boolean;
@@ -55,10 +49,6 @@ interface AnalysisOption {
   gradient: string;
 }
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const ANALYSIS_OPTIONS: AnalysisOption[] = [
   {
     value: 'light',
@@ -79,10 +69,6 @@ const ANALYSIS_OPTIONS: AnalysisOption[] = [
 ];
 
 const MAX_LEADS = 50;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function BulkUploadModal({
   isOpen,

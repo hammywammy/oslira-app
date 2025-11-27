@@ -1,5 +1,3 @@
-// src/features/onboarding/components/steps/Step1Personal.tsx
-
 /**
  * STEP 1: PERSONAL INFORMATION - MODERN PROFESSIONAL
  * 

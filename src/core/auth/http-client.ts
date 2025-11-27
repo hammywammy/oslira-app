@@ -1,5 +1,3 @@
-// src/core/auth/http-client.ts
-
 /**
  * HTTP CLIENT - INDUSTRY STANDARD (2025)
  * 
@@ -42,10 +40,6 @@ import { authManager } from './auth-manager';
 import { env } from './environment';
 import { logger } from '@/core/utils/logger';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -57,10 +51,7 @@ interface RequestOptions extends RequestInit {
   skipAuth?: boolean; // Skip authorization header (for public endpoints)
 }
 
-// =============================================================================
 // HTTP CLIENT
-// =============================================================================
-
 class HttpClient {
   private baseUrl: string;
   private requestCounter = 0; // For tracking individual requests

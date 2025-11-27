@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/ScoreCard.tsx
-
 import { Icon } from '@iconify/react';
 import { Tooltip } from '@/shared/components/ui/Tooltip';
 

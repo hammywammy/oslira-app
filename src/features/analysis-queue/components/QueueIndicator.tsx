@@ -1,5 +1,3 @@
-// src/features/analysis-queue/components/QueueIndicator.tsx
-
 /**
  * QUEUE INDICATOR - TOPBAR PILL BUTTON
  *

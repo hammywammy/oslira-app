@@ -1,5 +1,3 @@
-// src/shared/components/ui/Label.tsx
-
 /**
  * LABEL COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -27,10 +25,6 @@
 
 import { LabelHTMLAttributes, ReactNode } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
   /** Label content */
   children: ReactNode;
@@ -41,10 +35,6 @@ export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
   /** Additional CSS classes */
   className?: string;
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function Label({
   children,

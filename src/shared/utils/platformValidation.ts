@@ -1,15 +1,9 @@
-// src/shared/utils/platformValidation.ts
-
 /**
  * PLATFORM VALIDATION SYSTEM
  *
  * Modular validation system for platform-specific username rules.
  * Easily expandable for different platforms (Instagram, LinkedIn, TikTok, etc.)
  */
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export interface ValidationResult {
   valid: boolean;
@@ -34,10 +28,7 @@ export interface PlatformValidationConfig {
   format: (value: string) => string;
 }
 
-// =============================================================================
 // PLATFORM CONFIGURATIONS
-// =============================================================================
-
 /**
  * Instagram Username Rules:
  * - 3-30 characters
@@ -174,10 +165,7 @@ export const tiktokConfig: PlatformValidationConfig = {
   },
 };
 
-// =============================================================================
 // PLATFORM REGISTRY
-// =============================================================================
-
 export type PlatformType = 'instagram' | 'linkedin' | 'tiktok';
 
 const platformConfigs: Record<PlatformType, PlatformValidationConfig> = {
@@ -186,10 +174,7 @@ const platformConfigs: Record<PlatformType, PlatformValidationConfig> = {
   tiktok: tiktokConfig,
 };
 
-// =============================================================================
 // VALIDATION FUNCTIONS
-// =============================================================================
-
 /**
  * Validate a username for a specific platform.
  * Returns detailed error messages for specific validation failures.
@@ -278,10 +263,7 @@ export function getAvailablePlatforms(): PlatformType[] {
   return Object.keys(platformConfigs) as PlatformType[];
 }
 
-// =============================================================================
 // CONVENIENCE EXPORTS FOR INSTAGRAM (most common use case)
-// =============================================================================
-
 export const validateInstagramUsername = (username: string) =>
   validatePlatformUsername('instagram', username);
 

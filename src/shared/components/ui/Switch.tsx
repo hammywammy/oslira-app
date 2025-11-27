@@ -1,5 +1,3 @@
-// src/shared/components/ui/Switch.tsx
-
 /**
  * SWITCH COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -28,10 +26,6 @@
 
 import { InputHTMLAttributes, forwardRef, ReactNode } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   /** Size variant */
   size?: 'md' | 'lg';
@@ -41,10 +35,7 @@ export interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   md: {
     track: 'w-11 h-6',
@@ -62,10 +53,6 @@ const labelTextSize = {
   md: 'text-sm',
   lg: 'text-base',
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
   (

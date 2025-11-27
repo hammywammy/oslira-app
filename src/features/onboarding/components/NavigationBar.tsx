@@ -1,5 +1,3 @@
-// src/features/onboarding/components/NavigationBar.tsx
-
 /**
  * NAVIGATION BAR - LIGHT MODE REDESIGN
  * 

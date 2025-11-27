@@ -1,5 +1,3 @@
-// src/features/notifications/components/NotificationPanel.tsx
-
 import { useNotificationStore } from '../store/notificationStore';
 import { AnnouncementCard } from './AnnouncementCard';
 

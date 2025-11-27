@@ -12,10 +12,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
-// =============================================================================
 // DATA - B2B PERSONAS TESTIMONIALS
-// =============================================================================
-
 const testimonials = [
   {
     quote: "Running a solo agency means I wear every hat. Oslira gave me back 10+ hours a week by automating lead research. Now I can focus on delivery instead of hunting for the next client.",
@@ -43,10 +40,7 @@ const testimonials = [
   }
 ];
 
-// =============================================================================
 // ANIMATION VARIANTS
-// =============================================================================
-
 const fadeIn = {
   hidden: { opacity: 0, y: 24 },
   visible: {
@@ -65,10 +59,6 @@ const stagger = {
     }
   }
 };
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function TestimonialsSection() {
   const ref = useRef(null);

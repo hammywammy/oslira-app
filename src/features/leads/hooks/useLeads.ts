@@ -1,14 +1,8 @@
-// src/features/leads/hooks/useLeads.ts
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchLeads } from '../api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { Lead } from '@/shared/types/leads.types';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface UseLeadsOptions {
   autoFetch?: boolean;
@@ -26,10 +20,6 @@ interface UseLeadsReturn {
   refresh: () => Promise<void>;
   isEmpty: boolean;
 }
-
-// =============================================================================
-// HOOK
-// =============================================================================
 
 export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -63,9 +53,9 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
       return data;
     },
     enabled: autoFetch && !!businessProfileId && isAuthenticated && !authLoading,
-    staleTime: 30000, // 30s - keep data stable during analysis
-    gcTime: 5 * 60 * 1000, // 5min cache
-    refetchOnWindowFocus: false, // Prevent unnecessary refetches
+    staleTime: 30000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
   const refresh = async () => {

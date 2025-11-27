@@ -10,16 +10,8 @@ import { Icon } from '@iconify/react';
 import { Logo } from '@/shared/components/ui/Logo';
 import { env } from '@/core/auth/environment';
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 // Get app subdomain URL from centralized environment config
 const APP_URL = env.appUrl;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function MarketingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

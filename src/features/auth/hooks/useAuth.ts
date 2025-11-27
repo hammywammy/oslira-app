@@ -1,5 +1,3 @@
-// src/features/auth/hooks/useAuth.ts
-
 /**
  * USE AUTH HOOK
  * 

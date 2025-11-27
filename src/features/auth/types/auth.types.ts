@@ -5,10 +5,7 @@
 
 import { User as SupabaseUser, Session as SupabaseSession } from '@supabase/supabase-js';
 
-// =============================================================================
 // USER TYPES
-// =============================================================================
-
 export interface UserProfile {
   id: string;
   email: string;
@@ -34,10 +31,7 @@ export interface User extends SupabaseUser {
   subscription?: UserSubscription;
 }
 
-// =============================================================================
 // SESSION TYPES
-// =============================================================================
-
 export type Session = SupabaseSession;
 
 export interface AuthState {
@@ -48,10 +42,7 @@ export interface AuthState {
   error: string | null;
 }
 
-// =============================================================================
 // AUTH FORM TYPES
-// =============================================================================
-
 export interface LoginCredentials {
   email: string;
   password: string;
@@ -71,10 +62,7 @@ export interface UpdatePasswordRequest {
   password: string;
 }
 
-// =============================================================================
 // AUTH EVENTS
-// =============================================================================
-
 export type AuthEvent =
   | 'SIGNED_IN'
   | 'SIGNED_OUT'
@@ -88,10 +76,7 @@ export interface AuthEventPayload {
   user: User | null;
 }
 
-// =============================================================================
 // OAUTH TYPES
-// =============================================================================
-
 export type OAuthProvider = 'google' | 'github' | 'azure';
 
 export interface OAuthOptions {
@@ -100,10 +85,7 @@ export interface OAuthOptions {
   scopes?: string;
 }
 
-// =============================================================================
 // TOKEN TYPES
-// =============================================================================
-
 export interface TokenInfo {
   accessToken: string;
   refreshToken: string;
@@ -111,10 +93,7 @@ export interface TokenInfo {
   expiresIn: number;
 }
 
-// =============================================================================
 // AUTH ERROR TYPES
-// =============================================================================
-
 export interface AuthError {
   code: string;
   message: string;

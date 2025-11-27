@@ -1,5 +1,3 @@
-// src/features/onboarding/hooks/useCompleteOnboarding.ts
-
 /**
  * COMPLETE ONBOARDING HOOK - WITH WEBSOCKET PROGRESS TRACKING
  *
@@ -12,14 +10,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { httpClient } from '@/core/auth/http-client';
+import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
 import { useBusinessContextWebSocket } from './useBusinessContextWebSocket';
 import type { BusinessContextProgressState } from './useBusinessContextWebSocket';
 import type { FormData } from '@/features/onboarding/constants/validationSchemas';
-
-// =============================================================================
-// RESPONSE TYPE
-// =============================================================================
 
 interface OnboardingCompleteResponse {
   success: boolean;
@@ -31,10 +26,6 @@ interface OnboardingCompleteResponse {
   };
 }
 
-// =============================================================================
-// RETURN TYPE
-// =============================================================================
-
 interface UseCompleteOnboardingReturn {
   mutate: (formData: FormData) => void;
   isPending: boolean;
@@ -44,16 +35,7 @@ interface UseCompleteOnboardingReturn {
   isConnected: boolean;
 }
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-// Fallback timeout if WebSocket fails - ensures user isn't stuck forever
-const FALLBACK_TIMEOUT = 90000; // 90 seconds
-
-// =============================================================================
-// HOOK
-// =============================================================================
+const FALLBACK_TIMEOUT = 90000;
 
 export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
   const navigate = useNavigate();
@@ -65,64 +47,56 @@ export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
   // WebSocket hook for real-time progress tracking
   const { progress, isConnected, error: wsError } = useBusinessContextWebSocket(runId);
 
-  // Handle completion - navigate when WebSocket reports complete
   useEffect(() => {
     if (hasNavigatedRef.current) return;
 
     if (progress?.status === 'complete') {
       hasNavigatedRef.current = true;
 
-      // Clear fallback timeout
       if (fallbackTimeoutRef.current) {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
       }
 
-      console.log('[CompleteOnboarding] ✅ WebSocket reports complete - navigating');
+      logger.info('[CompleteOnboarding] WebSocket reports complete - navigating');
 
-      // Refresh user data (onboarding_completed will be true, and we'll get fresh JWT)
       refreshUser()
         .then(() => {
-          console.log('[CompleteOnboarding] ✅ User data refreshed');
+          logger.info('[CompleteOnboarding] User data refreshed');
           navigate('/dashboard', { replace: true });
         })
         .catch((refreshError: Error) => {
-          console.warn('[CompleteOnboarding] ⚠️ User refresh failed (proceeding anyway)', {
+          logger.warn('[CompleteOnboarding] User refresh failed (proceeding anyway)', {
             error: refreshError.message,
           });
-          // Don't throw - Worker already completed successfully
           navigate('/dashboard', { replace: true });
         });
     }
   }, [progress?.status, refreshUser, navigate]);
 
-  // Handle WebSocket failure - if generation failed, we should still navigate eventually
   useEffect(() => {
     if (hasNavigatedRef.current) return;
 
     if (progress?.status === 'failed') {
       hasNavigatedRef.current = true;
 
-      // Clear fallback timeout
       if (fallbackTimeoutRef.current) {
         clearTimeout(fallbackTimeoutRef.current);
         fallbackTimeoutRef.current = null;
       }
 
-      console.error('[CompleteOnboarding] ❌ Generation failed', {
+      logger.error('[CompleteOnboarding] Generation failed', {
         error: wsError?.message,
       });
 
-      // Still navigate - user needs to see the result
       refreshUser()
-        .catch(() => {}) // Ignore refresh errors
+        .catch(() => {})
         .finally(() => {
           navigate('/dashboard', { replace: true });
         });
     }
   }, [progress?.status, wsError, refreshUser, navigate]);
 
-  // Cleanup fallback timeout on unmount
   useEffect(() => {
     return () => {
       if (fallbackTimeoutRef.current) {
@@ -133,7 +107,7 @@ export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
 
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      console.log('[CompleteOnboarding] 🚀 Starting mutation', {
+      logger.info('[CompleteOnboarding] Starting mutation', {
         timestamp: new Date().toISOString(),
         formData: {
           full_name: formData.full_name,
@@ -146,14 +120,12 @@ export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
         },
       });
 
-      // Send the form data EXACTLY as-is
-      // Backend derives signature_name from full_name
       const response = await httpClient.post<OnboardingCompleteResponse>(
         '/api/business/generate-context',
         formData
       );
 
-      console.log('[CompleteOnboarding] ✅ Mutation response received', {
+      logger.info('[CompleteOnboarding] Mutation response received', {
         timestamp: new Date().toISOString(),
         run_id: response.data.run_id,
         status: response.data.status,
@@ -164,23 +136,20 @@ export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
     },
 
     onSuccess: (response: OnboardingCompleteResponse) => {
-      console.log('[CompleteOnboarding] 🎯 onSuccess triggered - starting WebSocket');
+      logger.info('[CompleteOnboarding] onSuccess triggered - starting WebSocket');
 
       const newRunId = response.data.run_id;
 
-      // Set runId to trigger WebSocket connection
       setRunId(newRunId);
 
-      // Set fallback timeout in case WebSocket fails completely
-      // This ensures user isn't stuck forever if WebSocket never connects/completes
       fallbackTimeoutRef.current = setTimeout(() => {
         if (hasNavigatedRef.current) return;
 
-        console.warn('[CompleteOnboarding] ⏰ Fallback timeout triggered - navigating anyway');
+        logger.warn('[CompleteOnboarding] Fallback timeout triggered - navigating anyway');
         hasNavigatedRef.current = true;
 
         refreshUser()
-          .catch(() => {}) // Ignore refresh errors
+          .catch(() => {})
           .finally(() => {
             navigate('/dashboard', { replace: true });
           });
@@ -188,10 +157,7 @@ export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
     },
 
     onError: (error: Error) => {
-      console.error('[CompleteOnboarding] ❌ Error in mutation flow', {
-        timestamp: new Date().toISOString(),
-        error: error.message,
-      });
+      logger.error('[CompleteOnboarding] Error in mutation flow', error);
     },
   });
 

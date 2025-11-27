@@ -1,5 +1,3 @@
-// src/shared/components/ui/Radio.tsx
-
 /**
  * RADIO COMPONENT - PRODUCTION GRADE V2.0
  * 
@@ -31,10 +29,6 @@
 
 import { InputHTMLAttributes, forwardRef, ReactNode } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   /** Size variant */
   size?: 'md' | 'lg';
@@ -46,10 +40,7 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   className?: string;
 }
 
-// =============================================================================
 // SIZE STYLES
-// =============================================================================
-
 const sizeStyles = {
   md: 'w-5 h-5',
   lg: 'w-6 h-6',
@@ -64,10 +55,6 @@ const labelTextSize = {
   md: 'text-sm',
   lg: 'text-base',
 } as const;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export const Radio = forwardRef<HTMLInputElement, RadioProps>(
   (

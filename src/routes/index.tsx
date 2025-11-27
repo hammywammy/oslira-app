@@ -1,5 +1,3 @@
-// src/routes/index.tsx
-
 /**
  * ROUTER CONFIGURATION - OSLIRA PRODUCTION
  * 
@@ -35,10 +33,7 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 
 import { isAppDomain, isMarketingDomain, getUrlForDomain } from '@/core/auth/environment';
 
-// =============================================================================
 // DOMAIN GUARD
-// =============================================================================
-
 function DomainGuard({ 
   domain, 
   children 
@@ -57,10 +52,7 @@ function DomainGuard({
   return children;
 }
 
-// =============================================================================
 // ROUTER
-// =============================================================================
-
 export const router = createBrowserRouter([
   // ============================================================
   // MARKETING DOMAIN (oslira.com)

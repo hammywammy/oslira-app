@@ -1,5 +1,3 @@
-// src/features/onboarding/components/RefinementCallout.tsx
-
 /**
  * REFINEMENT CALLOUT
  * 

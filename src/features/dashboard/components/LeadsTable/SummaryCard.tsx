@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/SummaryCard.tsx
-
 /**
  * SUMMARY CARD COMPONENT
  *

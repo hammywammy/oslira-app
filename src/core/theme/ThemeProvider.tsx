@@ -1,5 +1,3 @@
-// src/core/theme/ThemeProvider.tsx
-
 /**
  * THEME PROVIDER - PRODUCTION GRADE V2.0 (SUBDOMAIN-AWARE)
  * 
@@ -26,10 +24,6 @@ import {
   ReactNode 
 } from 'react';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextValue {
@@ -45,23 +39,13 @@ interface ThemeContextValue {
   darkModeEnabled: boolean;
 }
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
 const STORAGE_KEY = 'oslira-theme';
 const THEME_CLASS = 'dark';
 
-// =============================================================================
 // CONTEXT
-// =============================================================================
-
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-// =============================================================================
 // HELPER: Check if dark mode should be enabled
-// =============================================================================
-
 function isDarkModeAllowed(): boolean {
   if (typeof window === 'undefined') return false;
 
@@ -122,10 +106,7 @@ function isDarkModeAllowed(): boolean {
   return false;
 }
 
-// =============================================================================
 // PROVIDER
-// =============================================================================
-
 interface ThemeProviderProps {
   children: ReactNode;
   /** Default theme if no preference found */
@@ -293,10 +274,7 @@ export function ThemeProvider({
   );
 }
 
-// =============================================================================
 // HOOK: useTheme
-// =============================================================================
-
 export function useTheme() {
   const context = useContext(ThemeContext);
   
@@ -306,9 +284,5 @@ export function useTheme() {
   
   return context;
 }
-
-// =============================================================================
-// EXPORT TYPES
-// =============================================================================
 
 export type { Theme, ThemeContextValue };

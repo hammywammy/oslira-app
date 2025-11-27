@@ -1,5 +1,3 @@
-// src/config/announcements.ts
-
 /**
  * ANNOUNCEMENTS CONFIGURATION
  *

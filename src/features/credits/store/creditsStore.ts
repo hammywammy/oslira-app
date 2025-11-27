@@ -1,5 +1,3 @@
-// src/features/credits/store/creditsStore.ts
-
 /**
  * CREDITS STORE - FEATURE-ISOLATED STATE MANAGEMENT
  * 
@@ -15,10 +13,6 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 interface CreditBalance {
   account_id: string;
@@ -47,10 +41,6 @@ interface CreditsState {
   getLightBalance: () => number;
   getLastUpdated: () => string | null;
 }
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useCreditsStore = create<CreditsState>()(
   devtools(
@@ -98,10 +88,7 @@ export const useCreditsStore = create<CreditsState>()(
   )
 );
 
-// =============================================================================
 // SELECTORS (for component consumption)
-// =============================================================================
-
 export const useCurrentBalance = () =>
   useCreditsStore((state) => state.balance?.credit_balance ?? 0);
 

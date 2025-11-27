@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/analytics/MetricsSection.tsx
-
 import type { ReactNode } from 'react';
 
 interface MetricsSectionProps {

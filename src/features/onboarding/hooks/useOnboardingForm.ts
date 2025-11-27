@@ -1,5 +1,3 @@
-// src/features/onboarding/hooks/useOnboardingForm.ts
-
 /**
  * ONBOARDING FORM HOOK
  * 
@@ -12,10 +10,6 @@
 
 import { create } from 'zustand';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface OnboardingFormStore {
   currentStep: number;
   direction: number;
@@ -26,10 +20,6 @@ interface OnboardingFormStore {
   prevStep: () => void;
   reset: () => void;
 }
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useOnboardingForm = create<OnboardingFormStore>((set) => ({
   currentStep: 1,

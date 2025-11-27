@@ -1,5 +1,3 @@
-// src/features/auth/components/ProtectedRoute.tsx
-
 /**
  * PROTECTED ROUTE
  * 
@@ -26,18 +24,10 @@ import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthProvider';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface ProtectedRouteProps {
   children: ReactNode;
   requireOnboarding?: boolean; // If false, allow access even if onboarding incomplete
 }
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function ProtectedRoute({
   children,

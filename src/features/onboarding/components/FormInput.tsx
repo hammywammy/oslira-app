@@ -1,5 +1,3 @@
-// src/features/onboarding/components/FormInput.tsx
-
 /**
  * FORM INPUT & TEXTAREA COMPONENTS - PRODUCTION GRADE
  * 
@@ -15,10 +13,6 @@
 import { forwardRef } from 'react';
 import { Icon } from '@iconify/react';
 import type { FieldError } from 'react-hook-form';
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -44,20 +38,14 @@ export interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLText
   maxLength?: number;
 }
 
-// =============================================================================
 // HELPER: Extract error message
-// =============================================================================
-
 function getErrorMessage(error: FieldError | string | undefined): string | undefined {
   if (!error) return undefined;
   if (typeof error === 'string') return error;
   return error.message;
 }
 
-// =============================================================================
 // FORM INPUT COMPONENT
-// =============================================================================
-
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   function FormInput(
     {
@@ -141,14 +129,11 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
   }
 );
 
-// =============================================================================
 // FORM TEXTAREA COMPONENT
 // ✅ FIXED: Removed built-in character counter (handled by parent)
 // ✅ FIXED: Increased default rows from 4 to 8
 // ✅ FIXED: Changed ring-purple-500 to ring-primary-500
 // ✅ FIXED: React Error #137 - children explicitly excluded
-// =============================================================================
-
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   function FormTextarea(
     {

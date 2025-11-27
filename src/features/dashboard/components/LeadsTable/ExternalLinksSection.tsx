@@ -1,5 +1,3 @@
-// src/features/dashboard/components/LeadsTable/ExternalLinksSection.tsx
-
 /**
  * EXTERNAL LINKS SECTION COMPONENT
  *

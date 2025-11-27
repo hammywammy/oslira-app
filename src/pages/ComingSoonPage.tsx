@@ -1,5 +1,3 @@
-// src/pages/ComingSoonPage.tsx
-
 /**
  * COMING SOON PAGE - ELECTRIC BLUE WAVE GRADIENT
  * 
@@ -11,10 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Icon } from '@iconify/react';
 
-// =============================================================================
 // STYLES (Inline for portability)
-// =============================================================================
-
 const styles = `
   @keyframes gradient {
     0% { background-position: 0% 50%; }
@@ -64,10 +59,6 @@ const styles = `
     opacity: 0.6;
   }
 `;
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function ComingSoonPage() {
   const navigate = useNavigate();

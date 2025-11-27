@@ -1,5 +1,3 @@
-// src/features/onboarding/components/ProgressBar.tsx
-
 /**
  * PROGRESS BAR - MODERN MINIMAL DESIGN
  * 

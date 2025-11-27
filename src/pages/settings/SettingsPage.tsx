@@ -1,5 +1,3 @@
-// src/pages/settings/SettingsPage.tsx
-
 /**
  * SETTINGS PAGE - CLAUDE-STYLE ARCHITECTURE
  * 
@@ -31,10 +29,7 @@ import { Icon } from '@iconify/react';
 import { Sidebar } from '@/shared/components/layout/Sidebar';
 import { useSidebarStore } from '@/shared/stores/sidebarStore';
 
-// =============================================================================
 // TAB CONFIGURATION
-// =============================================================================
-
 interface SettingsTab {
   id: string;
   label: string;
@@ -80,10 +75,6 @@ const SETTINGS_TABS: SettingsTab[] = [
     description: 'Credit usage and analytics',
   },
 ];
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function SettingsPage() {
   const location = useLocation();

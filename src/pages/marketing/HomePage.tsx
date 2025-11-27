@@ -12,10 +12,6 @@ import { HowItWorksSection } from '@/features/homepage/components/HowItWorksSect
 import { TestimonialsSection } from '@/features/homepage/components/TestimonialsSection';
 import { FinalCTASection } from '@/features/homepage/components/FinalCTASection';
 
-// =============================================================================
-// COMPONENT
-// =============================================================================
-
 export function HomePage() {
   return (
     <div className="min-h-screen bg-white">

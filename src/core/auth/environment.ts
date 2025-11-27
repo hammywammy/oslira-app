@@ -1,5 +1,3 @@
-// src/core/auth/environment.ts
-
 /**
  * ENVIRONMENT MANAGER
  * 
@@ -17,10 +15,6 @@
  * - Feature flags: Extend with permission checks
  * - Analytics: Use environment context
  */
-
-// =============================================================================
-// TYPES
-// =============================================================================
 
 export type Environment = 'staging' | 'production';
 export type DomainType = 'app' | 'marketing' | 'unknown';
@@ -41,10 +35,7 @@ export interface DomainInfo {
   isMarketing: boolean;
 }
 
-// =============================================================================
 // ENVIRONMENT MANAGER CLASS
-// =============================================================================
-
 class EnvironmentManager {
   private static instance: EnvironmentManager;
   private config: EnvironmentConfig;
@@ -278,10 +269,6 @@ class EnvironmentManager {
     return EnvironmentManager.instance;
   }
 }
-
-// =============================================================================
-// EXPORTS
-// =============================================================================
 
 // Singleton instance
 export const environment = EnvironmentManager.getInstance();

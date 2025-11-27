@@ -1,5 +1,3 @@
-// src/features/leads/api/leadsApi.ts
-
 /**
  * LEADS API SERVICE
  *
@@ -15,11 +13,7 @@
 
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
-import type { Lead } from '@/shared/types/leads.types';
-
-// =============================================================================
-// TYPES
-// =============================================================================
+import type { Lead, AIResponse, ExtractedData } from '@/shared/types/leads.types';
 
 interface FetchLeadsResponse {
   success: boolean;
@@ -36,26 +30,24 @@ interface FetchLeadsParams {
   businessProfileId?: string | null;
 }
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
 /**
  * Map backend ai_analysis to frontend AIResponse format
  * Handles snake_case to camelCase conversion
  */
-function mapAiAnalysisToAiResponse(aiAnalysis: any): any {
-  if (!aiAnalysis) return undefined;
+function mapAiAnalysisToAiResponse(aiAnalysis: unknown): AIResponse | undefined {
+  if (!aiAnalysis || typeof aiAnalysis !== 'object') return undefined;
+
+  const data = aiAnalysis as Record<string, unknown>;
 
   return {
-    score: aiAnalysis.profile_assessment_score ?? aiAnalysis.score,
-    leadTier: aiAnalysis.lead_tier ?? aiAnalysis.leadTier,
-    strengths: aiAnalysis.strengths,
-    weaknesses: aiAnalysis.weaknesses,
-    riskFactors: aiAnalysis.risk_factors ?? aiAnalysis.riskFactors,
-    fitReasoning: aiAnalysis.fit_reasoning ?? aiAnalysis.fitReasoning,
-    opportunities: aiAnalysis.opportunities,
-    recommendedActions: aiAnalysis.recommended_actions ?? aiAnalysis.recommendedActions,
+    score: (data.profile_assessment_score ?? data.score) as number,
+    leadTier: (data.lead_tier ?? data.leadTier) as 'hot' | 'warm' | 'cold',
+    strengths: (data.strengths ?? []) as string[],
+    weaknesses: (data.weaknesses ?? []) as string[],
+    riskFactors: (data.risk_factors ?? data.riskFactors ?? []) as string[],
+    fitReasoning: (data.fit_reasoning ?? data.fitReasoning ?? '') as string,
+    opportunities: (data.opportunities ?? []) as string[],
+    recommendedActions: (data.recommended_actions ?? data.recommendedActions ?? []) as string[],
   };
 }
 
@@ -63,56 +55,57 @@ function mapAiAnalysisToAiResponse(aiAnalysis: any): any {
  * Map backend extracted_data to frontend ExtractedData format
  * Handles snake_case to camelCase conversion for all nested fields
  */
-function mapExtractedData(extractedData: any): any {
-  if (!extractedData) return undefined;
+function mapExtractedData(extractedData: unknown): ExtractedData | undefined {
+  if (!extractedData || typeof extractedData !== 'object') return undefined;
+
+  const data = extractedData as Record<string, unknown>;
+  const staticData = data.static as Record<string, unknown> | undefined;
+  const calculatedData = data.calculated as Record<string, unknown> | undefined;
+  const metadataData = data.metadata as Record<string, unknown> | undefined;
 
   return {
-    static: extractedData.static
+    static: staticData
       ? {
-          verified: extractedData.static.verified,
-          postsCount: extractedData.static.posts_count,
-          externalUrl: extractedData.static.external_url,
-          topHashtags: extractedData.static.top_hashtags,
-          topMentions: extractedData.static.top_mentions,
-          avgVideoViews: extractedData.static.avg_video_views,
-          dominantFormat: extractedData.static.dominant_format,
-          followersCount: extractedData.static.followers_count,
-          avgLikesPerPost: extractedData.static.avg_likes_per_post,
-          formatDiversity: extractedData.static.format_diversity,
-          daysSinceLastPost: extractedData.static.days_since_last_post,
-          isBusinessAccount: extractedData.static.is_business_account,
-          avgCommentsPerPost: extractedData.static.avg_comments_per_post,
-          postingConsistency: extractedData.static.posting_consistency,
-          businessCategoryName: extractedData.static.business_category_name,
+          verified: staticData.verified as boolean,
+          postsCount: staticData.posts_count as number,
+          externalUrl: (staticData.external_url as string | null) ?? null,
+          topHashtags: (staticData.top_hashtags as Array<{ hashtag: string; count: number }>) ?? [],
+          topMentions: (staticData.top_mentions as Array<{ username: string; count: number }>) ?? [],
+          avgVideoViews: (staticData.avg_video_views as number | null) ?? null,
+          dominantFormat: staticData.dominant_format as string,
+          followersCount: staticData.followers_count as number,
+          avgLikesPerPost: staticData.avg_likes_per_post as number,
+          formatDiversity: staticData.format_diversity as number,
+          daysSinceLastPost: staticData.days_since_last_post as number,
+          isBusinessAccount: staticData.is_business_account as boolean,
+          avgCommentsPerPost: staticData.avg_comments_per_post as number,
+          postingConsistency: staticData.posting_consistency as number,
+          businessCategoryName: (staticData.business_category_name as string | null) ?? null,
         }
       : undefined,
-    calculated: extractedData.calculated
+    calculated: calculatedData
       ? {
-          authorityRatio: extractedData.calculated.authority_ratio,
-          accountMaturity: extractedData.calculated.account_maturity,
-          engagementScore: extractedData.calculated.engagement_score,
-          engagementHealth: extractedData.calculated.engagement_health,
-          profileHealthScore: extractedData.calculated.profile_health_score,
-          fakeFollowerWarning: extractedData.calculated.fake_follower_warning,
-          contentSophistication: extractedData.calculated.content_sophistication,
-          engagementConsistency: extractedData.calculated.engagement_consistency,
-          leadTier: extractedData.calculated.leadTier || extractedData.calculated.lead_tier,
-          audienceScale: extractedData.calculated.audienceScale || extractedData.calculated.audience_scale,
+          authorityRatio: calculatedData.authority_ratio as number,
+          accountMaturity: calculatedData.account_maturity as number,
+          engagementScore: calculatedData.engagement_score as number,
+          engagementHealth: calculatedData.engagement_health as number,
+          profileHealthScore: calculatedData.profile_health_score as number,
+          fakeFollowerWarning: calculatedData.fake_follower_warning as string,
+          contentSophistication: calculatedData.content_sophistication as number,
+          engagementConsistency: calculatedData.engagement_consistency as number,
+          leadTier: (calculatedData.leadTier || calculatedData.lead_tier) as 'hot' | 'warm' | 'cold' | undefined,
+          audienceScale: (calculatedData.audienceScale || calculatedData.audience_scale) as string | undefined,
         }
       : undefined,
-    metadata: extractedData.metadata
+    metadata: metadataData
       ? {
-          version: extractedData.metadata.version,
-          sampleSize: extractedData.metadata.sample_size,
-          extractedAt: extractedData.metadata.extracted_at,
+          version: metadataData.version as string,
+          sampleSize: metadataData.sample_size as number,
+          extractedAt: metadataData.extracted_at as string,
         }
       : undefined,
-  };
+  } as ExtractedData;
 }
-
-// =============================================================================
-// API FUNCTIONS
-// =============================================================================
 
 /**
  * Fetch all leads for the authenticated user
@@ -150,41 +143,12 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
       return [];
     }
 
-    // DEBUG LOGGING - Check data structure from backend
-    console.group('🔍 Leads API - Backend Response (RAW)');
-    console.log('Total leads:', response.data.length);
-    if (response.data.length > 0) {
-      const firstLead = response.data[0];
-      console.log('Sample lead object:', firstLead);
-      console.log('Has ai_analysis?', !!(firstLead as any).ai_analysis);
-      console.log('ai_analysis data:', (firstLead as any).ai_analysis);
-      console.log('Has extracted_data?', !!firstLead.extracted_data);
-      console.log('extracted_data data (snake_case):', firstLead.extracted_data);
-    }
-    console.groupEnd();
-
-    // Map backend fields to frontend types
-    const mappedData = response.data.map((lead: any) => ({
+    const mappedData = response.data.map((lead: Lead) => ({
       ...lead,
-      // Map ai_analysis to ai_response with proper field mapping
-      ai_response: mapAiAnalysisToAiResponse(lead.ai_analysis),
-      // Map extracted_data from snake_case to camelCase
+      ai_response: mapAiAnalysisToAiResponse((lead as unknown as Record<string, unknown>).ai_analysis),
       extracted_data: mapExtractedData(lead.extracted_data),
-      // Map extracted_data.calculated to calculated_metrics for backward compatibility
       calculated_metrics: lead.extracted_data?.calculated || undefined,
     }));
-
-    // DEBUG LOGGING - Check transformed data
-    console.group('🔄 Leads API - Transformed Response');
-    if (mappedData.length > 0) {
-      const firstMapped = mappedData[0];
-      console.log('Transformed lead object:', firstMapped);
-      console.log('Has ai_response?', !!firstMapped.ai_response);
-      console.log('ai_response data (camelCase):', firstMapped.ai_response);
-      console.log('Has extracted_data?', !!firstMapped.extracted_data);
-      console.log('extracted_data data (camelCase):', firstMapped.extracted_data);
-    }
-    console.groupEnd();
 
     logger.info('[LeadsApi] Leads fetched successfully', {
       count: mappedData.length
@@ -193,7 +157,6 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
     return mappedData;
   } catch (error) {
     logger.error('[LeadsApi] Failed to fetch leads', error as Error);
-    // Return empty array instead of throwing - graceful degradation
     return [];
   }
 }

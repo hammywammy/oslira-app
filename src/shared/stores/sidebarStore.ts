@@ -1,5 +1,3 @@
-// src/shared/stores/sidebarStore.ts
-
 /**
  * SIDEBAR STORE - ZUSTAND STATE MANAGEMENT
  * 
@@ -20,20 +18,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface SidebarState {
   isCollapsed: boolean;
   toggleCollapse: () => void;
   collapse: () => void;
   expand: () => void;
 }
-
-// =============================================================================
-// STORE
-// =============================================================================
 
 export const useSidebarStore = create<SidebarState>()(
   persist(

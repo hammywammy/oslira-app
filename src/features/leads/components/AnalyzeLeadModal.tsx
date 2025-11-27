@@ -1,5 +1,3 @@
-// src/features/leads/components/AnalyzeLeadModal.tsx
-
 /**
  * ANALYZE LEAD MODAL - V8.0 PURE INPUT FORM
  *
@@ -24,10 +22,6 @@ import { useAnalysisQueueStore } from '@/features/analysis-queue/stores/useAnaly
 import { useCreditsService } from '@/features/credits/hooks/useCreditsService';
 import type { AnalysisType } from '@/shared/types/leads.types';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
 interface AnalyzeLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,10 +37,6 @@ interface AnalysisOption {
   color: string;
   gradient: string;
 }
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
 
 const ANALYSIS_OPTIONS: AnalysisOption[] = [
   {
@@ -68,10 +58,6 @@ const ANALYSIS_OPTIONS: AnalysisOption[] = [
     gradient: 'from-blue-500 to-indigo-500',
   },
 ];
-
-// =============================================================================
-// COMPONENT
-// =============================================================================
 
 export function AnalyzeLeadModal({
   isOpen,

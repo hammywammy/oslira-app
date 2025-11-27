@@ -1,5 +1,3 @@
-// src/main.tsx
-
 /**
  * APPLICATION ENTRY POINT
  * 
@@ -12,10 +10,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import '@/styles/index.css';
 
-// =============================================================================
 // START APP
-// =============================================================================
-
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {

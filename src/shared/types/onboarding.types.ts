@@ -1,5 +1,3 @@
-// src/shared/types/onboarding.types.ts
-
 /**
  * ONBOARDING TYPES - STREAMLINED
  * 
@@ -7,10 +5,7 @@
  * Maps to backend API expectations
  */
 
-// =============================================================================
 // FORM DATA (STREAMLINED - 4 STEPS)
-// =============================================================================
-
 export interface OnboardingFormData {
   // Step 1: Identity
   signature_name: string;
@@ -26,17 +21,11 @@ export interface OnboardingFormData {
   target_company_sizes: TargetCompanySize[];
 }
 
-// =============================================================================
 // ENUMS (MINIMAL)
-// =============================================================================
-
 export type TargetCompanySize = 'startup' | 'smb' | 'enterprise';
 export type BrandVoice = 'professional' | 'friendly' | 'casual';
 
-// =============================================================================
 // API PAYLOAD (BACKEND STRUCTURE)
-// =============================================================================
-
 export interface OnboardingSubmitPayload {
   signature_name: string;
   business_name: string; // Extracted from business_summary
@@ -63,10 +52,7 @@ export interface OnboardingSubmitPayload {
   };
 }
 
-// =============================================================================
 // API RESPONSE
-// =============================================================================
-
 export interface OnboardingCompleteResponse {
   success: boolean;
   business_profile_id: string;
