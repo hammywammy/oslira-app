@@ -51,7 +51,7 @@ export function useActiveAnalyses() {
   const queryClient = useQueryClient();
 
   // Connect to global WebSocket
-  const { isConnected } = useGlobalAnalysisStream();
+  useGlobalAnalysisStream();
 
   // Polling with adaptive interval
   const { data } = useQuery({
@@ -65,10 +65,7 @@ export function useActiveAnalyses() {
       // Stop polling if no active jobs
       if (activeCount === 0) return false;
 
-      // If WebSocket connected and few jobs, poll slowly (WebSocket handles updates)
-      if (isConnected && activeCount <= 3) return 10000; // 10s
-
-      // Otherwise poll every 5s (WebSocket failed or many jobs)
+      // Poll every 5s as fallback
       return 5000;
     },
     enabled: isAuthenticated && isAuthReady && jobs.length > 0,

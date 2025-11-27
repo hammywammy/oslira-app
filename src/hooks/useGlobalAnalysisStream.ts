@@ -1,197 +1,76 @@
 /**
- * GLOBAL ANALYSIS STREAM HOOK
- *
- * Single WebSocket connection that receives updates for ALL active analyses.
- *
- * ARCHITECTURE:
- * - Connects ONCE when first analysis starts
- * - Receives updates for ALL runIds
- * - Auto-reconnects on disconnect
- * - Gracefully degrades to polling if WebSocket fails
- *
- * USAGE:
- * useGlobalAnalysisStream(); // Call once in top-level component
+ * Global WebSocket connection for ALL analysis updates
  */
-
 import { useEffect, useRef } from 'react';
 import { useAnalysisQueueStore } from '@/features/analysis-queue/stores/useAnalysisQueueStore';
 import { authManager } from '@/core/auth/auth-manager';
 import { env } from '@/core/auth/environment';
 import { logger } from '@/core/utils/logger';
 
-interface StreamMessage {
-  type: 'analysis.progress' | 'analysis.complete' | 'analysis.failed' | 'ready' | 'pong';
-  runId?: string;
-  data?: {
-    progress: number;
-    step: { current: number; total: number };
-    status: string;
-    currentStep?: string;
-    avatarUrl?: string;
-    leadId?: string;
-    error?: string;
-  };
-  timestamp: number;
-}
-
 export function useGlobalAnalysisStream() {
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const reconnectAttemptsRef = useRef(0);
   const { jobs, updateJob } = useAnalysisQueueStore();
 
-  // Check if we have active jobs that need streaming
   const hasActiveJobs = jobs.some(j =>
     j.status === 'pending' || j.status === 'analyzing'
   );
 
   useEffect(() => {
-    // Only connect if we have active jobs
-    if (!hasActiveJobs) {
-      logger.info('[GlobalStream] No active jobs, skipping connection');
-      return;
-    }
+    if (!hasActiveJobs) return;
 
     let mounted = true;
 
     const connect = async () => {
-      try {
-        const token = await authManager.getAccessToken();
-        if (!token || !mounted) return;
+      const token = await authManager.getAccessToken();
+      if (!token || !mounted) return;
 
-        // Build WebSocket URL (wss:// for production, ws:// for dev)
-        const wsProtocol = env.apiUrl.startsWith('https') ? 'wss' : 'ws';
-        const wsUrl = env.apiUrl.replace(/^https?/, wsProtocol);
-        const url = `${wsUrl}/api/analysis/ws`;
+      const wsProtocol = env.apiUrl.startsWith('https') ? 'wss' : 'ws';
+      const wsUrl = env.apiUrl.replace(/^https?/, wsProtocol);
+      const ws = new WebSocket(`${wsUrl}/api/analysis/ws`);
 
-        logger.info('[GlobalStream] Connecting to global WebSocket');
+      wsRef.current = ws;
 
-        const ws = new WebSocket(url);
-        wsRef.current = ws;
+      ws.onopen = () => {
+        logger.info('[GlobalStream] Connected');
+      };
 
-        ws.onopen = () => {
-          if (!mounted) return;
-          logger.info('[GlobalStream] Connected');
-          reconnectAttemptsRef.current = 0; // Reset on successful connection
-        };
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
 
-        ws.onmessage = (event) => {
-          if (!mounted) return;
+          if (message.type === 'analysis.progress' ||
+              message.type === 'analysis.complete' ||
+              message.type === 'analysis.failed') {
 
-          try {
-            const message: StreamMessage = JSON.parse(event.data);
-
-            // Handle different message types
-            switch (message.type) {
-              case 'ready':
-                logger.info('[GlobalStream] Ready to receive updates');
-                break;
-
-              case 'pong':
-                // Heartbeat response - ignore
-                break;
-
-              case 'analysis.progress':
-              case 'analysis.complete':
-              case 'analysis.failed':
-                if (message.runId && message.data) {
-                  // Update specific job in store
-                  updateJob(message.runId, {
-                    progress: message.data.progress,
-                    step: message.data.step,
-                    status: message.data.status as any,
-                    avatarUrl: message.data.avatarUrl,
-                    leadId: message.data.leadId,
-                  });
-
-                  logger.info('[GlobalStream] Progress update', {
-                    runId: message.runId,
-                    progress: message.data.progress,
-                    status: message.data.status
-                  });
-                }
-                break;
-
-              default:
-                logger.warn('[GlobalStream] Unknown message type', { type: message.type });
+            if (message.runId && message.data) {
+              updateJob(message.runId, {
+                progress: message.data.progress,
+                step: message.data.step,
+                status: message.data.status,
+                avatarUrl: message.data.avatarUrl,
+                leadId: message.data.leadId,
+              });
             }
-          } catch (error) {
-            logger.error('[GlobalStream] Message parse error', { error });
           }
-        };
+        } catch (error) {
+          logger.error('[GlobalStream] Parse error', { error });
+        }
+      };
 
-        ws.onerror = () => {
-          if (!mounted) return;
-          // Silently handle error - onclose will log details
-        };
+      ws.onerror = (error) => {
+        logger.error('[GlobalStream] Error', { error });
+      };
 
-        ws.onclose = (event) => {
-          if (!mounted) return;
-
-          // Only log if it's not a clean closure or if we're debugging
-          const isCleanClose = event.code === 1000 || event.code === 1001;
-          const isNormalClose = event.code === 1006 && reconnectAttemptsRef.current === 0;
-
-          if (!isCleanClose && !isNormalClose) {
-            logger.info('[GlobalStream] Disconnected', {
-              code: event.code,
-              reason: event.reason || 'No reason provided',
-              wasClean: event.wasClean,
-              attempt: reconnectAttemptsRef.current
-            });
-          }
-
-          // Don't attempt reconnection if:
-          // 1. Clean closure (intentional disconnect)
-          // 2. First connection failed (backend might not support WebSocket yet)
-          if (isCleanClose || (event.code === 1006 && reconnectAttemptsRef.current === 0)) {
-            if (event.code === 1006 && reconnectAttemptsRef.current === 0) {
-              logger.info('[GlobalStream] WebSocket endpoint not available, using polling only');
-            }
-            reconnectAttemptsRef.current = 3; // Prevent further reconnection attempts
-            return;
-          }
-
-          // Attempt reconnection with exponential backoff (max 3 attempts)
-          if (reconnectAttemptsRef.current < 3) {
-            const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 8000);
-            reconnectAttemptsRef.current++;
-
-            logger.info('[GlobalStream] Reconnecting', {
-              attempt: reconnectAttemptsRef.current,
-              delay
-            });
-
-            reconnectTimeoutRef.current = setTimeout(() => {
-              if (mounted) connect();
-            }, delay);
-          } else {
-            logger.info('[GlobalStream] Max reconnection attempts reached, using polling only');
-          }
-        };
-      } catch (error) {
-        logger.error('[GlobalStream] Connection error', { error });
-      }
+      ws.onclose = () => {
+        logger.info('[GlobalStream] Disconnected');
+      };
     };
 
-    // Connect
     connect();
 
-    // Cleanup
     return () => {
       mounted = false;
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close(1000, 'Component unmounted');
-        wsRef.current = null;
-      }
+      wsRef.current?.close();
     };
-  }, [hasActiveJobs]); // Reconnect when first job starts
-
-  return {
-    isConnected: wsRef.current?.readyState === WebSocket.OPEN,
-    connectionState: wsRef.current?.readyState
-  };
+  }, [hasActiveJobs]);
 }
