@@ -52,10 +52,11 @@ interface LeadsTableProps {
 const COLUMN_WIDTHS = {
   checkbox: 56,
   lead: 280,
-  platform: 160,
+  niche: 120,
+  platform: 130,
   score: 200,
-  analysis: 160,
-  updated: 140,
+  analysis: 130,
+  updated: 110,
   actions: 100,
 };
 
@@ -204,6 +205,15 @@ const TableRow = memo(({ lead, isSelected, onSelectLead, onViewLead, onDeleteLea
             </div>
           </div>
         </div>
+      </td>
+
+      {/* Niche */}
+      <td className="px-4 border-r border-border" style={{ width: `${COLUMN_WIDTHS.niche}px`, padding: '12px 16px' }}>
+        {lead.niche ? (
+          <span className="text-sm text-foreground truncate">{lead.niche}</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )}
       </td>
 
       {/* Platform */}
@@ -460,6 +470,11 @@ export function LeadsTable({
           {/* Lead */}
           <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.lead}px` }}>
             <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Lead</span>
+          </th>
+
+          {/* Niche */}
+          <th className="px-4 py-3 text-left bg-muted/80 backdrop-blur-sm border-r border-border" style={{ width: `${COLUMN_WIDTHS.niche}px` }}>
+            <span className="text-xs font-semibold text-foreground uppercase tracking-wider">Niche</span>
           </th>
 
           {/* Platform */}

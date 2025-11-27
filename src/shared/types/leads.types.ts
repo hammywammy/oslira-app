@@ -44,6 +44,7 @@ export interface Lead {
   analysis_type: AnalysisType | null;
   analysis_status: AnalysisStatus | null;
   analysis_completed_at: string | null;
+  niche: string | null;
 
   // ============================================================================
   // AI ANALYSIS SUMMARY (legacy fields - kept for backward compatibility)
