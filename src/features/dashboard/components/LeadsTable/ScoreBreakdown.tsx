@@ -57,7 +57,7 @@ function ScoreRow({ label, score, maxScore }: { label: string; score: number | n
         <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           {hasScore && (
             <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-300"
+              className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${percentage}%` }}
             />
           )}
@@ -75,7 +75,7 @@ function ScoreRow({ label, score, maxScore }: { label: string; score: number | n
 
 export function ScoreBreakdown({ scores, overallScore }: ScoreBreakdownProps) {
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
+    <div className="group bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5 transition-all duration-200 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700">
       <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
         Score Breakdown
       </h3>

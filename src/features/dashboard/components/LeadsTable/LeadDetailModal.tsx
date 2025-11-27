@@ -1,22 +1,30 @@
 // src/features/dashboard/components/LeadsTable/LeadDetailModal.tsx
 
 /**
- * LEAD DETAIL MODAL - V4.2 (Professional B2B Intelligence)
+ * LEAD DETAIL MODAL - ENTERPRISE EDITION V5.0
  *
- * Professional modal for displaying complete lead information
- * Triggered by clicking the eye icon in the leads table
+ * Premium modal for displaying complete lead intelligence
+ * Built to Stripe/Linear quality standards
+ *
+ * DESIGN PRINCIPLES:
+ * - Sophisticated visual hierarchy with purposeful spacing (8px grid)
+ * - Enterprise color system with semantic meaning
+ * - Smooth micro-interactions (150-200ms, hardware-accelerated)
+ * - Progressive information disclosure
+ * - Accessibility-first (keyboard nav, ARIA labels, WCAG AA)
+ * - Production-ready states (loading, error, empty, success)
+ * - Premium dark mode (intentional, not afterthought)
  *
  * FEATURES:
- * - Compact horizontal header with dense profile metadata
- * - Score inside circular progress ring (top-right, below close button)
- * - Verification badge inline with name
- * - Platform, niche, business badges on same row as stats (right side)
- * - Plain text stats with bullet separators
- * - Refined tab navigation
- * - Dark mode support
+ * - Hero insight section (key takeaway at-a-glance)
+ * - Premium score visualization
+ * - Clean header with identity + metadata
+ * - Smooth tab transitions with maintained scroll
+ * - Professional card design with depth system
+ * - Responsive to content (smart empty states)
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '@/shared/components/ui/Modal';
@@ -47,14 +55,68 @@ type TabType = 'overview' | 'analytics';
 
 function formatNumber(count: number | null): string {
   if (!count) return '0';
+  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
   return count.toLocaleString();
 }
 
-function getScoreColor(score: number | null): string {
-  if (score === null) return 'text-gray-400';
-  if (score >= 80) return 'text-emerald-500';
-  if (score >= 60) return 'text-blue-500';
-  return 'text-amber-500';
+function getScoreColor(score: number | null): {
+  text: string;
+  bg: string;
+  border: string;
+  icon: string;
+} {
+  if (score === null)
+    return {
+      text: 'text-gray-600 dark:text-gray-400',
+      bg: 'bg-gray-50 dark:bg-gray-800/30',
+      border: 'border-gray-200 dark:border-gray-700',
+      icon: 'mdi:help-circle-outline',
+    };
+  if (score >= 80)
+    return {
+      text: 'text-emerald-700 dark:text-emerald-400',
+      bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+      border: 'border-emerald-200 dark:border-emerald-800',
+      icon: 'mdi:check-circle',
+    };
+  if (score >= 60)
+    return {
+      text: 'text-blue-700 dark:text-blue-400',
+      bg: 'bg-blue-50 dark:bg-blue-900/20',
+      border: 'border-blue-200 dark:border-blue-800',
+      icon: 'mdi:lightbulb-on',
+    };
+  if (score >= 40)
+    return {
+      text: 'text-amber-700 dark:text-amber-400',
+      bg: 'bg-amber-50 dark:bg-amber-900/20',
+      border: 'border-amber-200 dark:border-amber-800',
+      icon: 'mdi:alert-circle',
+    };
+  return {
+    text: 'text-red-700 dark:text-red-400',
+    bg: 'bg-red-50 dark:bg-red-900/20',
+    border: 'border-red-200 dark:border-red-800',
+    icon: 'mdi:close-circle',
+  };
+}
+
+function getScoreLabel(score: number | null): string {
+  if (score === null) return 'Not Analyzed';
+  if (score >= 80) return 'Excellent Match';
+  if (score >= 60) return 'Strong Potential';
+  if (score >= 40) return 'Moderate Fit';
+  return 'Needs Review';
+}
+
+function getActionRecommendation(score: number | null, analysisType: string | null): string {
+  if (!analysisType) return 'Run an analysis to get partnership insights';
+  if (score === null) return 'Analysis in progress...';
+  if (score >= 80) return 'Priority outreach recommended - strong alignment detected';
+  if (score >= 60) return 'Review detailed metrics and consider outreach';
+  if (score >= 40) return 'Evaluate gaps before proceeding with partnership';
+  return 'Explore other leads with stronger alignment';
 }
 
 // =============================================================================
@@ -62,7 +124,7 @@ function getScoreColor(score: number | null): string {
 // =============================================================================
 
 /**
- * Instagram-style verification badge (blue checkmark)
+ * Verification badge (Instagram-style blue checkmark)
  */
 function VerificationBadge() {
   return (
@@ -82,7 +144,7 @@ function VerificationBadge() {
  */
 function PlatformBadge() {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-full">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-full transition-all duration-200 hover:shadow-sm">
       <Icon icon="mdi:instagram" className="w-3.5 h-3.5 text-pink-600 dark:text-pink-400" />
       <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Instagram</span>
     </span>
@@ -90,103 +152,182 @@ function PlatformBadge() {
 }
 
 /**
- * Niche badge placeholder
+ * Niche badge
  */
 function NicheBadge() {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full">
-      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">NICHE BADGE</span>
+    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-full transition-all duration-200 hover:shadow-sm">
+      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">NICHE</span>
     </span>
   );
 }
 
 /**
- * Business account badge (purple)
+ * Business account badge
  */
 function BusinessBadge() {
   return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-full">
-      <span>💼</span>
+    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-full transition-all duration-200 hover:shadow-sm">
+      <Icon icon="mdi:briefcase" className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
       <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Business</span>
     </span>
   );
 }
 
 /**
- * Score display with number INSIDE circular progress ring
- * Positioned below the close button
+ * Hero Insight Section - Key takeaway at top of overview
  */
-function ScoreDisplay({ score }: { score: number | null }) {
-  const scoreColor = getScoreColor(score);
-  const percentage = score !== null ? score : 0;
-  const circumference = 2 * Math.PI * 36; // radius = 36
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+function HeroInsight({ lead }: { lead: Lead }) {
+  const { text, bg, border, icon } = getScoreColor(lead.overall_score);
+  const label = getScoreLabel(lead.overall_score);
+  const action = getActionRecommendation(lead.overall_score, lead.analysis_type);
 
   return (
-    <div className="absolute top-14 right-4 flex flex-col items-center">
-      {/* Circular Progress Ring with Score Inside */}
-      <div className="relative w-20 h-20">
-        <svg className="w-full h-full transform -rotate-90">
-          {/* Background track */}
-          <circle
-            cx="40"
-            cy="40"
-            r="36"
-            stroke="currentColor"
-            strokeWidth="5"
-            fill="none"
-            className="text-gray-200 dark:text-gray-700"
-          />
-          {/* Progress stroke */}
-          {score !== null && (
-            <circle
-              cx="40"
-              cy="40"
-              r="36"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className={scoreColor}
-            />
-          )}
-        </svg>
-        {/* Score Number Inside */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-2xl font-bold ${score !== null ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}`}>
-            {score !== null ? score : '--'}
-          </span>
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`rounded-xl border-2 ${border} ${bg} p-6 transition-all duration-200 hover:shadow-md`}
+    >
+      <div className="flex items-start gap-4">
+        <div className={`p-3 rounded-lg ${bg} border ${border}`}>
+          <Icon icon={icon} className={`w-6 h-6 ${text}`} />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h3 className={`text-xl font-semibold ${text}`}>{label}</h3>
+            {lead.overall_score !== null && (
+              <span className={`text-2xl font-bold ${text}`}>{lead.overall_score}/100</span>
+            )}
+          </div>
+          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{action}</p>
         </div>
       </div>
+    </motion.div>
+  );
+}
+
+/**
+ * Quick Stats Grid - Premium card design
+ */
+function QuickStatsGrid({ lead }: { lead: Lead }) {
+  const metrics = lead.calculated_metrics;
+
+  const stats = [
+    {
+      label: 'Engagement Rate',
+      value: metrics?.engagement_rate ? `${metrics.engagement_rate.toFixed(2)}%` : '—',
+      icon: 'mdi:trending-up',
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-50 dark:bg-green-900/20',
+    },
+    {
+      label: 'Profile Health',
+      value: metrics?.profile_health_score ? `${metrics.profile_health_score}/100` : '—',
+      icon: 'mdi:heart-pulse',
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    },
+    {
+      label: 'Content Quality',
+      value: metrics?.content_sophistication ? `${metrics.content_sophistication}/100` : '—',
+      icon: 'mdi:star',
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    },
+    {
+      label: 'Posting Frequency',
+      value: metrics?.posting_frequency ? `${metrics.posting_frequency.toFixed(1)}/mo` : '—',
+      icon: 'mdi:calendar-clock',
+      color: 'text-amber-600 dark:text-amber-400',
+      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {stats.map((stat, idx) => (
+        <motion.div
+          key={stat.label}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15, delay: idx * 0.05 }}
+          className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700"
+        >
+          <div className={`inline-flex p-2 rounded-lg ${stat.bgColor} mb-3`}>
+            <Icon icon={stat.icon} className={`w-5 h-5 ${stat.color}`} />
+          </div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {stat.value}
+          </div>
+          <div className="text-xs font-medium text-gray-600 dark:text-gray-400">{stat.label}</div>
+        </motion.div>
+      ))}
     </div>
   );
 }
 
 /**
- * Tab Navigation
+ * Tab Navigation with smooth indicator animation
  */
 function TabNav({
   activeTab,
   onTabChange,
-  isLightAnalysis
+  isLightAnalysis,
 }: {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
   isLightAnalysis: boolean;
 }) {
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const activeIndex = activeTab === 'overview' ? 0 : 1;
+    const activeEl = tabRefs.current[activeIndex];
+    if (activeEl) {
+      setIndicatorStyle({
+        left: activeEl.offsetLeft,
+        width: activeEl.offsetWidth,
+      });
+    }
+  }, [activeTab]);
+
+  const handleKeyDown = (e: React.KeyboardEvent, tab: TabType) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onTabChange(tab);
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      onTabChange('overview');
+      tabRefs.current[0]?.focus();
+    }
+    if (e.key === 'ArrowRight' && !isLightAnalysis) {
+      e.preventDefault();
+      onTabChange('analytics');
+      tabRefs.current[1]?.focus();
+    }
+  };
+
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700">
-      <nav className="flex gap-1 px-6 -mb-px" aria-label="Tabs">
+    <div className="relative border-b border-gray-200 dark:border-gray-700">
+      <nav className="flex gap-1 px-6" role="tablist" aria-label="Lead details tabs">
         <button
+          ref={(el) => (tabRefs.current[0] = el)}
           type="button"
+          role="tab"
+          aria-selected={activeTab === 'overview'}
+          aria-controls="overview-panel"
           onClick={() => onTabChange('overview')}
+          onKeyDown={(e) => handleKeyDown(e, 'overview')}
           className={`
-            px-4 py-3 text-sm font-medium border-b-2 transition-all duration-100
-            ${activeTab === 'overview'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+            relative px-4 py-3 text-sm font-medium transition-all duration-150
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-lg
+            ${
+              activeTab === 'overview'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
             }
           `}
         >
@@ -194,15 +335,23 @@ function TabNav({
         </button>
 
         <button
+          ref={(el) => (tabRefs.current[1] = el)}
           type="button"
-          onClick={() => onTabChange('analytics')}
+          role="tab"
+          aria-selected={activeTab === 'analytics'}
+          aria-controls="analytics-panel"
+          onClick={() => !isLightAnalysis && onTabChange('analytics')}
+          onKeyDown={(e) => handleKeyDown(e, 'analytics')}
+          disabled={isLightAnalysis}
           className={`
-            inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-all duration-100
-            ${activeTab === 'analytics'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : isLightAnalysis
-                ? 'border-transparent text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+            relative inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-all duration-150
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-t-lg
+            ${
+              activeTab === 'analytics'
+                ? 'text-blue-600 dark:text-blue-400'
+                : isLightAnalysis
+                  ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
             }
           `}
         >
@@ -212,6 +361,13 @@ function TabNav({
           )}
         </button>
       </nav>
+
+      {/* Animated indicator */}
+      <motion.div
+        className="absolute bottom-0 h-0.5 bg-blue-500"
+        animate={indicatorStyle}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      />
     </div>
   );
 }
@@ -229,39 +385,48 @@ function OverviewTab({ lead }: { lead: Lead }) {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6" role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
+      {/* Hero Insight */}
+      <HeroInsight lead={lead} />
+
+      {/* Quick Stats Grid */}
+      {lead.calculated_metrics && <QuickStatsGrid lead={lead} />}
+
+      {/* Analysis Meta */}
       <AnalysisMetaCards
         analysisType={lead.analysis_type}
         status={lead.analysis_status}
         analyzedAt={lead.analysis_completed_at}
       />
 
+      {/* Score Breakdown */}
       {lead.overall_score !== null && (
-        <ScoreBreakdown
-          scores={scoreBreakdown}
-          overallScore={lead.overall_score}
-        />
+        <ScoreBreakdown scores={scoreBreakdown} overallScore={lead.overall_score} />
       )}
 
-      {lead.summary && (
-        <SummaryCard
-          summary={lead.summary}
-          score={lead.overall_score}
-        />
-      )}
+      {/* Partnership Summary */}
+      {lead.summary && <SummaryCard summary={lead.summary} score={lead.overall_score} />}
 
+      {/* External Links */}
       {lead.external_urls && lead.external_urls.length > 0 && (
         <ExternalLinksSection links={lead.external_urls} />
       )}
 
+      {/* Empty State */}
       {!lead.analysis_type && (
-        <div className="flex flex-col items-center justify-center py-12 px-8 text-center bg-gray-50 dark:bg-gray-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
-          <Icon icon="mdi:chart-line-variant" className="w-12 h-12 text-gray-400 dark:text-gray-500 mb-4" />
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            Not Analyzed Yet
+        <div className="flex flex-col items-center justify-center py-16 px-8 text-center bg-gray-50 dark:bg-gray-800/30 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="w-16 h-16 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center mb-4">
+            <Icon
+              icon="mdi:chart-line-variant"
+              className="w-8 h-8 text-gray-400 dark:text-gray-500"
+            />
+          </div>
+          <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            No Analysis Data Yet
           </h4>
           <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
-            Run an analysis on this lead to see detailed insights and scores.
+            Run a deep analysis on this lead to unlock partnership insights, engagement metrics, and
+            quality scores.
           </p>
         </div>
       )}
@@ -276,6 +441,13 @@ function OverviewTab({ lead }: { lead: Lead }) {
 export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
+  // Reset to overview tab when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('overview');
+    }
+  }, [isOpen]);
+
   if (!lead) return null;
 
   const isLightAnalysis = lead.analysis_type === 'light' || lead.analysis_type === null;
@@ -283,11 +455,11 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
   return (
     <Modal open={isOpen} onClose={onClose} size="3xl" closeable>
       {/* ========================================================================
-          HEADER - PROFESSIONAL HORIZONTAL LAYOUT
+          HEADER - ENTERPRISE-GRADE LAYOUT
           ======================================================================== */}
-      <div className="relative p-6 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
-        {/* Main Profile Content - Horizontal Flexbox */}
-        <div className="flex items-start gap-4">
+      <div className="relative p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-b from-gray-50/80 to-white dark:from-gray-800/30 dark:to-gray-900">
+        {/* Main Profile Content */}
+        <div className="flex items-start gap-5">
           {/* Avatar */}
           <div className="shrink-0">
             <LeadAvatar
@@ -295,48 +467,57 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
               username={lead.username}
               displayName={lead.display_name}
               size="lg"
-              className="w-16 h-16"
+              className="w-20 h-20 ring-4 ring-white dark:ring-gray-800 shadow-lg"
             />
           </div>
 
-          {/* Profile Information Column */}
-          <div className="flex-1 min-w-0 space-y-1.5">
-            {/* Row 1: Name + Verification Badge */}
+          {/* Profile Information */}
+          <div className="flex-1 min-w-0 space-y-2">
+            {/* Name + Verification */}
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {lead.display_name || lead.username}
               </h2>
               {lead.is_verified && <VerificationBadge />}
             </div>
 
-            {/* Row 2: Username Link */}
+            {/* Username */}
             <a
               href={lead.profile_url || `https://instagram.com/${lead.username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150"
+              className="group inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-150 font-medium"
             >
               <span>@{lead.username}</span>
               <Icon
                 icon="mdi:open-in-new"
-                className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
               />
             </a>
 
-            {/* Row 3: Stats */}
-            <div className="pt-2">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {formatNumber(lead.follower_count)} followers
-                <span className="mx-2">•</span>
-                {formatNumber(lead.following_count)} following
-                <span className="mx-2">•</span>
-                {lead.post_count || 0} posts
+            {/* Stats */}
+            <div className="pt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {formatNumber(lead.follower_count)}
+                </span>{' '}
+                followers
+                <span className="mx-2 text-gray-400">•</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {formatNumber(lead.following_count)}
+                </span>{' '}
+                following
+                <span className="mx-2 text-gray-400">•</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  {lead.post_count || 0}
+                </span>{' '}
+                posts
               </p>
             </div>
           </div>
         </div>
 
-        {/* Badges - Positioned on the right */}
+        {/* Badges - Top Right */}
         <div className="absolute top-6 right-6 flex items-center gap-2">
           <PlatformBadge />
           <NicheBadge />
@@ -347,16 +528,12 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
       {/* ========================================================================
           TAB NAVIGATION
           ======================================================================== */}
-      <TabNav
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        isLightAnalysis={isLightAnalysis}
-      />
+      <TabNav activeTab={activeTab} onTabChange={setActiveTab} isLightAnalysis={isLightAnalysis} />
 
       {/* ========================================================================
           TAB CONTENT
           ======================================================================== */}
-      <div className="px-6 py-5 max-h-[65vh] overflow-y-auto">
+      <div className="px-6 py-6 max-h-[70vh] overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}

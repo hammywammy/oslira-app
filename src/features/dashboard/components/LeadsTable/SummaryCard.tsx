@@ -62,7 +62,7 @@ export function SummaryCard({ summary, score }: SummaryCardProps) {
   const { emoji, borderColor, bgColor } = getScoreIndicator(score);
 
   return (
-    <div className={`rounded-lg border border-gray-200 dark:border-gray-800 ${bgColor} overflow-hidden`}>
+    <div className={`group rounded-lg border border-gray-200 dark:border-gray-800 ${bgColor} overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700`}>
       <div className={`border-l-4 ${borderColor} p-5`}>
         <h3 className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
           <span>{emoji}</span>
