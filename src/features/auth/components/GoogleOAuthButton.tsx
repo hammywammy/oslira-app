@@ -52,7 +52,7 @@ export function GoogleOAuthButton({
 
       // Step 3: Redirect to Google
       window.location.href = googleAuthUrl;
-    } catch (err: any) {
+    } catch (err) {
       console.error('[GoogleOAuthButton] Error:', err);
       setError('Failed to initiate sign-in');
       setIsLoading(false);

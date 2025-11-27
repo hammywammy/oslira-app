@@ -191,7 +191,7 @@ export function OAuthCallbackPage() {
       logger.info('[OAuthCallback] Redirecting', { path: redirectPath });
       navigate(redirectPath, { replace: true });
 
-    } catch (error: any) {
+    } catch (error) {
       logger.error('[OAuthCallback] Processing failed', error);
       setState('error');
       setErrorMessage(error.message || 'Authentication failed');

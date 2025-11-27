@@ -57,7 +57,7 @@ if (checkoutUrl) {
       logger.info('[Upgrade] Success, redirecting to checkout');
     },
 
-    onError: (error: any) => {
+    onError: (error) => {
       logger.error('[Upgrade] Failed', error, { message: error.message });
     },
   });

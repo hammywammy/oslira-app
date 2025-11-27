@@ -15,6 +15,7 @@
 import { useCallback } from 'react';
 import { useCreditsStore } from '../store/creditsStore';
 import { httpClient } from '@/core/auth/http-client';
+import { logger } from '@/core/utils/logger';
 
 interface CreditBalance {
   account_id: string;
@@ -46,18 +47,17 @@ export function useCreditsService() {
       const data = await httpClient.get<{ data: CreditBalance }>('/api/credits/balance');
       setBalance(data.data);
 
-    } catch (error: any) {
-      // Handle 403 "onboarding not completed" silently - this is an expected flow state
-      const errorMessage = error?.message || '';
+    } catch (error) {
+      const err = error as Error;
+      const errorMessage = err?.message || '';
       if (errorMessage.toLowerCase().includes('onboarding')) {
-        console.warn('[useCreditsService] Skipping fetch - onboarding not completed');
+        logger.warn('[useCreditsService] Skipping fetch - onboarding not completed');
         setLoading(false);
         return;
       }
 
-      // All other errors are unexpected and should be logged
-      console.error('[useCreditsService] Fetch error:', error);
-      setError(error.message || 'Failed to load balance');
+      logger.error('[useCreditsService] Fetch error', err);
+      setError(err.message || 'Failed to load balance');
     }
   }, [setBalance, setLoading, setError]);
 
