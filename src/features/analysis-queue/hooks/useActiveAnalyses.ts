@@ -194,8 +194,8 @@ export function useActiveAnalyses() {
         return 2000; // Poll every 2 seconds when WS dead
       }
 
-      // WebSocket working - slow polling as safety net
-      return activeJob ? 10000 : 3000;
+      // WebSocket working - polling as safety net (reduced from 10s to 5s for better UX during long analyses)
+      return activeJob ? 5000 : 3000;
     },
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

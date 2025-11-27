@@ -56,8 +56,8 @@ interface UseAnalysisWebSocketReturn {
 }
 
 const HEARTBEAT_INTERVAL = 5000; // 5 seconds (well under DO hibernation timeout of 10s)
-const RECONNECT_DELAY = 1000; // 1 second (fail fast to polling)
-const MAX_RECONNECT_ATTEMPTS = 1; // Fail fast - fall back to HTTP polling quickly
+const RECONNECT_DELAY = 1000; // 1 second base delay for exponential backoff (1s, 2s, 3s)
+const MAX_RECONNECT_ATTEMPTS = 3; // Three reconnection attempts with exponential backoff
 
 export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocketReturn {
   const [progress, setProgress] = useState<AnalysisProgressState | null>(null);
@@ -229,35 +229,52 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
       ws.onclose = (event) => {
         if (!isMountedRef.current) return;
 
+        const timestamp = new Date().toISOString();
+        const currentProgress = progress?.progress ?? 0;
+
+        // Detailed closure logging for debugging connection issues
+        const closureDetails = {
+          runId,
+          timestamp,
+          code: event.code,
+          reason: event.reason || 'No reason provided',
+          readyState: ws.readyState,
+          wasClean: event.wasClean,
+          currentProgress: `${currentProgress}%`,
+        };
+
         setIsConnected(false);
         cleanup();
 
         // Clean closure (code 1000 or 1001) - no reconnection needed
         if (event.code === 1000 || event.code === 1001) {
-          logger.info('[WebSocket] Clean closure, no reconnection needed', {
-            runId,
-            code: event.code,
-            reason: event.reason,
-          });
+          logger.info('[WebSocket] Clean closure, no reconnection needed', closureDetails);
           return;
         }
 
         // Abnormal closure - attempt reconnection
-        logger.warn('[WebSocket] Abnormal closure', { runId, code: event.code, reason: event.reason });
+        logger.warn('[WebSocket] Abnormal closure detected', closureDetails);
 
         if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
           reconnectAttemptsRef.current++;
-          logger.info('[WebSocket] Reconnecting', {
+          const delay = RECONNECT_DELAY * reconnectAttemptsRef.current;
+
+          logger.info('[WebSocket] Scheduling reconnection with exponential backoff', {
             attempt: reconnectAttemptsRef.current,
             max: MAX_RECONNECT_ATTEMPTS,
+            delayMs: delay,
+            nextAttemptIn: `${delay}ms`,
           });
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
-          }, RECONNECT_DELAY * reconnectAttemptsRef.current);
+          }, delay);
         } else {
           setError(new Error('Max reconnection attempts reached'));
-          logger.error('[WebSocket] Max retries reached for abnormal closure', new Error('Max retries reached'), { runId });
+          logger.error('[WebSocket] Max retries reached for abnormal closure', new Error('Max retries reached'), {
+            runId,
+            finalProgress: `${currentProgress}%`,
+          });
         }
       };
     } catch (err) {
@@ -299,6 +316,55 @@ export function useAnalysisWebSocket(runId: string | null): UseAnalysisWebSocket
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isConnected, runId, connect]);
+
+  // WebSocket state monitoring - log state transitions with timestamps and progress
+  useEffect(() => {
+    if (!wsRef.current || !runId) return;
+
+    const ws = wsRef.current;
+    const checkInterval = setInterval(() => {
+      const timestamp = new Date().toISOString();
+      const currentProgress = progress?.progress ?? 0;
+      const readyState = ws.readyState;
+
+      let stateName = 'UNKNOWN';
+      switch (readyState) {
+        case WebSocket.CONNECTING:
+          stateName = 'CONNECTING';
+          break;
+        case WebSocket.OPEN:
+          stateName = 'OPEN';
+          break;
+        case WebSocket.CLOSING:
+          stateName = 'CLOSING';
+          break;
+        case WebSocket.CLOSED:
+          stateName = 'CLOSED';
+          break;
+      }
+
+      // Only log state changes (not every check)
+      const stateKey = `${runId}-${stateName}`;
+      const lastLoggedState = (ws as WebSocket & { _lastLoggedState?: string })._lastLoggedState;
+
+      if (lastLoggedState !== stateKey) {
+        logger.info('[WebSocket] State transition', {
+          runId,
+          timestamp,
+          state: stateName,
+          readyState,
+          currentProgress: `${currentProgress}%`,
+          isConnected,
+        });
+
+        (ws as WebSocket & { _lastLoggedState?: string })._lastLoggedState = stateKey;
+      }
+    }, 1000); // Check every second
+
+    return () => {
+      clearInterval(checkInterval);
+    };
+  }, [runId, progress, isConnected]);
 
   return { progress, isConnected, error, reconnect: connect };
 }
