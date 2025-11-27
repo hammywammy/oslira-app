@@ -48,7 +48,7 @@ export function ScoreCard({
   const percentage = hasScore ? (score / maxScore) * 100 : 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+    <div className="group bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export function ScoreCard({
       {hasScore && (
         <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
           <div
-            className={`h-full ${PROGRESS_COLORS[color]} transition-all duration-300`}
+            className={`h-full ${PROGRESS_COLORS[color]} transition-all duration-500 ease-out`}
             style={{ width: `${percentage}%` }}
           />
         </div>
