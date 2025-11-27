@@ -9,8 +9,8 @@ interface MetricsSectionProps {
 
 export function MetricsSection({ title, children }: MetricsSectionProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>
+    <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm transition-all duration-200 hover:shadow-md">
+      <h3 className="text-base font-semibold text-gray-900 mb-6 tracking-tight">{title}</h3>
       {children}
     </div>
   );

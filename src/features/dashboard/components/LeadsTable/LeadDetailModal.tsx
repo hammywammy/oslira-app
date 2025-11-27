@@ -180,6 +180,7 @@ function BusinessBadge() {
 
 /**
  * Hero Insight Section - Key takeaway at top of overview
+ * Refined for Stripe-level sophistication
  */
 function HeroInsight({ lead }: { lead: Lead }) {
   const { text, bg, border, icon } = getScoreColor(lead.overall_score);
@@ -191,20 +192,26 @@ function HeroInsight({ lead }: { lead: Lead }) {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className={`rounded-xl border-2 ${border} ${bg} p-6 transition-all duration-200 hover:shadow-md`}
+      className="rounded-xl border bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-md border-gray-200"
     >
-      <div className="flex items-start gap-4">
-        <div className={`p-3 rounded-lg ${bg} border ${border}`}>
+      <div className="flex items-start gap-5">
+        {/* Icon with subtle background */}
+        <div className={`p-3 rounded-lg ${bg} border ${border} shrink-0`}>
           <Icon icon={icon} className={`w-6 h-6 ${text}`} />
         </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className={`text-xl font-semibold ${text}`}>{label}</h3>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-3 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900">{label}</h3>
             {lead.overall_score !== null && (
-              <span className={`text-2xl font-bold ${text}`}>{lead.overall_score}/100</span>
+              <span className={`text-3xl font-bold ${text} tracking-tight`}>
+                {lead.overall_score}
+                <span className="text-lg font-medium text-gray-400">/100</span>
+              </span>
             )}
           </div>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{action}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{action}</p>
         </div>
       </div>
     </motion.div>
@@ -212,7 +219,7 @@ function HeroInsight({ lead }: { lead: Lead }) {
 }
 
 /**
- * Quick Stats Grid - Premium card design
+ * Quick Stats Grid - Refined enterprise card design
  */
 function QuickStatsGrid({ lead }: { lead: Lead }) {
   const metrics = lead.calculated_metrics;
@@ -222,29 +229,29 @@ function QuickStatsGrid({ lead }: { lead: Lead }) {
       label: 'Engagement Rate',
       value: metrics?.engagement_rate ? `${metrics.engagement_rate.toFixed(2)}%` : '—',
       icon: 'mdi:trending-up',
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
     },
     {
       label: 'Profile Health',
       value: metrics?.profile_health_score ? `${metrics.profile_health_score}/100` : '—',
       icon: 'mdi:heart-pulse',
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
     },
     {
       label: 'Content Quality',
       value: metrics?.content_sophistication ? `${metrics.content_sophistication}/100` : '—',
       icon: 'mdi:star',
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
     },
     {
       label: 'Posting Frequency',
       value: metrics?.posting_frequency ? `${metrics.posting_frequency.toFixed(1)}/mo` : '—',
       icon: 'mdi:calendar-clock',
-      color: 'text-amber-600 dark:text-amber-400',
-      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
     },
   ];
 
@@ -256,15 +263,22 @@ function QuickStatsGrid({ lead }: { lead: Lead }) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.15, delay: idx * 0.05 }}
-          className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 transition-all duration-200 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700"
+          className="group bg-white rounded-lg border border-gray-200 p-5 transition-all duration-200 hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5"
         >
-          <div className={`inline-flex p-2 rounded-lg ${stat.bgColor} mb-3`}>
+          {/* Icon */}
+          <div className={`inline-flex p-2.5 rounded-lg ${stat.bgColor} mb-4 transition-transform duration-200 group-hover:scale-105`}>
             <Icon icon={stat.icon} className={`w-5 h-5 ${stat.color}`} />
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+
+          {/* Value */}
+          <div className="text-2xl font-bold text-gray-900 mb-1.5 tracking-tight">
             {stat.value}
           </div>
-          <div className="text-xs font-medium text-gray-600 dark:text-gray-400">{stat.label}</div>
+
+          {/* Label */}
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            {stat.label}
+          </div>
         </motion.div>
       ))}
     </div>
@@ -407,7 +421,7 @@ function OverviewTab({ lead }: { lead: Lead }) {
   };
 
   return (
-    <div className="space-y-6" role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
+    <div className="space-y-5" role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
       {/* Hero Insight */}
       <HeroInsight lead={lead} />
 
@@ -581,7 +595,7 @@ export function LeadDetailModal({ isOpen, onClose, lead }: LeadDetailModalProps)
         </div>
 
         {/* Badges - Top Right */}
-        <div className="absolute top-6 right-6 flex items-center gap-2">
+        <div className="absolute top-6 right-4 flex items-center gap-2">
           <PlatformBadge />
           <NicheBadge />
           <BusinessBadge />
