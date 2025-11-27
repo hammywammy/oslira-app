@@ -59,6 +59,55 @@ function mapAiAnalysisToAiResponse(aiAnalysis: any): any {
   };
 }
 
+/**
+ * Map backend extracted_data to frontend ExtractedData format
+ * Handles snake_case to camelCase conversion for all nested fields
+ */
+function mapExtractedData(extractedData: any): any {
+  if (!extractedData) return undefined;
+
+  return {
+    static: extractedData.static
+      ? {
+          verified: extractedData.static.verified,
+          postsCount: extractedData.static.posts_count,
+          externalUrl: extractedData.static.external_url,
+          topHashtags: extractedData.static.top_hashtags,
+          topMentions: extractedData.static.top_mentions,
+          avgVideoViews: extractedData.static.avg_video_views,
+          dominantFormat: extractedData.static.dominant_format,
+          followersCount: extractedData.static.followers_count,
+          avgLikesPerPost: extractedData.static.avg_likes_per_post,
+          formatDiversity: extractedData.static.format_diversity,
+          daysSinceLastPost: extractedData.static.days_since_last_post,
+          isBusinessAccount: extractedData.static.is_business_account,
+          avgCommentsPerPost: extractedData.static.avg_comments_per_post,
+          postingConsistency: extractedData.static.posting_consistency,
+          businessCategoryName: extractedData.static.business_category_name,
+        }
+      : undefined,
+    calculated: extractedData.calculated
+      ? {
+          authorityRatio: extractedData.calculated.authority_ratio,
+          accountMaturity: extractedData.calculated.account_maturity,
+          engagementScore: extractedData.calculated.engagement_score,
+          engagementHealth: extractedData.calculated.engagement_health,
+          profileHealthScore: extractedData.calculated.profile_health_score,
+          fakeFollowerWarning: extractedData.calculated.fake_follower_warning,
+          contentSophistication: extractedData.calculated.content_sophistication,
+          engagementConsistency: extractedData.calculated.engagement_consistency,
+        }
+      : undefined,
+    metadata: extractedData.metadata
+      ? {
+          version: extractedData.metadata.version,
+          sampleSize: extractedData.metadata.sample_size,
+          extractedAt: extractedData.metadata.extracted_at,
+        }
+      : undefined,
+  };
+}
+
 // =============================================================================
 // API FUNCTIONS
 // =============================================================================
@@ -100,7 +149,7 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
     }
 
     // DEBUG LOGGING - Check data structure from backend
-    console.group('🔍 Leads API - Backend Response');
+    console.group('🔍 Leads API - Backend Response (RAW)');
     console.log('Total leads:', response.data.length);
     if (response.data.length > 0) {
       const firstLead = response.data[0];
@@ -108,7 +157,7 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
       console.log('Has ai_analysis?', !!(firstLead as any).ai_analysis);
       console.log('ai_analysis data:', (firstLead as any).ai_analysis);
       console.log('Has extracted_data?', !!firstLead.extracted_data);
-      console.log('extracted_data data:', firstLead.extracted_data);
+      console.log('extracted_data data (snake_case):', firstLead.extracted_data);
     }
     console.groupEnd();
 
@@ -117,9 +166,23 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
       ...lead,
       // Map ai_analysis to ai_response with proper field mapping
       ai_response: mapAiAnalysisToAiResponse(lead.ai_analysis),
+      // Map extracted_data from snake_case to camelCase
+      extracted_data: mapExtractedData(lead.extracted_data),
       // Map extracted_data.calculated to calculated_metrics for backward compatibility
       calculated_metrics: lead.extracted_data?.calculated || undefined,
     }));
+
+    // DEBUG LOGGING - Check transformed data
+    console.group('🔄 Leads API - Transformed Response');
+    if (mappedData.length > 0) {
+      const firstMapped = mappedData[0];
+      console.log('Transformed lead object:', firstMapped);
+      console.log('Has ai_response?', !!firstMapped.ai_response);
+      console.log('ai_response data (camelCase):', firstMapped.ai_response);
+      console.log('Has extracted_data?', !!firstMapped.extracted_data);
+      console.log('extracted_data data (camelCase):', firstMapped.extracted_data);
+    }
+    console.groupEnd();
 
     logger.info('[LeadsApi] Leads fetched successfully', {
       count: mappedData.length
