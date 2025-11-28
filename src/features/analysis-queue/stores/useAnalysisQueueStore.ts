@@ -47,6 +47,7 @@ interface AnalysisQueueState {
   // State
   jobs: AnalysisJob[];
   activeCount: number;
+  isWebSocketConnected: boolean;
 
   // Actions
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void;
@@ -55,6 +56,7 @@ interface AnalysisQueueState {
   removeJob: (runId: string) => void;
   retryJob: (runId: string) => void;
   clearCompleted: () => void;
+  setWebSocketConnected: (connected: boolean) => void;
 
   // Optimistic job actions
   addOptimisticJob: (runId: string, username: string, analysisType: string) => void;
@@ -72,6 +74,7 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
   // State
   jobs: [],
   activeCount: 0,
+  isWebSocketConnected: false,
 
   // Actions
   addJob: (job) =>
@@ -246,4 +249,15 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
         jobs: newJobs,
       };
     }),
+
+  setWebSocketConnected: (connected) =>
+    set({
+      isWebSocketConnected: connected,
+    }),
 }));
+
+/**
+ * Selector hook for WebSocket connection status
+ */
+export const useIsWebSocketConnected = () =>
+  useAnalysisQueueStore((state) => state.isWebSocketConnected);
