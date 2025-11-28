@@ -11,7 +11,7 @@
 
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAnalysisQueueStore, type AnalysisJob } from '../stores/useAnalysisQueueStore';
+import { useAnalysisQueueStore, useIsWebSocketConnected, type AnalysisJob } from '../stores/useAnalysisQueueStore';
 import { httpClient } from '@/core/auth/http-client';
 import { logger } from '@/core/utils/logger';
 import { useAuth } from '@/features/auth/contexts/AuthProvider';
@@ -49,11 +49,12 @@ export function useActiveAnalyses() {
   const { jobs, updateAllJobs, confirmJobStarted } = useAnalysisQueueStore();
   const { refetchBalance } = useCreditsService();
   const queryClient = useQueryClient();
+  const isWebSocketConnected = useIsWebSocketConnected();
 
   // Connect to global WebSocket
   useGlobalAnalysisStream();
 
-  // Polling with adaptive interval
+  // Polling ONLY as fallback when WebSocket disconnected
   const { data } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
@@ -65,7 +66,11 @@ export function useActiveAnalyses() {
       // Stop polling if no active jobs
       if (activeCount === 0) return false;
 
-      // Poll every 5s as fallback
+      // ONLY poll if WebSocket disconnected
+      if (isWebSocketConnected) return false;
+
+      // Poll every 5s as fallback (when WebSocket down)
+      logger.info('[ActiveAnalyses] Polling fallback (WebSocket disconnected)');
       return 5000;
     },
     enabled: isAuthenticated && isAuthReady && jobs.length > 0,

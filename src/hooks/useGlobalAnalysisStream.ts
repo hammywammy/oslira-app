@@ -9,14 +9,17 @@ import { logger } from '@/core/utils/logger';
 
 export function useGlobalAnalysisStream() {
   const wsRef = useRef<WebSocket | null>(null);
-  const { jobs, updateJob } = useAnalysisQueueStore();
+  const { jobs, updateJob, setWebSocketConnected } = useAnalysisQueueStore();
 
   const hasActiveJobs = jobs.some(j =>
     j.status === 'pending' || j.status === 'analyzing'
   );
 
   useEffect(() => {
-    if (!hasActiveJobs) return;
+    if (!hasActiveJobs) {
+      setWebSocketConnected(false);
+      return;
+    }
 
     let mounted = true;
 
@@ -34,6 +37,7 @@ export function useGlobalAnalysisStream() {
 
       ws.onopen = () => {
         logger.info('[GlobalStream] Connected');
+        setWebSocketConnected(true);
       };
 
       ws.onmessage = (event) => {
@@ -61,10 +65,12 @@ export function useGlobalAnalysisStream() {
 
       ws.onerror = (error) => {
         logger.error('[GlobalStream] Error', { error });
+        setWebSocketConnected(false);
       };
 
       ws.onclose = () => {
         logger.info('[GlobalStream] Disconnected');
+        setWebSocketConnected(false);
       };
     };
 
@@ -73,6 +79,7 @@ export function useGlobalAnalysisStream() {
     return () => {
       mounted = false;
       wsRef.current?.close();
+      setWebSocketConnected(false);
     };
-  }, [hasActiveJobs]);
+  }, [hasActiveJobs, setWebSocketConnected, updateJob]);
 }
