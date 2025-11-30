@@ -7,9 +7,10 @@
  * - Primary: Global WebSocket (1 connection for ALL jobs)
  * - Fallback: Adaptive polling (5s when WebSocket disconnected or >3 jobs)
  * - Confirms optimistic jobs when backend returns them
+ * - Tracks loading/error states for UI feedback
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAnalysisQueueStore, useIsWebSocketConnected, type AnalysisJob } from '../stores/useAnalysisQueueStore';
 import { httpClient } from '@/core/auth/http-client';
@@ -27,35 +28,31 @@ interface FetchActiveAnalysesResponse {
 }
 
 async function fetchActiveAnalyses(): Promise<AnalysisJob[]> {
-  try {
-    const response = await httpClient.get<FetchActiveAnalysesResponse>(
-      '/api/analysis/active'
-    );
+  const response = await httpClient.get<FetchActiveAnalysesResponse>(
+    '/api/analysis/active'
+  );
 
-    if (!response.success || !response.data) {
-      logger.warn('[ActiveAnalyses] Invalid response format', { response });
-      return [];
-    }
-
-    return response.data?.analyses ?? [];
-  } catch (error) {
-    logger.error('[ActiveAnalyses] Failed to fetch', error as Error);
-    return [];
+  if (!response.success || !response.data) {
+    logger.warn('[ActiveAnalyses] Invalid response format', { response });
+    throw new Error('Invalid response format');
   }
+
+  return response.data?.analyses ?? [];
 }
 
 export function useActiveAnalyses() {
   const { isAuthenticated, isAuthReady } = useAuth();
-  const { jobs, updateAllJobs, confirmJobStarted } = useAnalysisQueueStore();
+  const { jobs, updateAllJobs, confirmJobStarted, setLoading, setError } = useAnalysisQueueStore();
   const { refetchBalance } = useCreditsService();
   const queryClient = useQueryClient();
   const isWebSocketConnected = useIsWebSocketConnected();
+  const initialFetchDone = useRef(false);
 
   // Connect to global WebSocket
   useGlobalAnalysisStream();
 
-  // Polling ONLY as fallback when WebSocket disconnected
-  const { data } = useQuery({
+  // Initial fetch and polling fallback
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['activeAnalyses'],
     queryFn: fetchActiveAnalyses,
     refetchInterval: () => {
@@ -73,14 +70,34 @@ export function useActiveAnalyses() {
       logger.info('[ActiveAnalyses] Polling fallback (WebSocket disconnected)');
       return 5000;
     },
-    enabled: isAuthenticated && isAuthReady && jobs.length > 0,
+    enabled: isAuthenticated && isAuthReady,
+    retry: 2,
+    retryDelay: 1000,
   });
+
+  // Update loading state
+  useEffect(() => {
+    if (!initialFetchDone.current && isLoading) {
+      setLoading(true);
+    }
+  }, [isLoading, setLoading]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      logger.error('[ActiveAnalyses] Fetch error', error as Error);
+      setError(true);
+    }
+  }, [error, setError]);
 
   // Sync data to store
   useEffect(() => {
-    if (!data) return;
+    if (data === undefined) return;
+
+    initialFetchDone.current = true;
 
     // Bulk update (single state change = smooth animations)
+    // This will also set isLoading=false and isError=false
     updateAllJobs(data);
 
     // Confirm optimistic jobs
@@ -94,12 +111,13 @@ export function useActiveAnalyses() {
     // Refresh balance when jobs complete
     const completedJobs = data.filter(j => j.status === 'complete');
     if (completedJobs.length > 0) {
-      refetchBalance().catch(error => {
-        logger.error('[ActiveAnalyses] Balance refresh failed', error as Error);
+      refetchBalance().catch(err => {
+        logger.error('[ActiveAnalyses] Balance refresh failed', err as Error);
       });
       queryClient.invalidateQueries({ queryKey: ['leads'] });
     }
   }, [data]);
 
-  return null;
+  // Return refetch for manual retry
+  return { refetch };
 }

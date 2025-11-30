@@ -28,6 +28,24 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
   // Truncate username to max 12 chars
   const displayUsername = username.length > 12 ? `${username.slice(0, 12)}...` : username;
 
+  // Get status description for screen readers
+  const getStatusDescription = () => {
+    switch (status) {
+      case 'pending':
+        return 'queued';
+      case 'analyzing':
+        return `analyzing, ${progress}% complete`;
+      case 'complete':
+        return 'complete';
+      case 'failed':
+        return 'failed';
+      case 'cancelled':
+        return 'cancelled';
+      default:
+        return '';
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -36,6 +54,8 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
       exit={{ opacity: 0, x: 20 }}
       transition={{ duration: 0.2 }}
       className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 rounded-lg transition-colors group"
+      role="listitem"
+      aria-label={`Analysis for @${username}: ${getStatusDescription()}`}
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
@@ -80,7 +100,14 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
         {/* Progress bar and step indicator */}
         <div className="flex items-center gap-2">
           {/* Progress bar */}
-          <div className="relative flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="relative flex-1 h-1.5 bg-muted rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Analysis progress: ${progress}%`}
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
@@ -114,8 +141,9 @@ export function QueueItem({ job, onRetry }: QueueItemProps) {
       {status === 'failed' && onRetry && (
         <button
           onClick={() => onRetry(job.runId)}
-          className="flex-shrink-0 p-1 hover:bg-muted rounded transition-colors opacity-0 group-hover:opacity-100"
+          className="flex-shrink-0 p-1.5 hover:bg-muted rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary/50"
           title="Retry analysis"
+          aria-label={`Retry analysis for @${username}`}
         >
           <Icon icon="ph:arrow-clockwise" className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
