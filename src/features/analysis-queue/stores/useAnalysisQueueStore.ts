@@ -48,6 +48,9 @@ interface AnalysisQueueState {
   jobs: AnalysisJob[];
   activeCount: number;
   isWebSocketConnected: boolean;
+  isLoading: boolean;          // Initial fetch state
+  isError: boolean;            // API/WebSocket error state
+  lastFetchTime: number | null; // For "Updated Xm ago" display
 
   // Actions
   addJob: (job: Omit<AnalysisJob, 'startedAt'>) => void;
@@ -57,6 +60,8 @@ interface AnalysisQueueState {
   retryJob: (runId: string) => void;
   clearCompleted: () => void;
   setWebSocketConnected: (connected: boolean) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: boolean) => void;
 
   // Optimistic job actions
   addOptimisticJob: (runId: string, username: string, analysisType: string) => void;
@@ -75,6 +80,9 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
   jobs: [],
   activeCount: 0,
   isWebSocketConnected: false,
+  isLoading: true,          // Start as loading
+  isError: false,
+  lastFetchTime: null,
 
   // Actions
   addJob: (job) =>
@@ -159,6 +167,9 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
       return {
         jobs: newJobs,
         activeCount: newActiveCount,
+        isLoading: false,
+        isError: false,
+        lastFetchTime: Date.now(),
       };
     }),
 
@@ -253,6 +264,17 @@ export const useAnalysisQueueStore = create<AnalysisQueueState>((set) => ({
   setWebSocketConnected: (connected) =>
     set({
       isWebSocketConnected: connected,
+    }),
+
+  setLoading: (loading) =>
+    set({
+      isLoading: loading,
+    }),
+
+  setError: (error) =>
+    set({
+      isError: error,
+      isLoading: false,
     }),
 }));
 

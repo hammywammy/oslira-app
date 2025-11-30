@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,8 +16,13 @@ export function TopBar() {
   const searchRef = useRef<HTMLInputElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Initialize polling for active analyses
-  useActiveAnalyses();
+  // Initialize polling for active analyses with retry capability
+  const { refetch } = useActiveAnalyses();
+
+  // Retry handler for queue errors
+  const handleQueueRetry = useCallback(() => {
+    refetch?.();
+  }, [refetch]);
 
   // Keyboard shortcut for search (Cmd/Ctrl + K)
   useEffect(() => {
@@ -125,7 +130,7 @@ export function TopBar() {
           <div className="flex items-center gap-1 ml-6">
 
             {/* Analysis Queue Indicator */}
-            <QueueIndicator />
+            <QueueIndicator onRetry={handleQueueRetry} />
 
             {/* Help Button */}
             <div className="relative">
