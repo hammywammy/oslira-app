@@ -53,7 +53,7 @@ if (checkoutUrl) {
 
     onSuccess: () => {
       // Invalidate subscription cache (will refresh after Stripe redirect)
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       logger.info('[Upgrade] Success, redirecting to checkout');
     },
 

@@ -71,7 +71,7 @@ export function OAuthCallbackPage() {
 
   useEffect(() => {
     logger.info('[OAuthCallback] Component mounted');
-    processCallback();
+    void processCallback();
   }, []);
 
   // Simulate progress for better UX
