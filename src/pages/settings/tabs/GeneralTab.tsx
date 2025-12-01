@@ -18,6 +18,7 @@
  */
 
 import { useState } from 'react';
+import { logger } from '@/core/utils/logger';
 import { Icon } from '@iconify/react';
 import { Input } from '@/shared/components/ui/Input';
 import { Textarea } from '@/shared/components/ui/Textarea';
@@ -45,7 +46,7 @@ export function GeneralTab() {
     setHasChanges(false);
     
     // TODO: Call backend API to save preferences
-    console.log('Saving preferences:', { preferredName, businessContext });
+    logger.info('[GeneralTab] Saving preferences', { preferredName, businessContext });
   };
 
   // Handle input changes

@@ -19,6 +19,7 @@ import { AuthProvider } from '@/features/auth/contexts/AuthProvider';
 import { BusinessProfileProvider } from '@/features/business/providers/BusinessProfileProvider';
 import { ThemeProvider } from '@/core/theme/ThemeProvider';
 import { router } from '@/routes';
+import { logger } from '@/core/utils/logger';
 
 // QUERY CLIENT SETUP
 const queryClient = new QueryClient({
@@ -52,7 +53,7 @@ function checkAndRedirectSubdomain() {
   const isRoot = pathname === '/';
 
   if (isAppSubdomain && isRoot) {
-    console.log('[SubdomainRedirect] App subdomain detected, redirecting to /auth/login');
+    logger.info('[SubdomainRedirect] App subdomain detected, redirecting to /auth/login');
     window.location.replace('/auth/login');
     return true; // Redirect initiated
   }

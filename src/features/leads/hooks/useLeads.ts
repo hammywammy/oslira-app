@@ -65,7 +65,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   return {
     leads,
     isLoading,
-    error: error as Error | null,
+    error: error,
     refresh,
     isEmpty: leads.length === 0 && !isLoading,
   };

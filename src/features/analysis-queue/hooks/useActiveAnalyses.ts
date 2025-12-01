@@ -85,7 +85,7 @@ export function useActiveAnalyses() {
   // Handle errors
   useEffect(() => {
     if (error) {
-      logger.error('[ActiveAnalyses] Fetch error', error as Error);
+      logger.error('[ActiveAnalyses] Fetch error', error);
       setError(true);
     }
   }, [error, setError]);
