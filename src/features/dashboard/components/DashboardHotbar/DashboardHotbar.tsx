@@ -12,7 +12,10 @@
 import { Icon } from '@iconify/react';
 import { useState, useRef } from 'react';
 import type { SortField, SortOrder, TableFilters } from '@/pages/dashboard/DashboardPage';
+import type { AnalysisStatus } from '@/shared/types/leads.types';
 import { DropdownPortal } from '@/shared/components/ui/DropdownPortal';
+
+const ANALYSIS_STATUSES: AnalysisStatus[] = ['pending', 'processing', 'complete', 'failed'];
 
 interface DashboardHotbarProps {
   onBulkUpload: () => void;
@@ -262,15 +265,15 @@ export function DashboardHotbar({
               <div>
                 <div className="text-xs font-semibold text-foreground mb-2">Analysis Status</div>
                 <div className="space-y-1">
-                  {['pending', 'processing', 'complete', 'failed'].map((status) => (
+                  {ANALYSIS_STATUSES.map((status) => (
                     <label key={status} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={filters.analysisStatus?.includes(status as any) || false}
+                        checked={filters.analysisStatus?.includes(status) || false}
                         onChange={(e) => {
                           const current = filters.analysisStatus || [];
                           const updated = e.target.checked
-                            ? [...current, status as any]
+                            ? [...current, status]
                             : current.filter((s) => s !== status);
                           onFilterChange({ ...filters, analysisStatus: updated.length > 0 ? updated : undefined });
                         }}

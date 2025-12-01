@@ -11,6 +11,7 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { logger } from '@/core/utils/logger';
 import { OnboardingShell } from '@/features/onboarding/components/OnboardingShell';
 import { ProgressBar } from '@/features/onboarding/components/ProgressBar';
 import { StepContainer } from '@/features/onboarding/components/StepContainer';
@@ -98,7 +99,7 @@ export function OnboardingPage() {
 
       nextStep();
     } catch (error) {
-      console.error('[Onboarding] Navigation error:', error);
+      logger.error('[Onboarding] Navigation error', error as Error);
       setIsValidating(false);
     }
   };

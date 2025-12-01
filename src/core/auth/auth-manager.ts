@@ -165,7 +165,8 @@ class AuthManager {
   private setupCrossTabSync(): void {
     window.addEventListener('storage', (event) => {
       // Only process auth-related storage changes
-      if (!event.key || !Object.values(STORAGE_KEYS).includes(event.key as any)) {
+      const storageKeys = Object.values(STORAGE_KEYS) as readonly string[];
+      if (!event.key || !storageKeys.includes(event.key)) {
         return;
       }
 

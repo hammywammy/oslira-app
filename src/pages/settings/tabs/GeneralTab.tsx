@@ -45,7 +45,7 @@ export function GeneralTab() {
     setIsSaving(false);
     setHasChanges(false);
     
-    // TODO: Call backend API to save preferences
+    // TODO(oslira): Connect to PUT /api/user/preferences endpoint when backend is ready
     logger.info('[GeneralTab] Saving preferences', { preferredName, businessContext });
   };
 

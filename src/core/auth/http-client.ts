@@ -221,13 +221,13 @@ class HttpClient {
 
     // Parse response
     logger.debug(`[HttpClient][${requestId}] Parsing response...`);
-    let data: any;
+    let data: Record<string, unknown> | null;
     try {
       const responseText = await response.text();
       logger.debug(`[HttpClient][${requestId}] Response text length: ${responseText.length}`);
-      
+
       data = responseText ? JSON.parse(responseText) : null;
-      
+
       // Log response (redact sensitive data)
       if (data) {
         const safeData = { ...data };
@@ -238,7 +238,7 @@ class HttpClient {
           success: data.success,
           hasData: !!data.data,
           hasError: !!data.error,
-          dataKeys: data.data ? Object.keys(data.data) : []
+          dataKeys: data.data && typeof data.data === 'object' ? Object.keys(data.data) : []
         });
       }
     } catch (error) {
@@ -248,13 +248,13 @@ class HttpClient {
 
     // Handle non-2xx responses
     if (!response.ok) {
-      const errorMessage = data?.error || data?.message || response.statusText;
+      const errorMessage = (data?.error as string) || (data?.message as string) || response.statusText;
       logger.error(`[HttpClient][${requestId}] Request failed`, {
         status: response.status,
         statusText: response.statusText,
         error: errorMessage,
-        message: data?.message
-      } as any);
+        message: data?.message as string
+      });
 
       throw new Error(errorMessage);
     }
