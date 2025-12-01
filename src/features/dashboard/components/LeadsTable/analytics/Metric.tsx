@@ -32,7 +32,7 @@ export function Metric({
   unit,
   tooltip,
 }: MetricProps) {
-  const colors = colorMap[color] || colorMap.gray;
+  const colors = (colorMap[color] ?? colorMap['gray']) as { icon: string; bg: string };
 
   return (
     <div className="group flex flex-col gap-2 p-4 rounded-lg border border-gray-100 bg-gray-50/50 transition-all duration-200 hover:bg-white hover:border-gray-200 hover:shadow-sm">

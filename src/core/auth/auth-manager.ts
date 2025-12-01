@@ -138,7 +138,7 @@ class AuthManager {
       if (this.refreshToken) {
         this.authReady = true;
       }
-    } catch (error) {
+    } catch {
       // Failed to load from storage, clear state
       this.clear();
     }
@@ -336,7 +336,7 @@ async forceRefresh(): Promise<string | null> {
       this.setTokens(data.accessToken, data.refreshToken, data.expiresAt);
 
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -471,7 +471,7 @@ async forceRefresh(): Promise<string | null> {
             refreshToken: this.refreshToken,
           }),
         });
-      } catch (error) {
+      } catch {
         // Continue with local cleanup even if API call fails
       }
     }

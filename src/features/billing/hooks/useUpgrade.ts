@@ -40,7 +40,7 @@ if (!response.success) {
 }
 
 // Redirect to Stripe Checkout
-const checkoutUrl = response.data?.checkoutUrl || response.checkoutUrl;
+const checkoutUrl = response.checkoutUrl;
 if (checkoutUrl) {
   logger.info('[Upgrade] Redirecting to Stripe Checkout', { checkoutUrl });
   window.location.href = checkoutUrl;
@@ -53,7 +53,7 @@ if (checkoutUrl) {
 
     onSuccess: () => {
       // Invalidate subscription cache (will refresh after Stripe redirect)
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      void queryClient.invalidateQueries({ queryKey: ['subscription'] });
       logger.info('[Upgrade] Success, redirecting to checkout');
     },
 

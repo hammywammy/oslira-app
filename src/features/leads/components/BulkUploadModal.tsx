@@ -216,8 +216,8 @@ export function BulkUploadModal({
         });
 
         // Refresh credits balance immediately (credits are deducted on backend when analysis starts)
-        refetchBalance().catch((error) => {
-          logger.warn('[BulkUploadModal] Failed to refresh balance after analysis start', error as Error);
+        refetchBalance().catch((err) => {
+          logger.warn('[BulkUploadModal] Failed to refresh balance after analysis start', { error: (err as Error).message });
         });
 
         if (onSuccess) {

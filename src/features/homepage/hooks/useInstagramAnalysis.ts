@@ -66,10 +66,10 @@ export function useInstagramAnalysis(options?: UseInstagramAnalysisOptions) {
     },
     
     onError: (error) => {
-      logger.error('Instagram analysis error', error as Error);
+      logger.error('Instagram analysis error', error);
       
       if (options?.onError) {
-        options.onError(error as Error);
+        options.onError(error);
       }
     },
   });

@@ -85,8 +85,8 @@ export function useCompleteOnboarding(): UseCompleteOnboardingReturn {
         fallbackTimeoutRef.current = null;
       }
 
-      logger.error('[CompleteOnboarding] Generation failed', {
-        error: wsError?.message,
+      logger.error('[CompleteOnboarding] Generation failed', undefined, {
+        errorMessage: wsError?.message,
       });
 
       refreshUser()

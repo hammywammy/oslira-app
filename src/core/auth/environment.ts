@@ -161,82 +161,7 @@ class EnvironmentManager {
   }
 
   // ===========================================================================
-  // SECTION 3: FEATURE DETECTION (Extensible for Future Features)
-  // ===========================================================================
-
-  /**
-   * FUTURE: Check if user has admin privileges
-   * 
-   * Placeholder for future RBAC implementation
-   * 
-   * Example usage:
-   * - Admin-only routes
-   * - Feature access control
-   * - UI element visibility
-   * 
-   * @param userId - User ID to check permissions for
-   * @returns true if user is admin
-   */
-  // isAdmin(userId?: string): boolean {
-  //   // TODO: Implement with user role from auth context
-  //   return false;
-  // }
-
-  /**
-   * FUTURE: Check if feature flag is enabled
-   * 
-   * Placeholder for feature flag system
-   * 
-   * Example usage:
-   * - A/B testing
-   * - Gradual rollouts
-   * - Beta features
-   * 
-   * @param flagName - Feature flag identifier
-   * @returns true if feature is enabled
-   */
-  // isFeatureEnabled(flagName: string): boolean {
-  //   // TODO: Implement with LaunchDarkly/Posthog/etc
-  //   return false;
-  // }
-
-  /**
-   * FUTURE: Check if user has premium subscription
-   * 
-   * Placeholder for subscription tier detection
-   * 
-   * Example usage:
-   * - Premium feature access
-   * - Usage limits
-   * - UI upsells
-   * 
-   * @param userId - User ID to check subscription for
-   * @returns true if user has premium access
-   */
-  // isPremiumUser(userId?: string): boolean {
-  //   // TODO: Implement with subscription data from API
-  //   return false;
-  // }
-
-  /**
-   * FUTURE: Get tenant/organization ID
-   * 
-   * Placeholder for multi-tenant SaaS architecture
-   * 
-   * Example usage:
-   * - Data isolation
-   * - Tenant-specific routing
-   * - Custom branding
-   * 
-   * @returns Tenant ID if applicable
-   */
-  // getTenantId(): string | null {
-  //   // TODO: Implement tenant detection from subdomain or auth context
-  //   return null;
-  // }
-
-  // ===========================================================================
-  // SECTION 4: VALIDATION & DEBUGGING
+  // VALIDATION & DEBUGGING
   // ===========================================================================
 
   /**
@@ -244,7 +169,7 @@ class EnvironmentManager {
    * Fails fast if misconfigured
    */
   validate(): void {
-    const { environment, apiUrl, appUrl } = this.config;
+    const { apiUrl, appUrl } = this.config;
 
     // Ensure required config is present
     if (!apiUrl || !appUrl) {

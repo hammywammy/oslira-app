@@ -97,7 +97,7 @@ export function Badge({
     variant === 'xray-analysis'
   );
   
-  const glowClass = shouldGlow ? glowStyles[variant as keyof typeof glowStyles] : '';
+  const glowClass = shouldGlow ? glowStyles[variant] : '';
   
   return (
     <span

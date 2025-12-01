@@ -38,7 +38,7 @@ function getLinkIcon(url: string): string {
 function extractDomain(url: string): string {
   try {
     const urlObj = new URL(url);
-    let domain = urlObj.hostname.replace('www.', '');
+    const domain = urlObj.hostname.replace('www.', '');
     // Include path for certain services
     if (domain === 'calendly.com' || domain === 'linktr.ee') {
       const path = urlObj.pathname.replace(/\/$/, '');

@@ -60,12 +60,12 @@ export function DashboardPage() {
   // ===========================================================================
 
   const handleAnalyzeSuccess = (leadId: string) => {
-    console.log('✅ Lead analysis started:', leadId);
+    logger.info('[Dashboard] Lead analysis started', { leadId });
     setRefreshTrigger((prev) => prev + 1);
   };
 
   const handleBulkSuccess = (jobId: string, count: number) => {
-    console.log('✅ Bulk analysis started:', jobId, 'for', count, 'leads');
+    logger.info('[Dashboard] Bulk analysis started', { jobId, count });
     setRefreshTrigger((prev) => prev + 1);
   };
 
