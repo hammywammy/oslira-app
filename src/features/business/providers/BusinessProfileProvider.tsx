@@ -78,7 +78,7 @@ export function BusinessProfileProvider({ children }: { children: ReactNode }) {
 
     if (profiles.length === 0 && !isLoading) {
       logger.info('[BusinessProfileProvider] Fetching profiles');
-      fetchProfiles();
+      void fetchProfiles();
     }
   }, [isFullyReady, user?.onboarding_completed]);
 

@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isOAuthCallback = window.location.pathname === '/auth/callback';
 
     if (!isOAuthCallback) {
-      initializeAuth();
+      void initializeAuth();
     } else {
       // On callback page, just set loading to false
       // OAuthCallbackPage will call login() directly
