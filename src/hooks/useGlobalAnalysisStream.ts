@@ -87,13 +87,13 @@ export function useGlobalAnalysisStream() {
                 });
               }
             }
-          } catch (error) {
-            logger.error('[GlobalStream] Parse error', { error });
+          } catch (err) {
+            logger.error('[GlobalStream] Parse error', err as Error);
           }
         };
 
-        ws.onerror = (error) => {
-          logger.error('[GlobalStream] Error', { error });
+        ws.onerror = (event) => {
+          logger.error('[GlobalStream] Error', undefined, { eventType: event.type });
           setWebSocketConnected(false);
         };
 
@@ -116,8 +116,8 @@ export function useGlobalAnalysisStream() {
             }, 2000);
           }
         };
-      } catch (error) {
-        logger.error('[GlobalStream] Connection failed', { error });
+      } catch (err) {
+        logger.error('[GlobalStream] Connection failed', err as Error);
         setWebSocketConnected(false);
       }
     };

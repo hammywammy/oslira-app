@@ -40,7 +40,7 @@ if (!response.success) {
 }
 
 // Redirect to Stripe Checkout
-const checkoutUrl = response.data?.checkoutUrl || response.checkoutUrl;
+const checkoutUrl = response.checkoutUrl;
 if (checkoutUrl) {
   logger.info('[Upgrade] Redirecting to Stripe Checkout', { checkoutUrl });
   window.location.href = checkoutUrl;

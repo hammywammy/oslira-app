@@ -20,7 +20,7 @@ interface ExtractedDataSectionProps {
 }
 
 export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProps) {
-  const { static: staticMetrics, calculated, metadata } = extractedData;
+  const { static: staticMetrics, calculated, metadata: _metadata } = extractedData;
 
   // Helper to get tier colors
   const getTierConfig = (tier?: 'hot' | 'warm' | 'cold') => {
@@ -288,18 +288,18 @@ export function ExtractedDataSection({ extractedData }: ExtractedDataSectionProp
           />
 
           <Metric
-            label="Engagement Rate"
-            value={`${calculated.engagementRate?.toFixed(2) || '0'}%`}
+            label="Engagement Score"
+            value={`${calculated.engagementScore?.toFixed(2) || '0'}%`}
             interpretation={
-              (calculated.engagementRate || 0) >= 5
+              (calculated.engagementScore || 0) >= 5
                 ? 'Excellent'
-                : (calculated.engagementRate || 0) >= 2
+                : (calculated.engagementScore || 0) >= 2
                   ? 'Good'
                   : 'Fair'
             }
             icon="mdi:trending-up"
             color="green"
-            tooltip="Percentage of followers who engage with content. Calculated as (average likes + comments) / followers × 100. Higher rates indicate a more active and responsive audience."
+            tooltip="Engagement score based on follower interactions. Calculated as (average likes + comments) / followers × 100. Higher scores indicate a more active and responsive audience."
           />
 
           <Metric

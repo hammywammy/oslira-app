@@ -244,7 +244,7 @@ class EnvironmentManager {
    * Fails fast if misconfigured
    */
   validate(): void {
-    const { environment, apiUrl, appUrl } = this.config;
+    const { apiUrl, appUrl } = this.config;
 
     // Ensure required config is present
     if (!apiUrl || !appUrl) {

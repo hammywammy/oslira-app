@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { fetchLeads } from '../api/leadsApi';
 import { logger } from '@/core/utils/logger';
 import type { Lead } from '@/shared/types/leads.types';
@@ -23,7 +23,6 @@ interface UseLeadsReturn {
 
 export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const queryClient = useQueryClient();
 
   const {
     autoFetch = true,

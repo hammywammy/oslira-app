@@ -147,7 +147,6 @@ export async function fetchLeads(params: FetchLeadsParams = {}): Promise<Lead[]>
       ...lead,
       ai_response: mapAiAnalysisToAiResponse((lead as unknown as Record<string, unknown>).ai_analysis),
       extracted_data: mapExtractedData(lead.extracted_data),
-      calculated_metrics: lead.extracted_data?.calculated || undefined,
     }));
 
     logger.info('[LeadsApi] Leads fetched successfully', {

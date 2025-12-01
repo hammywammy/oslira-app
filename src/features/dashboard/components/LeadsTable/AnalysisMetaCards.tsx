@@ -31,7 +31,7 @@ function MetaBadge({ icon, children, iconColor, textColor }: MetaBadgeProps) {
   );
 }
 
-export function AnalysisMetaCards({ analysisType, status, analyzedAt }: AnalysisMetaCardsProps) {
+export function AnalysisMetaCards({ analysisType, status, analyzedAt: _analyzedAt }: AnalysisMetaCardsProps) {
   // Type config with colors
   const typeConfig = {
     light: {

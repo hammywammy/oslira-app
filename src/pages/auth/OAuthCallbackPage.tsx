@@ -191,11 +191,12 @@ export function OAuthCallbackPage() {
       logger.info('[OAuthCallback] Redirecting', { path: redirectPath });
       navigate(redirectPath, { replace: true });
 
-    } catch (error) {
+    } catch (err) {
+      const error = err as Error;
       logger.error('[OAuthCallback] Processing failed', error);
       setState('error');
       setErrorMessage(error.message || 'Authentication failed');
-      
+
       // Redirect to login after showing error
       setTimeout(() => navigate('/auth/login'), 3000);
     }
