@@ -362,11 +362,12 @@ export function getDateRange(
       end = endOfDay(now);
       break;
     
-    case 'lastMonth':
+    case 'lastMonth': {
       const lastMonth = addDays(now, -30);
       start = startOfMonth(lastMonth);
       end = endOfMonth(lastMonth);
       break;
+    }
     
     default:
       start = startOfDay(now);
