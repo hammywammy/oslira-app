@@ -13,12 +13,12 @@ interface ErrorContext {
 class ErrorTracking {
   captureException(error: Error, context?: ErrorContext): void {
     logger.error('Error captured', error, context);
-    // TODO: Send to Sentry in production
+    // TODO(oslira): Integrate Sentry SDK for production error tracking - see docs.sentry.io
   }
 
   captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info'): void {
     logger[level === 'warning' ? 'warn' : level](message);
-    // TODO: Send to Sentry in production
+    // TODO(oslira): Integrate Sentry SDK for production message capture - see docs.sentry.io
   }
 }
 
